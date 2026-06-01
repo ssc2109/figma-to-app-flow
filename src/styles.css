@@ -144,3 +144,13 @@
     color: var(--color-foreground);
   }
 }
+
+/* Alias the Figma-exported font family names so they resolve to the real fonts. */
+[class*="font-['Geist"] {
+  font-family: 'Geist', sans-serif;
+}
+[class*="font-['Bai_Jamjuree"],
+[class*="font-['Bai Jamjuree"] {
+  font-family: 'Bai Jamjuree', sans-serif;
+}
+
