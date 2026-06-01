@@ -145,12 +145,16 @@
   }
 }
 
-/* Alias the Figma-exported font family names so they resolve to the real fonts. */
-[class*="font-['Geist"] {
-  font-family: 'Geist', sans-serif;
-}
+/* Alias the Figma-exported font family names so they resolve to real fonts with correct weights. */
+[class*="font-['Geist"] { font-family: 'Geist', sans-serif; }
 [class*="font-['Bai_Jamjuree"],
-[class*="font-['Bai Jamjuree"] {
-  font-family: 'Bai Jamjuree', sans-serif;
-}
+[class*="font-['Bai Jamjuree"] { font-family: 'Bai Jamjuree', sans-serif; }
+
+[class*="font-['Geist:Medium"]      { font-weight: 500; }
+[class*="font-['Geist:SemiBold"]    { font-weight: 600; }
+[class*="font-['Geist:Bold"]        { font-weight: 700; }
+[class*="font-['Bai_Jamjuree:Medium"]   { font-weight: 500; }
+[class*="font-['Bai_Jamjuree:SemiBold"] { font-weight: 600; }
+[class*="font-['Bai_Jamjuree:Bold"]     { font-weight: 700; }
+
 
