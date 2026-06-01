@@ -15,7 +15,7 @@ function Container() {
 function Container1() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-center text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-center text-white whitespace-nowrap">
         <p className="leading-[16px]">Inicio</p>
       </div>
     </div>
@@ -64,7 +64,7 @@ function Container2() {
 function Container3() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
         <p className="leading-[16px]">Ventas</p>
       </div>
     </div>
@@ -101,7 +101,7 @@ function ButtonTab2VentasActive() {
       </div>
       <div className="content-stretch flex flex-col items-start pt-[6px] relative shrink-0">
         <div className="content-stretch flex flex-col items-center relative shrink-0">
-          <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-center text-white whitespace-nowrap">
+          <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-center text-white whitespace-nowrap">
             <p className="leading-[16px]">Ventas</p>
           </div>
         </div>
@@ -125,7 +125,7 @@ function Container4() {
 function Container5() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
         <p className="leading-[16px]">Negocio</p>
       </div>
     </div>
@@ -164,7 +164,7 @@ function Container6() {
 function Container7() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
         <p className="leading-[16px]">Crecer</p>
       </div>
     </div>
