@@ -22,7 +22,7 @@ function Margin() {
 function Container() {
   return (
     <div className="content-stretch flex flex-col items-start overflow-clip relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.3)] w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.3)] w-full">
         <p className="leading-[normal]">Buscar productos o códigos...</p>
       </div>
     </div>
@@ -70,7 +70,7 @@ function SearchBar() {
 function Button() {
   return (
     <div className="absolute bg-white content-stretch flex flex-col items-center justify-center left-[20px] px-[24px] py-[8px] rounded-[9999px] top-[8px]" data-name="Button">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-black text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-black text-center whitespace-nowrap">
         <p className="leading-[24px]">Todo</p>
       </div>
     </div>
@@ -80,7 +80,7 @@ function Button() {
 function Button1() {
   return (
     <div className="absolute bg-[#161616] content-stretch flex flex-col items-center justify-center left-[115.09px] px-[24px] py-[8px] rounded-[9999px] top-[8px]" data-name="Button">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
         <p className="leading-[24px]">Bebidas</p>
       </div>
     </div>
@@ -90,7 +90,7 @@ function Button1() {
 function Button2() {
   return (
     <div className="absolute bg-[#161616] content-stretch flex flex-col items-center justify-center left-[234.27px] px-[24px] py-[8px] rounded-[9999px] top-[8px]" data-name="Button">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
         <p className="leading-[24px]">Snacks</p>
       </div>
     </div>
@@ -100,7 +100,7 @@ function Button2() {
 function Button3() {
   return (
     <div className="absolute bg-[#161616] content-stretch flex flex-col items-center justify-center left-[347.91px] px-[24px] py-[8px] rounded-[9999px] top-[8px]" data-name="Button">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
         <p className="leading-[24px]">Pan</p>
       </div>
     </div>
@@ -110,7 +110,7 @@ function Button3() {
 function Button4() {
   return (
     <div className="absolute bg-[#161616] content-stretch flex flex-col items-center justify-center left-[436.02px] px-[24px] py-[8px] rounded-[9999px] top-[8px]" data-name="Button">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
         <p className="leading-[24px]">Abarrotes</p>
       </div>
     </div>
@@ -142,7 +142,7 @@ function IncaKola500Ml() {
 function OverlayOverlayBlur() {
   return (
     <div className="absolute backdrop-blur-[6px] bg-[rgba(255,255,255,0.1)] content-stretch flex flex-col items-start px-[12px] py-[4px] right-[12px] rounded-[9999px] top-[12px]" data-name="Overlay+OverlayBlur">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
         <p className="leading-[16px]">S/ 3.50</p>
       </div>
     </div>
@@ -152,7 +152,7 @@ function OverlayOverlayBlur() {
 function Heading1() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
         <p className="leading-[20px]">Inca Kola 500ml</p>
       </div>
     </div>
@@ -162,7 +162,7 @@ function Heading1() {
 function Container2() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
         <p className="leading-[16.5px]">Stock: 24 u.</p>
       </div>
     </div>
@@ -204,7 +204,7 @@ function PanFrances() {
 function OverlayOverlayBlur1() {
   return (
     <div className="absolute backdrop-blur-[6px] bg-[rgba(255,255,255,0.1)] content-stretch flex flex-col items-start px-[12px] py-[4px] right-[11.99px] rounded-[9999px] top-[12px]" data-name="Overlay+OverlayBlur">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
         <p className="leading-[16px]">S/ 0.30</p>
       </div>
     </div>
@@ -214,7 +214,7 @@ function OverlayOverlayBlur1() {
 function Heading2() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
         <p className="leading-[20px]">Pan Francés</p>
       </div>
     </div>
@@ -224,7 +224,7 @@ function Heading2() {
 function Container4() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
         <p className="leading-[16.5px]">Stock: 120 u.</p>
       </div>
     </div>
@@ -266,7 +266,7 @@ function PapasLays() {
 function OverlayOverlayBlur2() {
   return (
     <div className="absolute backdrop-blur-[6px] bg-[rgba(255,255,255,0.1)] content-stretch flex flex-col items-start px-[12px] py-[4px] right-[12px] rounded-[9999px] top-[12px]" data-name="Overlay+OverlayBlur">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
         <p className="leading-[16px]">S/ 4.20</p>
       </div>
     </div>
@@ -276,7 +276,7 @@ function OverlayOverlayBlur2() {
 function Heading3() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
         <p className="leading-[20px]">{`Papas Lay's`}</p>
       </div>
     </div>
@@ -286,7 +286,7 @@ function Heading3() {
 function Container6() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
         <p className="leading-[16.5px]">Stock: 15 u.</p>
       </div>
     </div>
@@ -328,7 +328,7 @@ function AguaCielo625Ml() {
 function OverlayOverlayBlur3() {
   return (
     <div className="absolute backdrop-blur-[6px] bg-[rgba(255,255,255,0.1)] content-stretch flex flex-col items-start px-[12px] py-[4px] right-[12px] rounded-[9999px] top-[12px]" data-name="Overlay+OverlayBlur">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
         <p className="leading-[16px]">S/ 2.00</p>
       </div>
     </div>
@@ -338,7 +338,7 @@ function OverlayOverlayBlur3() {
 function Heading4() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
         <p className="leading-[20px]">Agua Cielo 625ml</p>
       </div>
     </div>
@@ -348,7 +348,7 @@ function Heading4() {
 function Container8() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
         <p className="leading-[16.5px]">Stock: 48 u.</p>
       </div>
     </div>
@@ -390,7 +390,7 @@ function CafeAltomayo() {
 function OverlayOverlayBlur4() {
   return (
     <div className="absolute backdrop-blur-[6px] bg-[rgba(255,255,255,0.1)] content-stretch flex flex-col items-start px-[12px] py-[4px] right-[12px] rounded-[9999px] top-[12px]" data-name="Overlay+OverlayBlur">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
         <p className="leading-[16px]">S/ 1.50</p>
       </div>
     </div>
@@ -400,7 +400,7 @@ function OverlayOverlayBlur4() {
 function Heading5() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
         <p className="leading-[20px]">Café Altomayo</p>
       </div>
     </div>
@@ -410,7 +410,7 @@ function Heading5() {
 function Container10() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
         <p className="leading-[16.5px]">Stock: 30 u.</p>
       </div>
     </div>
@@ -452,7 +452,7 @@ function ArrozCosteno1Kg() {
 function OverlayOverlayBlur5() {
   return (
     <div className="absolute backdrop-blur-[6px] bg-[rgba(255,255,255,0.1)] content-stretch flex flex-col items-start px-[12px] py-[4px] right-[12px] rounded-[9999px] top-[12px]" data-name="Overlay+OverlayBlur">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[12px] text-white whitespace-nowrap">
         <p className="leading-[16px]">S/ 12.50</p>
       </div>
     </div>
@@ -462,7 +462,7 @@ function OverlayOverlayBlur5() {
 function Heading6() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 3">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[14px] text-white w-full">
         <p className="leading-[20px]">Arroz Costeño 1kg</p>
       </div>
     </div>
@@ -472,7 +472,7 @@ function Heading6() {
 function Container12() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.6)] w-full">
         <p className="leading-[16.5px]">Stock: 60 u.</p>
       </div>
     </div>
@@ -544,7 +544,7 @@ function BackgroundBorder() {
   return (
     <div className="absolute bg-[#adc1f3] content-stretch flex items-center justify-center p-[2px] right-[-4px] rounded-[9999px] size-[20px] top-[-4px]" data-name="Background+Border">
       <div aria-hidden className="absolute border-2 border-[#161616] border-solid inset-0 pointer-events-none rounded-[9999px]" />
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[10px] text-black text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[10px] text-black text-center whitespace-nowrap">
         <p className="leading-[15px]">12</p>
       </div>
     </div>
@@ -563,7 +563,7 @@ function Background() {
 function Container16() {
   return (
     <div className="absolute content-stretch flex flex-col items-start left-0 pb-[0.75px] right-0 top-[-1px]" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] whitespace-nowrap">
         <p className="leading-[13.75px]">Subtotal</p>
       </div>
     </div>
@@ -573,7 +573,7 @@ function Container16() {
 function Container17() {
   return (
     <div className="absolute content-stretch flex flex-col items-start left-0 right-0 top-[13.75px]" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Bai Jamjuree',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap">
         <p className="leading-[25px]">S/ 45.20</p>
       </div>
     </div>
@@ -610,7 +610,7 @@ function Button5() {
   return (
     <div className="bg-[#adc1f3] content-stretch flex h-[44px] items-center justify-center pb-[10.5px] pt-[9.5px] px-[24px] relative rounded-[9999px] shrink-0" data-name="Button">
       <div className="-translate-y-1/2 absolute bg-[rgba(255,255,255,0)] h-[44px] left-0 right-0 rounded-[9999px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] top-1/2" data-name="Button:shadow" />
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#1a2b5a] text-[16px] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#1a2b5a] text-[16px] text-center whitespace-nowrap">
         <p className="leading-[24px]">Carrito</p>
       </div>
     </div>
@@ -670,7 +670,7 @@ function Border() {
 function Heading() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Heading 1">
-      <div className="[word-break:break-word] flex flex-col font-['Bai Jamjuree',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white tracking-[-0.5px] whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white tracking-[-0.5px] whitespace-nowrap">
         <p className="leading-[28px]">Trax</p>
       </div>
     </div>
@@ -734,7 +734,7 @@ function Container20() {
 function Container21() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[10px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[10px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
         <p className="leading-[15px]">Inicio</p>
       </div>
     </div>
@@ -773,7 +773,7 @@ function Container22() {
 function Container23() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[10px] text-center text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[10px] text-center text-white whitespace-nowrap">
         <p className="leading-[15px]">Ventas</p>
       </div>
     </div>
@@ -812,7 +812,7 @@ function Container24() {
 function Container25() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[10px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[10px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
         <p className="leading-[15px]">Negocio</p>
       </div>
     </div>
@@ -851,7 +851,7 @@ function Container26() {
 function Container27() {
   return (
     <div className="content-stretch flex flex-col items-center relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[10px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[10px] text-[rgba(255,255,255,0.5)] text-center whitespace-nowrap">
         <p className="leading-[15px]">Crecer</p>
       </div>
     </div>
