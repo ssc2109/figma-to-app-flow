@@ -632,11 +632,16 @@ function OverlayOverlayBlur6() {
   );
 }
 
-function FloatingCartStickyPanel() {
+function FloatingCartStickyPanel({ onOpenCart }: { onOpenCart?: () => void }) {
   return (
-    <div className="fixed bottom-[132px] left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-30" data-name="Floating Cart Sticky Panel">
+    <button
+      type="button"
+      onClick={onOpenCart}
+      className="fixed bottom-[132px] left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-30 text-left active:scale-[0.98] transition-transform"
+      data-name="Floating Cart Sticky Panel"
+    >
       <OverlayOverlayBlur6 />
-    </div>
+    </button>
   );
 }
 
@@ -909,7 +914,7 @@ function BottomNavigationBarIdenticalToInicio() {
   );
 }
 
-export default function HtmlBody() {
+export default function HtmlBody({ onOpenCart }: { onOpenCart?: () => void } = {}) {
   return (
     <div className="flex flex-col size-full bg-black" data-name="Html → Body">
       {/* Fixed Header */}
@@ -931,7 +936,7 @@ export default function HtmlBody() {
       </div>
 
       {/* Floating Cart */}
-      <FloatingCartStickyPanel />
+      <FloatingCartStickyPanel onOpenCart={onOpenCart} />
     </div>
   );
 }
