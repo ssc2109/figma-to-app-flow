@@ -184,16 +184,16 @@ export default function CheckoutModal({
             <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
               <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
                 <div className="font-['Geist:Regular',sans-serif] text-[#c4c7c8] text-[16px] leading-[24px]">Subtotal</div>
-                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">S/ 13.40</div>
+                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">{formatSoles(subtotal)}</div>
               </div>
               <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
                 <div className="font-['Geist:Regular',sans-serif] text-[#c4c7c8] text-[16px] leading-[24px]">Delivery Fee / IGV</div>
-                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">S/ 2.50</div>
+                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">{formatSoles(deliveryFee)}</div>
               </div>
               <div className="bg-[rgba(255,255,255,0.05)] h-px relative shrink-0 w-full" />
               <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
                 <div className="font-['Geist:Bold',sans-serif] font-bold text-[18px] text-white leading-[28px]">Total</div>
-                <div className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-[24px] text-white leading-[32px]">S/ 15.90</div>
+                <div className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-[24px] text-white leading-[32px]">{formatSoles(total)}</div>
               </div>
             </div>
             <button
@@ -204,7 +204,7 @@ export default function CheckoutModal({
               <div className="flex flex-row items-center size-full">
                 <div className="content-stretch flex items-center justify-between px-[32px] relative size-full">
                   <div className="font-['Geist:Bold',sans-serif] font-bold text-[#0a0b14] text-[18px] leading-[28px]">
-                    Cobrar S/ 15.90
+                    Cobrar {formatSoles(total)}
                   </div>
                   <ArrowRight size={18} strokeWidth={2.4} className="text-[#0a0b14]" />
                 </div>
