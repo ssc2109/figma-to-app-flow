@@ -909,7 +909,19 @@ function BottomNavigationBarIdenticalToInicio() {
   );
 }
 
-export default function HtmlBody({ onOpenCart }: { onOpenCart?: () => void } = {}) {
+export default function HtmlBody({
+  onOpenCart,
+  cart = {},
+  onAdd = () => {},
+  subtotal = 0,
+  count = 0,
+}: {
+  onOpenCart?: () => void;
+  cart?: Record<string, number>;
+  onAdd?: (id: string) => void;
+  subtotal?: number;
+  count?: number;
+} = {}) {
   return (
     <div className="flex flex-col size-full bg-black" data-name="Html → Body">
       {/* Fixed Header */}
@@ -926,12 +938,12 @@ export default function HtmlBody({ onOpenCart }: { onOpenCart?: () => void } = {
           <CategoriesChips />
         </div>
         <div className="px-[20px]">
-          <Main />
+          <Main cart={cart} onAdd={onAdd} />
         </div>
       </div>
 
       {/* Floating Cart */}
-      <FloatingCartStickyPanel onOpenCart={onOpenCart} />
+      <FloatingCartStickyPanel count={count} subtotal={subtotal} onOpenCart={onOpenCart} />
     </div>
   );
 }
