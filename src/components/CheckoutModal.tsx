@@ -20,6 +20,17 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
   const [startY, setStartY] = useState<number | null>(null);
   const [currentY, setCurrentY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [backdropVisible, setBackdropVisible] = useState(false);
+
+  useEffect(() => {
+    const r1 = requestAnimationFrame(() => {
+      setBackdropVisible(true);
+      const r2 = requestAnimationFrame(() => setMounted(true));
+      return () => cancelAnimationFrame(r2);
+    });
+    return () => cancelAnimationFrame(r1);
+  }, []);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -61,14 +72,15 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
         type="button"
         aria-label="Cerrar carrito"
         onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-[6px]"
+        className={`absolute inset-0 bg-black/60 backdrop-blur-[6px] transition-opacity duration-300 ${backdropVisible ? "opacity-100" : "opacity-0"}`}
       />
-      <div className="relative mx-auto flex h-full w-full max-w-[430px] flex-col justify-end">
+      <div className="relative mx-auto flex h-full w-full max-w-[430px] flex-col justify-end pt-[64px] pointer-events-none">
         <div
-          className="relative w-full h-full bg-black rounded-tl-[40px] rounded-tr-[40px] flex flex-col"
+          className="relative w-full bg-black rounded-tl-[40px] rounded-tr-[40px] flex flex-col pointer-events-auto"
           style={{
-            transform: `translateY(${currentY}px)`,
-            transition: isDragging ? "none" : "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            height: "100%",
+            transform: mounted ? `translateY(${currentY}px)` : "translateY(100%)",
+            transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
           }}
           onTouchStart={(e) => handleStart(e.touches[0].clientY, e.target as HTMLElement)}
           onTouchMove={(e) => handleMove(e.touches[0].clientY)}
