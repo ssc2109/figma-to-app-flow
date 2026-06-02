@@ -20,6 +20,17 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
   const [startY, setStartY] = useState<number | null>(null);
   const [currentY, setCurrentY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [backdropVisible, setBackdropVisible] = useState(false);
+
+  useEffect(() => {
+    const r1 = requestAnimationFrame(() => {
+      setBackdropVisible(true);
+      const r2 = requestAnimationFrame(() => setMounted(true));
+      return () => cancelAnimationFrame(r2);
+    });
+    return () => cancelAnimationFrame(r1);
+  }, []);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
