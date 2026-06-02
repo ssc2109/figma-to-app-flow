@@ -959,7 +959,7 @@ export default function HtmlBody({
           <CategoriesChips />
         </div>
         <div className="px-[20px]">
-          <Main cart={cart} onAdd={onAdd} />
+          <Main cart={cart} onAdd={onAdd} onRemove={onRemove} />
         </div>
       </div>
 
