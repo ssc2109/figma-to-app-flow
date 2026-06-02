@@ -564,7 +564,7 @@ function SectionProductGrid({
 function Main({ cart, onAdd, onRemove }: { cart: Record<string, number>; onAdd: (id: string) => void; onRemove: (id: string) => void }) {
   return (
     <div className="relative w-full" data-name="Main">
-      <SectionProductGrid cart={cart} onAdd={onAdd} />
+      <SectionProductGrid cart={cart} onAdd={onAdd} onRemove={onRemove} />
     </div>
   );
 }
