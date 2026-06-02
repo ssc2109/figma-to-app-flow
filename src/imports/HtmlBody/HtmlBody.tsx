@@ -501,7 +501,7 @@ function ProductCard6ArrozCosteno() {
   );
 }
 
-const PRODUCT_CARDS: { id: string; Component: () => JSX.Element }[] = [
+const PRODUCT_CARDS: { id: string; Component: React.ComponentType }[] = [
   { id: "inca-kola", Component: ProductCard1IncaKola },
   { id: "pan-frances", Component: ProductCard2PanFrances },
   { id: "papas-lays", Component: ProductCard3PapasLays },
