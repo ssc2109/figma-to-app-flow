@@ -210,7 +210,7 @@ function Background() {
 
 function ButtonTab3TraxFab() {
   return (
-    <div className="content-stretch flex flex-col items-center justify-center relative -top-[24px] cursor-pointer active:scale-95 transition-transform" data-name="Button - Tab 3: Trax (FAB)">
+    <div className="content-stretch flex flex-col items-center justify-center relative -top-[8px] cursor-pointer active:scale-95 transition-transform" data-name="Button - Tab 3: Trax (FAB)">
       <Background />
     </div>
   );

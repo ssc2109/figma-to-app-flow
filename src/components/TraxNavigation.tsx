@@ -56,6 +56,7 @@ export default function TraxNavigation() {
             onOpenCart={() => count > 0 && setCartOpen(true)}
             cart={cart}
             onAdd={addToCart}
+            onRemove={removeItem}
             count={count}
             subtotal={subtotal}
           />
