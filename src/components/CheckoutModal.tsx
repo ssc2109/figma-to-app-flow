@@ -79,7 +79,7 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
           className="relative w-full bg-black rounded-tl-[40px] rounded-tr-[40px] flex flex-col pointer-events-auto"
           style={{
             height: "100%",
-            transform: `translateY(${mounted ? currentY : window.innerHeight}px)`,
+            transform: mounted ? `translateY(${currentY}px)` : "translateY(100%)",
             transition: isDragging ? "none" : "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
           }}
           onTouchStart={(e) => handleStart(e.touches[0].clientY, e.target as HTMLElement)}
