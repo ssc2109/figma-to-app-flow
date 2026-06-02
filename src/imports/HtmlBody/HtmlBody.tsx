@@ -542,10 +542,10 @@ function SectionProductGrid({
 }
 
 
-function Main() {
+function Main({ cart, onAdd }: { cart: Record<string, number>; onAdd: (id: string) => void }) {
   return (
     <div className="relative w-full" data-name="Main">
-      <SectionProductGrid />
+      <SectionProductGrid cart={cart} onAdd={onAdd} />
     </div>
   );
 }
