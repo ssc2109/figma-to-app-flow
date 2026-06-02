@@ -932,12 +932,14 @@ export default function HtmlBody({
   onOpenCart,
   cart = {},
   onAdd = () => {},
+  onRemove = () => {},
   subtotal = 0,
   count = 0,
 }: {
   onOpenCart?: () => void;
   cart?: Record<string, number>;
   onAdd?: (id: string) => void;
+  onRemove?: (id: string) => void;
   subtotal?: number;
   count?: number;
 } = {}) {
