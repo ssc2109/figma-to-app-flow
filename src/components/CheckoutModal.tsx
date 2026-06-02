@@ -1,22 +1,33 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Minus, Plus } from "lucide-react";
-import imgIncaKola500Ml from "@/imports/HtmlBody/7a7a1a54128ef8e3dee020a1832b332677bb1994.png";
-import imgPanFrances from "@/imports/HtmlBody/1c39aebd1210a98a2c75e829f94bd8645a88f4eb.png";
-import imgPapasLays from "@/imports/HtmlBody/3a77978991e368fdd70c8d4fe2924a0360f31f6e.png";
+import { formatSoles } from "@/data/products";
+
+export type CartLine = {
+  id: string;
+  name: string;
+  price: number;
+  qty: number;
+  image: string;
+};
 
 interface CartModalProps {
+  items: CartLine[];
+  subtotal: number;
+  deliveryFee: number;
+  onChangeQty: (id: string, delta: number) => void;
+  onRemove: (id: string) => void;
   onClose: () => void;
 }
 
-type Item = { name: string; unit: string; total: string; qty: number; img: string };
-
-const ITEMS: Item[] = [
-  { name: "Inca Kola 500ml", unit: "S/ 3.50", total: "S/ 3.50", qty: 1, img: imgIncaKola500Ml },
-  { name: "Pan Francés", unit: "S/ 0.30", total: "S/ 1.50", qty: 5, img: imgPanFrances },
-  { name: "Papas Lay's", unit: "S/ 4.20", total: "S/ 8.40", qty: 2, img: imgPapasLays },
-];
-
-export default function CheckoutModal({ onClose }: CartModalProps) {
+export default function CheckoutModal({
+  items,
+  subtotal,
+  deliveryFee,
+  onChangeQty,
+  onRemove,
+  onClose,
+}: CartModalProps) {
+  const total = subtotal + deliveryFee;
   const [startY, setStartY] = useState<number | null>(null);
   const [currentY, setCurrentY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -42,6 +53,10 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
       document.removeEventListener("keydown", onKey);
     };
   }, [onClose]);
+
+  useEffect(() => {
+    if (items.length === 0) onClose();
+  }, [items.length, onClose]);
 
   const handleStart = (clientY: number, target: HTMLElement) => {
     if (
@@ -107,7 +122,7 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
                   </div>
                   <div className="bg-[#201f1f] content-stretch flex flex-col items-start px-[16px] py-[6px] relative rounded-[9999px] shrink-0">
                     <div className="[word-break:break-word] flex flex-col font-['Geist:Medium',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[#c4c7c8] text-[14px] whitespace-nowrap">
-                      <p className="leading-[20px]">{ITEMS.length} Items</p>
+                      <p className="leading-[20px]">{items.length} Items</p>
                     </div>
                   </div>
                 </div>
@@ -118,34 +133,46 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
           {/* Scrollable Product List */}
           <div className="flex-1 overflow-y-auto px-[20px] pb-[24px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <div className="content-stretch flex flex-col gap-[16px] items-start">
-              {ITEMS.map((item) => (
-                <div key={item.name} className="bg-[#1c1b1b] relative rounded-[32px] shrink-0 w-full">
+              {items.map((item) => (
+                <div key={item.id} className="bg-[#1c1b1b] relative rounded-[32px] shrink-0 w-full">
                   <div className="flex flex-row items-center size-full">
                     <div className="content-stretch flex gap-[16px] items-center p-[16px] relative size-full">
                       <div className="aspect-square w-[80px] bg-black content-stretch flex items-center justify-center overflow-clip relative rounded-[16px] shrink-0">
-                        <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="content-stretch flex flex-col items-start flex-1 relative shrink-0">
-                        <div className="[word-break:break-word] flex flex-col font-['Geist:Medium',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[18px] text-white">
-                          <p className="leading-[28px]">{item.name}</p>
+                        <div className="font-['Geist:Medium',sans-serif] font-medium text-[18px] text-white leading-[28px]">
+                          {item.name}
                         </div>
-                        <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:Regular',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#c4c7c8] text-[14px]">
-                          <p className="leading-[20px]">{item.unit}</p>
+                        <div className="font-['Bai_Jamjuree:Regular',sans-serif] text-[#c4c7c8] text-[14px] leading-[20px]">
+                          {formatSoles(item.price)}
                         </div>
                         <div className="content-stretch flex flex-col items-start pt-[4px] relative shrink-0">
-                          <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:SemiBold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white">
-                            <p className="leading-[28px]">{item.total}</p>
+                          <div className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-[20px] text-white leading-[28px]">
+                            {formatSoles(item.price * item.qty)}
                           </div>
                         </div>
                       </div>
                       <div className="backdrop-blur-[10px] bg-[rgba(255,255,255,0.05)] content-stretch flex flex-col gap-[16px] items-center px-px py-[13px] relative rounded-[9999px] shrink-0 w-[48px] border border-[rgba(255,255,255,0.1)]">
-                        <button className="relative shrink-0 size-[24px] flex items-center justify-center text-white">
+                        <button
+                          type="button"
+                          onClick={() => onChangeQty(item.id, 1)}
+                          className="relative shrink-0 size-[24px] flex items-center justify-center text-white active:scale-90"
+                          aria-label={`Agregar ${item.name}`}
+                        >
                           <Plus size={18} strokeWidth={2.4} />
                         </button>
-                        <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:SemiBold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#e5e2e1] text-[16px] whitespace-nowrap">
-                          <p className="leading-[24px]">{item.qty}</p>
+                        <div className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-[#e5e2e1] text-[16px] leading-[24px] whitespace-nowrap">
+                          {item.qty}
                         </div>
-                        <button className="relative shrink-0 size-[24px] flex items-center justify-center text-[#C4C7C8]/50">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            item.qty > 1 ? onChangeQty(item.id, -1) : onRemove(item.id)
+                          }
+                          className="relative shrink-0 size-[24px] flex items-center justify-center text-[#C4C7C8]/70 active:scale-90"
+                          aria-label={`Quitar ${item.name}`}
+                        >
                           <Minus size={18} strokeWidth={2.4} />
                         </button>
                       </div>
@@ -161,16 +188,16 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
             <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
               <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
                 <div className="font-['Geist:Regular',sans-serif] text-[#c4c7c8] text-[16px] leading-[24px]">Subtotal</div>
-                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">S/ 13.40</div>
+                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">{formatSoles(subtotal)}</div>
               </div>
               <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
                 <div className="font-['Geist:Regular',sans-serif] text-[#c4c7c8] text-[16px] leading-[24px]">Delivery Fee / IGV</div>
-                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">S/ 2.50</div>
+                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">{formatSoles(deliveryFee)}</div>
               </div>
               <div className="bg-[rgba(255,255,255,0.05)] h-px relative shrink-0 w-full" />
               <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
                 <div className="font-['Geist:Bold',sans-serif] font-bold text-[18px] text-white leading-[28px]">Total</div>
-                <div className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-[24px] text-white leading-[32px]">S/ 15.90</div>
+                <div className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-[24px] text-white leading-[32px]">{formatSoles(total)}</div>
               </div>
             </div>
             <button
@@ -181,7 +208,7 @@ export default function CheckoutModal({ onClose }: CartModalProps) {
               <div className="flex flex-row items-center size-full">
                 <div className="content-stretch flex items-center justify-between px-[32px] relative size-full">
                   <div className="font-['Geist:Bold',sans-serif] font-bold text-[#0a0b14] text-[18px] leading-[28px]">
-                    Cobrar S/ 15.90
+                    Cobrar {formatSoles(total)}
                   </div>
                   <ArrowRight size={18} strokeWidth={2.4} className="text-[#0a0b14]" />
                 </div>

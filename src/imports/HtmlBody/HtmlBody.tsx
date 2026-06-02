@@ -501,23 +501,51 @@ function ProductCard6ArrozCosteno() {
   );
 }
 
-function SectionProductGrid() {
+const PRODUCT_CARDS: { id: string; Component: React.ComponentType }[] = [
+  { id: "inca-kola", Component: ProductCard1IncaKola },
+  { id: "pan-frances", Component: ProductCard2PanFrances },
+  { id: "papas-lays", Component: ProductCard3PapasLays },
+  { id: "agua-cielo", Component: ProductCard4AguaCielo },
+  { id: "cafe-altomayo", Component: ProductCard5CafeAltomayo },
+  { id: "arroz-costeno", Component: ProductCard6ArrozCosteno },
+];
+
+function SectionProductGrid({
+  cart,
+  onAdd,
+}: {
+  cart: Record<string, number>;
+  onAdd: (id: string) => void;
+}) {
   return (
     <div className="gap-x-[16px] gap-y-[16px] grid grid-cols-2 auto-rows-[220px] relative shrink-0 w-full" data-name="Section - Product Grid">
-      <ProductCard1IncaKola />
-      <ProductCard2PanFrances />
-      <ProductCard3PapasLays />
-      <ProductCard4AguaCielo />
-      <ProductCard5CafeAltomayo />
-      <ProductCard6ArrozCosteno />
+      {PRODUCT_CARDS.map(({ id, Component }) => {
+        const qty = cart[id] ?? 0;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onAdd(id)}
+            className="relative text-left active:scale-[0.98] transition-transform"
+          >
+            <Component />
+            {qty > 0 && (
+              <div className="absolute top-[12px] left-[12px] bg-white text-black font-['Geist:Regular',sans-serif] font-bold text-[12px] leading-[18px] rounded-full min-w-[24px] h-[24px] px-[6px] flex items-center justify-center border-2 border-black z-10">
+                {qty}
+              </div>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
-function Main() {
+
+function Main({ cart, onAdd }: { cart: Record<string, number>; onAdd: (id: string) => void }) {
   return (
     <div className="relative w-full" data-name="Main">
-      <SectionProductGrid />
+      <SectionProductGrid cart={cart} onAdd={onAdd} />
     </div>
   );
 }
@@ -534,105 +562,16 @@ function Container14() {
   );
 }
 
-function BackgroundBorder() {
-  return (
-    <div className="absolute bg-[#adc1f3] content-stretch flex items-center justify-center p-[2px] right-[-4px] rounded-[9999px] size-[20px] top-[-4px]" data-name="Background+Border">
-      <div aria-hidden className="absolute border-2 border-[#161616] border-solid inset-0 pointer-events-none rounded-[9999px]" />
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[10px] text-black text-center whitespace-nowrap">
-        <p className="leading-[15px]">12</p>
-      </div>
-    </div>
-  );
-}
-
-function Background() {
-  return (
-    <div className="bg-[#a4c639] content-stretch flex items-center justify-center relative rounded-[9999px] shrink-0 size-[48px]" data-name="Background">
-      <Container14 />
-      <BackgroundBorder />
-    </div>
-  );
-}
-
-function Container16() {
-  return (
-    <div className="absolute content-stretch flex flex-col items-start left-0 pb-[0.75px] right-0 top-[-1px]" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[11px] text-[rgba(255,255,255,0.5)] whitespace-nowrap">
-        <p className="leading-[13.75px]">Subtotal</p>
-      </div>
-    </div>
-  );
-}
-
-function Container17() {
-  return (
-    <div className="absolute content-stretch flex flex-col items-start left-0 right-0 top-[13.75px]" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap">
-        <p className="leading-[25px]">S/ 45.20</p>
-      </div>
-    </div>
-  );
-}
-
-function Container15() {
-  return (
-    <div className="h-[38.75px] relative shrink-0 w-[84.42px]" data-name="Container">
-      <Container16 />
-      <Container17 />
-    </div>
-  );
-}
-
-function Container13() {
-  return (
-    <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Container">
-      <Background />
-      <Container15 />
-    </div>
-  );
-}
-
-function Margin2() {
-  return (
-    <div className="content-stretch flex flex-col items-start pl-[8px] relative shrink-0" data-name="Margin">
-      <Container13 />
-    </div>
-  );
-}
-
-function Button5() {
-  return (
-    <div className="bg-[#adc1f3] content-stretch flex h-[44px] items-center justify-center pb-[10.5px] pt-[9.5px] px-[24px] relative rounded-[9999px] shrink-0" data-name="Button">
-      <div className="-translate-y-1/2 absolute bg-[rgba(255,255,255,0)] h-[44px] left-0 right-0 rounded-[9999px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] top-1/2" data-name="Button:shadow" />
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-bold justify-center leading-[0] relative shrink-0 text-[#1a2b5a] text-[16px] text-center whitespace-nowrap">
-        <p className="leading-[24px]">Carrito</p>
-      </div>
-    </div>
-  );
-}
-
-function ButtonMargin() {
-  return (
-    <div className="content-stretch flex flex-col h-[44px] items-start pr-[8px] relative shrink-0" data-name="Button:margin">
-      <Button5 />
-    </div>
-  );
-}
-
-function OverlayOverlayBlur6() {
-  return (
-    <div className="backdrop-blur-[20px] bg-[rgba(22,22,22,0.9)] max-w-[512px] relative rounded-[9999px] shrink-0 w-full" data-name="Overlay+OverlayBlur">
-      <div className="flex flex-row items-center max-w-[inherit] size-full">
-        <div className="content-stretch flex items-center justify-between max-w-[inherit] p-[12px] relative size-full">
-          <Margin2 />
-          <ButtonMargin />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FloatingCartStickyPanel({ onOpenCart }: { onOpenCart?: () => void }) {
+function FloatingCartStickyPanel({
+  count,
+  subtotal,
+  onOpenCart,
+}: {
+  count: number;
+  subtotal: number;
+  onOpenCart?: () => void;
+}) {
+  if (count === 0) return null;
   return (
     <button
       type="button"
@@ -640,10 +579,66 @@ function FloatingCartStickyPanel({ onOpenCart }: { onOpenCart?: () => void }) {
       className="fixed bottom-[132px] left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-30 text-left active:scale-[0.98] transition-transform"
       data-name="Floating Cart Sticky Panel"
     >
-      <OverlayOverlayBlur6 />
+      <div
+        className="backdrop-blur-[20px] bg-[rgba(22,22,22,0.92)] border border-white/8 max-w-[512px] relative rounded-[9999px] shrink-0 w-full"
+        data-name="Overlay+OverlayBlur"
+      >
+        <div className="flex flex-row items-center max-w-[inherit] size-full">
+          <div className="content-stretch flex items-center justify-between max-w-[inherit] p-[12px] relative size-full">
+            {/* Left: badge + subtotal */}
+            <div className="content-stretch flex flex-col items-start pl-[8px] relative shrink-0">
+              <div className="content-stretch flex gap-[12px] items-center relative shrink-0">
+                {/* Cart bubble */}
+                <div
+                  className="bg-white/10 border border-white/15 content-stretch flex items-center justify-center relative rounded-[9999px] shrink-0 size-[48px]"
+                  data-name="Background"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="9" cy="20" r="1.5" />
+                    <circle cx="18" cy="20" r="1.5" />
+                    <path d="M3 4h2l2.2 11.2a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.5L21.5 8H6" />
+                  </svg>
+                  <div
+                    className="absolute bg-white content-stretch flex items-center justify-center p-[2px] right-[-4px] rounded-[9999px] size-[20px] top-[-4px]"
+                    data-name="Background+Border"
+                  >
+                    <div aria-hidden className="absolute border-2 border-[#161616] border-solid inset-0 pointer-events-none rounded-[9999px]" />
+                    <div className="font-['Geist:Regular',sans-serif] font-bold text-[10px] text-black leading-[15px] text-center whitespace-nowrap">
+                      {count}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="h-[38.75px] relative shrink-0 w-[100px]">
+                  <div className="absolute content-stretch flex flex-col items-start left-0 right-0 top-[-1px]">
+                    <div className="font-['Geist:Regular',sans-serif] text-[11px] text-[rgba(255,255,255,0.5)] leading-[13.75px] whitespace-nowrap">
+                      Subtotal
+                    </div>
+                  </div>
+                  <div className="absolute content-stretch flex flex-col items-start left-0 right-0 top-[13.75px]">
+                    <div className="font-['Bai_Jamjuree:Bold',sans-serif] text-[20px] text-white leading-[25px] whitespace-nowrap">
+                      S/ {subtotal.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Carrito button */}
+            <div className="content-stretch flex flex-col h-[44px] items-start pr-[8px] relative shrink-0">
+              <div className="bg-white content-stretch flex h-[44px] items-center justify-center px-[24px] relative rounded-[9999px] shrink-0">
+                <div className="font-['Geist:Regular',sans-serif] font-bold text-black text-[16px] leading-[24px] text-center whitespace-nowrap">
+                  Carrito
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </button>
   );
 }
+
 
 function UserProfilePhoto() {
   return (
@@ -914,7 +909,19 @@ function BottomNavigationBarIdenticalToInicio() {
   );
 }
 
-export default function HtmlBody({ onOpenCart }: { onOpenCart?: () => void } = {}) {
+export default function HtmlBody({
+  onOpenCart,
+  cart = {},
+  onAdd = () => {},
+  subtotal = 0,
+  count = 0,
+}: {
+  onOpenCart?: () => void;
+  cart?: Record<string, number>;
+  onAdd?: (id: string) => void;
+  subtotal?: number;
+  count?: number;
+} = {}) {
   return (
     <div className="flex flex-col size-full bg-black" data-name="Html → Body">
       {/* Fixed Header */}
@@ -931,12 +938,12 @@ export default function HtmlBody({ onOpenCart }: { onOpenCart?: () => void } = {
           <CategoriesChips />
         </div>
         <div className="px-[20px]">
-          <Main />
+          <Main cart={cart} onAdd={onAdd} />
         </div>
       </div>
 
       {/* Floating Cart */}
-      <FloatingCartStickyPanel onOpenCart={onOpenCart} />
+      <FloatingCartStickyPanel count={count} subtotal={subtotal} onOpenCart={onOpenCart} />
     </div>
   );
 }

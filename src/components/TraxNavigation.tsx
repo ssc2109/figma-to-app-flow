@@ -1,20 +1,65 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Container from "@/imports/Container/Container";
 import HtmlBody from "@/imports/HtmlBody/HtmlBody";
 import BottomNavBar from "@/imports/BottomNavBar/BottomNavBar";
 import CheckoutModal from "@/components/CheckoutModal";
+import { PRODUCTS_BY_ID } from "@/data/products";
 
 type Screen = "inicio" | "ventas" | "negocio" | "crecer";
+
+const DELIVERY_FEE = 2.5;
 
 export default function TraxNavigation() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("inicio");
   const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] = useState<Record<string, number>>({});
+
+  const addToCart = (id: string) =>
+    setCart((c) => ({ ...c, [id]: (c[id] ?? 0) + 1 }));
+
+  const updateQty = (id: string, delta: number) =>
+    setCart((c) => {
+      const next = (c[id] ?? 0) + delta;
+      const copy = { ...c };
+      if (next <= 0) delete copy[id];
+      else copy[id] = next;
+      return copy;
+    });
+
+  const removeItem = (id: string) =>
+    setCart((c) => {
+      const copy = { ...c };
+      delete copy[id];
+      return copy;
+    });
+
+  const { count, subtotal, items } = useMemo(() => {
+    const entries = Object.entries(cart);
+    const items = entries
+      .map(([id, qty]) => {
+        const p = PRODUCTS_BY_ID[id];
+        if (!p) return null;
+        return { ...p, qty };
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null);
+    const count = items.reduce((s, i) => s + i.qty, 0);
+    const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
+    return { count, subtotal, items };
+  }, [cart]);
 
   return (
     <div className="size-full bg-black overflow-auto relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       <div className="mx-auto w-full max-w-[430px] pb-[80px]">
         {currentScreen === "inicio" && <Container />}
-        {currentScreen === "ventas" && <HtmlBody onOpenCart={() => setCartOpen(true)} />}
+        {currentScreen === "ventas" && (
+          <HtmlBody
+            onOpenCart={() => count > 0 && setCartOpen(true)}
+            cart={cart}
+            onAdd={addToCart}
+            count={count}
+            subtotal={subtotal}
+          />
+        )}
       </div>
 
       <div className="fixed bottom-0 left-0 w-full h-[80px] z-50">
@@ -27,7 +72,16 @@ export default function TraxNavigation() {
         />
       </div>
 
-      {cartOpen && <CheckoutModal onClose={() => setCartOpen(false)} />}
+      {cartOpen && (
+        <CheckoutModal
+          items={items}
+          subtotal={subtotal}
+          deliveryFee={DELIVERY_FEE}
+          onChangeQty={updateQty}
+          onRemove={removeItem}
+          onClose={() => setCartOpen(false)}
+        />
+      )}
     </div>
   );
 }
