@@ -595,7 +595,7 @@ function FloatingCartStickyPanel({
     <button
       type="button"
       onClick={onOpenCart}
-      className="fixed bottom-[132px] left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-30 text-left active:scale-[0.98] transition-transform"
+      className="fixed bottom-[96px] left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[390px] z-30 text-left active:scale-[0.98] transition-transform"
       data-name="Floating Cart Sticky Panel"
     >
       <div
