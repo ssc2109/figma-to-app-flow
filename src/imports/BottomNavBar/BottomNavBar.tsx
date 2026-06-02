@@ -231,7 +231,7 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
   };
 
   return (
-    <div className="bg-[#161616]/95 backdrop-blur-xl relative rounded-[32px] size-full shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-white/5 flex justify-around items-center px-4" data-name="BottomNavBar">
+    <div className="bg-[#161616] relative size-full flex justify-around items-center px-4" data-name="BottomNavBar">
       <div onClick={() => handleNavigate("inicio")}>
         {currentScreen === "inicio" ? <ButtonTab1InicioActive /> : <ButtonTab1Inicio />}
       </div>
