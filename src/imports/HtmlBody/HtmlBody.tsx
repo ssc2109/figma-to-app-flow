@@ -501,18 +501,46 @@ function ProductCard6ArrozCosteno() {
   );
 }
 
-function SectionProductGrid() {
+const PRODUCT_CARDS: { id: string; Component: () => JSX.Element }[] = [
+  { id: "inca-kola", Component: ProductCard1IncaKola },
+  { id: "pan-frances", Component: ProductCard2PanFrances },
+  { id: "papas-lays", Component: ProductCard3PapasLays },
+  { id: "agua-cielo", Component: ProductCard4AguaCielo },
+  { id: "cafe-altomayo", Component: ProductCard5CafeAltomayo },
+  { id: "arroz-costeno", Component: ProductCard6ArrozCosteno },
+];
+
+function SectionProductGrid({
+  cart,
+  onAdd,
+}: {
+  cart: Record<string, number>;
+  onAdd: (id: string) => void;
+}) {
   return (
     <div className="gap-x-[16px] gap-y-[16px] grid grid-cols-2 auto-rows-[220px] relative shrink-0 w-full" data-name="Section - Product Grid">
-      <ProductCard1IncaKola />
-      <ProductCard2PanFrances />
-      <ProductCard3PapasLays />
-      <ProductCard4AguaCielo />
-      <ProductCard5CafeAltomayo />
-      <ProductCard6ArrozCosteno />
+      {PRODUCT_CARDS.map(({ id, Component }) => {
+        const qty = cart[id] ?? 0;
+        return (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onAdd(id)}
+            className="relative text-left active:scale-[0.98] transition-transform"
+          >
+            <Component />
+            {qty > 0 && (
+              <div className="absolute top-[12px] left-[12px] bg-white text-black font-['Geist:Regular',sans-serif] font-bold text-[12px] leading-[18px] rounded-full min-w-[24px] h-[24px] px-[6px] flex items-center justify-center border-2 border-black z-10">
+                {qty}
+              </div>
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
+
 
 function Main() {
   return (
