@@ -1,181 +1,179 @@
+import { useEffect, useState } from "react";
 import { ArrowRight, Minus, Plus } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-
 import imgIncaKola500Ml from "@/imports/HtmlBody/7a7a1a54128ef8e3dee020a1832b332677bb1994.png";
 import imgPanFrances from "@/imports/HtmlBody/1c39aebd1210a98a2c75e829f94bd8645a88f4eb.png";
 import imgPapasLays from "@/imports/HtmlBody/3a77978991e368fdd70c8d4fe2924a0360f31f6e.png";
 
-type CartItem = {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-};
-
-const initialItems: CartItem[] = [
-  { id: "inca-kola", name: "Inca Kola 500ml", price: 3.5, quantity: 1, image: imgIncaKola500Ml },
-  { id: "pan-frances", name: "Pan Francés", price: 0.3, quantity: 5, image: imgPanFrances },
-  { id: "papas-lays", name: "Papas Lay's", price: 4.2, quantity: 2, image: imgPapasLays },
-];
-
-const deliveryAndTax = 2.5;
-
-function formatSoles(value: number) {
-  return `S/ ${value.toFixed(2)}`;
+interface CartModalProps {
+  onClose: () => void;
 }
 
-export default function CheckoutModal({ onClose }: { onClose: () => void }) {
-  const [items, setItems] = useState(initialItems);
+type Item = { name: string; unit: string; total: string; qty: number; img: string };
 
-  const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [items],
-  );
-  const total = subtotal + deliveryAndTax;
+const ITEMS: Item[] = [
+  { name: "Inca Kola 500ml", unit: "S/ 3.50", total: "S/ 3.50", qty: 1, img: imgIncaKola500Ml },
+  { name: "Pan Francés", unit: "S/ 0.30", total: "S/ 1.50", qty: 5, img: imgPanFrances },
+  { name: "Papas Lay's", unit: "S/ 4.20", total: "S/ 8.40", qty: 2, img: imgPapasLays },
+];
+
+export default function CheckoutModal({ onClose }: CartModalProps) {
+  const [startY, setStartY] = useState<number | null>(null);
+  const [currentY, setCurrentY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
     };
   }, [onClose]);
 
-  const updateQuantity = (id: string, delta: number) => {
-    setItems((current) =>
-      current.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item,
-      ),
-    );
+  const handleStart = (clientY: number, target: HTMLElement) => {
+    if (
+      target.closest('[data-name="Swipe Handle"]') ||
+      target.closest('[data-name="Header"]') ||
+      target.closest('[data-name="Header:margin"]')
+    ) {
+      setStartY(clientY);
+      setIsDragging(true);
+    }
   };
-
-  const removeItem = (id: string) => {
-    setItems((current) => current.filter((item) => item.id !== id));
+  const handleMove = (clientY: number) => {
+    if (startY === null || !isDragging) return;
+    const deltaY = clientY - startY;
+    if (deltaY > 0) setCurrentY(deltaY);
+  };
+  const handleEnd = () => {
+    if (!isDragging) return;
+    if (currentY > 120) onClose();
+    else setCurrentY(0);
+    setStartY(null);
+    setIsDragging(false);
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex justify-center"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Mi Carrito"
-    >
-      {/* Backdrop: lets the screen behind show through, dimmed + blurred */}
+    <div className="fixed inset-0 z-[100] flex justify-center" role="dialog" aria-modal="true" aria-label="Mi Carrito">
       <button
         type="button"
         aria-label="Cerrar carrito"
         onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-[6px]"
       />
-
-      {/* Bottom sheet */}
       <div className="relative mx-auto flex h-full w-full max-w-[430px] flex-col justify-end">
-        <div className="pointer-events-auto flex max-h-[92%] flex-col overflow-hidden rounded-t-[28px] bg-black text-white shadow-[0_-20px_60px_rgba(0,0,0,0.6)]">
-          {/* Drag handle */}
-          <div className="flex shrink-0 justify-center pt-[10px] pb-[6px]">
-            <div className="h-[4px] w-[44px] rounded-full bg-white/25" />
+        <div
+          className="relative w-full h-full bg-black rounded-tl-[40px] rounded-tr-[40px] flex flex-col"
+          style={{
+            transform: `translateY(${currentY}px)`,
+            transition: isDragging ? "none" : "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+          onTouchStart={(e) => handleStart(e.touches[0].clientY, e.target as HTMLElement)}
+          onTouchMove={(e) => handleMove(e.touches[0].clientY)}
+          onTouchEnd={handleEnd}
+          onMouseDown={(e) => handleStart(e.clientY, e.target as HTMLElement)}
+          onMouseMove={isDragging ? (e) => handleMove(e.clientY) : undefined}
+          onMouseUp={handleEnd}
+          onMouseLeave={handleEnd}
+        >
+          {/* Swipe Handle */}
+          <div className="content-stretch flex items-start justify-center py-[16px]" data-name="Swipe Handle">
+            <div className="bg-[rgba(255,255,255,0.1)] h-[6px] relative rounded-[9999px] shrink-0 w-[48px]" />
           </div>
 
-          {/* Title row */}
-          <div className="flex shrink-0 items-center justify-between px-[20px] pt-[14px] pb-[18px]">
-            <h1 className="font-['Bai_Jamjuree:Bold',sans-serif] text-[28px] leading-[32px] tracking-[-0.5px]">
-              Mi Carrito
-            </h1>
-            <span className="rounded-full bg-[rgba(255,255,255,0.08)] px-[14px] py-[6px] font-['Geist:Regular',sans-serif] text-[13px] text-white/80">
-              {items.length} Items
-            </span>
-          </div>
-
-          {/* Items */}
-          <div className="min-h-0 flex-1 overflow-y-auto px-[20px] pb-[220px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <ul className="space-y-[14px]">
-              {items.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-stretch gap-[14px] rounded-[24px] bg-[rgba(255,255,255,0.04)] p-[14px]"
-                >
-                  <div className="relative size-[72px] shrink-0 overflow-hidden rounded-[18px] bg-[rgba(255,255,255,0.06)]">
-                    <img src={item.image} alt={item.name} className="size-full object-cover" />
+          {/* Header */}
+          <div className="pb-[24px]" data-name="Header:margin">
+            <div className="relative shrink-0 w-full" data-name="Header">
+              <div className="flex flex-row items-center size-full">
+                <div className="content-stretch flex items-center justify-between px-[20px] relative size-full">
+                  <div className="content-stretch flex flex-col items-start relative shrink-0">
+                    <div className="[word-break:break-word] flex flex-col font-['Geist:SemiBold',sans-serif] font-semibold justify-center leading-[0] relative shrink-0 text-[24px] text-white whitespace-nowrap">
+                      <p className="leading-[32px]">Mi Carrito</p>
+                    </div>
                   </div>
-
-                  <div className="flex min-w-0 flex-1 flex-col justify-center">
-                    <h2 className="truncate font-['Geist:Regular',sans-serif] text-[16px] font-semibold leading-[20px]">
-                      {item.name}
-                    </h2>
-                    <p className="mt-[2px] font-['Geist:Regular',sans-serif] text-[13px] text-white/45">
-                      {formatSoles(item.price)}
-                    </p>
-                    <p className="mt-[6px] font-['Bai_Jamjuree:Bold',sans-serif] text-[20px] leading-[24px]">
-                      {formatSoles(item.price * item.quantity)}
-                    </p>
+                  <div className="bg-[#201f1f] content-stretch flex flex-col items-start px-[16px] py-[6px] relative rounded-[9999px] shrink-0">
+                    <div className="[word-break:break-word] flex flex-col font-['Geist:Medium',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[#c4c7c8] text-[14px] whitespace-nowrap">
+                      <p className="leading-[20px]">{ITEMS.length} Items</p>
+                    </div>
                   </div>
-
-                  {/* Vertical quantity stepper */}
-                  <div className="flex w-[52px] shrink-0 flex-col items-center justify-between rounded-full bg-[rgba(255,255,255,0.06)] py-[8px]">
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item.id, 1)}
-                      className="flex size-[32px] items-center justify-center rounded-full text-white active:scale-95"
-                      aria-label={`Agregar ${item.name}`}
-                    >
-                      <Plus size={20} strokeWidth={2.2} />
-                    </button>
-                    <span className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-[16px] leading-none">
-                      {item.quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        item.quantity > 1 ? updateQuantity(item.id, -1) : removeItem(item.id)
-                      }
-                      className="flex size-[32px] items-center justify-center rounded-full text-white/80 active:scale-95"
-                      aria-label={`Quitar ${item.name}`}
-                    >
-                      {item.quantity > 1 ? (
-                        <Minus size={20} strokeWidth={2.2} />
-                      ) : (
-                        <span className="block size-[12px] rounded-[2px] bg-white/80" />
-                      )}
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Sticky footer */}
-          <div className="pointer-events-auto absolute inset-x-0 bottom-0 rounded-t-[24px] bg-[#0a0a0a]/95 px-[20px] pt-[18px] pb-[calc(20px+env(safe-area-inset-bottom))] backdrop-blur-[20px]">
-            <div className="space-y-[10px] pb-[16px]">
-              <div className="flex items-center justify-between font-['Geist:Regular',sans-serif] text-[14px] text-white/60">
-                <span>Subtotal</span>
-                <span className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-white">
-                  {formatSoles(subtotal)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between font-['Geist:Regular',sans-serif] text-[14px] text-white/60">
-                <span>Delivery Fee / IGV</span>
-                <span className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-white">
-                  {formatSoles(deliveryAndTax)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between pt-[6px] font-['Geist:Regular',sans-serif] text-[18px] font-semibold">
-                <span>Total</span>
-                <span className="font-['Bai_Jamjuree:Bold',sans-serif] text-[24px] leading-[28px]">
-                  {formatSoles(total)}
-                </span>
+                </div>
               </div>
             </div>
+          </div>
 
+          {/* Scrollable Product List */}
+          <div className="flex-1 overflow-y-auto px-[20px] pb-[24px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div className="content-stretch flex flex-col gap-[16px] items-start">
+              {ITEMS.map((item) => (
+                <div key={item.name} className="bg-[#1c1b1b] relative rounded-[32px] shrink-0 w-full">
+                  <div className="flex flex-row items-center size-full">
+                    <div className="content-stretch flex gap-[16px] items-center p-[16px] relative size-full">
+                      <div className="aspect-square w-[80px] bg-black content-stretch flex items-center justify-center overflow-clip relative rounded-[16px] shrink-0">
+                        <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="content-stretch flex flex-col items-start flex-1 relative shrink-0">
+                        <div className="[word-break:break-word] flex flex-col font-['Geist:Medium',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[18px] text-white">
+                          <p className="leading-[28px]">{item.name}</p>
+                        </div>
+                        <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:Regular',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#c4c7c8] text-[14px]">
+                          <p className="leading-[20px]">{item.unit}</p>
+                        </div>
+                        <div className="content-stretch flex flex-col items-start pt-[4px] relative shrink-0">
+                          <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:SemiBold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white">
+                            <p className="leading-[28px]">{item.total}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[10px] bg-[rgba(255,255,255,0.05)] content-stretch flex flex-col gap-[16px] items-center px-px py-[13px] relative rounded-[9999px] shrink-0 w-[48px] border border-[rgba(255,255,255,0.1)]">
+                        <button className="relative shrink-0 size-[24px] flex items-center justify-center text-white">
+                          <Plus size={18} strokeWidth={2.4} />
+                        </button>
+                        <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:SemiBold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[#e5e2e1] text-[16px] whitespace-nowrap">
+                          <p className="leading-[24px]">{item.qty}</p>
+                        </div>
+                        <button className="relative shrink-0 size-[24px] flex items-center justify-center text-[#C4C7C8]/50">
+                          <Minus size={18} strokeWidth={2.4} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer Summary */}
+          <div className="bg-[#0e0e0e] content-stretch drop-shadow-[0px_-20px_25px_rgba(0,0,0,0.5)] flex flex-col gap-[16px] items-start p-[24px] rounded-tl-[32px] rounded-tr-[32px]">
+            <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0 w-full">
+              <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
+                <div className="font-['Geist:Regular',sans-serif] text-[#c4c7c8] text-[16px] leading-[24px]">Subtotal</div>
+                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">S/ 13.40</div>
+              </div>
+              <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
+                <div className="font-['Geist:Regular',sans-serif] text-[#c4c7c8] text-[16px] leading-[24px]">Delivery Fee / IGV</div>
+                <div className="font-['Bai_Jamjuree:Medium',sans-serif] text-[16px] text-white leading-[24px]">S/ 2.50</div>
+              </div>
+              <div className="bg-[rgba(255,255,255,0.05)] h-px relative shrink-0 w-full" />
+              <div className="content-stretch flex items-center justify-between relative shrink-0 w-full">
+                <div className="font-['Geist:Bold',sans-serif] font-bold text-[18px] text-white leading-[28px]">Total</div>
+                <div className="font-['Bai_Jamjuree:SemiBold',sans-serif] text-[24px] text-white leading-[32px]">S/ 15.90</div>
+              </div>
+            </div>
             <button
               type="button"
-              className="flex h-[56px] w-full items-center justify-between rounded-full bg-white px-[28px] font-['Geist:Regular',sans-serif] text-[16px] font-bold text-black active:scale-[0.98]"
+              className="drop-shadow-[0px_10px_15px_rgba(255,255,255,0.15)] h-[64px] relative rounded-[9999px] shrink-0 w-full cursor-pointer active:scale-95 transition-transform"
+              style={{ backgroundImage: "linear-gradient(135deg, rgb(255, 255, 255) 0%, rgb(226, 226, 226) 100%)" }}
             >
-              <span className="flex-1 text-center">Cobrar {formatSoles(total)}</span>
-              <ArrowRight size={20} strokeWidth={2} />
+              <div className="flex flex-row items-center size-full">
+                <div className="content-stretch flex items-center justify-between px-[32px] relative size-full">
+                  <div className="font-['Geist:Bold',sans-serif] font-bold text-[#0a0b14] text-[18px] leading-[28px]">
+                    Cobrar S/ 15.90
+                  </div>
+                  <ArrowRight size={18} strokeWidth={2.4} className="text-[#0a0b14]" />
+                </div>
+              </div>
             </button>
           </div>
         </div>
