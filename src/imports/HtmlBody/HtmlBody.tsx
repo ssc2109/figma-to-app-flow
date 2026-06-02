@@ -513,28 +513,47 @@ const PRODUCT_CARDS: { id: string; Component: React.ComponentType }[] = [
 function SectionProductGrid({
   cart,
   onAdd,
+  onRemove,
 }: {
   cart: Record<string, number>;
   onAdd: (id: string) => void;
+  onRemove: (id: string) => void;
 }) {
   return (
     <div className="gap-x-[16px] gap-y-[16px] grid grid-cols-2 auto-rows-[220px] relative shrink-0 w-full" data-name="Section - Product Grid">
       {PRODUCT_CARDS.map(({ id, Component }) => {
         const qty = cart[id] ?? 0;
         return (
-          <button
-            key={id}
-            type="button"
-            onClick={() => onAdd(id)}
-            className="relative text-left active:scale-[0.98] transition-transform"
-          >
-            <Component />
+          <div key={id} className="relative">
+            <button
+              type="button"
+              onClick={() => onAdd(id)}
+              className="block w-full text-left active:scale-[0.98] transition-transform"
+              aria-label={`Agregar ${id}`}
+            >
+              <Component />
+            </button>
             {qty > 0 && (
-              <div className="absolute top-[12px] left-[12px] bg-white text-black font-['Geist:Regular',sans-serif] font-bold text-[12px] leading-[18px] rounded-full min-w-[24px] h-[24px] px-[6px] flex items-center justify-center border-2 border-black z-10">
-                {qty}
+              <div className="absolute top-[10px] left-[10px] flex items-center gap-[6px] z-10">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove(id);
+                  }}
+                  className="size-[26px] rounded-full bg-black/70 backdrop-blur-md border border-white/15 text-white flex items-center justify-center active:scale-90"
+                  aria-label={`Quitar ${id}`}
+                >
+                  <svg width="12" height="2" viewBox="0 0 12 2" fill="none">
+                    <rect width="12" height="2" rx="1" fill="white" />
+                  </svg>
+                </button>
+                <div className="min-w-[26px] h-[26px] px-[8px] rounded-full bg-white text-black font-['Geist:Regular',sans-serif] font-bold text-[12px] flex items-center justify-center">
+                  {qty}
+                </div>
               </div>
             )}
-          </button>
+          </div>
         );
       })}
     </div>
@@ -542,7 +561,7 @@ function SectionProductGrid({
 }
 
 
-function Main({ cart, onAdd }: { cart: Record<string, number>; onAdd: (id: string) => void }) {
+function Main({ cart, onAdd, onRemove }: { cart: Record<string, number>; onAdd: (id: string) => void; onRemove: (id: string) => void }) {
   return (
     <div className="relative w-full" data-name="Main">
       <SectionProductGrid cart={cart} onAdd={onAdd} />
