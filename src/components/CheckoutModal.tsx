@@ -118,7 +118,7 @@ export default function CheckoutModal({
                   </div>
                   <div className="bg-[#201f1f] content-stretch flex flex-col items-start px-[16px] py-[6px] relative rounded-[9999px] shrink-0">
                     <div className="[word-break:break-word] flex flex-col font-['Geist:Medium',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[#c4c7c8] text-[14px] whitespace-nowrap">
-                      <p className="leading-[20px]">{ITEMS.length} Items</p>
+                      <p className="leading-[20px]">{items.length} Items</p>
                     </div>
                   </div>
                 </div>
