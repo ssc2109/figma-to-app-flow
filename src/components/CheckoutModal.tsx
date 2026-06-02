@@ -1,22 +1,33 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, Minus, Plus } from "lucide-react";
-import imgIncaKola500Ml from "@/imports/HtmlBody/7a7a1a54128ef8e3dee020a1832b332677bb1994.png";
-import imgPanFrances from "@/imports/HtmlBody/1c39aebd1210a98a2c75e829f94bd8645a88f4eb.png";
-import imgPapasLays from "@/imports/HtmlBody/3a77978991e368fdd70c8d4fe2924a0360f31f6e.png";
+import { formatSoles } from "@/data/products";
+
+export type CartLine = {
+  id: string;
+  name: string;
+  price: number;
+  qty: number;
+  image: string;
+};
 
 interface CartModalProps {
+  items: CartLine[];
+  subtotal: number;
+  deliveryFee: number;
+  onChangeQty: (id: string, delta: number) => void;
+  onRemove: (id: string) => void;
   onClose: () => void;
 }
 
-type Item = { name: string; unit: string; total: string; qty: number; img: string };
-
-const ITEMS: Item[] = [
-  { name: "Inca Kola 500ml", unit: "S/ 3.50", total: "S/ 3.50", qty: 1, img: imgIncaKola500Ml },
-  { name: "Pan Francés", unit: "S/ 0.30", total: "S/ 1.50", qty: 5, img: imgPanFrances },
-  { name: "Papas Lay's", unit: "S/ 4.20", total: "S/ 8.40", qty: 2, img: imgPapasLays },
-];
-
-export default function CheckoutModal({ onClose }: CartModalProps) {
+export default function CheckoutModal({
+  items,
+  subtotal,
+  deliveryFee,
+  onChangeQty,
+  onRemove,
+  onClose,
+}: CartModalProps) {
+  const total = subtotal + deliveryFee;
   const [startY, setStartY] = useState<number | null>(null);
   const [currentY, setCurrentY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
