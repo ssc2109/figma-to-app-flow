@@ -54,6 +54,10 @@ export default function CheckoutModal({
     };
   }, [onClose]);
 
+  useEffect(() => {
+    if (items.length === 0) onClose();
+  }, [items.length, onClose]);
+
   const handleStart = (clientY: number, target: HTMLElement) => {
     if (
       target.closest('[data-name="Swipe Handle"]') ||
