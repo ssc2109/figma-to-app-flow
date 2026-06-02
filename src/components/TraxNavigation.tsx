@@ -12,12 +12,12 @@ export default function TraxNavigation() {
 
   return (
     <div className="size-full bg-black overflow-auto relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      <div className="mx-auto w-full max-w-[430px] pb-[180px]">
+      <div className="mx-auto w-full max-w-[430px] pb-[80px]">
         {currentScreen === "inicio" && <Container />}
         {currentScreen === "ventas" && <HtmlBody onOpenCart={() => setCartOpen(true)} />}
       </div>
 
-      <div className="fixed bottom-[32px] left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[398px] h-[80px] z-50">
+      <div className="fixed bottom-0 left-0 w-full h-[80px] z-50">
         <BottomNavBar
           currentScreen={currentScreen}
           onNavigate={(s) => {
