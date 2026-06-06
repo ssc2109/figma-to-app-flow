@@ -126,7 +126,7 @@ function Paragraph() {
 
 function Shadow() {
   return (
-    <div className="content-stretch drop-shadow-[0px_0px_10px_rgba(255,255,255,0.3)] flex items-start justify-center relative shrink-0" data-name="Shadow">
+    <div className="content-stretch flex items-start justify-center relative shrink-0" data-name="Shadow">
       <Paragraph />
     </div>
   );
