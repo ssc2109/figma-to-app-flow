@@ -300,7 +300,7 @@ function Button4() {
 
 function SectionQuickActions() {
   return (
-    <div className="gap-x-[16px] gap-y-[16px] grid grid-cols-[repeat(4,minmax(0,1fr))] grid-rows-[_128px] relative shrink-0 w-full" data-name="Section - Quick Actions">
+    <div className="-mt-[24px] gap-x-[16px] gap-y-[16px] grid grid-cols-[repeat(4,minmax(0,1fr))] grid-rows-[_128px] relative shrink-0 w-full" data-name="Section - Quick Actions">
       <Button1 />
       <Button2 />
       <Button3 />
