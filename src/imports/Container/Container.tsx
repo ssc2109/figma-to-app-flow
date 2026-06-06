@@ -117,16 +117,16 @@ function Paragraph() {
       <div className="flex flex-col font-['Bai_Jamjuree:Medium',sans-serif] justify-center relative shrink-0 text-[32px] text-[rgba(255,255,255,0.6)]">
         <p className="leading-[32px]">S/</p>
       </div>
-      <div className="flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center relative shrink-0 text-[64px] text-white">
-        <p className="leading-[64px]">1.25K</p>
-      </div>
+        <div className="flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center relative shrink-0 text-[72px] text-white">
+          <p className="leading-[72px]">1.25K</p>
+        </div>
     </div>
   );
 }
 
 function Shadow() {
   return (
-    <div className="content-stretch drop-shadow-[0px_0px_10px_rgba(255,255,255,0.3)] flex items-start justify-center relative shrink-0" data-name="Shadow">
+    <div className="content-stretch flex items-start justify-center relative shrink-0" data-name="Shadow">
       <Paragraph />
     </div>
   );
