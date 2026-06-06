@@ -1,5 +1,7 @@
 import svgPaths from "./svg-hc6bxk0av9";
 import imgProfile from "./752b2ffc6c9d7d95b1254f5a3ea754226cbf7bb2.png";
+import Aurora from "@/components/Aurora";
+
 
 function Profile() {
   return (
@@ -845,8 +847,15 @@ function Main() {
 export default function Container() {
   return (
     <div className="content-stretch flex flex-col gap-[16px] items-start relative size-full" data-name="Container">
-      <HeaderTopAppBar />
-      <Main />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[520px] z-0 overflow-hidden">
+        <Aurora colorStops={["#3a7fff", "#0052e0", "#6899ff"]} amplitude={1.5} blend={0.3} />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black" />
+      </div>
+      <div className="relative z-10 w-full flex flex-col gap-[16px] items-start">
+        <HeaderTopAppBar />
+        <Main />
+      </div>
     </div>
   );
 }
+
