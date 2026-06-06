@@ -117,9 +117,9 @@ function Paragraph() {
       <div className="flex flex-col font-['Bai_Jamjuree:Medium',sans-serif] justify-center relative shrink-0 text-[32px] text-[rgba(255,255,255,0.6)]">
         <p className="leading-[32px]">S/</p>
       </div>
-      <div className="flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center relative shrink-0 text-[64px] text-white">
-        <p className="leading-[64px]">1.25K</p>
-      </div>
+        <div className="flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center relative shrink-0 text-[72px] text-white">
+          <p className="leading-[72px]">1.25K</p>
+        </div>
     </div>
   );
 }
