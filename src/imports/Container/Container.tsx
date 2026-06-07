@@ -824,13 +824,15 @@ function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers() {
   return (
     <div className="glass-card relative rounded-[28px] shrink-0 w-full px-[16px] py-[16px]" data-name="Section - Actividad Reciente">
       <div className="content-stretch flex flex-col gap-[16px] items-start relative w-full">
-        <div className="w-full pb-[12px] border-b border-[rgba(255,255,255,0.08)]">
+        <div className="w-full pb-[12px] border-b border-[rgba(255,255,255,0.08)] mx-[-16px] px-[16px]">
           <Heading2 />
         </div>
         <Container23 />
-        <button type="button" className="self-center font-['Geist:Regular',sans-serif] text-[15px] text-[rgba(255,255,255,0.7)] hover:text-white transition-colors">
-          Ver más
-        </button>
+        <div className="w-full pt-[12px] border-t border-[rgba(255,255,255,0.08)] mx-[-16px] px-[16px] flex justify-center">
+          <button type="button" className="font-['Geist:Regular',sans-serif] text-[15px] text-[rgba(255,255,255,0.7)] hover:text-white transition-colors">
+            Ver más
+          </button>
+        </div>
       </div>
     </div>
   );
