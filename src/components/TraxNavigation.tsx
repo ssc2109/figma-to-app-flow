@@ -20,6 +20,12 @@ export default function TraxNavigation() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("inicio");
   const [cartOpen, setCartOpen] = useState(false);
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [booting, setBooting] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setBooting(false), 700);
+    return () => clearTimeout(t);
+  }, []);
 
   const addToCart = (id: string) =>
     setCart((c) => ({ ...c, [id]: (c[id] ?? 0) + 1 }));
