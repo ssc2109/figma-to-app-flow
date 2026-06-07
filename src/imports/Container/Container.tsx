@@ -3,6 +3,9 @@ import imgProfile from "./752b2ffc6c9d7d95b1254f5a3ea754226cbf7bb2.png";
 import Aurora from "@/components/Aurora";
 import { StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
 import { useInventory } from "@/data/inventory";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+import { Stagger } from "@/components/motion/Stagger";
+
 
 
 function Profile() {
@@ -120,11 +123,18 @@ function Paragraph() {
         <p className="leading-[32px]">S/</p>
       </div>
         <div className="flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center relative shrink-0 text-[72px] text-white">
-          <p className="leading-[72px]">1.25K</p>
+          <p className="leading-[72px]">
+            <AnimatedNumber
+              value={1.25}
+              duration={1.4}
+              format={(n) => `${n.toFixed(2)}K`}
+            />
+          </p>
         </div>
     </div>
   );
 }
+
 
 function Shadow() {
   return (
@@ -851,13 +861,15 @@ function Main() {
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
-        <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
-        <SectionQuickActions />
-        <StockAlertCard alerts={alerts} />
-
-        <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
+        <Stagger className="w-full flex flex-col gap-[24px]" delay={0.1} step={0.09}>
+          <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
+          <SectionQuickActions />
+          <StockAlertCard alerts={alerts} />
+          <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
+        </Stagger>
       </div>
     </div>
+
   );
 }
 

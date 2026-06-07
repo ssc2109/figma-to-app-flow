@@ -97,7 +97,7 @@ export function StockAlertCard({ alerts }: { alerts: StockAlert[] }) {
   return (
     <button
       type="button"
-      className="group relative w-full rounded-[24px] overflow-hidden text-left"
+      className="trax-lift group relative w-full rounded-[24px] overflow-hidden text-left"
       style={{
         background: "rgba(255,255,255,0.04)",
         border: "1px solid rgba(255,255,255,0.05)",
@@ -107,7 +107,7 @@ export function StockAlertCard({ alerts }: { alerts: StockAlert[] }) {
     >
       <div className="relative flex items-center gap-[14px] p-[16px]">
         <div
-          className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full"
+          className="trax-halo flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-full"
           style={{
             background: "rgba(248,113,113,0.10)",
             border: "1px solid rgba(248,113,113,0.20)",
@@ -131,9 +131,11 @@ export function StockAlertCard({ alerts }: { alerts: StockAlert[] }) {
             )}
           </p>
         </div>
-        <ChevronRight className="h-[18px] w-[18px] shrink-0 text-white/35 transition-transform group-hover:translate-x-0.5" />
+        <ChevronRight className="h-[18px] w-[18px] shrink-0 text-white/35 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-white/60" />
       </div>
     </button>
   );
 }
+
+
 
