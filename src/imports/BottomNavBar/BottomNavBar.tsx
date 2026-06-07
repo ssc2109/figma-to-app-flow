@@ -1,4 +1,4 @@
-import { Home, Compass, Plus, Heart, MessageCircle } from "lucide-react";
+import { LayoutDashboard, Receipt, Plus, Store, TrendingUp } from "lucide-react";
 
 type Screen = "inicio" | "ventas" | "negocio" | "crecer";
 
