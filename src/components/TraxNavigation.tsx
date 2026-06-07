@@ -78,7 +78,7 @@ export default function TraxNavigation() {
           gamma={1}
           saturation={1}
           centerX={0}
-          centerY={0}
+          centerY={0.08}
           zoom={0.9}
         />
       </div>
