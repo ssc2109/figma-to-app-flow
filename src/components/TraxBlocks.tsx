@@ -53,11 +53,10 @@ export function AiCard({
       type="button"
       className="group relative w-full rounded-[24px] overflow-hidden text-left"
       style={{
-        background: "rgba(255,255,255,0.04)",
+        background: "#0a0a0a",
         border: "1px solid rgba(255,255,255,0.05)",
-        backdropFilter: "blur(24px) saturate(130%)",
-        WebkitBackdropFilter: "blur(24px) saturate(130%)",
       }}
+
     >
       <div className="relative flex items-center gap-[14px] p-[18px]">
         <div
