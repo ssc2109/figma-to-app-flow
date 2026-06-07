@@ -3,6 +3,9 @@ import imgProfile from "./752b2ffc6c9d7d95b1254f5a3ea754226cbf7bb2.png";
 import Aurora from "@/components/Aurora";
 import { StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
 import { useInventory } from "@/data/inventory";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+import { Stagger } from "@/components/motion/Stagger";
+
 
 
 function Profile() {
