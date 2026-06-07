@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Send, ArrowUp } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 import { useInventory } from "@/data/inventory";
 import { useFinance, EXPENSE_CATEGORIES } from "@/data/finance";
 
