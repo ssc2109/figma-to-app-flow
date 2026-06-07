@@ -134,6 +134,7 @@ export default function TraxNavigation() {
         />
       )}
     </div>
+    </InventoryProvider>
   );
 }
 
