@@ -851,9 +851,14 @@ function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers() {
 function Main() {
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
-      <div className="content-stretch flex flex-col gap-[40px] items-start px-[20px] relative size-full">
+      <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
         <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
         <SectionQuickActions />
+        <AiCard
+          name="Alberto"
+          message="hoy es un buen día para reponer stock de abarrotes. Tus ventas subieron un 12%."
+        />
+        <StockAlertCard alerts={STOCK_ALERTS} />
         <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
       </div>
     </div>
