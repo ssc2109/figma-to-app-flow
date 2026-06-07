@@ -55,7 +55,7 @@ function Margin1() {
 
 function SearchBar() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] h-[56px] relative rounded-[9999px] shrink-0 w-full" data-name="Search Bar">
+    <div className="glass-card h-[56px] relative rounded-[9999px] shrink-0 w-full" data-name="Search Bar">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center px-[16px] relative size-full">
           <Margin />
@@ -79,7 +79,7 @@ function Button() {
 
 function Button1() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] content-stretch flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[9999px] shrink-0" data-name="Button">
+    <div className="glass-card content-stretch flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[9999px] shrink-0" data-name="Button">
       <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
         <p className="leading-[24px]">Bebidas</p>
       </div>
@@ -89,7 +89,7 @@ function Button1() {
 
 function Button2() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] content-stretch flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[9999px] shrink-0" data-name="Button">
+    <div className="glass-card content-stretch flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[9999px] shrink-0" data-name="Button">
       <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
         <p className="leading-[24px]">Snacks</p>
       </div>
@@ -99,7 +99,7 @@ function Button2() {
 
 function Button3() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] content-stretch flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[9999px] shrink-0" data-name="Button">
+    <div className="glass-card content-stretch flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[9999px] shrink-0" data-name="Button">
       <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
         <p className="leading-[24px]">Pan</p>
       </div>
@@ -109,7 +109,7 @@ function Button3() {
 
 function Button4() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] content-stretch flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[9999px] shrink-0" data-name="Button">
+    <div className="glass-card content-stretch flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[9999px] shrink-0" data-name="Button">
       <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-normal justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.6)] text-center whitespace-nowrap">
         <p className="leading-[24px]">Abarrotes</p>
       </div>
@@ -182,7 +182,7 @@ function Container1() {
 
 function ProductCard1IncaKola() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-1 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-1 self-start shrink-0" data-name="Product Card 1: Inca Kola">
+    <div className="glass-card col-1 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-1 self-start shrink-0" data-name="Product Card 1: Inca Kola">
       <IncaKola500Ml />
       <div className="absolute bg-gradient-to-t from-black inset-[0_0_-0.5px_0] to-[rgba(0,0,0,0)] via-1/2 via-[rgba(0,0,0,0.4)]" data-name="Gradient" />
       <OverlayOverlayBlur />
@@ -244,7 +244,7 @@ function Container3() {
 
 function ProductCard2PanFrances() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-2 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-1 self-start shrink-0" data-name="Product Card 2: Pan Francés">
+    <div className="glass-card col-2 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-1 self-start shrink-0" data-name="Product Card 2: Pan Francés">
       <PanFrances />
       <div className="absolute bg-gradient-to-t from-black inset-[0_0_-0.5px_0] to-[rgba(0,0,0,0)] via-1/2 via-[rgba(0,0,0,0.4)]" data-name="Gradient" />
       <OverlayOverlayBlur1 />
@@ -306,7 +306,7 @@ function Container5() {
 
 function ProductCard3PapasLays() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-1 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-2 self-start shrink-0" data-name="Product Card 3: Papas Lay's">
+    <div className="glass-card col-1 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-2 self-start shrink-0" data-name="Product Card 3: Papas Lay's">
       <PapasLays />
       <div className="absolute bg-gradient-to-t from-black inset-[0_0_-0.5px_0] to-[rgba(0,0,0,0)] via-1/2 via-[rgba(0,0,0,0.4)]" data-name="Gradient" />
       <OverlayOverlayBlur2 />
@@ -368,7 +368,7 @@ function Container7() {
 
 function ProductCard4AguaCielo() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-2 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-2 self-start shrink-0" data-name="Product Card 4: Agua Cielo">
+    <div className="glass-card col-2 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-2 self-start shrink-0" data-name="Product Card 4: Agua Cielo">
       <AguaCielo625Ml />
       <div className="absolute bg-gradient-to-t from-black inset-[0_0_-0.5px_0] to-[rgba(0,0,0,0)] via-1/2 via-[rgba(0,0,0,0.4)]" data-name="Gradient" />
       <OverlayOverlayBlur3 />
@@ -430,7 +430,7 @@ function Container9() {
 
 function ProductCard5CafeAltomayo() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-1 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-3 self-start shrink-0" data-name="Product Card 5: Café Altomayo">
+    <div className="glass-card col-1 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-3 self-start shrink-0" data-name="Product Card 5: Café Altomayo">
       <CafeAltomayo />
       <div className="absolute bg-gradient-to-t from-black inset-[0_0_-0.5px_0] to-[rgba(0,0,0,0)] via-1/2 via-[rgba(0,0,0,0.4)]" data-name="Gradient" />
       <OverlayOverlayBlur4 />
@@ -492,7 +492,7 @@ function Container11() {
 
 function ProductCard6ArrozCosteno() {
   return (
-    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-2 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-3 self-start shrink-0" data-name="Product Card 6: Arroz Costeño">
+    <div className="glass-card col-2 content-stretch flex flex-col items-start justify-end justify-self-stretch min-h-[220px] overflow-clip pt-[151.5px] relative rounded-[28px] row-3 self-start shrink-0" data-name="Product Card 6: Arroz Costeño">
       <ArrozCosteno1Kg />
       <div className="absolute bg-gradient-to-t from-black inset-[0_0_-0.5px_0] to-[rgba(0,0,0,0)] via-1/2 via-[rgba(0,0,0,0.4)]" data-name="Gradient" />
       <OverlayOverlayBlur5 />
@@ -918,7 +918,7 @@ function ButtonTab3TraxFab() {
 
 function BottomNavigationBarIdenticalToInicio() {
   return (
-    <div className="absolute bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] bottom-[88px] h-[80px] left-[19.5px] rounded-[9999px] w-[351px]" data-name="Bottom Navigation Bar (Identical to Inicio)">
+    <div className="absolute glass-card bottom-[88px] h-[80px] left-[19.5px] rounded-[9999px] w-[351px]" data-name="Bottom Navigation Bar (Identical to Inicio)">
       <ButtonTab1Inicio />
       <ButtonTab2VentasActive />
       <ButtonTab4Negocio />
