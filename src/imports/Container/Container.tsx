@@ -1,6 +1,11 @@
 import svgPaths from "./svg-hc6bxk0av9";
 import imgProfile from "./752b2ffc6c9d7d95b1254f5a3ea754226cbf7bb2.png";
 import Aurora from "@/components/Aurora";
+import { GoalPill, AiCard, StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
+
+const STOCK_ALERTS: StockAlert[] = [
+  { name: "Papitas Lay's", units: 3 },
+];
 
 
 function Profile() {
