@@ -2,10 +2,7 @@ import svgPaths from "./svg-hc6bxk0av9";
 import imgProfile from "./752b2ffc6c9d7d95b1254f5a3ea754226cbf7bb2.png";
 import Aurora from "@/components/Aurora";
 import { GoalPill, AiCard, StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
-
-const STOCK_ALERTS: StockAlert[] = [
-  { name: "Papitas Lay's", units: 3 },
-];
+import { useInventory } from "@/data/inventory";
 
 
 function Profile() {
@@ -849,6 +846,8 @@ function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers() {
 }
 
 function Main() {
+  const { lowStock } = useInventory();
+  const alerts: StockAlert[] = lowStock.map((i) => ({ name: i.name, units: i.stock }));
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
@@ -858,7 +857,7 @@ function Main() {
           name="Alberto"
           message="hoy es un buen día para reponer stock de abarrotes. Tus ventas subieron un 12%."
         />
-        <StockAlertCard alerts={STOCK_ALERTS} />
+        <StockAlertCard alerts={alerts} />
         <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
       </div>
     </div>
