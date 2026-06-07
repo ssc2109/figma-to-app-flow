@@ -206,7 +206,7 @@
     radial-gradient(70% 45% at 50% 95%, rgba(140, 130, 150, 0.14) 0%, transparent 60%),
     radial-gradient(40% 30% at 80% 70%, rgba(100, 110, 130, 0.12) 0%, transparent 65%);
 }
-.glass-bg > * { position: relative; z-index: 1; }
+.glass-bg > :not(.fixed) { position: relative; z-index: 1; }
 
 
 
