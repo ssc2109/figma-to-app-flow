@@ -812,9 +812,11 @@ function Item3() {
 
 function Container23() {
   return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full divide-y divide-[rgba(255,255,255,0.06)]" data-name="Container">
+    <div className="flex flex-col items-stretch relative shrink-0 w-full" data-name="Container">
       <Item />
+      <div className="h-px w-[85%] mx-auto bg-[rgba(255,255,255,0.06)]" />
       <Item1 />
+      <div className="h-px w-[85%] mx-auto bg-[rgba(255,255,255,0.06)]" />
       <Item2 />
     </div>
   );
@@ -823,12 +825,12 @@ function Container23() {
 function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers() {
   return (
     <div className="glass-card relative rounded-[28px] shrink-0 w-full px-[16px] py-[16px]" data-name="Section - Actividad Reciente">
-      <div className="content-stretch flex flex-col gap-[16px] items-start relative w-full">
-        <div className="w-full pb-[12px] border-b border-[rgba(255,255,255,0.08)] mx-[-16px] px-[16px]">
-          <Heading2 />
-        </div>
+      <div className="flex flex-col gap-[16px] items-stretch relative w-full">
+        <Heading2 />
+        <div className="h-px w-[95%] mx-auto bg-[rgba(255,255,255,0.10)]" />
         <Container23 />
-        <div className="w-full pt-[12px] border-t border-[rgba(255,255,255,0.08)] mx-[-16px] px-[16px] flex justify-center">
+        <div className="h-px w-[95%] mx-auto bg-[rgba(255,255,255,0.10)]" />
+        <div className="w-full flex justify-center">
           <button type="button" className="font-['Geist:Regular',sans-serif] text-[15px] text-[rgba(255,255,255,0.7)] hover:text-white transition-colors">
             Ver más
           </button>
