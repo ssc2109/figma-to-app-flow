@@ -853,11 +853,8 @@ function Main() {
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
         <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
         <SectionQuickActions />
-        <AiCard
-          name="Alberto"
-          message="hoy es un buen día para reponer stock de abarrotes. Tus ventas subieron un 12%."
-        />
         <StockAlertCard alerts={alerts} />
+
         <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
       </div>
     </div>
