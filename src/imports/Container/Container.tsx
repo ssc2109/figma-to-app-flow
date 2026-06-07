@@ -856,7 +856,7 @@ function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers() {
   );
 }
 
-function Main() {
+function Main({ onSeeAllActions }: { onSeeAllActions: () => void }) {
   const { lowStock } = useInventory();
   const alerts: StockAlert[] = lowStock.map((i) => ({ name: i.name, units: i.stock }));
   return (
@@ -864,7 +864,7 @@ function Main() {
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
         <Stagger className="w-full flex flex-col gap-[24px]" delay={0.1} step={0.09}>
           <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
-          <SectionQuickActions />
+          <QuickActions onSeeAll={onSeeAllActions} />
           <StockAlertCard alerts={alerts} />
           <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
         </Stagger>
@@ -874,7 +874,7 @@ function Main() {
   );
 }
 
-export default function Container() {
+export default function Container({ onSeeAllActions }: { onSeeAllActions?: () => void } = {}) {
   return (
     <div className="content-stretch flex flex-col gap-[16px] items-start relative size-full" data-name="Container">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[640px] z-0 overflow-hidden">
@@ -883,7 +883,7 @@ export default function Container() {
       </div>
       <div className="relative z-10 w-full flex flex-col gap-[16px] items-start">
         <HeaderTopAppBar />
-        <Main />
+        <Main onSeeAllActions={onSeeAllActions ?? (() => {})} />
       </div>
     </div>
   );
