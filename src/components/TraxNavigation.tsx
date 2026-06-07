@@ -134,7 +134,6 @@ function NavShell() {
             setQuickActionsOpen(false);
             setCurrentScreen(s);
           }}
-          onSell={() => setSalesOpen(true)}
         />
       </div>
 
