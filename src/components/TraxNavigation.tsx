@@ -3,6 +3,7 @@ import Container from "@/imports/Container/Container";
 import HtmlBody from "@/imports/HtmlBody/HtmlBody";
 import BottomNavBar from "@/imports/BottomNavBar/BottomNavBar";
 import CheckoutModal from "@/components/CheckoutModal";
+import Grainient from "@/components/Grainient.jsx";
 import { PRODUCTS_BY_ID } from "@/data/products";
 
 type Screen = "inicio" | "ventas" | "negocio" | "crecer";
@@ -48,8 +49,34 @@ export default function TraxNavigation() {
   }, [cart]);
 
   return (
-    <div className="min-h-screen bg-black glass-bg relative">
-      <div className="mx-auto w-full max-w-[430px] pb-[140px]">
+    <div className="min-h-screen bg-black relative">
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Grainient
+          color1="#000000"
+          color2="#3c58f3"
+          color3="#97accf"
+          timeSpeed={0.25}
+          colorBalance={0.01}
+          warpStrength={2.8}
+          warpFrequency={5.4}
+          warpSpeed={4}
+          warpAmplitude={50}
+          blendAngle={9}
+          blendSoftness={0.05}
+          rotationAmount={500}
+          noiseScale={2}
+          grainAmount={0.1}
+          grainScale={2}
+          grainAnimated={false}
+          contrast={1.5}
+          gamma={1}
+          saturation={1}
+          centerX={0}
+          centerY={0}
+          zoom={0.9}
+        />
+      </div>
+      <div className="relative z-10 mx-auto w-full max-w-[430px] pb-[140px]">
         {currentScreen === "inicio" && <Container />}
         {currentScreen === "ventas" && (
           <HtmlBody
