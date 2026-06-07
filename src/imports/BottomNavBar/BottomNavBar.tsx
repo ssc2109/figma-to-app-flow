@@ -1,4 +1,4 @@
-import { Home, Compass, Plus, Heart, MessageCircle } from "lucide-react";
+import { LayoutDashboard, Receipt, Plus, Store, TrendingUp } from "lucide-react";
 
 type Screen = "inicio" | "ventas" | "negocio" | "crecer";
 
@@ -43,11 +43,11 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
         WebkitBackdropFilter: "blur(24px) saturate(180%)",
       }}
     >
-      <Tab Icon={Home} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
-      <Tab Icon={Compass} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
+      <Tab Icon={LayoutDashboard} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
+      <Tab Icon={Receipt} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
       <Tab Icon={Plus} />
-      <Tab Icon={Heart} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
-      <Tab Icon={MessageCircle} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
+      <Tab Icon={Store} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
+      <Tab Icon={TrendingUp} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
   );
 }
