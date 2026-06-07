@@ -43,11 +43,11 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
         WebkitBackdropFilter: "blur(24px) saturate(180%)",
       }}
     >
-      <Tab Icon={Home} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
-      <Tab Icon={Compass} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
+      <Tab Icon={LayoutDashboard} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
+      <Tab Icon={Receipt} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
       <Tab Icon={Plus} />
-      <Tab Icon={Heart} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
-      <Tab Icon={MessageCircle} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
+      <Tab Icon={Store} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
+      <Tab Icon={TrendingUp} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
   );
 }
