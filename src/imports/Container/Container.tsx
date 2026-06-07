@@ -861,13 +861,15 @@ function Main() {
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
-        <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
-        <SectionQuickActions />
-        <StockAlertCard alerts={alerts} />
-
-        <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
+        <Stagger className="w-full flex flex-col gap-[24px]" delay={0.1} step={0.09}>
+          <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
+          <SectionQuickActions />
+          <StockAlertCard alerts={alerts} />
+          <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
+        </Stagger>
       </div>
     </div>
+
   );
 }
 
