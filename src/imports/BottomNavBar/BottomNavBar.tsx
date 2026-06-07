@@ -38,7 +38,7 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
   const go = (s: Screen) => onNavigate?.(s);
 
   return (
-    <div className="size-full flex items-end justify-center pb-[18px] pointer-events-none">
+    <div className="size-full flex items-end justify-center pb-[28px] pointer-events-none">
       <div
         className="pointer-events-auto flex items-center gap-[6px] px-[10px] py-[8px] rounded-full border border-white/10"
         style={{
