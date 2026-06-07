@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Container from "@/imports/Container/Container";
 import HtmlBody from "@/imports/HtmlBody/HtmlBody";
 import BottomNavBar from "@/imports/BottomNavBar/BottomNavBar";
@@ -7,6 +7,10 @@ import Grainient from "@/components/Grainient.jsx";
 import BusinessScreen from "@/components/BusinessScreen";
 import { InventoryProvider } from "@/data/inventory";
 import { PRODUCTS_BY_ID } from "@/data/products";
+import { ScreenTransition } from "@/components/motion/ScreenTransition";
+import { AppSkeleton } from "@/components/motion/AppSkeleton";
+import { AnimatePresence, motion } from "motion/react";
+
 
 type Screen = "inicio" | "ventas" | "negocio" | "crecer";
 
