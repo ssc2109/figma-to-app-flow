@@ -1,224 +1,150 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Container from "@/imports/Container/Container";
-import HtmlBody from "@/imports/HtmlBody/HtmlBody";
-import BottomNavBar from "@/imports/BottomNavBar/BottomNavBar";
-import CheckoutModal from "@/components/CheckoutModal";
+import BottomNavBar, { type Screen } from "@/imports/BottomNavBar/BottomNavBar";
 import Grainient from "@/components/Grainient.jsx";
 import BusinessScreen from "@/components/BusinessScreen";
-import FinanceScreen from "@/components/FinanceScreen";
 import GrowScreen from "@/components/GrowScreen";
 import MeScreen from "@/components/MeScreen";
-import AIChat from "@/components/AIChat";
+import SociaScreen from "@/components/SociaScreen";
+import SalesOverlay from "@/components/SalesOverlay";
+import QuickActionsScreen from "@/components/QuickActionsScreen";
 import { InventoryProvider } from "@/data/inventory";
 import { FinanceProvider } from "@/data/finance";
 import { MeProvider } from "@/data/me";
-import { PRODUCTS_BY_ID } from "@/data/products";
+import { QuickActionsProvider, useQuickActions, type ActionId } from "@/data/quickActions";
 import { ScreenTransition } from "@/components/motion/ScreenTransition";
 import { AppSkeleton } from "@/components/motion/AppSkeleton";
 import { AnimatePresence, motion } from "motion/react";
-import { Sparkles, User } from "lucide-react";
 
-type Screen = "inicio" | "ventas" | "finanzas" | "negocio" | "crecer";
-
-const DELIVERY_FEE = 2.5;
-
-export default function TraxNavigation() {
+function NavShell() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("inicio");
-  const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState<Record<string, number>>({});
   const [booting, setBooting] = useState(true);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [meOpen, setMeOpen] = useState(false);
+  const [salesOpen, setSalesOpen] = useState(false);
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const qa = useQuickActions();
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 700);
     return () => clearTimeout(t);
   }, []);
 
-  const addToCart = (id: string) => setCart((c) => ({ ...c, [id]: (c[id] ?? 0) + 1 }));
-  const updateQty = (id: string, delta: number) =>
-    setCart((c) => {
-      const next = (c[id] ?? 0) + delta;
-      const copy = { ...c };
-      if (next <= 0) delete copy[id];
-      else copy[id] = next;
-      return copy;
+  // wire quick action handlers
+  useEffect(() => {
+    qa.setHandler((id: ActionId) => {
+      switch (id) {
+        case "venta":
+        case "cobrar":
+        case "fiar":
+          setSalesOpen(true);
+          break;
+        case "escanear":
+          // placeholder — could open scanner; for now open sales
+          setSalesOpen(true);
+          break;
+        case "registrar_gasto":
+        case "cobrar_fiado":
+          setCurrentScreen("negocio");
+          break;
+        case "reponer_stock":
+        case "nuevo_producto":
+          setCurrentScreen("negocio");
+          break;
+        case "promocion":
+          setCurrentScreen("crecer");
+          break;
+        case "pedir_proveedor":
+          setCurrentScreen("crecer");
+          break;
+      }
     });
-  const removeItem = (id: string) =>
-    setCart((c) => {
-      const copy = { ...c };
-      delete copy[id];
-      return copy;
-    });
+  }, [qa]);
 
-  const { count, subtotal, items } = useMemo(() => {
-    const entries = Object.entries(cart);
-    const items = entries
-      .map(([id, qty]) => {
-        const p = PRODUCTS_BY_ID[id];
-        if (!p) return null;
-        return { ...p, qty };
-      })
-      .filter((x): x is NonNullable<typeof x> => x !== null);
-    const count = items.reduce((s, i) => s + i.qty, 0);
-    const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
-    return { count, subtotal, items };
-  }, [cart]);
+  return (
+    <div className="min-h-screen bg-black relative">
+      {currentScreen === "inicio" && (
+        <div
+          className="fixed top-0 left-0 right-0 h-[55vh] z-0 pointer-events-none overflow-hidden"
+          style={{
+            maskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)",
+          }}
+        >
+          <Grainient
+            color1="#000000"
+            color2="#3c58f3"
+            color3="#97accf"
+            timeSpeed={0.25}
+            colorBalance={0.01}
+            warpStrength={2.8}
+            warpFrequency={5.4}
+            warpSpeed={4}
+            warpAmplitude={50}
+            blendAngle={9}
+            blendSoftness={0.05}
+            rotationAmount={500}
+            noiseScale={2}
+            grainAmount={0.1}
+            grainScale={2}
+            grainAnimated={false}
+            contrast={1.5}
+            gamma={1}
+            saturation={1}
+            centerX={0}
+            centerY={0.08}
+            zoom={0.9}
+          />
+        </div>
+      )}
+      <div className="relative z-10 mx-auto w-full max-w-[430px] pb-[140px]">
+        <AnimatePresence mode="wait">
+          {booting ? (
+            <motion.div
+              key="boot"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0, filter: "blur(6px)" }}
+              transition={{ duration: 0.3 }}
+            >
+              <AppSkeleton />
+            </motion.div>
+          ) : (
+            <ScreenTransition key={currentScreen} screenKey={currentScreen}>
+              {currentScreen === "inicio" && (
+                <Container onSeeAllActions={() => setQuickActionsOpen(true)} />
+              )}
+              {currentScreen === "negocio" && <BusinessScreen />}
+              {currentScreen === "socia" && <SociaScreen />}
+              {currentScreen === "yo" && <MeScreen />}
+              {currentScreen === "crecer" && <GrowScreen />}
+            </ScreenTransition>
+          )}
+        </AnimatePresence>
+      </div>
 
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
+        <BottomNavBar
+          currentScreen={currentScreen}
+          onNavigate={(s) => {
+            setSalesOpen(false);
+            setQuickActionsOpen(false);
+            setCurrentScreen(s);
+          }}
+        />
+      </div>
+
+      <SalesOverlay open={salesOpen} onClose={() => setSalesOpen(false)} />
+      <QuickActionsScreen open={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
+    </div>
+  );
+}
+
+export default function TraxNavigation() {
   return (
     <InventoryProvider>
       <FinanceProvider>
         <MeProvider>
-          <div className="min-h-screen bg-black relative">
-            {currentScreen === "inicio" && (
-              <div
-                className="fixed top-0 left-0 right-0 h-[55vh] z-0 pointer-events-none overflow-hidden"
-                style={{
-                  maskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)",
-                  WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)",
-                }}
-              >
-                <Grainient
-                  color1="#000000"
-                  color2="#3c58f3"
-                  color3="#97accf"
-                  timeSpeed={0.25}
-                  colorBalance={0.01}
-                  warpStrength={2.8}
-                  warpFrequency={5.4}
-                  warpSpeed={4}
-                  warpAmplitude={50}
-                  blendAngle={9}
-                  blendSoftness={0.05}
-                  rotationAmount={500}
-                  noiseScale={2}
-                  grainAmount={0.1}
-                  grainScale={2}
-                  grainAnimated={false}
-                  contrast={1.5}
-                  gamma={1}
-                  saturation={1}
-                  centerX={0}
-                  centerY={0.08}
-                  zoom={0.9}
-                />
-              </div>
-            )}
-            <div className="relative z-10 mx-auto w-full max-w-[430px] pb-[140px]">
-              <AnimatePresence mode="wait">
-                {booting ? (
-                  <motion.div
-                    key="boot"
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0, filter: "blur(6px)" }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <AppSkeleton />
-                  </motion.div>
-                ) : (
-                  <ScreenTransition key={currentScreen} screenKey={currentScreen}>
-                    {currentScreen === "inicio" && <Container />}
-                    {currentScreen === "ventas" && (
-                      <HtmlBody
-                        onOpenCart={() => count > 0 && setCartOpen(true)}
-                        cart={cart}
-                        onAdd={addToCart}
-                        onRemove={removeItem}
-                        count={count}
-                        subtotal={subtotal}
-                      />
-                    )}
-                    {currentScreen === "finanzas" && <FinanceScreen />}
-                    {currentScreen === "negocio" && <BusinessScreen />}
-                    {currentScreen === "crecer" && <GrowScreen />}
-                  </ScreenTransition>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Floating profile button — opens "Yo" */}
-            {!booting && (
-              <motion.button
-                type="button"
-                onClick={() => setMeOpen(true)}
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, type: "spring", stiffness: 320, damping: 22 }}
-                className="fixed top-[18px] right-[16px] z-40 h-[40px] w-[40px] rounded-full flex items-center justify-center active:scale-95"
-                style={{
-                  background: "rgba(20,20,22,0.65)",
-                  backdropFilter: "blur(20px)",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                }}
-                aria-label="Yo"
-              >
-                <User className="h-[16px] w-[16px] text-white" strokeWidth={1.8} />
-              </motion.button>
-            )}
-
-            {/* Floating Trax AI button */}
-            {!booting && !aiOpen && !meOpen && (
-              <motion.button
-                type="button"
-                onClick={() => setAiOpen(true)}
-                initial={{ opacity: 0, scale: 0.6, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 0.5, type: "spring", stiffness: 320, damping: 22 }}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.92 }}
-                className="fixed bottom-[112px] left-1/2 -translate-x-1/2 z-40 h-[52px] pl-[16px] pr-[20px] rounded-full flex items-center gap-[8px] trax-shine"
-                style={{
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.96), rgba(220,220,230,0.88))",
-                  boxShadow: "0 12px 40px rgba(255,255,255,0.18), 0 4px 12px rgba(0,0,0,0.45)",
-                  border: "1px solid rgba(255,255,255,0.40)",
-                }}
-              >
-                <Sparkles className="h-[16px] w-[16px] text-black" strokeWidth={2} />
-                <span className="font-['Geist'] text-[13.5px] font-semibold text-black tracking-[-0.1px]">
-                  Pregúntale a Trax
-                </span>
-              </motion.button>
-            )}
-
-            <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
-              <BottomNavBar
-                currentScreen={currentScreen}
-                onNavigate={(s) => {
-                  setCartOpen(false);
-                  setCurrentScreen(s);
-                }}
-              />
-            </div>
-
-            {cartOpen && (
-              <CheckoutModal
-                items={items}
-                subtotal={subtotal}
-                deliveryFee={DELIVERY_FEE}
-                onChangeQty={updateQty}
-                onRemove={removeItem}
-                onClose={() => setCartOpen(false)}
-              />
-            )}
-
-            {/* Yo overlay */}
-            <AnimatePresence>
-              {meOpen && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[70] overflow-y-auto bg-black"
-                >
-                  <div className="mx-auto w-full max-w-[430px] pb-[60px] min-h-screen">
-                    <MeScreen onClose={() => setMeOpen(false)} />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <AIChat open={aiOpen} onClose={() => setAiOpen(false)} />
-          </div>
+          <QuickActionsProvider>
+            <NavShell />
+          </QuickActionsProvider>
         </MeProvider>
       </FinanceProvider>
     </InventoryProvider>
