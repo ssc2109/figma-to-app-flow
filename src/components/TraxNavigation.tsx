@@ -98,29 +98,45 @@ export default function TraxNavigation() {
         </div>
       )}
       <div className="relative z-10 mx-auto w-full max-w-[430px] pb-[140px]">
-        {currentScreen === "inicio" && <Container />}
-        {currentScreen === "ventas" && (
-          <HtmlBody
-            onOpenCart={() => count > 0 && setCartOpen(true)}
-            cart={cart}
-            onAdd={addToCart}
-            onRemove={removeItem}
-            count={count}
-            subtotal={subtotal}
-          />
-        )}
-        {currentScreen === "negocio" && <BusinessScreen />}
-        {currentScreen === "crecer" && (
-          <div className="px-[20px] pt-[80px] text-center">
-            <h1 className="font-['Bai_Jamjuree'] text-[26px] font-semibold text-white tracking-[-0.6px]">
-              Crecer
-            </h1>
-            <p className="mt-[8px] font-['Geist'] text-[13.5px] text-white/55">
-              Próximamente: campañas, descuentos y métricas para hacer crecer tu negocio.
-            </p>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {booting ? (
+            <motion.div
+              key="boot"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0, filter: "blur(6px)" }}
+              transition={{ duration: 0.3 }}
+            >
+              <AppSkeleton />
+            </motion.div>
+          ) : (
+            <ScreenTransition key={currentScreen} screenKey={currentScreen}>
+              {currentScreen === "inicio" && <Container />}
+              {currentScreen === "ventas" && (
+                <HtmlBody
+                  onOpenCart={() => count > 0 && setCartOpen(true)}
+                  cart={cart}
+                  onAdd={addToCart}
+                  onRemove={removeItem}
+                  count={count}
+                  subtotal={subtotal}
+                />
+              )}
+              {currentScreen === "negocio" && <BusinessScreen />}
+              {currentScreen === "crecer" && (
+                <div className="px-[20px] pt-[80px] text-center">
+                  <h1 className="font-['Bai_Jamjuree'] text-[26px] font-semibold text-white tracking-[-0.6px]">
+                    Crecer
+                  </h1>
+                  <p className="mt-[8px] font-['Geist'] text-[13.5px] text-white/55">
+                    Próximamente: campañas, descuentos y métricas para hacer crecer tu negocio.
+                  </p>
+                </div>
+              )}
+            </ScreenTransition>
+          )}
+        </AnimatePresence>
       </div>
+
 
 
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
