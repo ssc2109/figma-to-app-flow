@@ -8,13 +8,18 @@ import MeScreen from "@/components/MeScreen";
 import SociaScreen from "@/components/SociaScreen";
 import SalesOverlay from "@/components/SalesOverlay";
 import QuickActionsScreen from "@/components/QuickActionsScreen";
+import AuthScreen from "@/components/AuthScreen";
+import OnboardingFlow from "@/components/OnboardingFlow";
 import { InventoryProvider } from "@/data/inventory";
 import { FinanceProvider } from "@/data/finance";
 import { MeProvider } from "@/data/me";
 import { QuickActionsProvider, useQuickActions, type ActionId } from "@/data/quickActions";
 import { ScreenTransition } from "@/components/motion/ScreenTransition";
 import { AppSkeleton } from "@/components/motion/AppSkeleton";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { Toaster } from "@/components/ui/sonner";
 import { AnimatePresence, motion } from "motion/react";
+
 
 function NavShell() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("inicio");
@@ -137,7 +142,19 @@ function NavShell() {
   );
 }
 
-export default function TraxNavigation() {
+function AuthGate() {
+  const { loading, session, profile } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white/40 text-sm font-['Geist']">Cargando…</div>
+      </div>
+    );
+  }
+  if (!session) return <AuthScreen />;
+  if (profile && !profile.onboarding_done) return <OnboardingFlow />;
+
   return (
     <InventoryProvider>
       <FinanceProvider>
@@ -150,3 +167,13 @@ export default function TraxNavigation() {
     </InventoryProvider>
   );
 }
+
+export default function TraxNavigation() {
+  return (
+    <AuthProvider>
+      <AuthGate />
+      <Toaster />
+    </AuthProvider>
+  );
+}
+
