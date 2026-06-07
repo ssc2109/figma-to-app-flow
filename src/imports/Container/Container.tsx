@@ -139,9 +139,12 @@ function Shadow() {
 
 function HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero() {
   return (
-    <div className="content-stretch flex flex-col items-center justify-center py-[32px] relative shrink-0 w-full" data-name="Hero Section (Floating Number) - Keeps Bai Jamjuree as requested for Hero">
-      <Margin />
-      <Shadow />
+    <div className="content-stretch flex flex-col items-center justify-center py-[32px] gap-[16px] relative shrink-0 w-full" data-name="Hero Section (Floating Number) - Keeps Bai Jamjuree as requested for Hero">
+      <div className="content-stretch flex flex-col items-center w-full">
+        <Margin />
+        <Shadow />
+      </div>
+      <GoalPill current={1250} goal={1500} />
     </div>
   );
 }
