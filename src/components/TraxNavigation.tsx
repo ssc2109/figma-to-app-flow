@@ -4,6 +4,8 @@ import HtmlBody from "@/imports/HtmlBody/HtmlBody";
 import BottomNavBar from "@/imports/BottomNavBar/BottomNavBar";
 import CheckoutModal from "@/components/CheckoutModal";
 import Grainient from "@/components/Grainient.jsx";
+import BusinessScreen from "@/components/BusinessScreen";
+import { InventoryProvider } from "@/data/inventory";
 import { PRODUCTS_BY_ID } from "@/data/products";
 
 type Screen = "inicio" | "ventas" | "negocio" | "crecer";
