@@ -9,16 +9,19 @@ import {
   FileText,
   ChevronRight,
   AlertTriangle,
+  ChevronLeft,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useInventory } from "@/data/inventory";
+import { useFinance } from "@/data/finance";
 import { GlassCard, Eyebrow } from "./business/shared";
 import InventoryView from "./business/InventoryView";
 import TeamView from "./business/TeamView";
 import PaymentsView from "./business/PaymentsView";
 import InfoView from "./business/InfoView";
+import FinanceScreen from "./FinanceScreen";
 
-type View = "hub" | "inventory" | "team" | "payments" | "info";
+type View = "hub" | "inventory" | "team" | "payments" | "info" | "finanzas";
 
 const fmtSoles = (n: number) =>
   n >= 1000 ? `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K` : n.toFixed(0);
@@ -169,6 +172,8 @@ function NavRow({
 export default function BusinessScreen() {
   const [view, setView] = useState<View>("hub");
   const { productCount, totalValue, totalUnits, lowStock } = useInventory();
+  const fin = useFinance();
+  const fmtNet = `${fin.monthNet >= 0 ? "+" : "-"}S/ ${Math.abs(fin.monthNet).toFixed(0)}`;
 
   const back = () => setView("hub");
 
@@ -192,6 +197,13 @@ export default function BusinessScreen() {
                 <Eyebrow>Gestionar</Eyebrow>
                 <GlassCard>
                   <div className="flex flex-col">
+                    <NavRow
+                      Icon={Wallet}
+                      title="Finanzas"
+                      meta={`Este mes ${fmtNet} netos${fin.fiadosPending > 0 ? ` · S/ ${fin.fiadosPending.toFixed(0)} en fiados` : ""}`}
+                      onClick={() => setView("finanzas")}
+                    />
+                    <div className="h-px w-[92%] mx-auto bg-white/[0.06]" />
                     <NavRow
                       Icon={Package}
                       title="Inventario"
@@ -234,6 +246,27 @@ export default function BusinessScreen() {
         {view === "team" && <TeamView key="team" onBack={back} />}
         {view === "payments" && <PaymentsView key="payments" onBack={back} />}
         {view === "info" && <InfoView key="info" onBack={back} />}
+        {view === "finanzas" && (
+          <motion.div
+            key="finanzas"
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 24 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="px-[20px] pt-[14px] pb-[2px]">
+              <button
+                type="button"
+                onClick={back}
+                className="flex items-center gap-[6px] h-[34px] pl-[8px] pr-[12px] rounded-full bg-white/[0.05] border border-white/[0.06] active:scale-95"
+              >
+                <ChevronLeft className="h-[14px] w-[14px] text-white/85" strokeWidth={1.9} />
+                <span className="font-['Geist'] text-[12px] text-white/85">Mi Negocio</span>
+              </button>
+            </div>
+            <FinanceScreen />
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
