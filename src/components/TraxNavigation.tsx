@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Container from "@/imports/Container/Container";
 import BottomNavBar, { type Screen } from "@/imports/BottomNavBar/BottomNavBar";
 import Grainient from "@/components/Grainient.jsx";
