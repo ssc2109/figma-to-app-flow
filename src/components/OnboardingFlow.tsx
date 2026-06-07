@@ -4,6 +4,9 @@ import { ArrowRight, Check, Store, Package, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import bodegaHero from "@/assets/generated/bodega-hero.jpg";
+import productImg from "@/assets/generated/onboarding-product.jpg";
+import payImg from "@/assets/generated/onboarding-pay.jpg";
 
 export default function OnboardingFlow() {
   const { user, profile, refreshProfile } = useAuth();
