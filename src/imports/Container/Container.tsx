@@ -828,7 +828,7 @@ function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers() {
           <Heading2 />
         </div>
         <Container23 />
-        <button type="button" className="self-center font-['Geist:Regular',sans-serif] text-[13px] text-[rgba(255,255,255,0.7)] hover:text-white transition-colors">
+        <button type="button" className="self-center font-['Geist:Regular',sans-serif] text-[15px] text-[rgba(255,255,255,0.7)] hover:text-white transition-colors">
           Ver más
         </button>
       </div>
