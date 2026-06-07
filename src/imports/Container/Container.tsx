@@ -123,11 +123,18 @@ function Paragraph() {
         <p className="leading-[32px]">S/</p>
       </div>
         <div className="flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center relative shrink-0 text-[72px] text-white">
-          <p className="leading-[72px]">1.25K</p>
+          <p className="leading-[72px]">
+            <AnimatedNumber
+              value={1.25}
+              duration={1.4}
+              format={(n) => `${n.toFixed(2)}K`}
+            />
+          </p>
         </div>
     </div>
   );
 }
+
 
 function Shadow() {
   return (
