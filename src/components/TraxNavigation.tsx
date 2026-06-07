@@ -48,7 +48,7 @@ export default function TraxNavigation() {
   }, [cart]);
 
   return (
-    <div className="size-full bg-black overflow-auto relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+    <div className="size-full bg-black glass-bg overflow-auto relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       <div className="mx-auto w-full max-w-[430px] pb-[80px]">
         {currentScreen === "inicio" && <Container />}
         {currentScreen === "ventas" && (
