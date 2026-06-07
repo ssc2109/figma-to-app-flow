@@ -50,7 +50,13 @@ export default function TraxNavigation() {
 
   return (
     <div className="min-h-screen bg-black relative">
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      <div
+        className="fixed top-0 left-0 right-0 h-[55vh] z-0 pointer-events-none overflow-hidden"
+        style={{
+          maskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%)",
+        }}
+      >
         <Grainient
           color1="#000000"
           color2="#3c58f3"
