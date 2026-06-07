@@ -847,9 +847,9 @@ function Main() {
 export default function Container() {
   return (
     <div className="content-stretch flex flex-col gap-[16px] items-start relative size-full" data-name="Container">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[640px] z-0 overflow-hidden">
-        <Aurora colorStops={["#3a7fff", "#0052e0", "#6899ff"]} amplitude={0.6} blend={1.2} />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-[80px] h-[420px] z-0 overflow-hidden">
+        <Aurora colorStops={["#3a7fff", "#0052e0", "#6899ff"]} amplitude={1.3} blend={2.0} />
+        <div className="absolute inset-x-0 bottom-0 h-[180px] bg-gradient-to-b from-transparent to-black" />
       </div>
       <div className="relative z-10 w-full flex flex-col gap-[16px] items-start">
         <HeaderTopAppBar />
