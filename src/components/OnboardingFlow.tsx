@@ -4,6 +4,9 @@ import { ArrowRight, Check, Store, Package, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import bodegaHero from "@/assets/generated/bodega-hero.jpg";
+import productImg from "@/assets/generated/onboarding-product.jpg";
+import payImg from "@/assets/generated/onboarding-pay.jpg";
 
 export default function OnboardingFlow() {
   const { user, profile, refreshProfile } = useAuth();
@@ -54,6 +57,7 @@ export default function OnboardingFlow() {
   const steps = [
     {
       icon: Store,
+      image: bodegaHero,
       title: "Tu bodega",
       subtitle: "¿Cómo se llama tu negocio?",
       valid: businessName.trim().length > 0,
@@ -63,6 +67,7 @@ export default function OnboardingFlow() {
     },
     {
       icon: Package,
+      image: productImg,
       title: "Tu primer producto",
       subtitle: "Agrega uno para empezar (puedes saltarlo)",
       valid: true,
@@ -88,6 +93,7 @@ export default function OnboardingFlow() {
     },
     {
       icon: Wallet,
+      image: payImg,
       title: "Cómo cobras",
       subtitle: "Elige los métodos que aceptas",
       valid: paymentMethods.length > 0,
@@ -151,13 +157,32 @@ export default function OnboardingFlow() {
             className="flex-1 flex flex-col"
           >
             <div
-              className="h-[58px] w-[58px] rounded-[18px] flex items-center justify-center mb-[24px]"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.10)",
-              }}
+              className="relative h-[180px] w-full rounded-[20px] overflow-hidden mb-[22px]"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}
             >
-              <Icon className="h-[24px] w-[24px] text-white" strokeWidth={1.8} />
+              <img
+                src={current.image}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.85) 100%)",
+                }}
+              />
+              <div
+                className="absolute bottom-[14px] left-[14px] h-[44px] w-[44px] rounded-[14px] flex items-center justify-center backdrop-blur"
+                style={{
+                  background: "rgba(255,255,255,0.10)",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                }}
+              >
+                <Icon className="h-[20px] w-[20px] text-white" strokeWidth={1.8} />
+              </div>
             </div>
 
             <h2 className="font-['Bai_Jamjuree'] text-[28px] text-white tracking-tight leading-tight">
