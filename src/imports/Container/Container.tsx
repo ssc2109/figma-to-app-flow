@@ -5,6 +5,7 @@ import { StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
 import { useInventory } from "@/data/inventory";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { Stagger } from "@/components/motion/Stagger";
+import QuickActions from "@/components/QuickActions";
 
 
 
