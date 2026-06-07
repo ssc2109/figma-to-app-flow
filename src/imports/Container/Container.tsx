@@ -141,10 +141,10 @@ function HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero() {
         <Margin />
         <Shadow />
       </div>
-      <GoalPill current={1250} goal={1500} />
     </div>
   );
 }
+
 
 function Container6() {
   return (
