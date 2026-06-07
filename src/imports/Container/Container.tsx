@@ -478,10 +478,13 @@ function AiTipsSectionParaTiHoyNowUsingGeist() {
 
 function Heading2() {
   return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 2">
-      <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:SemiBold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white w-full">
+    <div className="flex flex-row items-center justify-between relative shrink-0 w-full" data-name="Heading 2">
+      <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:SemiBold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[20px] text-white">
         <p className="leading-[30px]">Actividad Reciente</p>
       </div>
+      <button type="button" className="font-['Geist:Regular',sans-serif] text-[14px] text-[rgba(255,255,255,0.7)] hover:text-white transition-colors">
+        Ver más
+      </button>
     </div>
   );
 }
