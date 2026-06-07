@@ -1,4 +1,5 @@
 import { LayoutDashboard, Receipt, Plus, Store, TrendingUp } from "lucide-react";
+import { motion } from "motion/react";
 
 type Screen = "inicio" | "ventas" | "negocio" | "crecer";
 
@@ -11,23 +12,34 @@ interface TabProps {
   active?: boolean;
   onClick?: () => void;
   Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
 }
 
-function Tab({ active, onClick, Icon }: TabProps) {
+function Tab({ active, onClick, Icon, label }: TabProps) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
-      className="relative flex items-center justify-center size-[44px] rounded-full transition-all active:scale-90"
+      aria-label={label}
+      whileTap={{ scale: 0.88 }}
+      transition={{ type: "spring", stiffness: 500, damping: 28 }}
+      className="relative flex items-center justify-center size-[44px] rounded-full"
     >
       {active && (
-        <span className="absolute inset-0 rounded-full bg-white/95 shadow-[0_4px_16px_rgba(255,255,255,0.25)]" />
+        <motion.span
+          layoutId="trax-nav-pill"
+          className="absolute inset-0 rounded-full bg-white/95"
+          style={{ boxShadow: "0 4px 20px rgba(255,255,255,0.22)" }}
+          transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }}
+        />
       )}
       <Icon
-        className={`relative size-[22px] ${active ? "text-black" : "text-white/55"}`}
+        className={`relative size-[22px] transition-colors duration-300 ${
+          active ? "text-black" : "text-white/55"
+        }`}
         strokeWidth={active ? 2.2 : 1.8}
       />
-    </button>
+    </motion.button>
   );
 }
 
@@ -43,11 +55,20 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
         WebkitBackdropFilter: "blur(24px) saturate(180%)",
       }}
     >
-      <Tab Icon={LayoutDashboard} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
-      <Tab Icon={Receipt} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
-      <Tab Icon={Plus} />
-      <Tab Icon={Store} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
-      <Tab Icon={TrendingUp} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
+      <Tab label="Inicio" Icon={LayoutDashboard} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
+      <Tab label="Ventas" Icon={Receipt} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
+      <motion.button
+        type="button"
+        aria-label="Nuevo"
+        whileHover={{ scale: 1.06 }}
+        whileTap={{ scale: 0.92 }}
+        transition={{ type: "spring", stiffness: 420, damping: 22 }}
+        className="relative flex items-center justify-center size-[44px] rounded-full bg-white/[0.06] border border-white/[0.08]"
+      >
+        <Plus className="size-[20px] text-white/70" strokeWidth={2} />
+      </motion.button>
+      <Tab label="Negocio" Icon={Store} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
+      <Tab label="Crecer" Icon={TrendingUp} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
   );
 }
