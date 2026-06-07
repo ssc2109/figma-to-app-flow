@@ -163,17 +163,17 @@
    ────────────────────────────────────────────────────────────── */
 @utility glass-card {
   background: rgba(24, 24, 27, 0.82);
-  backdrop-filter: blur(40px) saturate(140%);
-  -webkit-backdrop-filter: blur(40px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(40px) saturate(130%);
+  -webkit-backdrop-filter: blur(40px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 
 @utility glass-card-strong {
   background: rgba(28, 28, 32, 0.86);
-  backdrop-filter: blur(44px) saturate(150%);
-  -webkit-backdrop-filter: blur(44px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(44px) saturate(140%);
+  -webkit-backdrop-filter: blur(44px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* Ambient substrate so glass actually has something to frost.
