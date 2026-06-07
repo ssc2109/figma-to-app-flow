@@ -11,10 +11,9 @@ interface TabProps {
   active?: boolean;
   onClick?: () => void;
   Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  filled?: boolean;
 }
 
-function Tab({ active, onClick, Icon, filled }: TabProps) {
+function Tab({ active, onClick, Icon }: TabProps) {
   return (
     <button
       type="button"
@@ -25,9 +24,7 @@ function Tab({ active, onClick, Icon, filled }: TabProps) {
         <span className="absolute inset-0 rounded-full bg-white/95 shadow-[0_4px_16px_rgba(255,255,255,0.25)]" />
       )}
       <Icon
-        className={`relative size-[22px] ${
-          active ? "text-black" : "text-white/55"
-        }`}
+        className={`relative size-[22px] ${active ? "text-black" : "text-white/55"}`}
         strokeWidth={active ? 2.2 : 1.8}
       />
     </button>
@@ -38,23 +35,19 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
   const go = (s: Screen) => onNavigate?.(s);
 
   return (
-    <div className="size-full flex items-end justify-center pb-[28px] pointer-events-none">
-      <div
-        className="pointer-events-auto flex items-center gap-[6px] px-[10px] py-[8px] rounded-full border border-white/10"
-        style={{
-          background: "rgba(20, 20, 22, 0.55)",
-          backdropFilter: "blur(24px) saturate(180%)",
-          WebkitBackdropFilter: "blur(24px) saturate(180%)",
-          boxShadow:
-            "0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)",
-        }}
-      >
-        <Tab Icon={Home} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
-        <Tab Icon={Compass} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
-        <Tab Icon={Plus} />
-        <Tab Icon={Heart} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
-        <Tab Icon={MessageCircle} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
-      </div>
+    <div
+      className="size-full flex items-center justify-around px-[12px] pt-[10px] pb-[28px] border-t border-white/[0.06]"
+      style={{
+        background: "rgba(20, 20, 22, 0.55)",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+      }}
+    >
+      <Tab Icon={Home} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
+      <Tab Icon={Compass} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
+      <Tab Icon={Plus} />
+      <Tab Icon={Heart} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
+      <Tab Icon={MessageCircle} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
   );
 }
