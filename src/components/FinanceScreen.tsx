@@ -14,6 +14,7 @@ import {
   Eyebrow,
 } from "./business/shared";
 import { Sparkline } from "./Sparkline";
+import EmptyState from "./EmptyState";
 
 type View = "hub" | "transactions" | "fiados" | "categories";
 type Period = "hoy" | "semana" | "mes";
@@ -199,9 +200,11 @@ function FiadosView({ onBack }: { onBack: () => void }) {
             </ListGroup>
           </div>
         ) : (
-          <div className="text-center font-['Geist'] text-[13px] text-white/40 py-[24px]">
-            No tienes fiados pendientes.
-          </div>
+          <EmptyState
+            variant="fiados"
+            title="Sin fiados pendientes"
+            subtitle="Cuando vendas al fiado, lo verás aquí para no olvidarte."
+          />
         )}
       </div>
     </SubScreen>
