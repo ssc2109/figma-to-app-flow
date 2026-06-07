@@ -1,6 +1,11 @@
 import svgPaths from "./svg-hc6bxk0av9";
 import imgProfile from "./752b2ffc6c9d7d95b1254f5a3ea754226cbf7bb2.png";
 import Aurora from "@/components/Aurora";
+import { GoalPill, AiCard, StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
+
+const STOCK_ALERTS: StockAlert[] = [
+  { name: "Papitas Lay's", units: 3 },
+];
 
 
 function Profile() {
@@ -134,9 +139,12 @@ function Shadow() {
 
 function HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero() {
   return (
-    <div className="content-stretch flex flex-col items-center justify-center py-[32px] relative shrink-0 w-full" data-name="Hero Section (Floating Number) - Keeps Bai Jamjuree as requested for Hero">
-      <Margin />
-      <Shadow />
+    <div className="content-stretch flex flex-col items-center justify-center py-[32px] gap-[16px] relative shrink-0 w-full" data-name="Hero Section (Floating Number) - Keeps Bai Jamjuree as requested for Hero">
+      <div className="content-stretch flex flex-col items-center w-full">
+        <Margin />
+        <Shadow />
+      </div>
+      <GoalPill current={1250} goal={1500} />
     </div>
   );
 }
@@ -843,9 +851,14 @@ function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers() {
 function Main() {
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
-      <div className="content-stretch flex flex-col gap-[40px] items-start px-[20px] relative size-full">
+      <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
         <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
         <SectionQuickActions />
+        <AiCard
+          name="Alberto"
+          message="hoy es un buen día para reponer stock de abarrotes. Tus ventas subieron un 12%."
+        />
+        <StockAlertCard alerts={STOCK_ALERTS} />
         <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
       </div>
     </div>
