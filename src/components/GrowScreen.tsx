@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Sparkles,
   Target,
-  Users,
   Megaphone,
   TrendingUp,
   Truck,
@@ -11,8 +10,6 @@ import {
   MessageCircle,
   ChevronRight,
   Trophy,
-  Lock,
-  Check,
 } from "lucide-react";
 import { useFinance } from "@/data/finance";
 import { useInventory } from "@/data/inventory";

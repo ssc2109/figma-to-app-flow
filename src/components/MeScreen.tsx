@@ -11,7 +11,6 @@ import {
   Sun,
   Target,
   X,
-  Sparkles,
 } from "lucide-react";
 import { useMe, type Todo, type Lesson } from "@/data/me";
 import { GlassCard, SubHeader, SubScreen, Eyebrow } from "./business/shared";

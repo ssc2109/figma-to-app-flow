@@ -6,7 +6,6 @@ import {
   Plus,
   ChevronRight,
   HandCoins,
-  Receipt,
   TrendingUp,
   TrendingDown,
   X,
