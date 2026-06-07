@@ -1,19 +1,28 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Flame,
   CheckCircle2,
   Circle,
   Plus,
-  ChevronRight,
   BookOpen,
   Lock,
   Sun,
   Target,
   X,
+  ListChecks,
 } from "lucide-react";
 import { useMe, type Todo, type Lesson } from "@/data/me";
-import { GlassCard, SubHeader, SubScreen, Eyebrow } from "./business/shared";
+import {
+  PageHeader,
+  SectionLabel,
+  ListGroup,
+  PlainRow,
+  RowDivider,
+  SubHeader,
+  SubScreen,
+  FooterMark,
+  Eyebrow,
+} from "./business/shared";
 
 type View = "hub" | "learn" | "routine" | "goals" | "todos";
 
@@ -24,350 +33,96 @@ const PRIO: Record<Todo["priority"], { color: string; label: string }> = {
   low: { color: "rgba(255,255,255,0.30)", label: "Baja" },
 };
 
-/* ---------- hub bits ---------- */
-
-function Header() {
-  const { name, level, xp, xpToNext } = useMe();
-  const initials = name.split(" ").map((w) => w[0]).join("").slice(0, 2);
-  const currentLevelXp = (level - 1) * 100;
-  const progress = ((xp - currentLevelXp) / 100) * 100;
+/* ---------- the one hero: streak ---------- */
+function StreakHero({ streak }: { streak: number }) {
   return (
-    <div className="px-[20px] pt-[18px] pb-[8px]">
-      <div className="flex items-center gap-[14px]">
-        <div
-          className="h-[56px] w-[56px] rounded-full flex items-center justify-center"
-          style={{
-            background: "linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04))",
-            border: "1px solid rgba(255,255,255,0.10)",
-          }}
-        >
-          <span className="font-['Bai_Jamjuree'] text-[18px] font-bold text-white">{initials}</span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className="font-['Geist'] text-[11px] uppercase tracking-[1.2px] text-white/45">
-            Nivel {level} · Bodeguero
-          </span>
-          <h1 className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.5px]">
-            Hola, {name}
-          </h1>
-          <div className="mt-[8px] flex items-center gap-[8px]">
-            <div className="flex-1 h-[5px] rounded-full bg-white/[0.06] overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full rounded-full bg-white"
-              />
-            </div>
-            <span className="font-['Bai_Jamjuree'] text-[11px] text-white/55 tabular-nums">
-              {xpToNext} XP al nivel {level + 1}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StreakCard() {
-  const { streak, longestStreak } = useMe();
-  const days = Array.from({ length: 7 }).map((_, i) => i < (streak % 7 || 7));
-  return (
-    <GlassCard className="trax-shine">
-      <div className="p-[18px]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-[10px]">
-            <div
-              className="h-[40px] w-[40px] rounded-full flex items-center justify-center"
-              style={{ background: "rgba(255,158,77,0.12)", border: "1px solid rgba(255,158,77,0.25)" }}
-            >
-              <Flame className="h-[18px] w-[18px] text-[#FF9E4D]" strokeWidth={2} fill="#FF9E4D" />
-            </div>
-            <div>
-              <div className="font-['Geist'] text-[11px] uppercase tracking-[1px] text-white/45">
-                Racha actual
-              </div>
-              <div className="font-['Bai_Jamjuree'] text-[24px] font-bold text-white leading-none tabular-nums tracking-[-0.6px]">
-                {streak} <span className="text-[14px] font-medium text-white/55">días</span>
-              </div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="font-['Geist'] text-[10px] uppercase tracking-[1px] text-white/45">Récord</div>
-            <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white/85 tabular-nums">
-              {longestStreak}
-            </div>
-          </div>
-        </div>
-        <div className="mt-[14px] flex gap-[6px]">
-          {days.map((on, i) => (
-            <div
-              key={i}
-              className="flex-1 h-[6px] rounded-full"
-              style={{
-                background: on
-                  ? "linear-gradient(90deg, #FF9E4D, #FACC15)"
-                  : "rgba(255,255,255,0.06)",
-              }}
-            />
-          ))}
-        </div>
-        <p className="mt-[10px] font-['Geist'] text-[11.5px] text-white/55 leading-[1.5]">
-          Sigue abriendo y registrando todos los días. La constancia es lo que mueve el negocio.
-        </p>
-      </div>
-    </GlassCard>
-  );
-}
-
-function TodayCard({ onOpen }: { onOpen: () => void }) {
-  const { todos, toggleTodo, todayDone, todayTotal } = useMe();
-  const today = todos.filter((t) => t.due === "Hoy").slice(0, 3);
-  return (
-    <div className="flex flex-col gap-[10px]">
-      <div className="flex items-center justify-between px-[4px]">
-        <Eyebrow>Hoy · {todayDone}/{todayTotal} hecho</Eyebrow>
-        <button
-          type="button"
-          onClick={onOpen}
-          className="font-['Geist'] text-[12px] text-white/55 active:text-white"
-        >
-          Ver todo
-        </button>
-      </div>
-      <GlassCard>
-        <div className="flex flex-col px-[14px]">
-          {today.map((t, i) => (
-            <div key={t.id}>
-              <TodoRow t={t} onToggle={() => toggleTodo(t.id)} />
-              {i < today.length - 1 && <div className="h-px w-full bg-white/[0.05]" />}
-            </div>
-          ))}
-        </div>
-      </GlassCard>
-    </div>
-  );
-}
-
-function TodoRow({ t, onToggle }: { t: Todo; onToggle: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="w-full flex items-center gap-[12px] py-[12px] text-left active:bg-white/[0.02]"
-    >
-      <span className="shrink-0">
-        {t.done ? (
-          <CheckCircle2 className="h-[18px] w-[18px] text-[#4ADE80]" strokeWidth={2} />
-        ) : (
-          <Circle className="h-[18px] w-[18px]" strokeWidth={1.8} style={{ color: PRIO[t.priority].color }} />
-        )}
+    <div className="flex flex-col items-center text-center py-[10px]">
+      <span className="font-['Geist'] text-[11.5px] font-medium uppercase tracking-[1.8px] text-white/35">
+        Racha
       </span>
-      <div className="flex-1 min-w-0">
-        <div
-          className={`font-['Geist'] text-[13.5px] font-medium leading-[1.35] truncate ${
-            t.done ? "text-white/40 line-through" : "text-white"
-          }`}
-        >
-          {t.title}
-        </div>
-        <div className="mt-[2px] flex items-center gap-[6px]">
-          <span
-            className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[0.6px]"
-            style={{ color: PRIO[t.priority].color }}
+      <div className="mt-[12px] flex items-baseline gap-[10px]">
+        <span className="font-['Bai_Jamjuree'] text-[80px] font-bold text-white tracking-[-3px] tabular-nums leading-none">
+          {streak}
+        </span>
+        <span className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white/45 tracking-[-0.5px]">
+          días
+        </span>
+      </div>
+      <p className="mt-[14px] font-['Geist'] text-[13.5px] text-white/45 leading-[1.5] max-w-[280px]">
+        Sigue abriendo todos los días.
+      </p>
+    </div>
+  );
+}
+
+/* ---------- todo row ---------- */
+function TodoRow({ t, onToggle, last }: { t: Todo; onToggle: () => void; last?: boolean }) {
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center gap-[14px] px-[16px] py-[13px] text-left active:bg-white/[0.025] transition-colors"
+      >
+        <span className="shrink-0">
+          {t.done ? (
+            <CheckCircle2 className="h-[18px] w-[18px] text-white/55" strokeWidth={1.8} />
+          ) : (
+            <Circle
+              className="h-[18px] w-[18px]"
+              strokeWidth={1.6}
+              style={{ color: PRIO[t.priority].color }}
+            />
+          )}
+        </span>
+        <div className="flex-1 min-w-0">
+          <div
+            className={`font-['Geist'] text-[14.5px] leading-[1.3] truncate ${
+              t.done ? "text-white/35 line-through" : "text-white"
+            }`}
           >
-            {PRIO[t.priority].label}
-          </span>
-          {t.tag && (
-            <>
-              <span className="text-white/20 text-[10px]">·</span>
-              <span className="font-['Geist'] text-[10.5px] text-white/45">{t.tag}</span>
-            </>
+            {t.title}
+          </div>
+          {t.tag && !t.done && (
+            <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/40">{t.tag}</div>
           )}
         </div>
-      </div>
-    </button>
+      </button>
+      {!last && <div className="h-px bg-white/[0.05] ml-[48px]" />}
+    </>
   );
 }
 
-function LearnTeaser({ onOpen }: { onOpen: () => void }) {
-  const { lessons } = useMe();
-  const current = lessons.find((l) => l.status === "actual") ?? lessons[0];
-  const completed = lessons.filter((l) => l.status === "completada").length;
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="w-full text-left rounded-[20px] overflow-hidden trax-lift"
-      style={{
-        background: "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-        border: "1px solid rgba(255,255,255,0.08)",
-      }}
-    >
-      <div className="p-[16px] flex items-center gap-[12px]">
-        <div
-          className="h-[44px] w-[44px] rounded-[14px] flex items-center justify-center shrink-0"
-          style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <BookOpen className="h-[18px] w-[18px] text-white" strokeWidth={1.8} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-['Geist'] text-[11px] uppercase tracking-[1px] text-white/45">
-            Aprender · {completed}/{lessons.length}
-          </div>
-          <div className="font-['Geist'] text-[13.5px] font-semibold text-white truncate">
-            {current.title}
-          </div>
-          <div className="font-['Geist'] text-[11px] text-white/50 mt-[1px]">
-            {current.unit} · {current.minutes} min
-          </div>
-        </div>
-        <ChevronRight className="h-[16px] w-[16px] text-white/40" />
-      </div>
-    </button>
-  );
-}
-
-function RoutineTeaser({ onOpen }: { onOpen: () => void }) {
-  const { routine } = useMe();
-  const done = routine.filter((r) => r.done).length;
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="w-full text-left rounded-[20px] trax-lift"
-      style={{
-        background: "rgba(255,255,255,0.035)",
-        border: "1px solid rgba(255,255,255,0.06)",
-      }}
-    >
-      <div className="p-[16px] flex items-center gap-[12px]">
-        <div
-          className="h-[44px] w-[44px] rounded-[14px] flex items-center justify-center shrink-0"
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.07)",
-          }}
-        >
-          <Sun className="h-[18px] w-[18px] text-white/85" strokeWidth={1.8} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-['Geist'] text-[11px] uppercase tracking-[1px] text-white/45">
-            Rutina diaria · {done}/{routine.length}
-          </div>
-          <div className="font-['Geist'] text-[13.5px] font-semibold text-white">
-            Los hábitos que te sostienen
-          </div>
-        </div>
-        <ChevronRight className="h-[16px] w-[16px] text-white/40" />
-      </div>
-    </button>
-  );
-}
-
-function GoalsTeaser({ onOpen }: { onOpen: () => void }) {
-  const { goals } = useMe();
-  const top = goals[0];
-  const pct = Math.min(100, (top.current / top.target) * 100);
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="w-full text-left rounded-[20px] trax-lift"
-      style={{
-        background: "rgba(255,255,255,0.035)",
-        border: "1px solid rgba(255,255,255,0.06)",
-      }}
-    >
-      <div className="p-[16px]">
-        <div className="flex items-center gap-[10px] mb-[10px]">
-          <div
-            className="h-[36px] w-[36px] rounded-full flex items-center justify-center"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}
-          >
-            <Target className="h-[15px] w-[15px] text-white/85" strokeWidth={1.8} />
-          </div>
-          <div className="flex-1">
-            <div className="font-['Geist'] text-[11px] uppercase tracking-[1px] text-white/45">
-              Tus metas
-            </div>
-            <div className="font-['Geist'] text-[13.5px] font-semibold text-white">{top.label}</div>
-          </div>
-          <ChevronRight className="h-[16px] w-[16px] text-white/40" />
-        </div>
-        <div className="h-[6px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="h-full bg-white rounded-full"
-          />
-        </div>
-        <div className="mt-[6px] flex items-baseline justify-between font-['Geist'] text-[11px] text-white/55 tabular-nums">
-          <span>
-            {top.unit === "S/" ? "S/" : ""}
-            {top.current.toLocaleString()}
-            {top.unit === "%" ? "%" : top.unit === "u" ? " días" : ""}
-          </span>
-          <span>
-            Meta {top.unit === "S/" ? "S/" : ""}
-            {top.target.toLocaleString()}
-            {top.unit === "%" ? "%" : top.unit === "u" ? " días" : ""}
-          </span>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-/* ---------- sub-views ---------- */
-
-function LessonNode({ l, onComplete }: { l: Lesson; onComplete: () => void }) {
+/* ---------- sub views ---------- */
+function LessonNode({ l, onComplete, last }: { l: Lesson; onComplete: () => void; last?: boolean }) {
   const locked = l.status === "bloqueada";
   const done = l.status === "completada";
   return (
-    <button
-      type="button"
-      disabled={locked}
-      onClick={onComplete}
-      className="w-full text-left flex items-center gap-[14px] py-[12px] disabled:opacity-50"
-    >
-      <div
-        className="h-[44px] w-[44px] rounded-full flex items-center justify-center shrink-0"
-        style={{
-          background: done
-            ? "rgba(74,222,128,0.15)"
-            : l.status === "actual"
-              ? "linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06))"
-              : "rgba(255,255,255,0.04)",
-          border: `1px solid ${done ? "rgba(74,222,128,0.30)" : "rgba(255,255,255,0.08)"}`,
-        }}
+    <>
+      <button
+        type="button"
+        disabled={locked}
+        onClick={onComplete}
+        className="w-full text-left flex items-center gap-[14px] px-[16px] py-[14px] disabled:opacity-45 active:bg-white/[0.025] transition-colors"
       >
-        {done ? (
-          <CheckCircle2 className="h-[18px] w-[18px] text-[#4ADE80]" strokeWidth={2.2} />
-        ) : locked ? (
-          <Lock className="h-[14px] w-[14px] text-white/35" strokeWidth={1.8} />
-        ) : (
-          <BookOpen className="h-[16px] w-[16px] text-white" strokeWidth={1.8} />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className={`font-['Geist'] text-[13.5px] font-medium ${done ? "text-white/55" : "text-white"} truncate`}>
-          {l.title}
-        </div>
-        <div className="font-['Geist'] text-[11px] text-white/45 mt-[2px]">
-          {l.minutes} min · +{l.xp} XP
-        </div>
-      </div>
-      {l.status === "actual" && (
-        <span className="font-['Geist'] text-[11px] font-semibold text-white px-[10px] py-[4px] rounded-full bg-white/[0.08] border border-white/[0.10]">
-          Empezar
+        <span className="shrink-0">
+          {done ? (
+            <CheckCircle2 className="h-[18px] w-[18px] text-white/55" strokeWidth={1.8} />
+          ) : locked ? (
+            <Lock className="h-[16px] w-[16px] text-white/30" strokeWidth={1.6} />
+          ) : (
+            <Circle className="h-[18px] w-[18px] text-white" strokeWidth={1.6} />
+          )}
         </span>
-      )}
-    </button>
+        <div className="flex-1 min-w-0">
+          <div className={`font-['Geist'] text-[14.5px] truncate ${done ? "text-white/45" : "text-white"}`}>
+            {l.title}
+          </div>
+          <div className="font-['Geist'] text-[11.5px] text-white/40 mt-[2px]">{l.minutes} min</div>
+        </div>
+      </button>
+      {!last && <div className="h-px bg-white/[0.05] ml-[48px]" />}
+    </>
   );
 }
 
@@ -377,24 +132,25 @@ function LearnView({ onBack }: { onBack: () => void }) {
   return (
     <SubScreen>
       <SubHeader eyebrow="5 min al día" title="Aprender" onBack={onBack} />
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
-        {units.map((u) => (
-          <div key={u} className="flex flex-col gap-[8px]">
-            <Eyebrow>{u}</Eyebrow>
-            <GlassCard>
-              <div className="px-[14px]">
-                {lessons
-                  .filter((l) => l.unit === u)
-                  .map((l, i, arr) => (
-                    <div key={l.id}>
-                      <LessonNode l={l} onComplete={() => completeLesson(l.id)} />
-                      {i < arr.length - 1 && <div className="h-px w-full bg-white/[0.05] ml-[58px]" />}
-                    </div>
-                  ))}
-              </div>
-            </GlassCard>
-          </div>
-        ))}
+      <div className="px-[20px] pt-[8px] flex flex-col gap-[28px]">
+        {units.map((u) => {
+          const arr = lessons.filter((l) => l.unit === u);
+          return (
+            <div key={u}>
+              <SectionLabel>{u}</SectionLabel>
+              <ListGroup>
+                {arr.map((l, i) => (
+                  <LessonNode
+                    key={l.id}
+                    l={l}
+                    onComplete={() => completeLesson(l.id)}
+                    last={i === arr.length - 1}
+                  />
+                ))}
+              </ListGroup>
+            </div>
+          );
+        })}
       </div>
     </SubScreen>
   );
@@ -404,38 +160,38 @@ function RoutineView({ onBack }: { onBack: () => void }) {
   const { routine, toggleRoutine } = useMe();
   return (
     <SubScreen>
-      <SubHeader eyebrow="Hábitos del bodeguero" title="Rutina diaria" onBack={onBack} />
-      <div className="px-[20px] pt-[6px]">
-        <GlassCard>
-          <div className="flex flex-col px-[14px]">
-            {routine.map((r, i) => (
-              <div key={r.id}>
-                <button
-                  type="button"
-                  onClick={() => toggleRoutine(r.id)}
-                  className="w-full flex items-center gap-[12px] py-[14px] text-left"
-                >
-                  {r.done ? (
-                    <CheckCircle2 className="h-[20px] w-[20px] text-[#4ADE80] shrink-0" strokeWidth={2} />
-                  ) : (
-                    <Circle className="h-[20px] w-[20px] text-white/35 shrink-0" strokeWidth={1.8} />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div
-                      className={`font-['Geist'] text-[13.5px] font-medium ${r.done ? "text-white/45 line-through" : "text-white"}`}
-                    >
-                      {r.label}
-                    </div>
-                    {r.hint && (
-                      <div className="font-['Geist'] text-[11px] text-white/45 mt-[1px]">{r.hint}</div>
-                    )}
+      <SubHeader eyebrow="Hábitos del día" title="Rutina" onBack={onBack} />
+      <div className="px-[20px] pt-[8px]">
+        <ListGroup>
+          {routine.map((r, i) => (
+            <div key={r.id}>
+              <button
+                type="button"
+                onClick={() => toggleRoutine(r.id)}
+                className="w-full flex items-center gap-[14px] px-[16px] py-[14px] text-left active:bg-white/[0.025] transition-colors"
+              >
+                {r.done ? (
+                  <CheckCircle2 className="h-[18px] w-[18px] text-white/55 shrink-0" strokeWidth={1.8} />
+                ) : (
+                  <Circle className="h-[18px] w-[18px] text-white/30 shrink-0" strokeWidth={1.6} />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div
+                    className={`font-['Geist'] text-[14.5px] ${
+                      r.done ? "text-white/40 line-through" : "text-white"
+                    }`}
+                  >
+                    {r.label}
                   </div>
-                </button>
-                {i < routine.length - 1 && <div className="h-px w-full bg-white/[0.05]" />}
-              </div>
-            ))}
-          </div>
-        </GlassCard>
+                  {r.hint && !r.done && (
+                    <div className="font-['Geist'] text-[11.5px] text-white/40 mt-[2px]">{r.hint}</div>
+                  )}
+                </div>
+              </button>
+              {i < routine.length - 1 && <div className="h-px bg-white/[0.05] ml-[48px]" />}
+            </div>
+          ))}
+        </ListGroup>
       </div>
     </SubScreen>
   );
@@ -446,40 +202,35 @@ function GoalsView({ onBack }: { onBack: () => void }) {
   return (
     <SubScreen>
       <SubHeader eyebrow="Hacia dónde vas" title="Metas" onBack={onBack} />
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[12px]">
+      <div className="px-[20px] pt-[10px] flex flex-col gap-[26px]">
         {goals.map((g) => {
           const pct = Math.min(100, (g.current / g.target) * 100);
           return (
-            <GlassCard key={g.id}>
-              <div className="p-[16px]">
-                <div className="flex items-baseline justify-between mb-[10px]">
-                  <span className="font-['Geist'] text-[13.5px] font-medium text-white">{g.label}</span>
-                  <span className="font-['Bai_Jamjuree'] text-[13px] font-bold text-white tabular-nums">
-                    {pct.toFixed(0)}%
-                  </span>
-                </div>
-                <div className="h-[8px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                    className="h-full rounded-full bg-white"
-                  />
-                </div>
-                <div className="mt-[8px] flex items-baseline justify-between font-['Geist'] text-[11.5px] text-white/55 tabular-nums">
-                  <span>
-                    {g.unit === "S/" ? "S/ " : ""}
-                    {g.current.toLocaleString()}
-                    {g.unit === "%" ? "%" : g.unit === "u" ? " días" : ""}
-                  </span>
-                  <span>
-                    Meta: {g.unit === "S/" ? "S/ " : ""}
-                    {g.target.toLocaleString()}
-                    {g.unit === "%" ? "%" : g.unit === "u" ? " días" : ""}
-                  </span>
-                </div>
+            <div key={g.id} className="px-[6px]">
+              <div className="flex items-baseline justify-between">
+                <span className="font-['Geist'] text-[14.5px] text-white">{g.label}</span>
+                <span className="font-['Bai_Jamjuree'] text-[13.5px] font-semibold text-white tabular-nums">
+                  {pct.toFixed(0)}%
+                </span>
               </div>
-            </GlassCard>
+              <div className="mt-[10px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  className="h-full rounded-full bg-white"
+                />
+              </div>
+              <div className="mt-[8px] font-['Geist'] text-[11.5px] text-white/40 tabular-nums">
+                {g.unit === "S/" ? "S/ " : ""}
+                {g.current.toLocaleString()}
+                {g.unit === "%" ? "%" : g.unit === "u" ? " días" : ""}
+                <span className="mx-[6px] text-white/20">/</span>
+                {g.unit === "S/" ? "S/ " : ""}
+                {g.target.toLocaleString()}
+                {g.unit === "%" ? "%" : g.unit === "u" ? " días" : ""}
+              </div>
+            </div>
           );
         })}
       </div>
@@ -516,72 +267,64 @@ function TodosView({ onBack }: { onBack: () => void }) {
           <button
             type="button"
             onClick={() => setAdding((v) => !v)}
-            className="flex h-[40px] items-center gap-[6px] rounded-full bg-white text-black px-[14px] active:scale-95"
+            className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95"
+            aria-label="Añadir tarea"
           >
-            <Plus className="h-[15px] w-[15px]" strokeWidth={2.4} />
-            <span className="font-['Geist'] text-[13px] font-semibold">Añadir</span>
+            <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
           </button>
         }
       />
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
+      <div className="px-[20px] pt-[8px] flex flex-col gap-[28px]">
         {adding && (
-          <GlassCard>
-            <div className="p-[14px] flex flex-col gap-[10px]">
-              <input
-                autoFocus
-                placeholder="Una tarea concreta…"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && submit()}
-                className="w-full h-[40px] bg-transparent outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/35"
-              />
-              <div className="flex items-center gap-[6px]">
-                {(["urgent", "high", "normal", "low"] as Todo["priority"][]).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPrio(p)}
-                    className="h-[26px] px-[10px] rounded-full font-['Geist'] text-[11px] font-medium flex items-center gap-[5px]"
-                    style={{
-                      background: prio === p ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.04)",
-                      border: `1px solid ${prio === p ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.06)"}`,
-                      color: PRIO[p].color,
-                    }}
-                  >
-                    <span
-                      className="h-[6px] w-[6px] rounded-full"
-                      style={{ background: PRIO[p].color }}
-                    />
-                    {PRIO[p].label}
-                  </button>
-                ))}
+          <div
+            className="rounded-[18px] p-[14px] flex flex-col gap-[12px]"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            <input
+              autoFocus
+              placeholder="Una tarea concreta…"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+              className="w-full h-[36px] bg-transparent outline-none font-['Geist'] text-[14.5px] text-white placeholder:text-white/30"
+            />
+            <div className="flex items-center gap-[6px] flex-wrap">
+              {(["urgent", "high", "normal", "low"] as Todo["priority"][]).map((p) => (
                 <button
+                  key={p}
                   type="button"
-                  onClick={submit}
-                  className="ml-auto h-[30px] px-[12px] rounded-full bg-white text-black font-['Geist'] text-[12px] font-semibold active:scale-95"
+                  onClick={() => setPrio(p)}
+                  className="h-[26px] px-[10px] rounded-full font-['Geist'] text-[11.5px] font-medium transition-colors"
+                  style={{
+                    background: prio === p ? "rgba(255,255,255,0.10)" : "transparent",
+                    border: `1px solid ${prio === p ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.08)"}`,
+                    color: PRIO[p].color,
+                  }}
                 >
-                  Guardar
+                  {PRIO[p].label}
                 </button>
-              </div>
+              ))}
+              <button
+                type="button"
+                onClick={submit}
+                className="ml-auto h-[30px] px-[14px] rounded-full bg-white text-black font-['Geist'] text-[12px] font-semibold active:scale-95"
+              >
+                Guardar
+              </button>
             </div>
-          </GlassCard>
+          </div>
         )}
         {groups.map((g) => {
           const items = todos.filter((t) => t.due === g.key);
           if (items.length === 0) return null;
           return (
-            <div key={g.key} className="flex flex-col gap-[8px]">
-              <Eyebrow>{g.label}</Eyebrow>
-              <GlassCard>
-                <div className="flex flex-col px-[14px]">
-                  {items.map((t, i) => (
-                    <div key={t.id}>
-                      <TodoRow t={t} onToggle={() => toggleTodo(t.id)} />
-                      {i < items.length - 1 && <div className="h-px w-full bg-white/[0.05]" />}
-                    </div>
-                  ))}
-                </div>
-              </GlassCard>
+            <div key={g.key}>
+              <SectionLabel>{g.label}</SectionLabel>
+              <ListGroup>
+                {items.map((t, i) => (
+                  <TodoRow key={t.id} t={t} onToggle={() => toggleTodo(t.id)} last={i === items.length - 1} />
+                ))}
+              </ListGroup>
             </div>
           );
         })}
@@ -591,10 +334,14 @@ function TodosView({ onBack }: { onBack: () => void }) {
 }
 
 /* ---------- screen ---------- */
-
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [view, setView] = useState<View>("hub");
+  const { name, streak, todayDone, todayTotal, lessons, goals, routine } = useMe();
   const back = () => setView("hub");
+
+  const currentLesson = lessons.find((l) => l.status === "actual") ?? lessons[0];
+  const routineDone = routine.filter((r) => r.done).length;
+  const topGoal = goals[0];
 
   return (
     <div className="relative w-full">
@@ -602,35 +349,68 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
         {view === "hub" && (
           <motion.div
             key="hub"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
           >
             {onClose && (
-              <div className="absolute top-[18px] right-[20px] z-10">
+              <div className="absolute top-[22px] right-[20px] z-10">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="h-[36px] w-[36px] rounded-full bg-white/[0.06] border border-white/[0.08] flex items-center justify-center active:scale-95"
+                  className="h-[36px] w-[36px] rounded-full flex items-center justify-center active:bg-white/[0.05]"
                 >
-                  <X className="h-[15px] w-[15px] text-white/75" strokeWidth={1.8} />
+                  <X className="h-[16px] w-[16px] text-white/55" strokeWidth={1.6} />
                 </button>
               </div>
             )}
-            <Header />
-            <div className="flex flex-col gap-[14px] px-[20px] pt-[8px]">
-              <StreakCard />
-              <TodayCard onOpen={() => setView("todos")} />
-              <LearnTeaser onOpen={() => setView("learn")} />
-              <div className="grid grid-cols-1 gap-[12px]">
-                <GoalsTeaser onOpen={() => setView("goals")} />
-                <RoutineTeaser onOpen={() => setView("routine")} />
-              </div>
-              <p className="font-['Geist'] text-[11.5px] text-white/35 text-center pt-[6px]">
-                Trax · Tu negocio crece contigo
-              </p>
+
+            <PageHeader eyebrow="Tú" title={`Hola, ${name}`} />
+
+            <div className="px-[20px] pt-[20px]">
+              <StreakHero streak={streak} />
             </div>
+
+            <div className="mt-[40px] px-[20px]">
+              <SectionLabel>Hoy</SectionLabel>
+              <ListGroup>
+                <PlainRow
+                  Icon={ListChecks}
+                  label="Tareas"
+                  meta={`${todayDone} de ${todayTotal} hecho`}
+                  onClick={() => setView("todos")}
+                />
+                <RowDivider />
+                <PlainRow
+                  Icon={Sun}
+                  label="Rutina diaria"
+                  meta={`${routineDone} de ${routine.length}`}
+                  onClick={() => setView("routine")}
+                />
+              </ListGroup>
+            </div>
+
+            <div className="mt-[28px] px-[20px]">
+              <SectionLabel>Crece</SectionLabel>
+              <ListGroup>
+                <PlainRow
+                  Icon={BookOpen}
+                  label="Aprender"
+                  meta={currentLesson?.title ?? "—"}
+                  onClick={() => setView("learn")}
+                />
+                <RowDivider />
+                <PlainRow
+                  Icon={Target}
+                  label="Metas"
+                  meta={topGoal?.label ?? "—"}
+                  onClick={() => setView("goals")}
+                />
+              </ListGroup>
+            </div>
+
+            <FooterMark>Tu negocio crece contigo</FooterMark>
           </motion.div>
         )}
 
