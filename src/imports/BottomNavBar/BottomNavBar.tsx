@@ -1,7 +1,7 @@
-import { LayoutDashboard, Receipt, Plus, Store, TrendingUp } from "lucide-react";
+import { LayoutDashboard, Receipt, Wallet, Store, TrendingUp } from "lucide-react";
 import { motion } from "motion/react";
 
-type Screen = "inicio" | "ventas" | "negocio" | "crecer";
+type Screen = "inicio" | "ventas" | "finanzas" | "negocio" | "crecer";
 
 interface BottomNavBarProps {
   currentScreen?: Screen;
@@ -23,22 +23,31 @@ function Tab({ active, onClick, Icon, label }: TabProps) {
       aria-label={label}
       whileTap={{ scale: 0.88 }}
       transition={{ type: "spring", stiffness: 500, damping: 28 }}
-      className="relative flex items-center justify-center size-[44px] rounded-full"
+      className="relative flex flex-col items-center justify-center gap-[3px] flex-1 h-[52px]"
     >
-      {active && (
-        <motion.span
-          layoutId="trax-nav-pill"
-          className="absolute inset-0 rounded-full bg-white/95"
-          style={{ boxShadow: "0 4px 20px rgba(255,255,255,0.22)" }}
-          transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }}
+      <div className="relative flex items-center justify-center h-[28px] w-[44px]">
+        {active && (
+          <motion.span
+            layoutId="trax-nav-pill"
+            className="absolute inset-0 rounded-full bg-white/95"
+            style={{ boxShadow: "0 4px 20px rgba(255,255,255,0.22)" }}
+            transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }}
+          />
+        )}
+        <Icon
+          className={`relative size-[19px] transition-colors duration-300 ${
+            active ? "text-black" : "text-white/55"
+          }`}
+          strokeWidth={active ? 2.2 : 1.8}
         />
-      )}
-      <Icon
-        className={`relative size-[22px] transition-colors duration-300 ${
-          active ? "text-black" : "text-white/55"
+      </div>
+      <span
+        className={`font-['Geist'] text-[10px] tracking-[0.1px] transition-colors ${
+          active ? "text-white font-medium" : "text-white/45"
         }`}
-        strokeWidth={active ? 2.2 : 1.8}
-      />
+      >
+        {label}
+      </span>
     </motion.button>
   );
 }
@@ -48,7 +57,7 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
 
   return (
     <div
-      className="size-full flex items-center justify-around px-[12px] pt-[10px] pb-[28px] border-t border-white/[0.06]"
+      className="size-full flex items-center justify-around px-[8px] pt-[8px] pb-[24px] border-t border-white/[0.06]"
       style={{
         background: "rgba(20, 20, 22, 0.55)",
         backdropFilter: "blur(24px) saturate(180%)",
@@ -57,16 +66,7 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
     >
       <Tab label="Inicio" Icon={LayoutDashboard} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
       <Tab label="Ventas" Icon={Receipt} active={currentScreen === "ventas"} onClick={() => go("ventas")} />
-      <motion.button
-        type="button"
-        aria-label="Nuevo"
-        whileHover={{ scale: 1.06 }}
-        whileTap={{ scale: 0.92 }}
-        transition={{ type: "spring", stiffness: 420, damping: 22 }}
-        className="relative flex items-center justify-center size-[44px] rounded-full bg-white/[0.06] border border-white/[0.08]"
-      >
-        <Plus className="size-[20px] text-white/70" strokeWidth={2} />
-      </motion.button>
+      <Tab label="Finanzas" Icon={Wallet} active={currentScreen === "finanzas"} onClick={() => go("finanzas")} />
       <Tab label="Negocio" Icon={Store} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
       <Tab label="Crecer" Icon={TrendingUp} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
