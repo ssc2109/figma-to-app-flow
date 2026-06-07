@@ -57,6 +57,7 @@ export default function OnboardingFlow() {
   const steps = [
     {
       icon: Store,
+      image: bodegaHero,
       title: "Tu bodega",
       subtitle: "¿Cómo se llama tu negocio?",
       valid: businessName.trim().length > 0,
@@ -66,6 +67,7 @@ export default function OnboardingFlow() {
     },
     {
       icon: Package,
+      image: productImg,
       title: "Tu primer producto",
       subtitle: "Agrega uno para empezar (puedes saltarlo)",
       valid: true,
@@ -91,6 +93,7 @@ export default function OnboardingFlow() {
     },
     {
       icon: Wallet,
+      image: payImg,
       title: "Cómo cobras",
       subtitle: "Elige los métodos que aceptas",
       valid: paymentMethods.length > 0,
