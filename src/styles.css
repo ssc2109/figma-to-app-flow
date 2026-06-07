@@ -198,3 +198,93 @@
 /* Hide horizontal scrollbar on chip rows */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ============================================================
+   Trax motion utilities — premium micro-interactions
+   ============================================================ */
+
+/* Shimmer skeleton */
+@keyframes trax-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.trax-skeleton {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.04) 0%,
+      rgba(255,255,255,0.09) 50%,
+      rgba(255,255,255,0.04) 100%
+    );
+  background-size: 200% 100%;
+  animation: trax-shimmer 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Soft halo pulse — for alert icons */
+@keyframes trax-halo {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.35); }
+  50%      { box-shadow: 0 0 0 8px rgba(248,113,113,0); }
+}
+.trax-halo { animation: trax-halo 2.2s ease-out infinite; }
+
+/* Slow breathing glow — for the live "Abierto" dot, etc. */
+@keyframes trax-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.08); }
+}
+.trax-breathe { animation: trax-breathe 2.4s ease-in-out infinite; }
+
+/* Diagonal shine sweep for premium cards (use sparingly) */
+@keyframes trax-shine {
+  0%   { transform: translateX(-120%) skewX(-12deg); }
+  100% { transform: translateX(220%)  skewX(-12deg); }
+}
+.trax-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.trax-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.06) 45%,
+    rgba(255,255,255,0.14) 50%,
+    rgba(255,255,255,0.06) 55%,
+    transparent 100%
+  );
+  width: 60%;
+  animation: trax-shine 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Smooth, reusable hover lift for cards */
+.trax-lift {
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 280ms ease,
+    border-color 280ms ease,
+    box-shadow 280ms ease;
+  will-change: transform;
+}
+.trax-lift:hover {
+  transform: translateY(-2px);
+  background-color: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.10);
+}
+.trax-lift:active { transform: translateY(0) scale(0.99); }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .trax-skeleton,
+  .trax-halo,
+  .trax-breathe,
+  .trax-shine::after { animation: none !important; }
+  .trax-lift { transition: none !important; }
+}
+
