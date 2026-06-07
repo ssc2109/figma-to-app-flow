@@ -790,7 +790,7 @@ function Container42() {
 function Container47() {
   return (
     <div className="content-stretch flex flex-col items-start relative shrink-0" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[16px] text-white whitespace-nowrap">
+      <div className="[word-break:break-word] flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center leading-[0] not-italic relative shrink-0 text-[16px] text-[#4ADE80] whitespace-nowrap">
         <p className="leading-[24px]">+S/ 18.00</p>
       </div>
     </div>
