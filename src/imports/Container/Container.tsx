@@ -173,7 +173,7 @@ function Container7() {
 
 function Button1() {
   return (
-    <div className="bg-[#161616] col-1 content-stretch flex flex-col gap-[8px] items-center justify-center justify-self-start px-[13.75px] py-[26px] relative rounded-[32px] row-1 self-start shrink-0" data-name="Button">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-1 content-stretch flex flex-col gap-[8px] items-center justify-center justify-self-start px-[13.75px] py-[26px] relative rounded-[32px] row-1 self-start shrink-0" data-name="Button">
       <Overlay />
       <Container7 />
     </div>
@@ -212,7 +212,7 @@ function Container9() {
 
 function Button2() {
   return (
-    <div className="bg-[#161616] col-2 content-stretch flex flex-col gap-[8px] items-center justify-center justify-self-start px-[13.75px] py-[26px] relative rounded-[32px] row-1 self-start shrink-0" data-name="Button">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-2 content-stretch flex flex-col gap-[8px] items-center justify-center justify-self-start px-[13.75px] py-[26px] relative rounded-[32px] row-1 self-start shrink-0" data-name="Button">
       <Overlay1 />
       <Container9 />
     </div>
@@ -251,7 +251,7 @@ function Container11() {
 
 function Button3() {
   return (
-    <div className="bg-[#161616] col-3 content-stretch flex flex-col gap-[8px] items-center justify-center justify-self-start px-[8px] py-[26px] relative rounded-[32px] row-1 self-start shrink-0" data-name="Button">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-3 content-stretch flex flex-col gap-[8px] items-center justify-center justify-self-start px-[8px] py-[26px] relative rounded-[32px] row-1 self-start shrink-0" data-name="Button">
       <Overlay2 />
       <Container11 />
     </div>
@@ -291,7 +291,7 @@ function Container13() {
 
 function Button4() {
   return (
-    <div className="bg-[#161616] col-4 content-stretch flex flex-col gap-[8px] items-center justify-center justify-self-start px-[13.75px] py-[16px] relative rounded-[32px] row-1 self-start shrink-0" data-name="Button">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] col-4 content-stretch flex flex-col gap-[8px] items-center justify-center justify-self-start px-[13.75px] py-[16px] relative rounded-[32px] row-1 self-start shrink-0" data-name="Button">
       <Overlay3 />
       <Container13 />
     </div>
@@ -371,7 +371,7 @@ function Button5() {
 
 function SectionAiSlot() {
   return (
-    <div className="bg-[#161616] relative rounded-[32px] shrink-0 w-full" data-name="Section - AI Slot">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] relative rounded-[32px] shrink-0 w-full" data-name="Section - AI Slot">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center justify-between p-[16px] relative size-full">
           <Container14 />
@@ -556,7 +556,7 @@ function Container29() {
 
 function Item() {
   return (
-    <div className="bg-[#161616] relative rounded-[32px] shrink-0 w-full" data-name="Item 1">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] relative rounded-[32px] shrink-0 w-full" data-name="Item 1">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center justify-between p-[16px] relative size-full">
           <Container24 />
@@ -637,7 +637,7 @@ function Container35() {
 
 function Item1() {
   return (
-    <div className="bg-[#161616] relative rounded-[32px] shrink-0 w-full" data-name="Item 2">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] relative rounded-[32px] shrink-0 w-full" data-name="Item 2">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center justify-between p-[16px] relative size-full">
           <Container30 />
@@ -718,7 +718,7 @@ function Container41() {
 
 function Item2() {
   return (
-    <div className="bg-[#161616] relative rounded-[32px] shrink-0 w-full" data-name="Item 3">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] relative rounded-[32px] shrink-0 w-full" data-name="Item 3">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center justify-between pl-[16px] pr-[15.99px] py-[16px] relative size-full">
           <Container36 />
@@ -799,7 +799,7 @@ function Container47() {
 
 function Item3() {
   return (
-    <div className="bg-[#161616] relative rounded-[32px] shrink-0 w-full" data-name="Item 4">
+    <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/[0.08] relative rounded-[32px] shrink-0 w-full" data-name="Item 4">
       <div className="flex flex-row items-center size-full">
         <div className="content-stretch flex items-center justify-between p-[16px] relative size-full">
           <Container42 />
