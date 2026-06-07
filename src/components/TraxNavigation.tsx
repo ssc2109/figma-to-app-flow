@@ -48,24 +48,22 @@ export default function TraxNavigation() {
   }, [cart]);
 
   return (
-    <div className="fixed inset-0 bg-black glass-bg overflow-hidden">
-      <div className="absolute inset-0 overflow-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <div className="mx-auto w-full max-w-[430px] pb-[120px]">
-          {currentScreen === "inicio" && <Container />}
-          {currentScreen === "ventas" && (
-            <HtmlBody
-              onOpenCart={() => count > 0 && setCartOpen(true)}
-              cart={cart}
-              onAdd={addToCart}
-              onRemove={removeItem}
-              count={count}
-              subtotal={subtotal}
-            />
-          )}
-        </div>
+    <div className="min-h-screen bg-black glass-bg relative">
+      <div className="mx-auto w-full max-w-[430px] pb-[140px]">
+        {currentScreen === "inicio" && <Container />}
+        {currentScreen === "ventas" && (
+          <HtmlBody
+            onOpenCart={() => count > 0 && setCartOpen(true)}
+            cart={cart}
+            onAdd={addToCart}
+            onRemove={removeItem}
+            count={count}
+            subtotal={subtotal}
+          />
+        )}
       </div>
 
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
         <BottomNavBar
           currentScreen={currentScreen}
           onNavigate={(s) => {
@@ -88,4 +86,5 @@ export default function TraxNavigation() {
     </div>
   );
 }
+
 
