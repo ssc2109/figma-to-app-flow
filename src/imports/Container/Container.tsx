@@ -838,8 +838,6 @@ function Main() {
       <div className="content-stretch flex flex-col gap-[40px] items-start px-[20px] relative size-full">
         <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
         <SectionQuickActions />
-        <SectionAiSlot />
-        <AiTipsSectionParaTiHoyNowUsingGeist />
         <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
       </div>
     </div>
