@@ -1,7 +1,7 @@
 import svgPaths from "./svg-hc6bxk0av9";
 import imgProfile from "./752b2ffc6c9d7d95b1254f5a3ea754226cbf7bb2.png";
 import Aurora from "@/components/Aurora";
-import { GoalPill, AiCard, StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
+import { StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
 import { useInventory } from "@/data/inventory";
 
 
@@ -141,10 +141,10 @@ function HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero() {
         <Margin />
         <Shadow />
       </div>
-      <GoalPill current={1250} goal={1500} />
     </div>
   );
 }
+
 
 function Container6() {
   return (
@@ -853,11 +853,8 @@ function Main() {
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
         <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
         <SectionQuickActions />
-        <AiCard
-          name="Alberto"
-          message="hoy es un buen día para reponer stock de abarrotes. Tus ventas subieron un 12%."
-        />
         <StockAlertCard alerts={alerts} />
+
         <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers />
       </div>
     </div>
