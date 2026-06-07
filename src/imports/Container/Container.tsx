@@ -559,9 +559,9 @@ function Container29() {
 
 function Item() {
   return (
-    <div className="glass-card relative rounded-[32px] shrink-0 w-full" data-name="Item 1">
+    <div className="relative shrink-0 w-full" data-name="Item 1">
       <div className="flex flex-row items-center size-full">
-        <div className="content-stretch flex items-center justify-between p-[16px] relative size-full">
+        <div className="content-stretch flex items-center justify-between py-[10px] relative size-full">
           <Container24 />
           <Container29 />
         </div>
@@ -640,9 +640,9 @@ function Container35() {
 
 function Item1() {
   return (
-    <div className="glass-card relative rounded-[32px] shrink-0 w-full" data-name="Item 2">
+    <div className="relative shrink-0 w-full" data-name="Item 2">
       <div className="flex flex-row items-center size-full">
-        <div className="content-stretch flex items-center justify-between p-[16px] relative size-full">
+        <div className="content-stretch flex items-center justify-between py-[10px] relative size-full">
           <Container30 />
           <Container35 />
         </div>
@@ -721,9 +721,9 @@ function Container41() {
 
 function Item2() {
   return (
-    <div className="glass-card relative rounded-[32px] shrink-0 w-full" data-name="Item 3">
+    <div className="relative shrink-0 w-full" data-name="Item 3">
       <div className="flex flex-row items-center size-full">
-        <div className="content-stretch flex items-center justify-between pl-[16px] pr-[15.99px] py-[16px] relative size-full">
+        <div className="content-stretch flex items-center justify-between py-[10px] relative size-full">
           <Container36 />
           <Container41 />
         </div>
@@ -815,7 +815,7 @@ function Item3() {
 
 function Container23() {
   return (
-    <div className="content-stretch flex flex-col gap-[12px] items-start relative shrink-0 w-full" data-name="Container">
+    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full divide-y divide-[rgba(255,255,255,0.06)]" data-name="Container">
       <Item />
       <Item1 />
       <Item2 />
@@ -825,9 +825,11 @@ function Container23() {
 
 function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers() {
   return (
-    <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full" data-name="Section - Actividad Reciente - Now using Geist for all text and numbers">
-      <Heading2 />
-      <Container23 />
+    <div className="glass-card relative rounded-[28px] shrink-0 w-full px-[16px] py-[16px]" data-name="Section - Actividad Reciente">
+      <div className="content-stretch flex flex-col gap-[8px] items-start relative w-full">
+        <Heading2 />
+        <Container23 />
+      </div>
     </div>
   );
 }
