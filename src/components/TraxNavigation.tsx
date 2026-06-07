@@ -63,7 +63,7 @@ export default function TraxNavigation() {
         )}
       </div>
 
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] h-[120px] z-50 pointer-events-none">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
         <BottomNavBar
           currentScreen={currentScreen}
           onNavigate={(s) => {
