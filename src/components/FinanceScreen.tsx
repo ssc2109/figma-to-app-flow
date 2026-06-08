@@ -15,7 +15,8 @@ import {
 } from "./business/shared";
 import { Sparkline } from "./Sparkline";
 
-type View = "hub" | "transactions" | "fiados" | "categories";
+type View = "hub" | "fiados" | "categories";
+type ActivityRange = "hoy" | "semana" | "mes";
 type Period = "hoy" | "semana" | "mes";
 
 const fmt = (n: number) => `S/ ${n.toFixed(2)}`;
