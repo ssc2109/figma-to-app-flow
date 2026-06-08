@@ -475,7 +475,7 @@ export default function FinanceScreen() {
           </motion.div>
         )}
 
-        {view === "transactions" && <TransactionsView key="tx" onBack={back} />}
+        
         {view === "fiados" && <FiadosView key="fi" onBack={back} />}
         {view === "categories" && <CategoriesView key="cat" onBack={back} />}
       </AnimatePresence>
