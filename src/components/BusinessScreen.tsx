@@ -50,8 +50,8 @@ function StockAlert({ count, onOpen }: { count: number; onOpen: () => void }) {
 }
 
 /* ---------- screen ---------- */
-export default function BusinessScreen() {
-  const [view, setView] = useState<View>("hub");
+export default function BusinessScreen({ initialView = "hub" }: { initialView?: View } = {}) {
+  const [view, setView] = useState<View>(initialView);
   const { productCount, totalValue, lowStock } = useInventory();
   const fin = useFinance();
   const { profile } = useAuth();
