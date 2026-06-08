@@ -463,14 +463,11 @@ export default function FinanceScreen() {
                   meta={f.expensesByCategory[0]?.label ?? "Sin egresos"}
                   onClick={() => setView("categories")}
                 />
-                <RowDivider />
-                <PlainRow
-                  Icon={Clock}
-                  label="Historial"
-                  meta={`${f.tx.length} movimientos`}
-                  onClick={() => setView("transactions")}
-                />
               </ListGroup>
+            </div>
+
+            <div className="px-[20px] mt-[36px]">
+              <ActivityList />
             </div>
 
             <FooterMark>La verdad de tu negocio</FooterMark>
