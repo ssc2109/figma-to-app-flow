@@ -3,7 +3,6 @@ import { motion } from "motion/react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
-import bodegaHero from "@/assets/generated/bodega-hero.jpg";
 
 type Mode = "signin" | "signup";
 
@@ -65,35 +64,18 @@ export default function AuthScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-end px-[20px] pb-[28px] relative overflow-hidden">
-      <div
-        aria-hidden
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: `url(${bodegaHero})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 z-0"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.85) 45%, #000 80%)",
-        }}
-      />
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[20px]">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-[380px] relative z-10"
+        className="w-full max-w-[380px]"
       >
-        <div className="text-center mb-[28px]">
+        <div className="text-center mb-[36px]">
           <div className="font-['Bai_Jamjuree'] text-[44px] font-medium text-white tracking-tight leading-none">
             Trax
           </div>
-          <p className="mt-[10px] text-white/65 text-[14px] font-['Geist']">
+          <p className="mt-[10px] text-white/55 text-[14px] font-['Geist']">
             Tu bodega, ordenada en un solo lugar
           </p>
         </div>

@@ -18,7 +18,6 @@ import { ScreenTransition } from "@/components/motion/ScreenTransition";
 import { AppSkeleton } from "@/components/motion/AppSkeleton";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { Toaster } from "@/components/ui/sonner";
-import SplashIntro from "@/components/SplashIntro";
 import { AnimatePresence, motion } from "motion/react";
 
 
@@ -172,7 +171,6 @@ function AuthGate() {
 export default function TraxNavigation() {
   return (
     <AuthProvider>
-      <SplashIntro />
       <AuthGate />
       <Toaster />
     </AuthProvider>

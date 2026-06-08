@@ -2,8 +2,6 @@ import { useMemo, useState } from "react";
 import { Search, Plus, Minus, PackagePlus } from "lucide-react";
 import { useInventory, LOW_STOCK_THRESHOLD, type InventoryItem } from "@/data/inventory";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
-import EmptyState from "@/components/EmptyState";
-import { getCategoryIcon } from "@/lib/categoryIcon";
 
 function Stepper({ value, onDelta }: { value: number; onDelta: (d: number) => void }) {
   return (
@@ -38,18 +36,7 @@ function InventoryRow({ item, last }: { item: InventoryItem; last?: boolean }) {
   const isLow = item.stock <= LOW_STOCK_THRESHOLD;
   return (
     <>
-      <div className="flex items-center gap-[12px] px-[16px] py-[12px]">
-        <div
-          className="h-[36px] w-[36px] rounded-[10px] flex items-center justify-center shrink-0"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-        >
-          <img
-            src={getCategoryIcon(item.category)}
-            alt=""
-            loading="lazy"
-            className="h-[22px] w-[22px] opacity-80"
-          />
-        </div>
+      <div className="flex items-center gap-[14px] px-[16px] py-[12px]">
         <div className="flex-1 min-w-0">
           <div className="font-['Geist'] text-[14.5px] text-white truncate">{item.name}</div>
           <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45 tabular-nums">
@@ -139,23 +126,16 @@ export default function InventoryView({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        {filtered.length === 0 ? (
-          <EmptyState
-            variant="inventory"
-            title={items.length === 0 ? "Aún no tienes productos" : "Sin resultados"}
-            subtitle={
-              items.length === 0
-                ? "Agrega tu primer producto para empezar a controlar tu stock."
-                : "Prueba con otro nombre o categoría."
-            }
-          />
-        ) : (
-          <ListGroup>
-            {filtered.map((item, idx) => (
-              <InventoryRow key={item.id} item={item} last={idx === filtered.length - 1} />
-            ))}
-          </ListGroup>
-        )}
+        <ListGroup>
+          {filtered.length === 0 && (
+            <div className="py-[32px] text-center font-['Geist'] text-[13px] text-white/40">
+              Sin productos
+            </div>
+          )}
+          {filtered.map((item, idx) => (
+            <InventoryRow key={item.id} item={item} last={idx === filtered.length - 1} />
+          ))}
+        </ListGroup>
       </div>
     </SubScreen>
   );
