@@ -26,6 +26,7 @@ function NavShell() {
   const [booting, setBooting] = useState(true);
   const [salesOpen, setSalesOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "finanzas">("hub");
   const qa = useQuickActions();
 
   useEffect(() => {
