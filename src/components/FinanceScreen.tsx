@@ -15,7 +15,8 @@ import {
 } from "./business/shared";
 import { Sparkline } from "./Sparkline";
 
-type View = "hub" | "fiados" | "categories";
+type View = "hub" | "deudas" | "categories";
+type DeudaTab = "cobrar" | "pagar";
 type ActivityRange = "hoy" | "semana" | "mes";
 type Period = "hoy" | "semana" | "mes";
 
@@ -279,56 +280,142 @@ function ActivityList() {
   );
 }
 
-function FiadosView({ onBack }: { onBack: () => void }) {
+function DeudasView({ onBack }: { onBack: () => void }) {
   const { fiados, settleFiado, fiadosPending } = useFinance();
+  const [tab, setTab] = useState<DeudaTab>("cobrar");
   const pending = fiados.filter((f) => !f.settled);
+  // "Por pagar" no existe aún en el modelo de datos — empty state.
+  const porPagar: { id: string; supplier: string; amount: number; dueDate?: string }[] = [];
+  const totalPagar = porPagar.reduce((s, x) => s + x.amount, 0);
+
+  const total = tab === "cobrar" ? fiadosPending : totalPagar;
+  const totalColor = tab === "cobrar" ? "#4ADE80" : "#F87171";
+  const totalLabel = tab === "cobrar" ? "Total por cobrar" : "Total por pagar";
+
   return (
     <SubScreen>
-      <SubHeader eyebrow="Te deben" title="Fiados" onBack={onBack} />
-      <div className="px-[20px] pt-[14px] flex flex-col gap-[28px]">
+      <SubHeader eyebrow="Cuentas abiertas" title="Deudas" onBack={onBack} />
+
+      {/* Tab switch */}
+      <div className="px-[20px] pt-[6px]">
+        <div className="flex items-center justify-center gap-[28px]">
+          {([
+            { id: "cobrar", label: "Por cobrar" },
+            { id: "pagar", label: "Por pagar" },
+          ] as { id: DeudaTab; label: string }[]).map((o) => {
+            const active = tab === o.id;
+            return (
+              <button
+                key={o.id}
+                type="button"
+                onClick={() => setTab(o.id)}
+                className="relative font-['Geist'] text-[13px] font-medium transition-colors pb-[6px]"
+                style={{ color: active ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)" }}
+              >
+                {o.label}
+                {active && (
+                  <motion.span
+                    layoutId="deudas-tab-underline"
+                    className="absolute -bottom-[1px] left-[10%] right-[10%] h-[1.5px] bg-white rounded-full"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="px-[20px] pt-[18px] flex flex-col gap-[28px]">
         <div className="text-center">
-          <Eyebrow>Total pendiente</Eyebrow>
-          <div className="mt-[10px] font-['Bai_Jamjuree'] text-[44px] font-bold text-white tabular-nums tracking-[-1.4px] leading-none">
+          <Eyebrow>{totalLabel}</Eyebrow>
+          <div
+            className="mt-[10px] font-['Bai_Jamjuree'] text-[44px] font-bold tabular-nums tracking-[-1.4px] leading-none"
+            style={{ color: total > 0 ? totalColor : "rgba(255,255,255,0.95)" }}
+          >
             <span className="text-white/40 text-[18px] mr-[3px] font-medium">S/</span>
-            {fiadosPending.toFixed(0)}
+            {total.toFixed(0)}
           </div>
         </div>
 
-        {pending.length > 0 ? (
-          <div>
-            <SectionLabel>Por cobrar · {pending.length}</SectionLabel>
-            <ListGroup>
-              {pending.map((f, i) => {
-                const overdue = f.dueDate && new Date(f.dueDate) < new Date();
-                return (
-                  <div key={f.id}>
-                    <div className="flex items-center gap-[14px] px-[16px] py-[13px]">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-['Geist'] text-[14.5px] text-white truncate">{f.client}</div>
-                        <div className="font-['Geist'] text-[11.5px] mt-[2px]" style={{ color: overdue ? "#F87171" : "rgba(255,255,255,0.40)" }}>
-                          {fmt(f.amount)}{overdue ? " · vencido" : ""}
+        <AnimatePresence mode="wait" initial={false}>
+          {tab === "cobrar" ? (
+            <motion.div
+              key="cobrar"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+            >
+              {pending.length > 0 ? (
+                <div>
+                  <SectionLabel>{pending.length} pendiente{pending.length === 1 ? "" : "s"}</SectionLabel>
+                  <ListGroup>
+                    {pending.map((f, i) => {
+                      const overdue = f.dueDate && new Date(f.dueDate) < new Date();
+                      return (
+                        <div key={f.id}>
+                          <div className="flex items-center gap-[14px] px-[16px] py-[13px]">
+                            <div className="flex-1 min-w-0">
+                              <div className="font-['Geist'] text-[14.5px] text-white truncate">{f.client}</div>
+                              <div className="font-['Geist'] text-[11.5px] mt-[2px]" style={{ color: overdue ? "#F87171" : "rgba(255,255,255,0.40)" }}>
+                                {fmt(f.amount)}{overdue ? " · vencido" : ""}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => settleFiado(f.id)}
+                              className="h-[30px] px-[14px] rounded-full font-['Geist'] text-[12.5px] font-medium text-white active:scale-95 transition-transform"
+                              style={{ border: "1px solid rgba(255,255,255,0.18)" }}
+                            >
+                              Cobrar
+                            </button>
+                          </div>
+                          {i < pending.length - 1 && <div className="h-px bg-white/[0.05] mx-[16px]" />}
                         </div>
+                      );
+                    })}
+                  </ListGroup>
+                </div>
+              ) : (
+                <div className="text-center font-['Geist'] text-[13px] text-white/40 py-[24px]">
+                  No tienes cuentas por cobrar.
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="pagar"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+            >
+              {porPagar.length > 0 ? (
+                <div>
+                  <SectionLabel>{porPagar.length} pendiente{porPagar.length === 1 ? "" : "s"}</SectionLabel>
+                  <ListGroup>
+                    {porPagar.map((p, i) => (
+                      <div key={p.id}>
+                        <div className="flex items-center gap-[14px] px-[16px] py-[13px]">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-['Geist'] text-[14.5px] text-white truncate">{p.supplier}</div>
+                            <div className="font-['Geist'] text-[11.5px] mt-[2px] text-white/40">{fmt(p.amount)}</div>
+                          </div>
+                        </div>
+                        {i < porPagar.length - 1 && <div className="h-px bg-white/[0.05] mx-[16px]" />}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => settleFiado(f.id)}
-                        className="h-[30px] px-[14px] rounded-full font-['Geist'] text-[12.5px] font-medium text-white active:scale-95 transition-transform"
-                        style={{ border: "1px solid rgba(255,255,255,0.18)" }}
-                      >
-                        Cobrar
-                      </button>
-                    </div>
-                    {i < pending.length - 1 && <div className="h-px bg-white/[0.05] mx-[16px]" />}
-                  </div>
-                );
-              })}
-            </ListGroup>
-          </div>
-        ) : (
-          <div className="text-center font-['Geist'] text-[13px] text-white/40 py-[24px]">
-            No tienes fiados pendientes.
-          </div>
-        )}
+                    ))}
+                  </ListGroup>
+                </div>
+              ) : (
+                <div className="text-center font-['Geist'] text-[13px] text-white/40 py-[24px]">
+                  No tienes cuentas por pagar.
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </SubScreen>
   );
@@ -578,9 +665,9 @@ export default function FinanceScreen() {
               <ListGroup>
                 <PlainRow
                   Icon={HandCoins}
-                  label="Fiados"
+                  label="Deudas"
                   meta={pendingCount > 0 ? `Te deben S/ ${f.fiadosPending.toFixed(0)}` : "Al día"}
-                  onClick={() => setView("fiados")}
+                  onClick={() => setView("deudas")}
                 />
                 <RowDivider />
                 <PlainRow
@@ -601,7 +688,7 @@ export default function FinanceScreen() {
         )}
 
         
-        {view === "fiados" && <FiadosView key="fi" onBack={back} />}
+        {view === "deudas" && <DeudasView key="de" onBack={back} />}
         {view === "categories" && <CategoriesView key="cat" onBack={back} />}
       </AnimatePresence>
 
