@@ -13,7 +13,6 @@ import { useInventory } from "@/data/inventory";
 import { useFinance } from "@/data/finance";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  PageHeader,
   SectionLabel,
   ListGroup,
   PlainRow,
@@ -59,6 +58,12 @@ export default function BusinessScreen() {
   const back = () => setView("hub");
 
   const businessName = profile?.business_name || "Mi negocio";
+  const initials = businessName
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join("") || "N";
 
   return (
     <div className="relative w-full">
@@ -71,15 +76,37 @@ export default function BusinessScreen() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
           >
-            <PageHeader
-              eyebrow={businessName}
-              title="Mi Negocio"
-              subtitle="Abierto · cierra a las 10 PM"
-            />
+            {/* Personalized header */}
+            <div className="flex items-center gap-[14px] px-[24px] pt-[26px] pb-[8px]">
+              <div
+                className="relative h-[52px] w-[52px] rounded-full shrink-0 flex items-center justify-center overflow-hidden"
+                style={{
+                  background:
+                    "radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 60%)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                }}
+              >
+                <span className="font-['Bai_Jamjuree'] text-[20px] font-bold text-white tracking-[-0.5px]">
+                  {initials}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.6px] text-white/40">
+                  Tu negocio
+                </div>
+                <h1 className="mt-[2px] font-['Bai_Jamjuree'] text-[26px] font-semibold text-white tracking-[-0.7px] leading-[1.1] truncate">
+                  {businessName}
+                </h1>
+                <p className="mt-[2px] font-['Geist'] text-[12px] text-white/40">
+                  Abierto · cierra a las 10 PM
+                </p>
+              </div>
+            </div>
 
             <div className="px-[20px]">
               <StockAlert count={lowStock.length} onOpen={() => setView("inventory")} />
             </div>
+
 
             {/* Insights activos — auto-rotating */}
             <div className="mt-[32px]">
