@@ -665,9 +665,9 @@ export default function FinanceScreen() {
               <ListGroup>
                 <PlainRow
                   Icon={HandCoins}
-                  label="Fiados"
+                  label="Deudas"
                   meta={pendingCount > 0 ? `Te deben S/ ${f.fiadosPending.toFixed(0)}` : "Al día"}
-                  onClick={() => setView("fiados")}
+                  onClick={() => setView("deudas")}
                 />
                 <RowDivider />
                 <PlainRow
