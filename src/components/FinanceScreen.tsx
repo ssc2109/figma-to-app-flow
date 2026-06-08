@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, X, HandCoins, Layers, Clock } from "lucide-react";
+import { Plus, X, HandCoins, Layers } from "lucide-react";
 import { useFinance, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type TxKind } from "@/data/finance";
 import {
   PageHeader,
@@ -15,7 +15,8 @@ import {
 } from "./business/shared";
 import { Sparkline } from "./Sparkline";
 
-type View = "hub" | "transactions" | "fiados" | "categories";
+type View = "hub" | "fiados" | "categories";
+type ActivityRange = "hoy" | "semana" | "mes";
 type Period = "hoy" | "semana" | "mes";
 
 const fmt = (n: number) => `S/ ${n.toFixed(2)}`;
@@ -133,23 +134,148 @@ function TxRow({ tx }: { tx: ReturnType<typeof useFinance>["tx"][number] }) {
   );
 }
 
-/* ---------- sub-views ---------- */
-function TransactionsView({ onBack }: { onBack: () => void }) {
-  const { tx } = useFinance();
+/* ---------- activity list (Hoy / Semana / Mes) ---------- */
+function relTime(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) {
+    return d
+      .toLocaleTimeString("es-PE", { hour: "numeric", minute: "2-digit" })
+      .toLowerCase();
+  }
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  if (d.toDateString() === y.toDateString()) return "Ayer";
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
+  if (diffDays < 7) {
+    return d.toLocaleDateString("es-PE", { weekday: "long" });
+  }
+  return d.toLocaleDateString("es-PE", { day: "numeric", month: "short" });
+}
+
+function ActivityRow({ tx }: { tx: ReturnType<typeof useFinance>["tx"][number] }) {
+  const pos = tx.kind === "ingreso";
+  const cat =
+    (pos ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).find((c) => c.id === tx.category) ?? {
+      icon: "•",
+      label: tx.category,
+    };
   return (
-    <SubScreen>
-      <SubHeader eyebrow="Todos los movimientos" title="Historial" onBack={onBack} />
-      <div className="px-[20px] pt-[6px]">
-        <ListGroup>
-          {tx.map((t, i) => (
-            <div key={t.id}>
-              <TxRow tx={t} />
-              {i < tx.length - 1 && <div className="h-px bg-white/[0.05] mx-[16px]" />}
-            </div>
-          ))}
-        </ListGroup>
+    <div className="flex items-center gap-[14px] py-[12px]">
+      <div
+        className="h-[44px] w-[44px] rounded-full shrink-0 flex items-center justify-center text-[18px]"
+        style={{
+          background: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+        aria-hidden
+      >
+        <span style={{ filter: "saturate(0) brightness(1.5)" }}>{cat.icon}</span>
       </div>
-    </SubScreen>
+      <div className="flex-1 min-w-0">
+        <div className="font-['Geist'] text-[14.5px] font-medium text-white truncate">
+          {tx.note ?? cat.label}
+        </div>
+        <div className="font-['Geist'] text-[12px] text-white/45 mt-[2px] truncate">
+          {cat.label}
+          {tx.method && <span> · {tx.method}</span>}
+        </div>
+      </div>
+      <div className="flex flex-col items-end shrink-0">
+        <div
+          className="font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums"
+          style={{ color: pos ? "#4ADE80" : "#F87171" }}
+        >
+          {pos ? "+" : "-"}
+          {fmt(tx.amount)}
+        </div>
+        <div className="font-['Geist'] text-[11.5px] text-white/40 mt-[2px] capitalize">
+          {relTime(tx.date)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActivityList() {
+  const { tx } = useFinance();
+  const [range, setRange] = useState<ActivityRange>("hoy");
+
+  const now = new Date();
+  const filtered = tx.filter((t) => {
+    const d = new Date(t.date);
+    if (range === "hoy") return d.toDateString() === now.toDateString();
+    const diff = (now.getTime() - d.getTime()) / 86400000;
+    if (range === "semana") return diff < 7;
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+
+  const opts: { id: ActivityRange; label: string }[] = [
+    { id: "hoy", label: "Hoy" },
+    { id: "semana", label: "Última semana" },
+    { id: "mes", label: "Último mes" },
+  ];
+
+  return (
+    <div>
+      <div className="flex items-baseline justify-between mb-[14px]">
+        <h3 className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white tracking-[-0.3px]">
+          Actividad reciente
+        </h3>
+        <span className="font-['Geist'] text-[11.5px] text-white/35 tabular-nums">
+          {filtered.length} mov.
+        </span>
+      </div>
+
+      <div className="flex items-center gap-[6px] mb-[8px] -mx-[2px]">
+        {opts.map((o) => {
+          const active = o.id === range;
+          return (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => setRange(o.id)}
+              className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium transition-colors"
+              style={{
+                background: active ? "rgba(255,255,255,0.10)" : "transparent",
+                color: active ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.45)",
+                border: `1px solid ${active ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.06)"}`,
+              }}
+            >
+              {o.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={range}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {filtered.length === 0 ? (
+            <div className="text-center font-['Geist'] text-[13px] text-white/35 py-[28px]">
+              Sin movimientos en este rango.
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {filtered.map((t, i) => (
+                <div key={t.id}>
+                  <ActivityRow tx={t} />
+                  {i < filtered.length - 1 && (
+                    <div className="h-px bg-white/[0.05]" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -463,21 +589,18 @@ export default function FinanceScreen() {
                   meta={f.expensesByCategory[0]?.label ?? "Sin egresos"}
                   onClick={() => setView("categories")}
                 />
-                <RowDivider />
-                <PlainRow
-                  Icon={Clock}
-                  label="Historial"
-                  meta={`${f.tx.length} movimientos`}
-                  onClick={() => setView("transactions")}
-                />
               </ListGroup>
+            </div>
+
+            <div className="px-[20px] mt-[36px]">
+              <ActivityList />
             </div>
 
             <FooterMark>La verdad de tu negocio</FooterMark>
           </motion.div>
         )}
 
-        {view === "transactions" && <TransactionsView key="tx" onBack={back} />}
+        
         {view === "fiados" && <FiadosView key="fi" onBack={back} />}
         {view === "categories" && <CategoriesView key="cat" onBack={back} />}
       </AnimatePresence>

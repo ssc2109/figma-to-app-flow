@@ -26,6 +26,7 @@ function NavShell() {
   const [booting, setBooting] = useState(true);
   const [salesOpen, setSalesOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "finanzas">("hub");
   const qa = useQuickActions();
 
   useEffect(() => {
@@ -114,9 +115,20 @@ function NavShell() {
           ) : (
             <ScreenTransition key={currentScreen} screenKey={currentScreen}>
               {currentScreen === "inicio" && (
-                <Container onSeeAllActions={() => setQuickActionsOpen(true)} />
+                <Container
+                  onSeeAllActions={() => setQuickActionsOpen(true)}
+                  onSeeAllActivity={() => {
+                    setNegocioInitialView("finanzas");
+                    setCurrentScreen("negocio");
+                  }}
+                />
               )}
-              {currentScreen === "negocio" && <BusinessScreen />}
+              {currentScreen === "negocio" && (
+                <BusinessScreen
+                  key={negocioInitialView}
+                  initialView={negocioInitialView}
+                />
+              )}
               {currentScreen === "socia" && <SociaScreen />}
               {currentScreen === "yo" && <MeScreen />}
               {currentScreen === "crecer" && <GrowScreen />}
@@ -131,6 +143,7 @@ function NavShell() {
           onNavigate={(s) => {
             setSalesOpen(false);
             setQuickActionsOpen(false);
+            if (s === "negocio") setNegocioInitialView("hub");
             setCurrentScreen(s);
           }}
         />
