@@ -15,7 +15,8 @@ import {
 } from "./business/shared";
 import { Sparkline } from "./Sparkline";
 
-type View = "hub" | "fiados" | "categories";
+type View = "hub" | "deudas" | "categories";
+type DeudaTab = "cobrar" | "pagar";
 type ActivityRange = "hoy" | "semana" | "mes";
 type Period = "hoy" | "semana" | "mes";
 
