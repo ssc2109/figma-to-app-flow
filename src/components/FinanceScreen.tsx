@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, X, HandCoins, Layers, Clock } from "lucide-react";
+import { Plus, X, HandCoins, Layers } from "lucide-react";
 import { useFinance, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type TxKind } from "@/data/finance";
 import {
   PageHeader,
