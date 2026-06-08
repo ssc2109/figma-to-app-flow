@@ -160,7 +160,7 @@ export default function SociaScreen() {
               {greeting}
             </h2>
             <p className="mt-[14px] font-['Geist'] text-[14px] text-white/45 leading-[1.5] max-w-[280px]">
-              ¿En qué te ayudo con la bodega hoy?
+              ¿En qué te ayudo con tu negocio hoy?
             </p>
           </motion.div>
         )}

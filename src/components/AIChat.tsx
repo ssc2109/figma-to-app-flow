@@ -147,7 +147,7 @@ export default function AIChat({ open, onClose }: { open: boolean; onClose: () =
     {
       id: "m0",
       role: "assistant",
-      text: "Hola Alberto 👋 Soy Trax. Pídeme cualquier cosa de tu bodega: registra gastos, cobra fiados, revisa stock o pregúntame cómo va tu día.",
+      text: "Hola 👋 Soy Trax. Pídeme cualquier cosa de tu negocio: registra gastos, cobra fiados, revisa stock o pregúntame cómo va tu día.",
     },
   ]);
   const [input, setInput] = useState("");

@@ -26,7 +26,7 @@ export default function AuthScreen() {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
               owner_name: ownerName.trim() || email.split("@")[0],
-              business_name: businessName.trim() || "Mi bodega",
+              business_name: businessName.trim() || "Mi negocio",
             },
           },
         });
@@ -76,7 +76,7 @@ export default function AuthScreen() {
             Trax
           </div>
           <p className="mt-[10px] text-white/55 text-[14px] font-['Geist']">
-            Tu bodega, ordenada en un solo lugar
+            Tu negocio, ordenado en un solo lugar
           </p>
         </div>
 
@@ -91,10 +91,10 @@ export default function AuthScreen() {
           {mode === "signup" && (
             <>
               <Field
-                label="Nombre de tu bodega"
+                label="Nombre de tu negocio"
                 value={businessName}
                 onChange={setBusinessName}
-                placeholder="Bodega Ecoarom"
+                placeholder="Ej. Ferretería Mendoza"
               />
               <Field
                 label="Tu nombre"
@@ -124,7 +124,7 @@ export default function AuthScreen() {
             disabled={loading}
             className="mt-[6px] h-[50px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-medium active:scale-[0.98] transition disabled:opacity-50"
           >
-            {loading ? "Cargando…" : mode === "signup" ? "Crear mi bodega" : "Entrar"}
+            {loading ? "Cargando…" : mode === "signup" ? "Crear mi cuenta" : "Entrar"}
           </button>
         </form>
 
@@ -154,7 +154,7 @@ export default function AuthScreen() {
         >
           {mode === "signup"
             ? "¿Ya tienes cuenta? Inicia sesión"
-            : "¿Aún no tienes? Crea tu bodega"}
+            : "¿Aún no tienes? Crea tu cuenta"}
         </button>
       </motion.div>
     </div>
