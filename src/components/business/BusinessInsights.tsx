@@ -654,18 +654,8 @@ export default function BusinessInsights() {
           />
         </AnimatePresence>
 
-        {/* top status bar — "live analysis" */}
-        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-[24px] pt-[18px]">
-          <div className="flex items-center gap-[8px]">
-            <motion.div
-              className="h-[7px] w-[7px] rounded-full bg-white"
-              animate={{ opacity: [0.35, 1, 0.35], scale: [1, 1.15, 1] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <span className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-white/65">
-              Trax · análisis en vivo
-            </span>
-          </div>
+        {/* top status bar — slide counter */}
+        <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-end px-[24px] pt-[18px]">
           <span className="font-['Bai_Jamjuree'] text-[11px] font-semibold tabular-nums text-white/55">
             {String(idx + 1).padStart(2, "0")}
             <span className="text-white/25"> / {String(SLIDES.length).padStart(2, "0")}</span>
