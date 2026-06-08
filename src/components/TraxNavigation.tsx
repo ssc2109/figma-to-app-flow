@@ -115,9 +115,20 @@ function NavShell() {
           ) : (
             <ScreenTransition key={currentScreen} screenKey={currentScreen}>
               {currentScreen === "inicio" && (
-                <Container onSeeAllActions={() => setQuickActionsOpen(true)} />
+                <Container
+                  onSeeAllActions={() => setQuickActionsOpen(true)}
+                  onSeeAllActivity={() => {
+                    setNegocioInitialView("finanzas");
+                    setCurrentScreen("negocio");
+                  }}
+                />
               )}
-              {currentScreen === "negocio" && <BusinessScreen />}
+              {currentScreen === "negocio" && (
+                <BusinessScreen
+                  key={negocioInitialView}
+                  initialView={negocioInitialView}
+                />
+              )}
               {currentScreen === "socia" && <SociaScreen />}
               {currentScreen === "yo" && <MeScreen />}
               {currentScreen === "crecer" && <GrowScreen />}
