@@ -13,7 +13,6 @@ import { useInventory } from "@/data/inventory";
 import { useFinance } from "@/data/finance";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  PageHeader,
   SectionLabel,
   ListGroup,
   PlainRow,
