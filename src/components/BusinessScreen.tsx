@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Package,
   Wallet,
@@ -7,12 +7,6 @@ import {
   AlertTriangle,
   ChevronRight,
   ChevronLeft,
-  TrendingUp,
-  HandCoins,
-  Smartphone,
-  Calendar,
-  Receipt,
-  Target,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useInventory } from "@/data/inventory";
@@ -30,12 +24,12 @@ import InventoryView from "./business/InventoryView";
 import PaymentsView from "./business/PaymentsView";
 import InfoView from "./business/InfoView";
 import FinanceScreen from "./FinanceScreen";
+import BusinessInsights from "./business/BusinessInsights";
 
 type View = "hub" | "inventory" | "payments" | "info" | "finanzas";
 
 const fmtK = (n: number) =>
   n >= 1000 ? `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K` : n.toFixed(0);
-const fmtPct = (n: number) => `${Math.round(n)}%`;
 
 /* ---------- alert ---------- */
 function StockAlert({ count, onOpen }: { count: number; onOpen: () => void }) {
@@ -56,197 +50,15 @@ function StockAlert({ count, onOpen }: { count: number; onOpen: () => void }) {
   );
 }
 
-/* ---------- insights ---------- */
-type Insight = {
-  id: string;
-  Icon: typeof TrendingUp;
-  eyebrow: string;
-  value: string;
-  unit?: string;
-  caption: string;
-  tone?: "pos" | "neg" | "neutral";
-};
-
-function InsightCard({ ins }: { ins: Insight }) {
-  const accent =
-    ins.tone === "pos" ? "#4ADE80" : ins.tone === "neg" ? "#F87171" : "rgba(255,255,255,0.55)";
-  return (
-    <div
-      className="snap-center shrink-0 w-[78%] h-[168px] rounded-[22px] p-[18px] flex flex-col justify-between"
-      style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.06)",
-      }}
-    >
-      <div className="flex items-center gap-[8px]">
-        <ins.Icon className="h-[14px] w-[14px]" strokeWidth={1.8} style={{ color: accent }} />
-        <span className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.6px] text-white/45">
-          {ins.eyebrow}
-        </span>
-      </div>
-      <div className="flex items-baseline gap-[4px] -mb-[2px]">
-        {ins.unit === "S/" && (
-          <span className="font-['Bai_Jamjuree'] text-[18px] font-medium text-white/40 tracking-[-0.6px]">
-            S/
-          </span>
-        )}
-        <span
-          className="font-['Bai_Jamjuree'] text-[44px] font-bold text-white tracking-[-1.6px] tabular-nums leading-none"
-        >
-          {ins.value}
-        </span>
-        {ins.unit && ins.unit !== "S/" && (
-          <span className="font-['Bai_Jamjuree'] text-[18px] font-medium text-white/40 ml-[2px]">
-            {ins.unit}
-          </span>
-        )}
-      </div>
-      <p className="font-['Geist'] text-[12.5px] leading-[1.4] text-white/55">{ins.caption}</p>
-    </div>
-  );
-}
-
-function InsightsCarousel({ insights }: { insights: Insight[] }) {
-  const [active, setActive] = useState(0);
-  return (
-    <div>
-      <div
-        className="flex gap-[12px] overflow-x-auto snap-x snap-mandatory no-scrollbar px-[20px] -mx-[20px]"
-        style={{ scrollPaddingLeft: 20, scrollPaddingRight: 20 }}
-        onScroll={(e) => {
-          const el = e.currentTarget;
-          const cardW = el.children[0]?.clientWidth ?? 1;
-          const i = Math.round(el.scrollLeft / (cardW + 12));
-          if (i !== active) setActive(i);
-        }}
-      >
-        {insights.map((ins) => (
-          <InsightCard key={ins.id} ins={ins} />
-        ))}
-        <div className="shrink-0 w-[12px]" />
-      </div>
-      <div className="flex items-center justify-center gap-[5px] mt-[14px]">
-        {insights.map((_, i) => (
-          <div
-            key={i}
-            className="h-[4px] rounded-full transition-all"
-            style={{
-              width: i === active ? 16 : 4,
-              background: i === active ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.16)",
-            }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /* ---------- screen ---------- */
 export default function BusinessScreen() {
   const [view, setView] = useState<View>("hub");
-  const { productCount, totalValue, totalUnits, lowStock, items } = useInventory();
+  const { productCount, totalValue, lowStock } = useInventory();
   const fin = useFinance();
   const { profile } = useAuth();
   const back = () => setView("hub");
 
   const businessName = profile?.business_name || "Mi negocio";
-
-  const insights = useMemo<Insight[]>(() => {
-    // ticket promedio del mes
-    const monthIncomeTx = fin.tx.filter((t) => {
-      const d = new Date(t.date);
-      const now = new Date();
-      return t.kind === "ingreso" && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    });
-    const ticket = monthIncomeTx.length ? fin.monthIncome / monthIncomeTx.length : 0;
-
-    // % digital (yape/plin/tarjeta) vs efectivo
-    const digital = monthIncomeTx
-      .filter((t) => t.method && t.method !== "Efectivo")
-      .reduce((s, t) => s + t.amount, 0);
-    const pctDigital = fin.monthIncome > 0 ? (digital / fin.monthIncome) * 100 : 0;
-
-    // mejor día de la semana (últimos 7)
-    const best = [...fin.last7Days].sort((a, b) => b.income - a.income)[0];
-
-    // margen estimado del mes (ingreso - egreso) / ingreso
-    const margen = fin.monthIncome > 0 ? (fin.monthNet / fin.monthIncome) * 100 : 0;
-
-    // categoría de inventario con más valor
-    const topProduct = [...items].sort((a, b) => b.stock * b.cost - a.stock * a.cost)[0];
-
-    const arr: Insight[] = [
-      {
-        id: "neto",
-        Icon: TrendingUp,
-        eyebrow: "Neto del mes",
-        value: fmtK(Math.abs(fin.monthNet)),
-        unit: "S/",
-        caption: fin.monthNet >= 0 ? "Vas en ganancia este mes." : "Estás en pérdida este mes.",
-        tone: fin.monthNet >= 0 ? "pos" : "neg",
-      },
-      {
-        id: "ticket",
-        Icon: Receipt,
-        eyebrow: "Ticket promedio",
-        value: fmtK(ticket),
-        unit: "S/",
-        caption: `${monthIncomeTx.length} ventas registradas este mes.`,
-      },
-      {
-        id: "margen",
-        Icon: Target,
-        eyebrow: "Margen del mes",
-        value: fmtPct(margen),
-        caption: margen >= 20 ? "Margen saludable." : "Revisa costos para mejorar margen.",
-        tone: margen >= 20 ? "pos" : "neutral",
-      },
-      {
-        id: "digital",
-        Icon: Smartphone,
-        eyebrow: "Pagos digitales",
-        value: fmtPct(pctDigital),
-        caption: `${fmtPct(pctDigital)} de tus ventas llegan por Yape, Plin o tarjeta.`,
-      },
-      {
-        id: "best-day",
-        Icon: Calendar,
-        eyebrow: "Mejor día (7d)",
-        value: best?.day?.toUpperCase() ?? "—",
-        caption: best ? `S/ ${fmtK(best.income)} vendidos ese día.` : "Aún sin datos.",
-      },
-      {
-        id: "fiados",
-        Icon: HandCoins,
-        eyebrow: "Por cobrar",
-        value: fmtK(fin.fiadosPending),
-        unit: "S/",
-        caption:
-          fin.fiadosPending > 0
-            ? `${fin.fiados.filter((f) => !f.settled).length} clientes te deben.`
-            : "Sin fiados pendientes.",
-        tone: fin.fiadosOverdue > 0 ? "neg" : "neutral",
-      },
-      {
-        id: "stock-value",
-        Icon: Package,
-        eyebrow: "Valor de inventario",
-        value: fmtK(totalValue),
-        unit: "S/",
-        caption: `${totalUnits} unidades · ${productCount} productos.`,
-      },
-      {
-        id: "top-product",
-        Icon: TrendingUp,
-        eyebrow: "Mayor stock invertido",
-        value: topProduct?.name?.split(" ")[0]?.toUpperCase() ?? "—",
-        caption: topProduct
-          ? `S/ ${fmtK(topProduct.stock * topProduct.cost)} en ${topProduct.name}.`
-          : "Sin productos.",
-      },
-    ];
-    return arr;
-  }, [fin, items, totalValue, totalUnits, productCount]);
 
   return (
     <div className="relative w-full">
@@ -269,18 +81,16 @@ export default function BusinessScreen() {
               <StockAlert count={lowStock.length} onOpen={() => setView("inventory")} />
             </div>
 
-            {/* Insights activos */}
+            {/* Insights activos — auto-rotating */}
             <div className="mt-[32px]">
-              <div className="px-[20px] mb-[14px]">
+              <div className="px-[20px] mb-[12px]">
                 <SectionLabel>Tu negocio hoy</SectionLabel>
               </div>
-              <div className="pl-[20px]">
-                <InsightsCarousel insights={insights} />
-              </div>
+              <BusinessInsights />
             </div>
 
             {/* Gestión core */}
-            <div className="mt-[36px] px-[20px]">
+            <div className="mt-[32px] px-[20px]">
               <SectionLabel>Gestión</SectionLabel>
               <ListGroup>
                 <PlainRow
