@@ -688,7 +688,7 @@ export default function FinanceScreen() {
         )}
 
         
-        {view === "fiados" && <FiadosView key="fi" onBack={back} />}
+        {view === "deudas" && <DeudasView key="de" onBack={back} />}
         {view === "categories" && <CategoriesView key="cat" onBack={back} />}
       </AnimatePresence>
 
