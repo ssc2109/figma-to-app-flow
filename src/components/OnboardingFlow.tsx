@@ -26,7 +26,7 @@ export default function OnboardingFlow() {
       await supabase
         .from("profiles")
         .update({
-          business_name: businessName.trim() || "Mi bodega",
+          business_name: businessName.trim() || "Mi negocio",
           onboarding_done: true,
         })
         .eq("id", user.id);
@@ -54,11 +54,11 @@ export default function OnboardingFlow() {
   const steps = [
     {
       icon: Store,
-      title: "Tu bodega",
-      subtitle: "¿Cómo se llama tu negocio?",
+      title: "Tu negocio",
+      subtitle: "¿Cómo se llama?",
       valid: businessName.trim().length > 0,
       body: (
-        <Input value={businessName} onChange={setBusinessName} placeholder="Bodega Ecoarom" />
+        <Input value={businessName} onChange={setBusinessName} placeholder="Ej. Ferretería Mendoza" />
       ),
     },
     {
