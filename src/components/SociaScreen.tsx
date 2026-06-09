@@ -187,8 +187,11 @@ export default function SociaScreen() {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        headers: (): Record<string, string> =>
-          bearer ? { Authorization: `Bearer ${bearer}` } : {},
+        headers: async (): Promise<Record<string, string>> => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          return token ? { Authorization: `Bearer ${token}` } : {};
+        },
         prepareSendMessagesRequest: ({ messages, body }) => ({
           body: {
             ...body,
@@ -198,7 +201,7 @@ export default function SociaScreen() {
           },
         }),
       }),
-    [bearer, activeThreadId, liveContext],
+    [activeThreadId, liveContext],
   );
 
   const initialMessages = useMemo(
