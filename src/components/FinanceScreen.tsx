@@ -58,13 +58,12 @@ function PeriodSwitch({ value, onChange }: { value: Period; onChange: (p: Period
   );
 }
 
-/* ---------- the one hero ---------- */
-function NetHero({ value, label }: { value: number; label: string }) {
-  const positive = value >= 0;
+/* ---------- capital hero ---------- */
+function CapitalHero({ value }: { value: number }) {
   return (
     <div className="flex flex-col items-center text-center py-[14px]">
       <span className="font-['Geist'] text-[11.5px] font-medium uppercase tracking-[1.8px] text-white/35">
-        {label}
+        Capital
       </span>
       <div className="mt-[12px] flex items-baseline justify-center gap-[6px]">
         <span className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white/40 tracking-[-0.8px]">
@@ -76,12 +75,43 @@ function NetHero({ value, label }: { value: number; label: string }) {
           {fmtK(Math.abs(value))}
         </span>
       </div>
-      <span
-        className="mt-[10px] font-['Geist'] text-[12.5px]"
-        style={{ color: positive ? "rgba(74,222,128,0.85)" : "rgba(248,113,113,0.85)" }}
-      >
-        {positive ? "Ganancia neta" : "Pérdida"}
+      <span className="mt-[10px] font-['Geist'] text-[12.5px] text-white/40">
+        Saldo acumulado
       </span>
+    </div>
+  );
+}
+
+/* ---------- KPI tile ---------- */
+function KpiTile({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: number;
+  tone?: "neutral" | "pos" | "neg";
+}) {
+  const color =
+    tone === "pos" ? "#4ADE80" : tone === "neg" ? "#F87171" : "rgba(255,255,255,0.95)";
+  return (
+    <div
+      className="flex-1 min-w-0 rounded-[20px] px-[14px] py-[14px]"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.4px] text-white/40 truncate">
+        {label}
+      </div>
+      <div
+        className="mt-[10px] font-['Bai_Jamjuree'] text-[22px] font-bold tabular-nums tracking-[-0.8px] leading-none"
+        style={{ color }}
+      >
+        <span className="text-white/35 text-[12px] mr-[2px] font-medium">S/</span>
+        {fmtK(Math.abs(value))}
+      </div>
     </div>
   );
 }
