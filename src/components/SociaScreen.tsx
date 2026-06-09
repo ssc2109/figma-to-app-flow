@@ -1,254 +1,721 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowUp } from "lucide-react";
+import {
+  ArrowUp,
+  Camera,
+  Mic,
+  Search,
+  Sparkles,
+  ScanLine,
+  TrendingUp,
+  Plus,
+  History,
+  Trash2,
+  X,
+  Square,
+  Loader2,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useInventory } from "@/data/inventory";
-import { useFinance, EXPENSE_CATEGORIES } from "@/data/finance";
+import { useFinance } from "@/data/finance";
+import {
+  listThreads,
+  createThread,
+  deleteThread,
+  getThreadMessages,
+} from "@/lib/api/chat.functions";
+import ShaderOrb from "./socia/ShaderOrb";
 
-type Msg = {
-  id: string;
-  role: "user" | "assistant";
-  text: string;
-};
+type FeatureKey = "foto" | "voz" | "analisis" | "mercado" | "escanear";
 
-const fmt = (n: number) => `S/ ${n.toFixed(2)}`;
+const FEATURES: Array<{
+  key: FeatureKey;
+  icon: typeof Camera;
+  title: string;
+  subtitle: string;
+  hue: number;
+  prompt?: string;
+}> = [
+  {
+    key: "foto",
+    icon: Camera,
+    title: "Foto a libreta",
+    subtitle: "Foto y extraigo ventas/gastos",
+    hue: 0.62,
+  },
+  {
+    key: "voz",
+    icon: Mic,
+    title: "Dictado por voz",
+    subtitle: "Hablame y lo registro",
+    hue: 0.05,
+  },
+  {
+    key: "analisis",
+    icon: TrendingUp,
+    title: "Análisis del día",
+    subtitle: "Resumen e insights inteligentes",
+    hue: 0.4,
+    prompt: "Hazme un análisis completo de cómo va mi negocio hoy: ventas, gastos, fiados y stock crítico. Dame insights y 3 sugerencias accionables.",
+  },
+  {
+    key: "mercado",
+    icon: Search,
+    title: "Investigación",
+    subtitle: "Precios y competencia",
+    hue: 0.78,
+    prompt: "Necesito que me ayudes a investigar precios de mercado para los productos top de mi negocio. ¿Qué información necesitas de mí?",
+  },
+  {
+    key: "escanear",
+    icon: ScanLine,
+    title: "Escanear producto",
+    subtitle: "Foto al producto y lo añado",
+    hue: 0.85,
+  },
+];
 
-function respond(
-  input: string,
-  ctx: { inv: ReturnType<typeof useInventory>; fin: ReturnType<typeof useFinance> },
-): { text: string; sideEffect?: () => void } {
-  const q = input.toLowerCase().trim();
-  const expenseMatch = q.match(
-    /(?:registra|anota|apunta|gasto|gasté|paga|gasta)[^\d]*([\d.,]+)(?:.*?(?:de|para|en)\s+(.+))?/,
-  );
-  if (expenseMatch) {
-    const amount = parseFloat(expenseMatch[1].replace(",", "."));
-    const where = (expenseMatch[2] ?? "otros").trim();
-    const cat =
-      EXPENSE_CATEGORIES.find(
-        (c) => where.includes(c.label.toLowerCase()) || where.includes(c.id),
-      ) ?? EXPENSE_CATEGORIES.find((c) => c.id === "servicios") ?? EXPENSE_CATEGORIES[0];
-    if (amount > 0) {
-      return {
-        text: `Listo. Apunté ${fmt(amount)} en ${cat.label}. Hoy ya gastaste ${fmt(ctx.fin.todayExpense + amount)}.`,
-        sideEffect: () =>
-          ctx.fin.addTransaction({
-            kind: "egreso",
-            amount,
-            category: cat.id,
-            note: where,
-            method: "Efectivo",
-          }),
-      };
-    }
-  }
-  if (/cobr[éaoé]|pag[óo]|me pag[óo]/.test(q) && /fiado|deuda/.test(q)) {
-    const name = q.match(/(?:rosa|julio|marta)/i)?.[0];
-    const target = ctx.fin.fiados.find(
-      (f) => !f.settled && (!name || f.client.toLowerCase().includes(name.toLowerCase())),
-    );
-    if (target) {
-      return {
-        text: `Perfecto. Marqué el fiado de ${target.client} (${fmt(target.amount)}) como cobrado y lo sumé a tus ingresos.`,
-        sideEffect: () => ctx.fin.settleFiado(target.id),
-      };
-    }
-    return { text: "No encontré un fiado pendiente con ese nombre. ¿Me lo confirmas?" };
-  }
-  if (/stock|falta|reponer|agotar/.test(q)) {
-    if (ctx.inv.lowStock.length === 0) {
-      return { text: "Estás bien de stock. Ningún producto crítico ahora mismo." };
-    }
-    const list = ctx.inv.lowStock.slice(0, 3).map((i) => `${i.name} (${i.stock} u)`).join(", ");
-    return {
-      text: `Tienes ${ctx.inv.lowStock.length} producto${ctx.inv.lowStock.length === 1 ? "" : "s"} con stock crítico: ${list}.`,
-    };
-  }
-  if (/cómo voy|como voy|resumen|día|cómo va|como va|hoy/.test(q)) {
-    const net = ctx.fin.todayNet;
-    const sign = net >= 0 ? "+" : "-";
-    return {
-      text: `Hoy: ${fmt(ctx.fin.todayIncome)} en ventas, ${fmt(ctx.fin.todayExpense)} en gastos. Neto ${sign}${fmt(Math.abs(net))}.`,
-    };
-  }
-  if (/mes|mensual|este mes/.test(q)) {
-    return {
-      text: `Este mes: ${fmt(ctx.fin.monthIncome)} de ingresos, ${fmt(ctx.fin.monthExpense)} de gastos. Neto ${fmt(ctx.fin.monthNet)}.`,
-    };
-  }
-  if (/fiado|deben|deuda/.test(q)) {
-    return {
-      text: `Te deben ${fmt(ctx.fin.fiadosPending)} en total.`,
-    };
-  }
-  return {
-    text: "Puedo registrar gastos, cobrar fiados, revisar tu stock o decirte cómo va tu día.",
-  };
-}
-
-const SUGGESTIONS = [
+const QUICK_PROMPTS = [
   "¿Cómo voy hoy?",
   "Registra 50 de luz",
   "¿Qué me falta de stock?",
-  "¿Cuánto neto este mes?",
+  "¿Cuánto gané este mes?",
 ];
+
+type DbMessageRow = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  parts: unknown;
+  created_at: string;
+};
+
+function rowsToUIMessages(rows: DbMessageRow[]): UIMessage[] {
+  return rows
+    .filter((r) => r.role === "user" || r.role === "assistant")
+    .map((r) => ({
+      id: r.id,
+      role: r.role as "user" | "assistant",
+      parts: (Array.isArray(r.parts) ? r.parts : []) as UIMessage["parts"],
+    }));
+}
+
+function uiMessageText(m: UIMessage): string {
+  return (m.parts ?? [])
+    .map((p) => (p.type === "text" ? p.text : ""))
+    .join("");
+}
 
 export default function SociaScreen() {
   const inv = useInventory();
   const fin = useFinance();
+  const qc = useQueryClient();
 
-  const [msgs, setMsgs] = useState<Msg[]>([]);
+  // ---------- threads ----------
+  const listFn = useServerFn(listThreads);
+  const createFn = useServerFn(createThread);
+  const deleteFn = useServerFn(deleteThread);
+  const getMessagesFn = useServerFn(getThreadMessages);
+
+  const { data: threadsData } = useQuery({
+    queryKey: ["chat-threads"],
+    queryFn: () => listFn(),
+  });
+  const threads = threadsData?.threads ?? [];
+
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Load initial messages for active thread
+  const { data: threadMessages } = useQuery({
+    queryKey: ["chat-messages", activeThreadId],
+    queryFn: () =>
+      activeThreadId
+        ? getMessagesFn({ data: { threadId: activeThreadId } })
+        : Promise.resolve({ messages: [] }),
+    enabled: !!activeThreadId,
+  });
+
+  // ---------- chat ----------
+  const [bearer, setBearer] = useState<string | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) setBearer(data.session?.access_token ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) =>
+      setBearer(s?.access_token ?? null),
+    );
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Build context for the model: live snapshot of business data
+  const liveContext = useMemo(
+    () => ({
+      hoy: {
+        ventas: fin.todayIncome,
+        gastos: fin.todayExpense,
+        neto: fin.todayNet,
+      },
+      mes: {
+        ventas: fin.monthIncome,
+        gastos: fin.monthExpense,
+        neto: fin.monthNet,
+      },
+      fiados: {
+        pendientes_total: fin.fiadosPending,
+        cuenta_pendientes: fin.fiados.filter((f) => !f.settled).length,
+      },
+      stock_critico: inv.lowStock.slice(0, 8).map((p) => ({
+        nombre: p.name,
+        unidades: p.stock,
+      })),
+      total_productos: inv.products.length,
+    }),
+    [fin.todayIncome, fin.todayExpense, fin.todayNet, fin.monthIncome, fin.monthExpense, fin.monthNet, fin.fiadosPending, fin.fiados, inv.lowStock, inv.products.length],
+  );
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        headers: () =>
+          bearer ? { Authorization: `Bearer ${bearer}` } : {},
+        prepareSendMessagesRequest: ({ messages, body }) => ({
+          body: {
+            ...body,
+            messages,
+            threadId: activeThreadId,
+            context: liveContext,
+          },
+        }),
+      }),
+    [bearer, activeThreadId, liveContext],
+  );
+
+  const initialMessages = useMemo(
+    () => (threadMessages ? rowsToUIMessages(threadMessages.messages as DbMessageRow[]) : []),
+    [threadMessages],
+  );
+
+  const chatKey = activeThreadId ?? "new";
+  const { messages, sendMessage, status, stop, setMessages } = useChat({
+    id: chatKey,
+    transport,
+    onError: (err) => {
+      console.error(err);
+      toast.error("La IA no pudo responder. Intenta de nuevo.");
+    },
+    onFinish: async () => {
+      // Server may have created a thread; reflect that in the list
+      qc.invalidateQueries({ queryKey: ["chat-threads"] });
+    },
+  });
+
+  // Adopt initial messages when thread changes
+  useEffect(() => {
+    if (initialMessages.length) setMessages(initialMessages);
+    else setMessages([]);
+  }, [chatKey, initialMessages, setMessages]);
+
+  // Adopt threadId from response header (when a new thread was auto-created)
+  useEffect(() => {
+    if (activeThreadId || !bearer) return;
+    if (messages.length === 0 || status !== "ready") return;
+    // refresh thread list to pick up the new one
+    qc.invalidateQueries({ queryKey: ["chat-threads"] });
+  }, [messages.length, status, activeThreadId, bearer, qc]);
+
   const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoMode = useRef<"foto" | "escanear">("foto");
+  const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Focus textarea on mount / after send / after thread switch
   useEffect(() => {
+    taRef.current?.focus();
+  }, [chatKey, status]);
+
+  useEffect(() => {
+    if (status === "streaming" || status === "submitted") return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [msgs, typing]);
+  }, [messages.length, status]);
+
+  const isLoading = status === "submitted" || status === "streaming";
+  const empty = messages.length === 0;
+
+  const send = (text?: string) => {
+    const t = (text ?? input).trim();
+    if (!t || isLoading) return;
+    setInput("");
+    sendMessage({ text: t });
+  };
+
+  const handleFeature = (f: typeof FEATURES[number]) => {
+    if (f.key === "foto" || f.key === "escanear") {
+      photoMode.current = f.key;
+      fileInputRef.current?.click();
+      return;
+    }
+    if (f.key === "voz") {
+      startVoiceDictation();
+      return;
+    }
+    if (f.prompt) send(f.prompt);
+  };
+
+  const handleFile = async (file: File) => {
+    if (!file) return;
+    const dataUrl = await fileToDataUrl(file);
+    const intent =
+      photoMode.current === "escanear"
+        ? "Te paso una foto de un producto. Identifícalo, dame nombre, una categoría sugerida y un precio estimado en soles. Devuelve la propuesta lista para añadir al stock."
+        : "Te paso una foto de mi libreta de ventas/gastos. Extrae cada línea con: tipo (ingreso/egreso), monto, descripción y fecha si aparece. Devuelve también el total.";
+    sendMessage({
+      role: "user",
+      parts: [
+        { type: "text", text: intent },
+        { type: "file", url: dataUrl, mediaType: file.type },
+      ],
+    });
+  };
+
+  // Voice via WebSpeech API
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [listening, setListening] = useState(false);
+  const startVoiceDictation = () => {
+    const SR =
+      (window as unknown as { SpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
+      (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+    if (!SR) {
+      toast.error("Tu navegador no soporta dictado por voz.");
+      return;
+    }
+    const rec = new SR();
+    rec.lang = "es-PE";
+    rec.continuous = false;
+    rec.interimResults = true;
+    let finalText = "";
+    rec.onresult = (e: SpeechRecognitionEvent) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) finalText += r[0].transcript;
+        else interim += r[0].transcript;
+      }
+      setInput(finalText + interim);
+    };
+    rec.onend = () => {
+      setListening(false);
+      if (finalText.trim()) send(finalText.trim());
+    };
+    rec.onerror = () => setListening(false);
+    recognitionRef.current = rec;
+    setListening(true);
+    rec.start();
+  };
+  const stopVoiceDictation = () => {
+    recognitionRef.current?.stop();
+    setListening(false);
+  };
+
+  const onNewThread = async () => {
+    setActiveThreadId(null);
+    setMessages([]);
+    setHistoryOpen(false);
+    setTimeout(() => taRef.current?.focus(), 50);
+  };
+
+  const onDeleteThread = async (id: string) => {
+    await deleteFn({ data: { id } });
+    if (activeThreadId === id) {
+      setActiveThreadId(null);
+      setMessages([]);
+    }
+    qc.invalidateQueries({ queryKey: ["chat-threads"] });
+  };
+
+  const onPickThread = (id: string) => {
+    setActiveThreadId(id);
+    setHistoryOpen(false);
+  };
+
+  // Orb intensity reacts to chat state
+  const orbIntensity = isLoading ? 1.0 : empty ? 0.35 : 0.55;
 
   const greeting = useMemo(() => {
     const h = new Date().getHours();
-    if (h < 12) return "Buenos días, Alberto.";
-    if (h < 19) return "Buenas tardes, Alberto.";
-    return "Buenas noches, Alberto.";
+    if (h < 12) return "Buenos días";
+    if (h < 19) return "Buenas tardes";
+    return "Buenas noches";
   }, []);
 
-  const send = (raw?: string) => {
-    const text = (raw ?? input).trim();
-    if (!text) return;
-    setMsgs((m) => [...m, { id: `u${Date.now()}`, role: "user", text }]);
-    setInput("");
-    setTyping(true);
-    setTimeout(() => {
-      const { text: reply, sideEffect } = respond(text, { inv, fin });
-      sideEffect?.();
-      setMsgs((m) => [...m, { id: `a${Date.now()}`, role: "assistant", text: reply }]);
-      setTyping(false);
-    }, 600 + Math.random() * 300);
-  };
-
-  const empty = msgs.length === 0;
-
   return (
-    <div className="relative w-full min-h-screen flex flex-col">
-      {/* header — barely there */}
-      <div className="relative z-10 px-[24px] pt-[28px] pb-[16px] flex items-center justify-between">
-        <div>
-          <div className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.6px] text-white/35">
+    <div className="relative w-full min-h-screen flex flex-col overflow-hidden">
+      {/* hidden file input for photo features */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleFile(f);
+          e.target.value = "";
+        }}
+      />
+
+      {/* HEADER */}
+      <div className="relative z-30 px-[20px] pt-[22px] pb-[10px] flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setHistoryOpen(true)}
+          className="h-[36px] w-[36px] rounded-full flex items-center justify-center active:scale-95 transition-transform"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+          aria-label="Historial"
+        >
+          <History className="h-[15px] w-[15px] text-white/70" strokeWidth={1.8} />
+        </button>
+        <div className="text-center">
+          <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
             Asistente
           </div>
-          <h1 className="mt-[4px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.5px] leading-none">
+          <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.4px] leading-none mt-[3px]">
             soc<span className="text-white/55">IA</span>
-          </h1>
+          </div>
         </div>
-        <div className="flex items-center gap-[6px] font-['Geist'] text-[11px] text-white/40">
-          <span className="h-[6px] w-[6px] rounded-full bg-white/40" />
-          Conectada
-        </div>
+        <button
+          type="button"
+          onClick={onNewThread}
+          className="h-[36px] w-[36px] rounded-full flex items-center justify-center active:scale-95 transition-transform"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+          aria-label="Nueva conversación"
+        >
+          <Plus className="h-[16px] w-[16px] text-white/70" strokeWidth={1.8} />
+        </button>
       </div>
 
-      {/* empty state — single greeting, nothing else */}
-      <AnimatePresence initial={false}>
-        {empty && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="relative z-10 flex-1 flex flex-col items-center justify-center px-[28px] text-center"
-          >
-            <h2 className="font-['Bai_Jamjuree'] text-[28px] font-semibold text-white tracking-[-0.8px] leading-[1.2] max-w-[300px]">
-              {greeting}
-            </h2>
-            <p className="mt-[14px] font-['Geist'] text-[14px] text-white/45 leading-[1.5] max-w-[280px]">
-              ¿En qué te ayudo con tu negocio hoy?
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* MAIN AREA */}
+      <div className="relative flex-1 flex flex-col">
+        {/* ORB — stays in place. Lives above the chat bar. */}
+        <AnimatePresence>
+          {empty && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.35 } }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute left-1/2 -translate-x-1/2 top-[60px] z-10 flex flex-col items-center pointer-events-none"
+            >
+              <ShaderOrb size={340} intensity={orbIntensity} />
+              <div className="mt-[-30px] text-center px-[24px]">
+                <div className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white tracking-[-0.4px]">
+                  {greeting}, Alberto.
+                </div>
+                <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/45">
+                  Soy socIA. Puedo analizar, registrar y aconsejarte.
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* messages */}
-      {!empty && (
-        <div
-          ref={scrollRef}
-          className="relative z-10 flex-1 overflow-y-auto px-[20px] pt-[8px] pb-[20px] flex flex-col gap-[14px]"
-        >
-          {msgs.map((m) => (
-            <MsgBubble key={m.id} msg={m} />
-          ))}
-          {typing && (
-            <div className="self-start flex items-center gap-[5px] px-[2px] py-[8px]">
-              {[0, 1, 2].map((i) => (
-                <motion.span
-                  key={i}
-                  className="h-[6px] w-[6px] rounded-full bg-white/35"
-                  animate={{ opacity: [0.25, 0.9, 0.25] }}
-                  transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.15 }}
-                />
+        {/* MINI ORB in header during chat */}
+        <AnimatePresence>
+          {!empty && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute left-1/2 -translate-x-1/2 top-[12px] z-30 pointer-events-none"
+            >
+              <ShaderOrb size={64} intensity={orbIntensity} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* MESSAGES — appear once chat starts */}
+        {!empty && (
+          <div
+            ref={scrollRef}
+            className="relative z-10 flex-1 overflow-y-auto px-[20px] pt-[70px] pb-[260px] flex flex-col gap-[16px]"
+          >
+            {messages.map((m) => (
+              <MessageBubble key={m.id} msg={m} />
+            ))}
+            {isLoading && status === "submitted" && (
+              <div className="self-start flex items-center gap-[6px] px-[2px] py-[6px]">
+                {[0, 1, 2].map((i) => (
+                  <motion.span
+                    key={i}
+                    className="h-[6px] w-[6px] rounded-full bg-white/50"
+                    animate={{ opacity: [0.25, 0.95, 0.25] }}
+                    transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.15 }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* BOTTOM CONTROL ZONE (composer + cards) */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 pb-[110px]">
+          {/* gradient mask so messages fade behind the controls */}
+          <div className="pointer-events-none absolute inset-x-0 -top-[60px] h-[60px] bg-gradient-to-b from-transparent to-black" />
+
+          {/* CHAT BAR */}
+          <div className="px-[18px]">
+            <div
+              className="flex items-end gap-[6px] min-h-[54px] pl-[18px] pr-[6px] py-[6px] rounded-[28px] backdrop-blur-xl"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+              }}
+            >
+              <textarea
+                ref={taRef}
+                rows={1}
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  const el = e.target as HTMLTextAreaElement;
+                  el.style.height = "auto";
+                  el.style.height = Math.min(el.scrollHeight, 140) + "px";
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                placeholder={listening ? "Escuchando…" : "Pregúntame algo…"}
+                className="flex-1 bg-transparent outline-none resize-none font-['Geist'] text-[14.5px] text-white placeholder:text-white/35 py-[10px] leading-[1.4]"
+                style={{ maxHeight: 140 }}
+              />
+              {listening ? (
+                <button
+                  type="button"
+                  onClick={stopVoiceDictation}
+                  className="h-[42px] w-[42px] rounded-full bg-[#F87171] text-white flex items-center justify-center active:scale-95"
+                  aria-label="Detener"
+                >
+                  <Square className="h-[14px] w-[14px]" fill="currentColor" />
+                </button>
+              ) : isLoading ? (
+                <button
+                  type="button"
+                  onClick={() => stop()}
+                  className="h-[42px] w-[42px] rounded-full bg-white/15 text-white flex items-center justify-center active:scale-95"
+                  aria-label="Detener"
+                >
+                  <Square className="h-[12px] w-[12px]" fill="currentColor" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => send()}
+                  disabled={!input.trim()}
+                  className="h-[42px] w-[42px] rounded-full bg-white text-black flex items-center justify-center active:scale-95 disabled:opacity-25 transition-opacity"
+                  aria-label="Enviar"
+                >
+                  <ArrowUp className="h-[17px] w-[17px]" strokeWidth={2.4} />
+                </button>
+              )}
+            </div>
+
+            {/* Quick prompts in empty state */}
+            {empty && (
+              <div className="mt-[10px] flex gap-[7px] overflow-x-auto no-scrollbar -mx-[2px] px-[2px]">
+                {QUICK_PROMPTS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => send(p)}
+                    className="shrink-0 h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] text-white/65 active:scale-95 transition-transform"
+                    style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* FEATURE CARDS — below chat bar */}
+          <div className="mt-[14px] pl-[18px]">
+            <div className="flex gap-[10px] overflow-x-auto no-scrollbar pr-[18px] pb-[2px]">
+              {FEATURES.map((f) => (
+                <FeatureCard key={f.key} {...f} onClick={() => handleFeature(f)} />
               ))}
             </div>
-          )}
-        </div>
-      )}
-
-      {/* suggestions */}
-      {empty && (
-        <div className="relative z-10 px-[20px] pb-[12px] flex gap-[8px] overflow-x-auto no-scrollbar">
-          {SUGGESTIONS.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => send(s)}
-              className="shrink-0 h-[36px] px-[14px] rounded-full font-['Geist'] text-[12.5px] text-white/75 active:scale-95 transition-transform"
-              style={{ border: "1px solid rgba(255,255,255,0.10)" }}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* composer */}
-      <div className="relative z-10 px-[20px] pt-[6px] pb-[28px]">
-        <div
-          className="flex items-center gap-[6px] h-[52px] pl-[20px] pr-[6px] rounded-full"
-          style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.10)",
-          }}
-        >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder="Pregúntame algo…"
-            className="flex-1 bg-transparent outline-none font-['Geist'] text-[14.5px] text-white placeholder:text-white/30"
-          />
-          <button
-            type="button"
-            onClick={() => send()}
-            disabled={!input.trim()}
-            className="h-[40px] w-[40px] rounded-full bg-white text-black flex items-center justify-center active:scale-95 disabled:opacity-25 transition-opacity"
-            aria-label="Enviar"
-          >
-            <ArrowUp className="h-[16px] w-[16px]" strokeWidth={2.4} />
-          </button>
+          </div>
         </div>
       </div>
+
+      {/* THREAD HISTORY SHEET */}
+      <AnimatePresence>
+        {historyOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+              onClick={() => setHistoryOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="fixed inset-y-0 left-0 z-50 w-[82%] max-w-[340px] bg-black flex flex-col"
+              style={{ borderRight: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <div className="px-[20px] pt-[24px] pb-[14px] flex items-center justify-between">
+                <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">
+                  Conversaciones
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setHistoryOpen(false)}
+                  className="h-[32px] w-[32px] rounded-full flex items-center justify-center"
+                  aria-label="Cerrar"
+                >
+                  <X className="h-[16px] w-[16px] text-white/60" />
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={onNewThread}
+                className="mx-[16px] mb-[12px] h-[44px] rounded-[14px] flex items-center justify-center gap-[8px] font-['Geist'] text-[13px] text-white"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}
+              >
+                <Plus className="h-[14px] w-[14px]" />
+                Nueva conversación
+              </button>
+              <div className="flex-1 overflow-y-auto px-[10px] pb-[20px]">
+                {threads.length === 0 && (
+                  <div className="text-center text-white/35 font-['Geist'] text-[12px] py-[40px]">
+                    Aún no hay conversaciones guardadas.
+                  </div>
+                )}
+                {threads.map((t) => (
+                  <div
+                    key={t.id}
+                    className={`group flex items-center gap-[6px] mb-[2px] rounded-[12px] ${
+                      activeThreadId === t.id ? "bg-white/06" : ""
+                    }`}
+                    style={
+                      activeThreadId === t.id
+                        ? { background: "rgba(255,255,255,0.06)" }
+                        : undefined
+                    }
+                  >
+                    <button
+                      type="button"
+                      onClick={() => onPickThread(t.id)}
+                      className="flex-1 text-left px-[12px] py-[12px] font-['Geist'] text-[13px] text-white/85 truncate"
+                    >
+                      {t.title}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteThread(t.id)}
+                      className="h-[32px] w-[32px] rounded-full flex items-center justify-center mr-[4px] text-white/30 hover:text-[#F87171]"
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 className="h-[13px] w-[13px]" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function MsgBubble({ msg }: { msg: Msg }) {
+function FeatureCard({
+  icon: Icon,
+  title,
+  subtitle,
+  onClick,
+}: {
+  icon: typeof Camera;
+  title: string;
+  subtitle: string;
+  hue: number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="shrink-0 w-[148px] h-[112px] rounded-[20px] p-[14px] flex flex-col justify-between text-left active:scale-[0.97] transition-transform"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <div
+        className="h-[32px] w-[32px] rounded-full flex items-center justify-center"
+        style={{ background: "rgba(255,255,255,0.06)" }}
+      >
+        <Icon className="h-[15px] w-[15px] text-white/85" strokeWidth={1.7} />
+      </div>
+      <div>
+        <div className="font-['Geist'] text-[12.5px] font-medium text-white leading-[1.2]">
+          {title}
+        </div>
+        <div className="font-['Geist'] text-[10.5px] text-white/40 leading-[1.3] mt-[3px]">
+          {subtitle}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function MessageBubble({ msg }: { msg: UIMessage }) {
   const isUser = msg.role === "user";
+  const text = uiMessageText(msg);
+  const files = (msg.parts ?? []).filter(
+    (p): p is { type: "file"; url: string; mediaType?: string } => p.type === "file",
+  );
+
   if (isUser) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.22 }}
-        className="max-w-[80%] self-end px-[16px] py-[10px] rounded-[20px] bg-white text-black font-['Geist'] text-[14px] leading-[1.45]"
+        className="max-w-[82%] self-end flex flex-col items-end gap-[6px]"
       >
-        {msg.text}
+        {files.map((f, i) => (
+          <img
+            key={i}
+            src={f.url}
+            alt="adjunto"
+            className="max-w-[200px] rounded-[14px]"
+          />
+        ))}
+        {text && (
+          <div className="px-[16px] py-[10px] rounded-[20px] bg-white text-black font-['Geist'] text-[14px] leading-[1.45]">
+            {text}
+          </div>
+        )}
       </motion.div>
     );
   }
@@ -257,9 +724,42 @@ function MsgBubble({ msg }: { msg: Msg }) {
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22 }}
-      className="max-w-[88%] self-start font-['Geist'] text-[14.5px] text-white/90 leading-[1.55] px-[2px]"
+      className="max-w-[92%] self-start font-['Geist'] text-[14.5px] text-white/90 leading-[1.6] px-[2px] prose-socia"
     >
-      {msg.text}
+      {text ? (
+        <ReactMarkdown
+          components={{
+            p: ({ children }) => <p className="m-0 mb-[6px] last:mb-0">{children}</p>,
+            strong: ({ children }) => (
+              <strong className="text-white font-semibold">{children}</strong>
+            ),
+            ul: ({ children }) => (
+              <ul className="my-[6px] pl-[16px] list-disc marker:text-white/40">{children}</ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="my-[6px] pl-[18px] list-decimal marker:text-white/40">{children}</ol>
+            ),
+            code: ({ children }) => (
+              <code className="px-[5px] py-[1px] rounded bg-white/8 text-[13px] font-['Geist']">
+                {children}
+              </code>
+            ),
+          }}
+        >
+          {text}
+        </ReactMarkdown>
+      ) : (
+        <Loader2 className="h-[14px] w-[14px] animate-spin text-white/50" />
+      )}
     </motion.div>
   );
+}
+
+function fileToDataUrl(f: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as string);
+    r.onerror = reject;
+    r.readAsDataURL(f);
+  });
 }
