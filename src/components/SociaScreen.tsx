@@ -556,7 +556,13 @@ export default function SociaScreen() {
           <div className="mt-[14px] pl-[18px]">
             <div className="flex gap-[10px] overflow-x-auto no-scrollbar pr-[18px] pb-[2px]">
               {FEATURES.map((f) => (
-                <FeatureCard key={f.key} {...f} onClick={() => handleFeature(f)} />
+                <FeatureCard
+                  key={f.key}
+                  icon={f.icon}
+                  title={f.title}
+                  subtitle={f.subtitle}
+                  onClick={() => handleFeature(f)}
+                />
               ))}
             </div>
           </div>
