@@ -652,14 +652,21 @@ export default function FinanceScreen() {
     setView(next);
   };
 
-  const periodData = (() => {
-    if (period === "hoy") return { net: f.todayNet, label: "Ganancia · hoy" };
-    if (period === "semana") {
-      const inc = f.last7Days.reduce((s, d) => s + d.income, 0);
-      const exp = f.last7Days.reduce((s, d) => s + d.expense, 0);
-      return { net: inc - exp, label: "Ganancia · semana" };
+  const capital = f.tx.reduce(
+    (s, t) => s + (t.kind === "ingreso" ? t.amount : -t.amount),
+    0,
+  );
+
+  const kpis = (() => {
+    if (period === "hoy") {
+      return { income: f.todayIncome, expense: f.todayExpense, net: f.todayNet };
     }
-    return { net: f.monthNet, label: "Ganancia · mes" };
+    if (period === "semana") {
+      const income = f.last7Days.reduce((s, d) => s + d.income, 0);
+      const expense = f.last7Days.reduce((s, d) => s + d.expense, 0);
+      return { income, expense, net: income - expense };
+    }
+    return { income: f.monthIncome, expense: f.monthExpense, net: f.monthNet };
   })();
 
   const back = () => setView("hub");
@@ -691,19 +698,25 @@ export default function FinanceScreen() {
               }
             />
 
-            <div className="px-[20px] pt-[18px]">
-              <PeriodSwitch value={period} onChange={setPeriod} />
-            </div>
-
             <div className="px-[20px] pt-[8px]">
-              <NetHero value={periodData.net} label={periodData.label} />
+              <CapitalHero value={capital} />
             </div>
 
             <div className="px-[20px] pt-[6px]">
               <NetChart days={f.last7Days} />
             </div>
 
-            <div className="px-[20px] mt-[40px]">
+            <div className="px-[20px] pt-[28px]">
+              <PeriodSwitch value={period} onChange={setPeriod} />
+            </div>
+
+            <div className="px-[20px] pt-[16px] flex gap-[10px]">
+              <KpiTile label="Ingresos" value={kpis.income} tone="pos" />
+              <KpiTile label="Egresos" value={kpis.expense} tone="neg" />
+              <KpiTile label="Ganancia" value={kpis.net} tone={kpis.net >= 0 ? "neutral" : "neg"} />
+            </div>
+
+            <div className="px-[20px] mt-[32px]">
               <ListGroup>
                 <PlainRow
                   Icon={HandCoins}
