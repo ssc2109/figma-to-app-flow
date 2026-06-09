@@ -698,7 +698,7 @@ function MessageBubble({ msg }: { msg: UIMessage }) {
   const isUser = msg.role === "user";
   const text = uiMessageText(msg);
   const files = (msg.parts ?? []).filter(
-    (p): p is { type: "file"; url: string; mediaType?: string } => p.type === "file",
+    (p): p is { type: "file"; url: string; mediaType: string } => p.type === "file",
   );
 
   if (isUser) {
