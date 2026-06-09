@@ -143,6 +143,7 @@ function NavShell() {
           onNavigate={(s) => {
             setSalesOpen(false);
             setQuickActionsOpen(false);
+            window.scrollTo({ top: 0, behavior: "auto" });
             if (s === "negocio") setNegocioInitialView("hub");
             setCurrentScreen(s);
           }}
