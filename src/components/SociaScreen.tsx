@@ -289,13 +289,14 @@ export default function SociaScreen() {
     });
   };
 
-  // Voice via WebSpeech API
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // Voice via WebSpeech API (browser-specific, untyped)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
   const [listening, setListening] = useState(false);
   const startVoiceDictation = () => {
-    const SR =
-      (window as unknown as { SpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SR) {
       toast.error("Tu navegador no soporta dictado por voz.");
       return;
