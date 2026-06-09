@@ -109,7 +109,7 @@ export const Route = createFileRoute("/api/chat")({
         const result = streamText({
           model,
           system: SYSTEM_PROMPT + ctxBlock,
-          messages: convertToModelMessages(body.messages),
+          messages: await convertToModelMessages(body.messages),
         });
 
         const response = result.toUIMessageStreamResponse({
