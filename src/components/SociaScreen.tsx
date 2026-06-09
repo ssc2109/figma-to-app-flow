@@ -663,7 +663,6 @@ function FeatureCard({
   icon: typeof Camera;
   title: string;
   subtitle: string;
-  hue: number;
   onClick: () => void;
 }) {
   return (
