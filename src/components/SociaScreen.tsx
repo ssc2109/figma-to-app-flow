@@ -390,13 +390,19 @@ export default function SociaScreen() {
         >
           <History className="h-[15px] w-[15px] text-white/70" strokeWidth={1.8} />
         </button>
-        <div className="text-center">
-          <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
-            Asistente
-          </div>
-          <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.4px] leading-none mt-[3px]">
-            soc<span className="text-white/55">IA</span>
-          </div>
+        <div className="text-center min-h-[36px] flex flex-col justify-center">
+          {empty ? (
+            <>
+              <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
+                Asistente
+              </div>
+              <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.4px] leading-none mt-[3px]">
+                soc<span className="text-white/55">IA</span>
+              </div>
+            </>
+          ) : (
+            <div className="h-[36px] w-[36px]" />
+          )}
         </div>
         <button
           type="button"
