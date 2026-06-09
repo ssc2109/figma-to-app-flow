@@ -250,7 +250,7 @@ function ActivityList() {
         })}
       </div>
 
-      <>
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={range}
           initial={{ opacity: 0, y: 6 }}
@@ -625,7 +625,7 @@ export default function FinanceScreen() {
 
   return (
     <div className="relative w-full">
-      <AnimatePresence mode="wait" initial={false}>
+      <>
         {view === "hub" && (
           <motion.div
             key="hub"
