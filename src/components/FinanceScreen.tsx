@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, X, HandCoins, Layers } from "lucide-react";
 import { useFinance, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type TxKind } from "@/data/finance";
@@ -609,6 +609,10 @@ export default function FinanceScreen() {
   const [period, setPeriod] = useState<Period>("mes");
   const [addOpen, setAddOpen] = useState(false);
   const f = useFinance();
+
+  useEffect(() => {
+    if (view !== "hub") window.scrollTo({ top: 0, behavior: "auto" });
+  }, [view]);
 
   const periodData = (() => {
     if (period === "hoy") return { net: f.todayNet, label: "Ganancia · hoy" };
