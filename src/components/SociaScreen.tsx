@@ -178,17 +178,16 @@ export default function SociaScreen() {
         nombre: p.name,
         unidades: p.stock,
       })),
-      total_productos: inv.products.length,
+      total_productos: inv.productCount,
     }),
-    [fin.todayIncome, fin.todayExpense, fin.todayNet, fin.monthIncome, fin.monthExpense, fin.monthNet, fin.fiadosPending, fin.fiados, inv.lowStock, inv.products.length],
+    [fin.todayIncome, fin.todayExpense, fin.todayNet, fin.monthIncome, fin.monthExpense, fin.monthNet, fin.fiadosPending, fin.fiados, inv.lowStock, inv.productCount],
   );
 
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        headers: () =>
-          bearer ? { Authorization: `Bearer ${bearer}` } : {},
+        headers: () => (bearer ? { Authorization: `Bearer ${bearer}` } : {}),
         prepareSendMessagesRequest: ({ messages, body }) => ({
           body: {
             ...body,
