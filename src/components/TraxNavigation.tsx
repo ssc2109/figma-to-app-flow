@@ -27,7 +27,7 @@ function NavShell() {
   const [salesOpen, setSalesOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "finanzas">("hub");
-  const qa = useQuickActions();
+  const { setHandler } = useQuickActions();
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 700);
@@ -36,7 +36,7 @@ function NavShell() {
 
   // wire quick action handlers
   useEffect(() => {
-    qa.setHandler((id: ActionId) => {
+    setHandler((id: ActionId) => {
       switch (id) {
         case "venta":
         case "cobrar":
@@ -63,7 +63,7 @@ function NavShell() {
           break;
       }
     });
-  }, [qa]);
+  }, [setHandler]);
 
   return (
     <div className="min-h-screen bg-black relative">
