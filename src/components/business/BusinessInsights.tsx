@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence, useMotionValue, animate as motionAnimate } from "motion/react";
+import { motion, AnimatePresence, animate as motionAnimate } from "motion/react";
 import { useFinance } from "@/data/finance";
 import { useInventory } from "@/data/inventory";
 
@@ -26,19 +26,23 @@ function CountUp({
   decimals?: number;
   format?: (n: number) => string;
 }) {
-  const mv = useMotionValue(0);
   const [display, setDisplay] = useState(format ? format(0) : "0");
+  const fromRef = useRef(0);
+  const formatRef = useRef(format);
+  formatRef.current = format;
+
   useEffect(() => {
-    const controls = motionAnimate(mv, value, {
+    const controls = motionAnimate(fromRef.current, value, {
       duration,
       ease: [0.22, 1, 0.36, 1],
       onUpdate: (v) => {
-        setDisplay(format ? format(v) : v.toFixed(decimals));
+        setDisplay(formatRef.current ? formatRef.current(v) : v.toFixed(decimals));
       },
     });
+    fromRef.current = value;
     return () => controls.stop();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, duration, decimals]);
+
   return <>{display}</>;
 }
 
