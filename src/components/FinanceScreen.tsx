@@ -611,8 +611,16 @@ export default function FinanceScreen() {
   const f = useFinance();
 
   useEffect(() => {
-    if (view !== "hub") window.scrollTo({ top: 0, behavior: "auto" });
+    if (view !== "hub") {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    }
   }, [view]);
+
+  const openView = (next: View) => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    setView(next);
+  };
 
   const periodData = (() => {
     if (period === "hoy") return { net: f.todayNet, label: "Ganancia · hoy" };
@@ -671,14 +679,14 @@ export default function FinanceScreen() {
                   Icon={HandCoins}
                   label="Deudas"
                   meta={pendingCount > 0 ? `Te deben S/ ${f.fiadosPending.toFixed(0)}` : "Al día"}
-                  onClick={() => setView("deudas")}
+                  onClick={() => openView("deudas")}
                 />
                 <RowDivider />
                 <PlainRow
                   Icon={Layers}
                   label="Categorías"
                   meta={f.expensesByCategory[0]?.label ?? "Sin egresos"}
-                  onClick={() => setView("categories")}
+                  onClick={() => openView("categories")}
                 />
               </ListGroup>
             </div>
