@@ -59,6 +59,7 @@ export default function BusinessScreen({ initialView = "hub" }: { initialView?: 
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
+    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
   }, [view]);
 
   const businessName = profile?.business_name || "Mi negocio";
@@ -128,7 +129,10 @@ export default function BusinessScreen({ initialView = "hub" }: { initialView?: 
                   Icon={Wallet}
                   label="Finanzas"
                   meta={`Neto del mes · S/ ${fmtK(fin.monthNet)}`}
-                  onClick={() => setView("finanzas")}
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: "auto" });
+                    setView("finanzas");
+                  }}
                 />
                 <RowDivider />
                 <PlainRow
