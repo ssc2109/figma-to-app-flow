@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Package,
   Wallet,
@@ -56,6 +56,10 @@ export default function BusinessScreen({ initialView = "hub" }: { initialView?: 
   const fin = useFinance();
   const { profile } = useAuth();
   const back = () => setView("hub");
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [view]);
 
   const businessName = profile?.business_name || "Mi negocio";
   const initials = businessName
