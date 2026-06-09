@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Banknote,
   HandCoins,
@@ -80,7 +80,7 @@ export function QuickActionsProvider({ children }: { children: ReactNode }) {
     return DEFAULT_HOME;
   });
 
-  const [handler, setHandlerState] = useState<((id: ActionId) => void) | null>(null);
+  const handlerRef = useRef<((id: ActionId) => void) | null>(null);
 
   useEffect(() => {
     try {
@@ -122,8 +122,10 @@ export function QuickActionsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const trigger = useCallback((id: ActionId) => handler?.(id), [handler]);
-  const setHandler = useCallback((fn: (id: ActionId) => void) => setHandlerState(() => fn), []);
+  const trigger = useCallback((id: ActionId) => handlerRef.current?.(id), []);
+  const setHandler = useCallback((fn: (id: ActionId) => void) => {
+    handlerRef.current = fn;
+  }, []);
 
   const value = useMemo<Ctx>(
     () => ({

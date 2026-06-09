@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Plus, X, HandCoins, Layers } from "lucide-react";
 import { useFinance, EXPENSE_CATEGORIES, INCOME_CATEGORIES, type TxKind } from "@/data/finance";
@@ -610,6 +610,18 @@ export default function FinanceScreen() {
   const [addOpen, setAddOpen] = useState(false);
   const f = useFinance();
 
+  useEffect(() => {
+    if (view !== "hub") {
+      window.scrollTo({ top: 0, behavior: "auto" });
+      requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    }
+  }, [view]);
+
+  const openView = (next: View) => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    setView(next);
+  };
+
   const periodData = (() => {
     if (period === "hoy") return { net: f.todayNet, label: "Ganancia · hoy" };
     if (period === "semana") {
@@ -625,7 +637,7 @@ export default function FinanceScreen() {
 
   return (
     <div className="relative w-full">
-      <AnimatePresence mode="wait" initial={false}>
+      <>
         {view === "hub" && (
           <motion.div
             key="hub"
@@ -667,14 +679,14 @@ export default function FinanceScreen() {
                   Icon={HandCoins}
                   label="Deudas"
                   meta={pendingCount > 0 ? `Te deben S/ ${f.fiadosPending.toFixed(0)}` : "Al día"}
-                  onClick={() => setView("deudas")}
+                  onClick={() => openView("deudas")}
                 />
                 <RowDivider />
                 <PlainRow
                   Icon={Layers}
                   label="Categorías"
                   meta={f.expensesByCategory[0]?.label ?? "Sin egresos"}
-                  onClick={() => setView("categories")}
+                  onClick={() => openView("categories")}
                 />
               </ListGroup>
             </div>
@@ -690,7 +702,7 @@ export default function FinanceScreen() {
         
         {view === "deudas" && <DeudasView key="de" onBack={back} />}
         {view === "categories" && <CategoriesView key="cat" onBack={back} />}
-      </AnimatePresence>
+      </>
 
       <AnimatePresence>{addOpen && <AddSheet onClose={() => setAddOpen(false)} />}</AnimatePresence>
     </div>
