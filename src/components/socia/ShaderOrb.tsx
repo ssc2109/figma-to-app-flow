@@ -108,11 +108,19 @@ export default function ShaderOrb({
         float n2 = fbm(q * 1.7 + n);
         float dd = d + (n*0.55 + n2*0.45) * 0.10;
 
-        // Pure soft falloffs — gaussian-style. No sphere, no edge.
-        float core    = exp(-pow(dd * 5.5, 2.0));
-        float body    = exp(-pow(dd * 2.7, 2.0));
-        float halo    = exp(-pow(dd * 1.5, 1.6));
-        float farHalo = exp(-pow(dd * 0.95, 1.3));
+        // Pure soft falloffs — gaussian-style. Tight so glow vanishes well
+        // before the canvas edge (otherwise you see a square).
+        float core    = exp(-pow(dd * 9.0,  2.0));
+        float body    = exp(-pow(dd * 5.2,  2.0));
+        float halo    = exp(-pow(dd * 3.6,  2.0));
+        float farHalo = exp(-pow(dd * 2.6,  2.0));
+
+        // Hard cutoff: enforce zero past ~0.48 of the canvas so no rectangle shows
+        float mask = 1.0 - smoothstep(0.36, 0.49, d);
+        core    *= mask;
+        body    *= mask;
+        halo    *= mask;
+        farHalo *= mask;
 
         // Internal swirling energy bands
         float swirl  = fbm(vec3(uv * 3.6, t * 1.4 + 5.0));
@@ -125,17 +133,17 @@ export default function ShaderOrb({
         vec3 cWhite = vec3(1.0);
 
         vec3 col = vec3(0.0);
-        col += cDeep  * farHalo * (0.50 + uIntensity * 0.25);
-        col += cBlue  * halo    * (0.95 + uIntensity * 0.35);
+        col += cDeep  * farHalo * (0.45 + uIntensity * 0.25);
+        col += cBlue  * halo    * (0.85 + uIntensity * 0.35);
         col += cCyan  * body    * (0.55 + uIntensity * 0.45);
-        col += cCyan  * energy  * (0.35 + uIntensity * 0.55);
-        col += cWhite * core    * (0.80 + uIntensity * 0.50);
+        col += cCyan  * energy  * (0.30 + uIntensity * 0.55);
+        col += cWhite * core    * (0.85 + uIntensity * 0.50);
 
         // Breathing pulse
         col *= 0.92 + 0.08 * sin(uTime * 0.9);
 
-        // Additive-feel alpha that fades to 0 — no visible edge
-        float alpha = farHalo * 0.55 + halo * 0.7 + body * 0.95 + core;
+        // Alpha fades to 0 — no visible edge
+        float alpha = farHalo * 0.45 + halo * 0.7 + body * 0.95 + core;
         alpha = clamp(alpha, 0.0, 1.0);
 
         float g = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233)) + uTime)*43758.5453);
