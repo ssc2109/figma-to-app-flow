@@ -58,13 +58,12 @@ function PeriodSwitch({ value, onChange }: { value: Period; onChange: (p: Period
   );
 }
 
-/* ---------- the one hero ---------- */
-function NetHero({ value, label }: { value: number; label: string }) {
-  const positive = value >= 0;
+/* ---------- capital hero ---------- */
+function CapitalHero({ value }: { value: number }) {
   return (
     <div className="flex flex-col items-center text-center py-[14px]">
       <span className="font-['Geist'] text-[11.5px] font-medium uppercase tracking-[1.8px] text-white/35">
-        {label}
+        Capital
       </span>
       <div className="mt-[12px] flex items-baseline justify-center gap-[6px]">
         <span className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white/40 tracking-[-0.8px]">
@@ -76,12 +75,43 @@ function NetHero({ value, label }: { value: number; label: string }) {
           {fmtK(Math.abs(value))}
         </span>
       </div>
-      <span
-        className="mt-[10px] font-['Geist'] text-[12.5px]"
-        style={{ color: positive ? "rgba(74,222,128,0.85)" : "rgba(248,113,113,0.85)" }}
-      >
-        {positive ? "Ganancia neta" : "Pérdida"}
+      <span className="mt-[10px] font-['Geist'] text-[12.5px] text-white/40">
+        Saldo acumulado
       </span>
+    </div>
+  );
+}
+
+/* ---------- KPI tile ---------- */
+function KpiTile({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: number;
+  tone?: "neutral" | "pos" | "neg";
+}) {
+  const color =
+    tone === "pos" ? "#4ADE80" : tone === "neg" ? "#F87171" : "rgba(255,255,255,0.95)";
+  return (
+    <div
+      className="flex-1 min-w-0 rounded-[20px] px-[14px] py-[14px]"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.4px] text-white/40 truncate">
+        {label}
+      </div>
+      <div
+        className="mt-[10px] font-['Bai_Jamjuree'] text-[22px] font-bold tabular-nums tracking-[-0.8px] leading-none"
+        style={{ color }}
+      >
+        <span className="text-white/35 text-[12px] mr-[2px] font-medium">S/</span>
+        {fmtK(Math.abs(value))}
+      </div>
     </div>
   );
 }
@@ -622,14 +652,21 @@ export default function FinanceScreen() {
     setView(next);
   };
 
-  const periodData = (() => {
-    if (period === "hoy") return { net: f.todayNet, label: "Ganancia · hoy" };
-    if (period === "semana") {
-      const inc = f.last7Days.reduce((s, d) => s + d.income, 0);
-      const exp = f.last7Days.reduce((s, d) => s + d.expense, 0);
-      return { net: inc - exp, label: "Ganancia · semana" };
+  const capital = f.tx.reduce(
+    (s, t) => s + (t.kind === "ingreso" ? t.amount : -t.amount),
+    0,
+  );
+
+  const kpis = (() => {
+    if (period === "hoy") {
+      return { income: f.todayIncome, expense: f.todayExpense, net: f.todayNet };
     }
-    return { net: f.monthNet, label: "Ganancia · mes" };
+    if (period === "semana") {
+      const income = f.last7Days.reduce((s, d) => s + d.income, 0);
+      const expense = f.last7Days.reduce((s, d) => s + d.expense, 0);
+      return { income, expense, net: income - expense };
+    }
+    return { income: f.monthIncome, expense: f.monthExpense, net: f.monthNet };
   })();
 
   const back = () => setView("hub");
@@ -661,19 +698,25 @@ export default function FinanceScreen() {
               }
             />
 
-            <div className="px-[20px] pt-[18px]">
-              <PeriodSwitch value={period} onChange={setPeriod} />
-            </div>
-
             <div className="px-[20px] pt-[8px]">
-              <NetHero value={periodData.net} label={periodData.label} />
+              <CapitalHero value={capital} />
             </div>
 
             <div className="px-[20px] pt-[6px]">
               <NetChart days={f.last7Days} />
             </div>
 
-            <div className="px-[20px] mt-[40px]">
+            <div className="px-[20px] pt-[28px]">
+              <PeriodSwitch value={period} onChange={setPeriod} />
+            </div>
+
+            <div className="px-[20px] pt-[16px] flex gap-[10px]">
+              <KpiTile label="Ingresos" value={kpis.income} tone="pos" />
+              <KpiTile label="Egresos" value={kpis.expense} tone="neg" />
+              <KpiTile label="Ganancia" value={kpis.net} tone={kpis.net >= 0 ? "neutral" : "neg"} />
+            </div>
+
+            <div className="px-[20px] mt-[32px]">
               <ListGroup>
                 <PlainRow
                   Icon={HandCoins}
