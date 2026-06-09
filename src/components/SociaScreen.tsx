@@ -187,7 +187,8 @@ export default function SociaScreen() {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        headers: () => (bearer ? { Authorization: `Bearer ${bearer}` } : {}),
+        headers: (): Record<string, string> =>
+          bearer ? { Authorization: `Bearer ${bearer}` } : {},
         prepareSendMessagesRequest: ({ messages, body }) => ({
           body: {
             ...body,
