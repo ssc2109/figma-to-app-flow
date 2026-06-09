@@ -425,10 +425,10 @@ export default function SociaScreen() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.35 } }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute left-1/2 -translate-x-1/2 top-[10px] z-10 flex flex-col items-center pointer-events-none"
+              className="absolute left-1/2 -translate-x-1/2 top-[20px] z-10 flex flex-col items-center pointer-events-none"
             >
-              <ShaderOrb size={240} intensity={orbIntensity} />
-              <div className="mt-[-12px] text-center px-[24px]">
+              <ShaderOrb size={360} intensity={orbIntensity} />
+              <div className="mt-[-40px] text-center px-[24px]">
                 <div className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.5px]">
                   {greeting}, Alberto.
                 </div>
@@ -454,11 +454,11 @@ export default function SociaScreen() {
           )}
         </AnimatePresence>
 
-        {/* MESSAGES — appear once chat starts */}
+        {/* MESSAGES — full-screen chat once started (ChatGPT style) */}
         {!empty && (
           <div
             ref={scrollRef}
-            className="relative z-10 flex-1 overflow-y-auto px-[20px] pt-[80px] pb-[340px] flex flex-col gap-[16px]"
+            className="relative z-10 flex-1 overflow-y-auto px-[20px] pt-[80px] pb-[180px] flex flex-col gap-[16px]"
           >
             {messages.map((m) => (
               <MessageBubble key={m.id} msg={m} />
@@ -479,16 +479,22 @@ export default function SociaScreen() {
         )}
 
         {/* BOTTOM CONTROL ZONE (composer + cards) */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 pb-[110px]">
+        <div
+          className={`absolute left-0 right-0 z-20 ${
+            empty ? "top-[58%]" : "bottom-0 pb-[110px]"
+          }`}
+        >
           {/* gradient mask so messages fade behind the controls */}
-          <div className="pointer-events-none absolute inset-x-0 -top-[60px] h-[60px] bg-gradient-to-b from-transparent to-black" />
+          {!empty && (
+            <div className="pointer-events-none absolute inset-x-0 -top-[60px] h-[60px] bg-gradient-to-b from-transparent to-black" />
+          )}
 
           {/* CHAT BAR */}
           <div className="px-[18px]">
             <div
               className="flex items-end gap-[6px] min-h-[54px] pl-[18px] pr-[6px] py-[6px] rounded-[28px] backdrop-blur-xl"
               style={{
-                background: "rgba(255,255,255,0.05)",
+                background: "rgba(10,14,28,0.55)",
                 border: "1px solid rgba(255,255,255,0.10)",
                 boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
               }}
@@ -543,41 +549,27 @@ export default function SociaScreen() {
                 </button>
               )}
             </div>
+          </div>
 
-            {/* Quick prompts in empty state */}
-            {empty && (
-              <div className="mt-[10px] flex gap-[7px] overflow-x-auto no-scrollbar -mx-[2px] px-[2px]">
-                {QUICK_PROMPTS.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => send(p)}
-                    className="shrink-0 h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] text-white/65 active:scale-95 transition-transform"
-                    style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-                  >
-                    {p}
-                  </button>
+          {/* FEATURE CARDS — only in empty state, below chat bar */}
+          {empty && (
+            <div className="mt-[14px] pl-[18px]">
+              <div className="flex gap-[10px] overflow-x-auto no-scrollbar pr-[18px] pb-[2px]">
+                {FEATURES.map((f) => (
+                  <FeatureCard
+                    key={f.key}
+                    icon={f.icon}
+                    title={f.title}
+                    subtitle={f.subtitle}
+                    onClick={() => handleFeature(f)}
+                  />
                 ))}
               </div>
-            )}
-          </div>
-
-          {/* FEATURE CARDS — below chat bar */}
-          <div className="mt-[14px] pl-[18px]">
-            <div className="flex gap-[10px] overflow-x-auto no-scrollbar pr-[18px] pb-[2px]">
-              {FEATURES.map((f) => (
-                <FeatureCard
-                  key={f.key}
-                  icon={f.icon}
-                  title={f.title}
-                  subtitle={f.subtitle}
-                  onClick={() => handleFeature(f)}
-                />
-              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
+
 
       {/* THREAD HISTORY SHEET */}
       <AnimatePresence>

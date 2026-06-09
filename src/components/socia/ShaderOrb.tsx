@@ -97,64 +97,51 @@ export default function ShaderOrb({
         return v;
       }
 
-      vec3 hsl2rgb(vec3 c){
-        vec3 rgb=clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0,0.0,1.0);
-        return c.z + c.y*(rgb-0.5)*(1.0-abs(2.0*c.z-1.0));
-      }
-
       void main(){
         vec2 uv = (gl_FragCoord.xy - 0.5*uRes) / min(uRes.x, uRes.y);
-        float t = uTime * 0.25;
+        float t = uTime * 0.2;
         float d = length(uv);
 
-        // Sphere — bigger sphere with soft falloff
-        float R = 0.42;
-        float sphere = smoothstep(R+0.005, R-0.18, d);
+        // Animated displacement — gentle swirl, no hard boundary
+        vec3 q = vec3(uv * 2.0, t);
+        float n  = fbm(q);
+        float n2 = fbm(q * 1.7 + n);
+        float dd = d + (n*0.55 + n2*0.45) * 0.10;
 
-        // Surface normal of the implicit sphere (for fake 3D lighting)
-        float z = sqrt(max(R*R - d*d, 0.0001));
-        vec3 nrm = normalize(vec3(uv, z));
+        // Pure soft falloffs — gaussian-style. No sphere, no edge.
+        float core    = exp(-pow(dd * 5.5, 2.0));
+        float body    = exp(-pow(dd * 2.7, 2.0));
+        float halo    = exp(-pow(dd * 1.5, 1.6));
+        float farHalo = exp(-pow(dd * 0.95, 1.3));
 
-        // Animated "magma" inside the sphere — sample noise at the surface
-        vec3 q = nrm * 1.8 + vec3(t*0.6, -t*0.4, t*0.9);
-        float n1 = fbm(q);
-        float n2 = fbm(q*2.1 + n1*1.5);
-        float magma = smoothstep(-0.1, 1.1, n1*0.6 + n2*0.6 + uIntensity*0.5);
+        // Internal swirling energy bands
+        float swirl  = fbm(vec3(uv * 3.6, t * 1.4 + 5.0));
+        float energy = smoothstep(-0.15, 1.0, swirl) * body;
 
-        // Color palette: deep violet → electric blue → white core
-        float hueA = mod(0.66 + uHue, 1.0);
-        float hueB = mod(hueA + 0.10, 1.0);
-        vec3 cBase  = hsl2rgb(vec3(hueA, 0.85, 0.32));   // deep
-        vec3 cMid   = hsl2rgb(vec3(hueB, 0.95, 0.60));   // electric
-        vec3 cBright= vec3(1.0);                          // white
-        vec3 col = mix(cBase, cMid, magma);
-        col = mix(col, cBright, smoothstep(0.55, 0.95, magma));
+        // Blue energy palette (matches the home screen blues)
+        vec3 cDeep  = vec3(0.04, 0.09, 0.32);
+        vec3 cBlue  = vec3(0.18, 0.45, 1.00);
+        vec3 cCyan  = vec3(0.55, 0.85, 1.00);
+        vec3 cWhite = vec3(1.0);
 
-        // Fake lighting — top-light from above-left, gives "ball" feel
-        float light = pow(max(dot(nrm, normalize(vec3(-0.35, 0.55, 0.85))), 0.0), 1.4);
-        col *= 0.55 + 0.75*light;
+        vec3 col = vec3(0.0);
+        col += cDeep  * farHalo * (0.50 + uIntensity * 0.25);
+        col += cBlue  * halo    * (0.95 + uIntensity * 0.35);
+        col += cCyan  * body    * (0.55 + uIntensity * 0.45);
+        col += cCyan  * energy  * (0.35 + uIntensity * 0.55);
+        col += cWhite * core    * (0.80 + uIntensity * 0.50);
 
-        // Bright specular hot-spot
-        float spec = pow(max(dot(nrm, normalize(vec3(-0.25, 0.6, 0.9))), 0.0), 28.0);
-        col += spec * vec3(1.0) * 0.9;
+        // Breathing pulse
+        col *= 0.92 + 0.08 * sin(uTime * 0.9);
 
-        // Fresnel rim (edge glow)
-        float fres = pow(1.0 - max(dot(nrm, vec3(0.0,0.0,1.0)), 0.0), 2.8);
-        vec3 rimCol = hsl2rgb(vec3(mod(hueB+0.02,1.0), 1.0, 0.72));
-        col += fres * rimCol * (0.55 + 0.6*uIntensity);
+        // Additive-feel alpha that fades to 0 — no visible edge
+        float alpha = farHalo * 0.55 + halo * 0.7 + body * 0.95 + core;
+        alpha = clamp(alpha, 0.0, 1.0);
 
-        // Outer halo
-        float halo = exp(-pow(max(d-R, 0.0)*5.0, 1.2)) * (0.55 + uIntensity*0.7);
-        vec3 haloCol = mix(cMid, rimCol, 0.5);
-
-        vec3 finalCol = col * sphere + haloCol * halo * (1.0 - sphere);
-        float alpha = sphere + halo * (1.0 - sphere);
-
-        // Very subtle grain
         float g = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233)) + uTime)*43758.5453);
-        finalCol += (g-0.5)*0.025;
+        col += (g-0.5)*0.012;
 
-        gl_FragColor = vec4(finalCol, clamp(alpha, 0.0, 1.0));
+        gl_FragColor = vec4(col, alpha);
       }
     `;
 
