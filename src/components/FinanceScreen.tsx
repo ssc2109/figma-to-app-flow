@@ -690,7 +690,7 @@ export default function FinanceScreen() {
         
         {view === "deudas" && <DeudasView key="de" onBack={back} />}
         {view === "categories" && <CategoriesView key="cat" onBack={back} />}
-      </AnimatePresence>
+      </>
 
       <AnimatePresence>{addOpen && <AddSheet onClose={() => setAddOpen(false)} />}</AnimatePresence>
     </div>
