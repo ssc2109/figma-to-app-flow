@@ -390,13 +390,19 @@ export default function SociaScreen() {
         >
           <History className="h-[15px] w-[15px] text-white/70" strokeWidth={1.8} />
         </button>
-        <div className="text-center">
-          <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
-            Asistente
-          </div>
-          <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.4px] leading-none mt-[3px]">
-            soc<span className="text-white/55">IA</span>
-          </div>
+        <div className="text-center min-h-[36px] flex flex-col justify-center">
+          {empty ? (
+            <>
+              <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
+                Asistente
+              </div>
+              <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.4px] leading-none mt-[3px]">
+                soc<span className="text-white/55">IA</span>
+              </div>
+            </>
+          ) : (
+            <div className="h-[36px] w-[36px]" />
+          )}
         </div>
         <button
           type="button"
@@ -419,14 +425,14 @@ export default function SociaScreen() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.35 } }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute left-1/2 -translate-x-1/2 top-[60px] z-10 flex flex-col items-center pointer-events-none"
+              className="absolute left-1/2 -translate-x-1/2 top-[10px] z-10 flex flex-col items-center pointer-events-none"
             >
-              <ShaderOrb size={340} intensity={orbIntensity} />
-              <div className="mt-[-30px] text-center px-[24px]">
-                <div className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white tracking-[-0.4px]">
+              <ShaderOrb size={240} intensity={orbIntensity} />
+              <div className="mt-[-12px] text-center px-[24px]">
+                <div className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.5px]">
                   {greeting}, Alberto.
                 </div>
-                <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/45">
+                <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/45 max-w-[280px]">
                   Soy socIA. Puedo analizar, registrar y aconsejarte.
                 </div>
               </div>
@@ -441,9 +447,9 @@ export default function SociaScreen() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="absolute left-1/2 -translate-x-1/2 top-[12px] z-30 pointer-events-none"
+              className="absolute left-1/2 -translate-x-1/2 top-[14px] z-30 pointer-events-none"
             >
-              <ShaderOrb size={64} intensity={orbIntensity} />
+              <ShaderOrb size={56} intensity={orbIntensity} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -452,7 +458,7 @@ export default function SociaScreen() {
         {!empty && (
           <div
             ref={scrollRef}
-            className="relative z-10 flex-1 overflow-y-auto px-[20px] pt-[70px] pb-[260px] flex flex-col gap-[16px]"
+            className="relative z-10 flex-1 overflow-y-auto px-[20px] pt-[80px] pb-[340px] flex flex-col gap-[16px]"
           >
             {messages.map((m) => (
               <MessageBubble key={m.id} msg={m} />
