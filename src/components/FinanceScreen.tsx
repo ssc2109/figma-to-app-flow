@@ -250,7 +250,7 @@ function ActivityList() {
         })}
       </div>
 
-      <AnimatePresence mode="wait" initial={false}>
+      <>
         <motion.div
           key={range}
           initial={{ opacity: 0, y: 6 }}
@@ -690,7 +690,7 @@ export default function FinanceScreen() {
         
         {view === "deudas" && <DeudasView key="de" onBack={back} />}
         {view === "categories" && <CategoriesView key="cat" onBack={back} />}
-      </AnimatePresence>
+      </>
 
       <AnimatePresence>{addOpen && <AddSheet onClose={() => setAddOpen(false)} />}</AnimatePresence>
     </div>
