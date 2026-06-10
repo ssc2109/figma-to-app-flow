@@ -331,8 +331,8 @@ export default function SociaScreen() {
     "--orb-size": "750px",
     "--orb-intensity": "1.1",
     "--orb-haze": "1.2",
-    "--greet-top": "23.2dvh",
-    "--stack-top": "52.8dvh",
+    "--greet-top": "25.4dvh",
+    "--stack-top": "52.6dvh",
     "--c-core": "220, 235, 255",
     "--c-mid": "0, 120, 255",
     "--c-deep": "0, 60, 180",
@@ -838,7 +838,7 @@ const SOCIA_CSS = `
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
-  font-size:clamp(32px, 8.35vw, 34px); font-weight:600; letter-spacing:-0.5px;
+  font-size:clamp(30px, 7.85vw, 34px); font-weight:600; letter-spacing:-0.5px;
   line-height:1.15;
   white-space:nowrap;
   background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);
