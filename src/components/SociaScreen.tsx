@@ -426,42 +426,76 @@ export default function SociaScreen() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6, transition: { duration: 0.25 } }}
               transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-20 px-[24px] pt-[14px] text-center pointer-events-none"
+              className="relative z-20 px-[24px] pt-[24px] text-center pointer-events-none"
             >
-              <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[2px] text-white/40">
-                Ecoarom
-              </div>
-              <div className="mt-[12px] font-['Bai_Jamjuree'] text-[30px] font-semibold text-white tracking-[-0.6px] leading-[1.05]">
+              <div className="font-['Bai_Jamjuree'] text-[32px] font-semibold text-white tracking-[-0.7px] leading-[1.05]">
                 {greeting},<br />Alberto.
               </div>
-              <div className="mt-[12px] font-['Geist'] text-[13px] text-white/45 max-w-[300px] mx-auto leading-[1.45]">
+              <div className="mt-[14px] font-['Geist'] text-[13.5px] text-white/45 max-w-[300px] mx-auto leading-[1.45]">
                 Soy socIA. Puedo analizar, registrar y aconsejarte sobre tu negocio.
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* DOME ORB — giant blue dome anchored low, faded under the chat bar */}
+        {/* DOME — pure CSS radial glow rising from below, faded under the chat bar */}
         <AnimatePresence>
           {empty && (
             <motion.div
               key="dome"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.35 } }}
-              transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute left-1/2 -translate-x-1/2 z-0 pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.35 } }}
+              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute left-1/2 -translate-x-1/2 z-0 pointer-events-none overflow-hidden"
               style={{
-                top: "44%",
-                width: 780,
-                height: 780,
+                top: "38%",
+                width: "180%",
+                aspectRatio: "1 / 1",
+                maxWidth: "none",
                 WebkitMaskImage:
-                  "linear-gradient(to bottom, black 0%, black 36%, transparent 58%)",
+                  "linear-gradient(to bottom, black 0%, black 40%, transparent 62%)",
                 maskImage:
-                  "linear-gradient(to bottom, black 0%, black 36%, transparent 58%)",
+                  "linear-gradient(to bottom, black 0%, black 40%, transparent 62%)",
               }}
             >
-              <ShaderOrb size={780} intensity={orbIntensity} />
+              {/* outer halo */}
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle at 50% 50%, rgba(99,130,255,0.55) 0%, rgba(70,100,240,0.32) 18%, rgba(40,70,200,0.14) 32%, rgba(20,40,140,0.04) 46%, transparent 58%)",
+                }}
+              />
+              {/* mid arc */}
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle at 50% 50%, rgba(160,180,255,0.85) 0%, rgba(110,140,255,0.55) 10%, rgba(70,100,240,0.18) 22%, transparent 36%)",
+                  mixBlendMode: "screen",
+                }}
+              />
+              {/* bright apex */}
+              <div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle at 50% 50%, rgba(230,235,255,0.95) 0%, rgba(180,200,255,0.5) 5%, transparent 14%)",
+                  mixBlendMode: "screen",
+                }}
+              />
+              {/* breathing pulse */}
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background:
+                    "radial-gradient(circle at 50% 50%, rgba(120,150,255,0.35) 0%, transparent 28%)",
+                  mixBlendMode: "screen",
+                }}
+                animate={{ opacity: [0.55, 0.95, 0.55], scale: [1, 1.04, 1] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -479,6 +513,7 @@ export default function SociaScreen() {
             </motion.div>
           )}
         </AnimatePresence>
+
 
         {/* MESSAGES — full-screen chat once started (ChatGPT style) */}
         {!empty && (
