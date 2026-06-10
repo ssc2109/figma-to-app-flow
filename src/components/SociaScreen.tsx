@@ -1190,40 +1190,63 @@ const SOCIA_CSS = `
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
 .socia-screen .chatbar{
-  display:flex; align-items:center; gap:12px;
-  height:64px; padding:0 8px 0 22px;
-  border-radius:34px;
-  background:rgba(12,12,20,.78);
+  display:flex; align-items:center; gap:6px;
+  min-height:60px; padding:6px 6px 6px 8px;
+  border-radius:32px;
+  background:rgba(12,12,20,.82);
   border:1px solid rgba(255,255,255,.12);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 1px 0 rgba(255,255,255,.07),
     0 24px 70px -16px rgba(110,80,255,.5),
     0 12px 40px -12px rgba(0,0,0,.7);
 }
 .socia-screen .chatbar-ta{
   flex:1; background:transparent; outline:none; resize:none;
   color:#fff; font-family:'Geist', system-ui, sans-serif;
-  font-size:14.5px; line-height:1.4; padding:12px 0;
+  font-size:14.5px; line-height:1.4; padding:14px 4px;
   max-height:120px;
 }
 .socia-screen .chatbar-ta::placeholder{ color:rgba(255,255,255,.42) }
-.socia-screen .pill-btn{
-  width:48px; height:48px; border-radius:50%; flex:none;
+
+.socia-screen .plus-btn{
+  width:42px; height:42px; border-radius:50%; flex:none;
   display:grid; place-items:center;
-  background:rgba(255,255,255,.06);
+  background:transparent; color:rgba(255,255,255,.78);
+  transition:transform .12s, background .15s;
+}
+.socia-screen .plus-btn:hover{ background:rgba(255,255,255,.06); }
+.socia-screen .plus-btn:active{ transform:scale(.92) }
+
+.socia-screen .icon-btn{
+  width:38px; height:42px; flex:none;
+  display:grid; place-items:center;
+  background:transparent; color:rgba(255,255,255,.7);
+  transition:transform .12s, color .15s;
+}
+.socia-screen .icon-btn:hover{ color:#fff; }
+.socia-screen .icon-btn:active{ transform:scale(.9) }
+
+.socia-screen .pill-btn{
+  width:44px; height:44px; border-radius:50%; flex:none;
+  display:grid; place-items:center;
+  background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.10);
-  color:#d4d5db; transition:transform .12s;
+  color:#e5e5ec; transition:transform .12s;
 }
 .socia-screen .pill-btn:active{ transform:scale(.94) }
 .socia-screen .pill-btn.send{
   background:linear-gradient(180deg, #ffffff, #ece9f7);
   border-color:rgba(255,255,255,.4); color:#17122b;
 }
+.socia-screen .pill-btn.voice-mode{
+  background:linear-gradient(180deg, #ffffff, #e9e8f3);
+  border-color:rgba(255,255,255,.4); color:#17122b;
+}
 
-/* CARDS */
+/* CARDS — alineadas con la chatbar */
 .socia-screen .cards-head{
   display:flex; align-items:center; gap:8px;
-  padding:20px 18px 0;
+  padding:20px 22px 0;
 }
 .socia-screen .cards-head .lbl{
   font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
@@ -1236,7 +1259,7 @@ const SOCIA_CSS = `
 }
 .socia-screen .cards{
   display:flex; gap:13px; margin-top:12px;
-  padding:4px 18px 4px;
+  padding:4px 22px 4px;
   overflow-x:auto; scrollbar-width:none;
   scroll-snap-type:x mandatory;
 }
