@@ -855,8 +855,8 @@ const SOCIA_CSS = `
   border:1px solid rgba(255,255,255,.12);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.08),
-    0 24px 70px -16px rgba(110,80,255,.5),
-    0 12px 40px -12px rgba(0,0,0,.7);
+    0 18px 50px -18px rgba(0,0,0,.85),
+    0 8px 30px -12px rgba(0,0,0,.6);
 }
 .socia-screen .chatbar-ta{
   flex:1;background:transparent;outline:none;resize:none;
@@ -874,8 +874,8 @@ const SOCIA_CSS = `
 }
 .socia-screen .pill-btn:active{transform:scale(.94)}
 .socia-screen .pill-btn.send{
-  background:linear-gradient(180deg,#ffffff,#ece9f7);
-  border-color:rgba(255,255,255,.4);color:#17122b;
+  background:linear-gradient(180deg,#ffffff,#f1f3f7);
+  border-color:rgba(255,255,255,.4);color:#0a0a0a;
 }
 
 .socia-screen .cards-row{
