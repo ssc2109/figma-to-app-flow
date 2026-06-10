@@ -322,7 +322,13 @@ export default function SociaScreen() {
     setHistoryOpen(false);
   };
 
-  const greeting = "Buenos días";
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Buenos días";
+    if (h < 19) return "Buenas tardes";
+    return "Buenas noches";
+  })();
+
 
   // Orb tweak values from design spec (HTML export)
   const orbStyle = {
