@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { useInventory } from "@/data/inventory";
 import { generateBriefing, type Briefing } from "@/lib/api/briefing.functions";
+import { BorderBeam } from "@/components/magicui/BorderBeam";
 
 type InsightAction = "chat" | "reponer" | "cobrar_fiado" | "finanzas" | "ventas" | "promo";
 
@@ -32,24 +33,33 @@ function ToneDot({ tone }: { tone: Briefing["insights"][number]["tone"] }) {
   return (
     <span
       className="inline-block size-[6px] rounded-full"
-      style={{ background: color, boxShadow: `0 0 8px ${color}` }}
+      style={{ background: color, boxShadow: `0 0 10px ${color}` }}
     />
   );
 }
 
-function Orb({ size = 36, spinning = false }: { size?: number; spinning?: boolean }) {
+function AnimatedOrb({ size = 36, spinning = false }: { size?: number; spinning?: boolean }) {
   return (
-    <div
-      className="flex-none relative rounded-full socia-orb"
-      data-spinning={spinning ? "true" : "false"}
-      style={{
-        width: size,
-        height: size,
-        background:
-          "radial-gradient(circle at 32% 28%, #cfe6ff 0%, #4dc8fd 22%, #1c7cff 48%, #003fc0 78%, #061535 100%)",
-      }}
-      aria-hidden
-    />
+    <div className="relative flex-none" style={{ width: size, height: size }} aria-hidden>
+      {/* halo conic ring */}
+      <div
+        className="absolute inset-[-4px] rounded-full opacity-70 trax-conic-ring"
+        style={{
+          background:
+            "conic-gradient(from 0deg, transparent 0%, #1c7cff 25%, transparent 50%, #4dc8fd 75%, transparent 100%)",
+          filter: "blur(4px)",
+        }}
+      />
+      <div
+        className="absolute inset-0 rounded-full socia-orb"
+        data-spinning={spinning ? "true" : "false"}
+        style={{
+          background:
+            "radial-gradient(circle at 32% 28%, #cfe6ff 0%, #4dc8fd 22%, #1c7cff 48%, #003fc0 78%, #061535 100%)",
+          boxShadow: "0 0 18px rgba(28,124,255,0.55)",
+        }}
+      />
+    </div>
   );
 }
 
@@ -64,7 +74,6 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
   const weekday = now.toLocaleDateString("es-PE", { weekday: "long" });
   const dateKey = now.toISOString().slice(0, 10);
 
-  // ayer mismo intervalo
   const yesterdayIncome = useMemo(() => {
     const y = new Date();
     y.setDate(y.getDate() - 1);
@@ -75,11 +84,9 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
 
   const briefingFn = useServerFn(generateBriefing);
 
-  // Cache key: cambia cuando hay un cambio "grande" — bucket evita refetches por cambios menores.
-  // Se regenera también cada 30 min naturalmente (staleTime).
   const keySig = [
     dateKey,
-    Math.floor(hour / 3), // bloque de 3h
+    Math.floor(hour / 3),
     inv.lowStock.length,
     bucket(fin.fiadosPending, 50),
     bucket(fin.todayIncome, 200),
@@ -122,7 +129,6 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
     else onIntent({ kind: "chat", prompt: insight.text });
   };
 
-  // Skeleton suave mientras genera
   const greeting =
     briefing?.greeting ??
     (hour < 12
@@ -132,13 +138,13 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
         : { line1: `Buenas noches, ${ownerFirstName}`, line2: "Cerrando el día contigo…" });
 
   return (
-    <div className="w-full flex flex-col gap-[20px]">
+    <div className="w-full flex flex-col gap-[16px]">
       {/* GREETING */}
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="pt-[8px] pb-[4px]"
+        className="pt-[8px] pb-[2px]"
       >
         <h1 className="font-['Geist'] font-medium text-[28px] leading-[34px] tracking-[-0.6px] text-white">
           {greeting.line1}
@@ -148,43 +154,38 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
         </p>
       </motion.div>
 
-      {/* BRIEFING CARD */}
+      {/* BRIEFING CARD — SOLID + animated border beam */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
-        className="relative w-full rounded-[28px] overflow-hidden"
+        className="relative w-full rounded-[24px] overflow-hidden"
         style={{
-          background:
-            "linear-gradient(180deg, rgba(28,124,255,0.10) 0%, rgba(255,255,255,0.04) 60%, rgba(255,255,255,0.03) 100%)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "#0B0B0E",
+          border: "1px solid rgba(255,255,255,0.06)",
         }}
       >
-        {/* glow superior */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-[80px] -left-[40px] h-[180px] w-[260px] rounded-full opacity-50"
-          style={{ background: "radial-gradient(circle, #1c7cff 0%, transparent 70%)", filter: "blur(40px)" }}
-        />
+        <BorderBeam size={260} duration={9} colorFrom="#4dc8fd" colorTo="#1c7cff" />
+        <BorderBeam size={260} duration={9} delay={4.5} colorFrom="#a78bfa" colorTo="#1c7cff" />
 
         <div className="relative p-[18px]">
-          <div className="flex items-center gap-[10px] mb-[14px]">
-            <Orb size={28} spinning={isLoading} />
+          <div className="flex items-center gap-[12px] mb-[16px]">
+            <AnimatedOrb size={30} spinning={isLoading} />
             <div className="flex flex-col">
-              <span className="font-['Geist'] text-[11px] font-medium tracking-[1.1px] uppercase text-[rgba(255,255,255,0.7)]">
-                socIA preparó esto
+              <span className="font-['Geist'] text-[10.5px] font-medium tracking-[1.2px] uppercase text-white">
+                socIA
               </span>
               <span className="font-['Geist'] text-[11px] text-[rgba(255,255,255,0.4)]">
-                {isLoading ? "Revisando tu negocio…" : "actualizado hace un momento"}
+                {isLoading ? "Revisando tu negocio…" : "Briefing del momento"}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-[10px]">
+          <div className="flex flex-col gap-[8px]">
             {isLoading && (
               <>
-                <div className="h-[44px] rounded-[16px] bg-white/[0.04] animate-pulse" />
-                <div className="h-[44px] rounded-[16px] bg-white/[0.03] animate-pulse" />
+                <div className="h-[44px] rounded-[14px] trax-skeleton" />
+                <div className="h-[44px] rounded-[14px] trax-skeleton" />
               </>
             )}
 
@@ -198,17 +199,17 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.08 + i * 0.06 }}
-                  className="w-full text-left flex items-start gap-[12px] p-[12px] rounded-[16px] transition-colors"
+                  className="w-full text-left flex items-start gap-[12px] p-[12px] rounded-[14px] transition-colors"
                   style={{
-                    background: "rgba(255,255,255,0.035)",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    background: "#16161B",
+                    border: "1px solid rgba(255,255,255,0.05)",
                   }}
                 >
                   <span className="text-[18px] leading-[24px] flex-none">{ins.emoji}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-[6px] mb-[2px]">
                       <ToneDot tone={ins.tone} />
-                      <span className="font-['Geist'] text-[10.5px] uppercase tracking-[0.6px] text-[rgba(255,255,255,0.45)]">
+                      <span className="font-['Geist'] text-[10px] uppercase tracking-[0.6px] text-[rgba(255,255,255,0.45)]">
                         {ins.tone === "warning"
                           ? "Atención"
                           : ins.tone === "opportunity"
@@ -231,21 +232,8 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
                 </motion.button>
               ))}
           </div>
-
-          {/* Sales note discreta */}
-          {briefing?.salesNote && (
-            <button
-              type="button"
-              onClick={() => onIntent({ kind: "screen", screen: "negocio", subview: "finanzas" })}
-              className="mt-[14px] w-full text-left font-['Geist'] text-[12.5px] text-[rgba(255,255,255,0.55)] hover:text-white/80 transition-colors"
-            >
-              {briefing.salesNote}
-            </button>
-          )}
         </div>
       </motion.div>
-
     </div>
   );
 }
-
