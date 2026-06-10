@@ -106,7 +106,9 @@ function Margin() {
   );
 }
 
-function Paragraph() {
+function Paragraph({ value }: { value: number }) {
+  const display = value >= 1000 ? value / 1000 : value;
+  const suffix = value >= 1000 ? "K" : "";
   return (
     <div className="[word-break:break-word] content-stretch flex gap-[3.99px] items-start justify-center leading-[0] not-italic relative shrink-0 text-center tracking-[-1.6px] whitespace-nowrap" data-name="Paragraph">
       <div className="flex flex-col font-['Bai_Jamjuree:Medium',sans-serif] justify-center relative shrink-0 text-[32px] text-[rgba(255,255,255,0.6)]">
@@ -115,9 +117,9 @@ function Paragraph() {
         <div className="flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center relative shrink-0 text-[72px] text-white">
           <p className="leading-[72px]">
             <AnimatedNumber
-              value={1.25}
-              duration={1.4}
-              format={(n) => `${n.toFixed(2)}K`}
+              value={display}
+              duration={1.2}
+              format={(n) => `${n.toFixed(2)}${suffix}`}
             />
           </p>
         </div>
@@ -126,24 +128,25 @@ function Paragraph() {
 }
 
 
-function Shadow() {
+function Shadow({ value }: { value: number }) {
   return (
     <div className="content-stretch flex items-start justify-center relative shrink-0" data-name="Shadow">
-      <Paragraph />
+      <Paragraph value={value} />
     </div>
   );
 }
 
-function HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero() {
+function HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero({ value }: { value: number }) {
   return (
     <div className="content-stretch flex flex-col items-center justify-center py-[32px] gap-[16px] relative shrink-0 w-full" data-name="Hero Section (Floating Number) - Keeps Bai Jamjuree as requested for Hero">
       <div className="content-stretch flex flex-col items-center w-full">
         <Margin />
-        <Shadow />
+        <Shadow value={value} />
       </div>
     </div>
   );
 }
+
 
 
 function Container6() {
