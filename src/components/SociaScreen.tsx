@@ -401,11 +401,11 @@ export default function SociaScreen() {
         <div className="topbar flex items-center justify-between px-[22px] pt-[14px]">
           <button
             type="button"
-            onClick={() => setHistoryOpen(true)}
-            className="circ-btn"
-            aria-label="Historial"
+            onClick={() => setVoiceCfgOpen(true)}
+            className="circ-btn small"
+            aria-label="Configurar voz IA"
           >
-            <History className="h-[18px] w-[18px]" strokeWidth={1.7} />
+            <Settings2 className="h-[15px] w-[15px]" strokeWidth={1.7} />
           </button>
           <div className="text-center leading-[1.1]">
             <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
@@ -417,11 +417,11 @@ export default function SociaScreen() {
           </div>
           <button
             type="button"
-            onClick={onNewThread}
+            onClick={() => setHistoryOpen(true)}
             className="circ-btn"
-            aria-label="Nuevo"
+            aria-label="Historial"
           >
-            <Plus className="h-[18px] w-[18px]" strokeWidth={1.7} />
+            <History className="h-[18px] w-[18px]" strokeWidth={1.7} />
           </button>
         </div>
 
