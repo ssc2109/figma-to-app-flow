@@ -836,6 +836,230 @@ function DynamicSubtitle() {
 }
 
 
+// ===== Voice Config =====
+type VoiceConfig = {
+  tone: "amigable" | "formal" | "peruano" | "directo";
+  length: "corto" | "normal" | "detallado";
+  emoji: boolean;
+  proactivo: boolean;
+  formato: "texto" | "listas" | "mixto";
+};
+const VOICE_CFG_KEY = "trax.socia.voice.v1";
+const DEFAULT_VOICE: VoiceConfig = {
+  tone: "amigable",
+  length: "normal",
+  emoji: true,
+  proactivo: true,
+  formato: "mixto",
+};
+function loadVoiceCfg(): VoiceConfig {
+  if (typeof window === "undefined") return DEFAULT_VOICE;
+  try {
+    const raw = localStorage.getItem(VOICE_CFG_KEY);
+    if (raw) return { ...DEFAULT_VOICE, ...JSON.parse(raw) };
+  } catch {}
+  return DEFAULT_VOICE;
+}
+
+function VoiceConfigSheet({
+  open,
+  cfg,
+  onChange,
+  onClose,
+}: {
+  open: boolean;
+  cfg: VoiceConfig;
+  onChange: (c: VoiceConfig) => void;
+  onClose: () => void;
+}) {
+  const set = <K extends keyof VoiceConfig>(k: K, v: VoiceConfig[K]) =>
+    onChange({ ...cfg, [k]: v });
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 32, stiffness: 320 }}
+            className="fixed inset-x-0 bottom-0 z-[61] mx-auto w-full max-w-[430px] rounded-t-[28px] bg-[#0b0b10] flex flex-col"
+            style={{ border: "1px solid rgba(255,255,255,0.08)", maxHeight: "88dvh" }}
+          >
+            <div className="flex items-center justify-between px-[22px] pt-[20px] pb-[10px]">
+              <div>
+                <div className="font-['Geist'] text-[10px] uppercase tracking-[1.8px] text-white/35">
+                  Asistente
+                </div>
+                <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.3px] mt-[2px]">
+                  Cómo habla socIA
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-[34px] w-[34px] rounded-full flex items-center justify-center bg-white/5 border border-white/10"
+                aria-label="Cerrar"
+              >
+                <X className="h-[15px] w-[15px] text-white/70" />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-[18px] pb-[28px] pt-[6px] flex flex-col gap-[18px]">
+              <VCSection label="Tono">
+                <VCRow
+                  options={[
+                    { v: "amigable", l: "Amigable" },
+                    { v: "peruano", l: "Peruano casual" },
+                    { v: "formal", l: "Formal" },
+                    { v: "directo", l: "Directo" },
+                  ]}
+                  value={cfg.tone}
+                  onPick={(v) => set("tone", v as VoiceConfig["tone"])}
+                />
+              </VCSection>
+              <VCSection label="Largo de respuesta">
+                <VCRow
+                  options={[
+                    { v: "corto", l: "Corto" },
+                    { v: "normal", l: "Normal" },
+                    { v: "detallado", l: "Detallado" },
+                  ]}
+                  value={cfg.length}
+                  onPick={(v) => set("length", v as VoiceConfig["length"])}
+                />
+              </VCSection>
+              <VCSection label="Formato">
+                <VCRow
+                  options={[
+                    { v: "texto", l: "Solo texto" },
+                    { v: "listas", l: "Con listas" },
+                    { v: "mixto", l: "Mixto" },
+                  ]}
+                  value={cfg.formato}
+                  onPick={(v) => set("formato", v as VoiceConfig["formato"])}
+                />
+              </VCSection>
+              <VCToggle
+                label="Usar emojis"
+                hint="Pequeños emojis para hacer más cálida la conversación."
+                value={cfg.emoji}
+                onChange={(v) => set("emoji", v)}
+              />
+              <VCToggle
+                label="Modo proactivo"
+                hint="socIA te dará tips y avisos aunque no preguntes."
+                value={cfg.proactivo}
+                onChange={(v) => set("proactivo", v)}
+              />
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-[6px] h-[50px] rounded-[16px] bg-white text-black font-['Geist'] text-[14px] font-semibold"
+              >
+                Guardar
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function VCSection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-[10px]">
+      <div className="font-['Geist'] text-[10px] uppercase tracking-[1.6px] text-white/35 px-[2px]">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function VCRow({
+  options,
+  value,
+  onPick,
+}: {
+  options: { v: string; l: string }[];
+  value: string;
+  onPick: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-[8px]">
+      {options.map((o) => {
+        const active = o.v === value;
+        return (
+          <button
+            key={o.v}
+            type="button"
+            onClick={() => onPick(o.v)}
+            className="px-[14px] h-[38px] rounded-[12px] font-['Geist'] text-[13px] flex items-center gap-[6px] transition-colors"
+            style={
+              active
+                ? { background: "#fff", color: "#0b0b10", borderColor: "#fff" }
+                : { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.78)", border: "1px solid rgba(255,255,255,0.10)" }
+            }
+          >
+            {active && <Check className="h-[13px] w-[13px]" strokeWidth={2.4} />}
+            {o.l}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function VCToggle({
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!value)}
+      className="flex items-center justify-between gap-[14px] text-left rounded-[16px] p-[14px]"
+      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <div className="flex flex-col">
+        <span className="font-['Geist'] text-[14px] text-white">{label}</span>
+        {hint && <span className="font-['Geist'] text-[11.5px] text-white/45 mt-[2px]">{hint}</span>}
+      </div>
+      <span
+        className="relative w-[42px] h-[24px] rounded-full transition-colors flex-none"
+        style={{ background: value ? "#fff" : "rgba(255,255,255,0.14)" }}
+      >
+        <span
+          className="absolute top-[2px] h-[20px] w-[20px] rounded-full transition-all"
+          style={{
+            left: value ? "20px" : "2px",
+            background: value ? "#0b0b10" : "#fff",
+          }}
+        />
+      </span>
+    </button>
+  );
+}
+
+
+
+
 const SOCIA_CSS = `
 .socia-screen{ font-family:'Geist', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
 
