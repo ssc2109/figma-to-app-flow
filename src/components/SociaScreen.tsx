@@ -239,10 +239,27 @@ export default function SociaScreen() {
     taRef.current?.focus();
   }, [chatKey, status]);
 
+  const stickToBottomRef = useRef(true);
   useEffect(() => {
-    if (status === "streaming" || status === "submitted") return;
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages.length, status]);
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+      stickToBottomRef.current = distance < 80;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (status === "submitted") stickToBottomRef.current = true;
+  }, [status]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !stickToBottomRef.current) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: status === "streaming" ? "auto" : "smooth" });
+  });
 
   const isLoading = status === "submitted" || status === "streaming";
   const empty = messages.length === 0;
