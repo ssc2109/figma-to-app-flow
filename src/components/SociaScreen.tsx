@@ -416,7 +416,7 @@ export default function SociaScreen() {
       </div>
 
       {/* MAIN AREA */}
-      <div className="relative flex-1 flex flex-col">
+      <div className="relative flex-1 flex flex-col overflow-hidden">
         {/* GREETING — top, completely separate from the orb */}
         <AnimatePresence>
           {empty && (
