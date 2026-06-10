@@ -119,6 +119,7 @@ export default function SociaScreen() {
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
+    const scrollY = window.scrollY;
     const previous = {
       htmlOverflow: html.style.overflow,
       bodyOverflow: body.style.overflow,
@@ -126,23 +127,37 @@ export default function SociaScreen() {
       bodyOverscroll: body.style.overscrollBehavior,
       htmlHeight: html.style.height,
       bodyHeight: body.style.height,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyWidth: body.style.width,
     };
 
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    html.classList.add("trax-socia-scroll-lock");
+    body.classList.add("trax-socia-scroll-lock");
     html.style.overflow = "hidden";
     body.style.overflow = "hidden";
     html.style.overscrollBehavior = "none";
     body.style.overscrollBehavior = "none";
     html.style.height = "100%";
     body.style.height = "100%";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.width = "100%";
 
     return () => {
+      html.classList.remove("trax-socia-scroll-lock");
+      body.classList.remove("trax-socia-scroll-lock");
       html.style.overflow = previous.htmlOverflow;
       body.style.overflow = previous.bodyOverflow;
       html.style.overscrollBehavior = previous.htmlOverscroll;
       body.style.overscrollBehavior = previous.bodyOverscroll;
       html.style.height = previous.htmlHeight;
       body.style.height = previous.bodyHeight;
+      body.style.position = previous.bodyPosition;
+      body.style.top = previous.bodyTop;
+      body.style.width = previous.bodyWidth;
+      window.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
     };
   }, []);
 
@@ -394,7 +409,7 @@ export default function SociaScreen() {
   }, []);
 
   return (
-    <div className="relative w-full h-[100dvh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 left-1/2 z-20 flex h-[100dvh] w-full max-w-[430px] -translate-x-1/2 flex-col overflow-hidden bg-black">
       {/* hidden file input for photo features */}
       <input
         ref={fileInputRef}

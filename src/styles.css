@@ -133,6 +133,20 @@
 }
 
 @layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background: #000000;
+  }
+
+  html.trax-socia-scroll-lock,
+  body.trax-socia-scroll-lock {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none;
+  }
+
   * {
     border-color: var(--color-border);
   }
