@@ -417,25 +417,51 @@ export default function SociaScreen() {
 
       {/* MAIN AREA */}
       <div className="relative flex-1 flex flex-col">
-        {/* ORB — stays in place. Lives above the chat bar. */}
+        {/* GREETING — top, completely separate from the orb */}
         <AnimatePresence>
           {empty && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.35 } }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute left-1/2 -translate-x-1/2 top-[20px] z-10 flex flex-col items-center pointer-events-none"
+              key="greeting"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6, transition: { duration: 0.25 } }}
+              transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              className="relative z-20 px-[24px] pt-[14px] text-center pointer-events-none"
             >
-              <ShaderOrb size={360} intensity={orbIntensity} />
-              <div className="mt-[-40px] text-center px-[24px]">
-                <div className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.5px]">
-                  {greeting}, Alberto.
-                </div>
-                <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/45 max-w-[280px]">
-                  Soy socIA. Puedo analizar, registrar y aconsejarte.
-                </div>
+              <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[2px] text-white/40">
+                Ecoarom
               </div>
+              <div className="mt-[12px] font-['Bai_Jamjuree'] text-[30px] font-semibold text-white tracking-[-0.6px] leading-[1.05]">
+                {greeting},<br />Alberto.
+              </div>
+              <div className="mt-[12px] font-['Geist'] text-[13px] text-white/45 max-w-[300px] mx-auto leading-[1.45]">
+                Soy socIA. Puedo analizar, registrar y aconsejarte sobre tu negocio.
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* DOME ORB — giant blue dome anchored low, faded under the chat bar */}
+        <AnimatePresence>
+          {empty && (
+            <motion.div
+              key="dome"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.35 } }}
+              transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute left-1/2 -translate-x-1/2 z-0 pointer-events-none"
+              style={{
+                top: "44%",
+                width: 780,
+                height: 780,
+                WebkitMaskImage:
+                  "linear-gradient(to bottom, black 0%, black 36%, transparent 58%)",
+                maskImage:
+                  "linear-gradient(to bottom, black 0%, black 36%, transparent 58%)",
+              }}
+            >
+              <ShaderOrb size={780} intensity={orbIntensity} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -481,7 +507,7 @@ export default function SociaScreen() {
         {/* BOTTOM CONTROL ZONE (composer + cards) */}
         <div
           className={`absolute left-0 right-0 z-20 ${
-            empty ? "top-[58%]" : "bottom-0 pb-[110px]"
+            empty ? "top-[62%]" : "bottom-0 pb-[110px]"
           }`}
         >
           {/* gradient mask so messages fade behind the controls */}
@@ -494,9 +520,10 @@ export default function SociaScreen() {
             <div
               className="flex items-end gap-[6px] min-h-[54px] pl-[18px] pr-[6px] py-[6px] rounded-[28px] backdrop-blur-xl"
               style={{
-                background: "rgba(10,14,28,0.55)",
-                border: "1px solid rgba(255,255,255,0.10)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                background: "rgba(8,12,26,0.72)",
+                border: "1px solid rgba(140,170,255,0.16)",
+                boxShadow:
+                  "0 12px 44px rgba(30,70,200,0.28), inset 0 0 0 1px rgba(255,255,255,0.03)",
               }}
             >
               <textarea
