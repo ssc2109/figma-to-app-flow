@@ -17,6 +17,9 @@ import {
   Loader2,
   ChevronRight,
   ArrowRight,
+  Settings2,
+  AudioLines,
+  Check,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useServerFn } from "@tanstack/react-start";
