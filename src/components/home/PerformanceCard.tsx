@@ -1,0 +1,131 @@
+import { motion } from "motion/react";
+import { TrendingUp, TrendingDown, Wallet, Smartphone } from "lucide-react";
+import { useMemo } from "react";
+import { useFinance } from "@/data/finance";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
+
+function fmtMoney(n: number) {
+  return n.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtCompact(n: number) {
+  return n.toLocaleString("es-PE", { maximumFractionDigits: 0 });
+}
+
+export default function PerformanceCard() {
+  const fin = useFinance();
+
+  const { saldoCaja, flujoDigital, consolidado, deltaPct } = useMemo(() => {
+    let caja = 0;
+    let digital = 0;
+    for (const t of fin.tx) {
+      const isCash = (t.method ?? "Efectivo") === "Efectivo";
+      const sign = t.kind === "ingreso" ? 1 : -1;
+      if (isCash) caja += sign * t.amount;
+      else digital += sign * t.amount;
+    }
+    const total = caja + digital;
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    const yest = fin.tx
+      .filter((t) => t.kind === "ingreso" && new Date(t.date).toDateString() === y.toDateString())
+      .reduce((s, t) => s + t.amount, 0);
+    const delta = yest > 0 ? ((fin.todayIncome - yest) / yest) * 100 : 0;
+    return { saldoCaja: caja, flujoDigital: digital, consolidado: total, deltaPct: delta };
+  }, [fin.tx, fin.todayIncome]);
+
+  const trendUp = deltaPct >= 0;
+  const TrendIcon = trendUp ? TrendingUp : TrendingDown;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="relative w-full rounded-[24px] overflow-hidden"
+      style={{
+        background: "#0F0F12",
+        border: "1px solid rgba(255,255,255,0.07)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+      }}
+    >
+      {/* eyebrow */}
+      <div className="px-[20px] pt-[20px] pb-[8px]">
+        <span className="font-['Geist'] text-[11px] font-medium tracking-[1.4px] uppercase text-[rgba(255,255,255,0.55)]">
+          Rendimiento consolidado
+        </span>
+      </div>
+
+      {/* hero amount */}
+      <div className="px-[20px] pb-[10px] flex items-baseline gap-[6px]">
+        <span className="font-['Bai_Jamjuree'] font-medium text-[26px] leading-[30px] text-[rgba(255,255,255,0.55)] tracking-[-1px]">
+          S/
+        </span>
+        <span className="font-['Bai_Jamjuree'] font-bold text-[44px] leading-[48px] text-white tracking-[-1.4px]">
+          <AnimatedNumber value={consolidado} duration={1} format={(n) => fmtMoney(n)} />
+        </span>
+      </div>
+
+      {/* delta vs ayer */}
+      <div className="px-[20px] pb-[18px] flex items-center gap-[6px]">
+        <TrendIcon
+          className="h-[14px] w-[14px]"
+          style={{ color: trendUp ? "#4ADE80" : "#F87171" }}
+          strokeWidth={2.2}
+        />
+        <span
+          className="font-['Geist'] text-[12.5px] font-medium"
+          style={{ color: trendUp ? "#4ADE80" : "#F87171" }}
+        >
+          {trendUp ? "+" : ""}
+          {deltaPct.toFixed(0)}%
+        </span>
+        <span className="font-['Geist'] text-[12.5px] text-[rgba(255,255,255,0.5)]">
+          respecto a ayer
+        </span>
+      </div>
+
+      {/* divider */}
+      <div className="h-px w-full bg-[rgba(255,255,255,0.06)]" />
+
+      {/* sub KPIs */}
+      <div className="grid grid-cols-2">
+        <SubKpi
+          icon={Wallet}
+          label="Saldo en caja"
+          value={`S/ ${fmtCompact(saldoCaja)}`}
+        />
+        <div className="border-l border-white/[0.06]">
+          <SubKpi
+            icon={Smartphone}
+            label="Flujo digital"
+            value={`S/ ${fmtCompact(flujoDigital)}`}
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function SubKpi({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="px-[20px] py-[16px] flex flex-col gap-[6px]">
+      <div className="flex items-center gap-[8px] text-[rgba(255,255,255,0.5)]">
+        <Icon className="h-[13px] w-[13px]" strokeWidth={1.8} />
+        <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1px] font-medium">
+          {label}
+        </span>
+      </div>
+      <span className="font-['Bai_Jamjuree'] font-bold text-[20px] leading-[24px] text-white tracking-[-0.4px]">
+        {value}
+      </span>
+    </div>
+  );
+}
