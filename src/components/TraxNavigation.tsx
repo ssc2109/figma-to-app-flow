@@ -66,7 +66,11 @@ function NavShell() {
   }, [setHandler]);
 
   return (
-    <div className="min-h-screen bg-black relative">
+    <div
+      className={`bg-black relative ${
+        currentScreen === "socia" ? "h-[100dvh] overflow-hidden" : "min-h-screen"
+      }`}
+    >
       {currentScreen === "inicio" && (
         <div
           className="fixed top-0 left-0 right-0 h-[55vh] z-0 pointer-events-none overflow-hidden"
@@ -101,7 +105,11 @@ function NavShell() {
           />
         </div>
       )}
-      <div className="relative z-10 mx-auto w-full max-w-[430px] pb-[140px]">
+      <div
+        className={`relative z-10 mx-auto w-full max-w-[430px] ${
+          currentScreen === "socia" ? "h-[100dvh] overflow-hidden" : "pb-[140px]"
+        }`}
+      >
         <AnimatePresence mode="wait">
           {booting ? (
             <motion.div
