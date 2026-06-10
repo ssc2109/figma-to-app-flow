@@ -951,6 +951,9 @@ function MessageBubble({
 
 
 
+  // Group parts: render text+tools inline in order
+  const parts = msg.parts ?? [];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -962,7 +965,7 @@ function MessageBubble({
         <AssistantAvatar spinning={isStreaming} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-[8px] mb-[4px]">
+        <div className="flex items-center gap-[8px] mb-[6px]">
           <span className="font-['Bai_Jamjuree'] text-[12px] font-semibold tracking-[-.2px] text-white/85">
             socIA
           </span>
@@ -971,64 +974,82 @@ function MessageBubble({
             asistente
           </span>
         </div>
-        <div
-          className="font-['Geist'] text-[14.5px] text-white/92 leading-[1.6] prose-socia select-text"
-          style={{ userSelect: "text" }}
-        >
-          {text ? (
-            <ReactMarkdown
-              components={{
-                p: ({ children }) => <p className="m-0 mb-[8px] last:mb-0">{children}</p>,
-                strong: ({ children }) => (
-                  <strong className="text-white font-semibold">{children}</strong>
-                ),
-                ul: ({ children }) => (
-                  <ul className="my-[8px] pl-[18px] list-disc marker:text-white/35 space-y-[3px]">
-                    {children}
-                  </ul>
-                ),
-                ol: ({ children }) => (
-                  <ol className="my-[8px] pl-[20px] list-decimal marker:text-white/35 space-y-[3px]">
-                    {children}
-                  </ol>
-                ),
-                code: ({ children }) => (
-                  <code className="px-[6px] py-[1px] rounded-[6px] bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/90">
-                    {children}
-                  </code>
-                ),
-                a: ({ children, href }) => (
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[#b9a8ff] underline underline-offset-2 decoration-white/20 hover:decoration-[#b9a8ff]"
+
+        {/* Render parts in order — text blocks get the gray bubble,
+            tool calls render as their own card */}
+        <div className="flex flex-col gap-[8px]">
+          {parts.map((p, i) => {
+            if (p.type === "text") {
+              const t = (p as { text: string }).text;
+              if (!t) return null;
+              return (
+                <div
+                  key={i}
+                  className="assistant-bubble font-['Geist'] text-[14.5px] text-white/92 leading-[1.6] prose-socia select-text"
+                  style={{ userSelect: "text" }}
+                >
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="m-0 mb-[8px] last:mb-0">{children}</p>,
+                      strong: ({ children }) => (
+                        <strong className="text-white font-semibold">{children}</strong>
+                      ),
+                      ul: ({ children }) => (
+                        <ul className="my-[8px] pl-[18px] list-disc marker:text-white/35 space-y-[3px]">
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol className="my-[8px] pl-[20px] list-decimal marker:text-white/35 space-y-[3px]">
+                          {children}
+                        </ol>
+                      ),
+                      code: ({ children }) => (
+                        <code className="px-[6px] py-[1px] rounded-[6px] bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/90">
+                          {children}
+                        </code>
+                      ),
+                      a: ({ children, href }) => (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[#7dc4ff] underline underline-offset-2 decoration-white/20 hover:decoration-[#7dc4ff]"
+                        >
+                          {children}
+                        </a>
+                      ),
+                      blockquote: ({ children }) => (
+                        <blockquote className="border-l-2 border-white/15 pl-[10px] my-[6px] text-white/70 italic">
+                          {children}
+                        </blockquote>
+                      ),
+                    }}
                   >
-                    {children}
-                  </a>
-                ),
-                blockquote: ({ children }) => (
-                  <blockquote className="border-l-2 border-white/15 pl-[10px] my-[6px] text-white/70 italic">
-                    {children}
-                  </blockquote>
-                ),
-              }}
-            >
-              {text}
-            </ReactMarkdown>
-          ) : (
+                    {t}
+                  </ReactMarkdown>
+                  {isStreaming && i === parts.length - 1 && (
+                    <span
+                      className="inline-block w-[7px] h-[14px] align-[-2px] ml-[2px] rounded-[1px] bg-white/70"
+                      style={{ animation: "socCaret 1s steps(1) infinite" }}
+                    />
+                  )}
+                </div>
+              );
+            }
+            if (typeof p.type === "string" && p.type.startsWith("tool-")) {
+              return <ToolPart key={i} part={p as ToolPartShape} />;
+            }
+            return null;
+          })}
+          {!text && isStreaming && (
             <span className="inline-flex items-center gap-[6px] text-white/45 text-[13px]">
               <Loader2 className="h-[12px] w-[12px] animate-spin" />
               redactando…
             </span>
           )}
-          {isStreaming && text && (
-            <span
-              className="inline-block w-[7px] h-[14px] align-[-2px] ml-[2px] rounded-[1px] bg-white/70"
-              style={{ animation: "socCaret 1s steps(1) infinite" }}
-            />
-          )}
         </div>
+
         {!isStreaming && text && (
           <div className="mt-[8px]">
             <MessageActions text={text} variant="assistant" onRegenerate={onRegenerate} />
@@ -1036,6 +1057,83 @@ function MessageBubble({
         )}
       </div>
     </motion.div>
+  );
+}
+
+type ToolPartShape = {
+  type: string; // "tool-xxx"
+  state?: "input-streaming" | "input-available" | "output-available" | "output-error";
+  input?: unknown;
+  output?: unknown;
+  errorText?: string;
+};
+
+const TOOL_LABELS: Record<string, { label: string; icon: typeof Search }> = {
+  "tool-consultarStock": { label: "Consultando stock", icon: Search },
+  "tool-actualizarStock": { label: "Actualizando stock", icon: ScanLine },
+  "tool-registrarVenta": { label: "Registrando venta", icon: TrendingUp },
+  "tool-registrarGasto": { label: "Registrando gasto", icon: TrendingUp },
+  "tool-registrarFiado": { label: "Anotando fiado", icon: TrendingUp },
+  "tool-marcarFiadoPagado": { label: "Marcando fiado pagado", icon: Check },
+  "tool-analizarNegocio": { label: "Analizando tu negocio", icon: TrendingUp },
+};
+
+function ToolPart({ part }: { part: ToolPartShape }) {
+  const meta = TOOL_LABELS[part.type] ?? { label: part.type.replace("tool-", ""), icon: Loader2 };
+  const Icon = meta.icon;
+  const running = part.state === "input-streaming" || part.state === "input-available";
+  const ok = part.state === "output-available";
+  const err = part.state === "output-error";
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className="rounded-[14px] px-[12px] py-[10px] text-[12.5px] font-['Geist']"
+      style={{
+        background: "rgba(255,255,255,0.035)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-[8px] text-left"
+      >
+        <span
+          className="h-[22px] w-[22px] rounded-[7px] grid place-items-center flex-none"
+          style={{
+            background: ok ? "rgba(74,222,128,.14)" : err ? "rgba(248,113,113,.14)" : "rgba(125,196,255,.14)",
+            color: ok ? "#4ADE80" : err ? "#F87171" : "#7dc4ff",
+          }}
+        >
+          {running ? <Loader2 className="h-[12px] w-[12px] animate-spin" /> : <Icon className="h-[12px] w-[12px]" />}
+        </span>
+        <span className="text-white/80 flex-1 truncate">
+          {meta.label}
+          {running && "…"}
+        </span>
+        <ChevronRight
+          className="h-[13px] w-[13px] text-white/35 transition-transform"
+          style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
+        />
+      </button>
+      {open && (
+        <div className="mt-[8px] pt-[8px] border-t border-white/[0.06] space-y-[6px]">
+          {part.input !== undefined && (
+            <pre className="text-[11px] text-white/55 whitespace-pre-wrap break-words">
+              {JSON.stringify(part.input, null, 2)}
+            </pre>
+          )}
+          {ok && part.output !== undefined && (
+            <pre className="text-[11px] text-white/70 whitespace-pre-wrap break-words">
+              {typeof part.output === "string" ? part.output : JSON.stringify(part.output, null, 2)}
+            </pre>
+          )}
+          {err && (
+            <div className="text-[11px] text-[#F87171]">{part.errorText ?? "Error en la herramienta"}</div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
