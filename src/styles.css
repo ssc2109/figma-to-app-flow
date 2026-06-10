@@ -161,6 +161,26 @@
     display: none;
   }
 
+  html:has([data-socia-screen]) {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    scrollbar-width: none;
+  }
+
+  html:has([data-socia-screen])::-webkit-scrollbar {
+    display: none;
+  }
+
+  body:has([data-socia-screen]),
+  #root:has([data-socia-screen]) {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+
   * {
     border-color: var(--color-border);
   }

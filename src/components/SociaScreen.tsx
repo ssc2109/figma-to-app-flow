@@ -364,7 +364,7 @@ export default function SociaScreen() {
   }, []);
 
   return (
-    <div className="fixed inset-0 left-1/2 z-20 flex h-[100dvh] w-full max-w-[430px] -translate-x-1/2 flex-col overflow-hidden bg-black">
+    <div data-socia-screen className="fixed inset-0 left-1/2 z-20 flex h-[100dvh] w-full max-w-[430px] -translate-x-1/2 flex-col overflow-hidden bg-black">
       {/* hidden file input for photo features */}
       <input
         ref={fileInputRef}
