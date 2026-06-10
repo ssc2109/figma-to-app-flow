@@ -17,6 +17,9 @@ import {
   Loader2,
   ChevronRight,
   ArrowRight,
+  Settings2,
+  AudioLines,
+  Check,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useServerFn } from "@tanstack/react-start";
@@ -125,6 +128,11 @@ export default function SociaScreen() {
 
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [voiceCfgOpen, setVoiceCfgOpen] = useState(false);
+  const [voiceCfg, setVoiceCfg] = useState<VoiceConfig>(() => loadVoiceCfg());
+  useEffect(() => {
+    try { localStorage.setItem(VOICE_CFG_KEY, JSON.stringify(voiceCfg)); } catch {}
+  }, [voiceCfg]);
 
   const { data: threadMessages } = useQuery({
     queryKey: ["chat-messages", activeThreadId],
@@ -164,8 +172,9 @@ export default function SociaScreen() {
         unidades: p.stock,
       })),
       total_productos: inv.productCount,
+      voz_ia: voiceCfg,
     }),
-    [fin.todayIncome, fin.todayExpense, fin.todayNet, fin.monthIncome, fin.monthExpense, fin.monthNet, fin.fiadosPending, fin.fiados, inv.lowStock, inv.productCount],
+    [fin.todayIncome, fin.todayExpense, fin.todayNet, fin.monthIncome, fin.monthExpense, fin.monthNet, fin.fiadosPending, fin.fiados, inv.lowStock, inv.productCount, voiceCfg],
   );
 
   const transport = useMemo(
@@ -392,11 +401,11 @@ export default function SociaScreen() {
         <div className="topbar flex items-center justify-between px-[22px] pt-[14px]">
           <button
             type="button"
-            onClick={() => setHistoryOpen(true)}
-            className="circ-btn"
-            aria-label="Historial"
+            onClick={() => setVoiceCfgOpen(true)}
+            className="circ-btn small"
+            aria-label="Configurar voz IA"
           >
-            <History className="h-[18px] w-[18px]" strokeWidth={1.7} />
+            <Settings2 className="h-[15px] w-[15px]" strokeWidth={1.7} />
           </button>
           <div className="text-center leading-[1.1]">
             <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
@@ -408,11 +417,11 @@ export default function SociaScreen() {
           </div>
           <button
             type="button"
-            onClick={onNewThread}
+            onClick={() => setHistoryOpen(true)}
             className="circ-btn"
-            aria-label="Nuevo"
+            aria-label="Historial"
           >
-            <Plus className="h-[18px] w-[18px]" strokeWidth={1.7} />
+            <History className="h-[18px] w-[18px]" strokeWidth={1.7} />
           </button>
         </div>
 
@@ -436,6 +445,7 @@ export default function SociaScreen() {
                   stop={stop}
                   stopVoiceDictation={stopVoiceDictation}
                   startVoiceDictation={startVoiceDictation}
+                  onPlus={() => { photoMode.current = "foto"; fileInputRef.current?.click(); }}
                 />
               </div>
 
@@ -496,6 +506,7 @@ export default function SociaScreen() {
                   stop={stop}
                   stopVoiceDictation={stopVoiceDictation}
                   startVoiceDictation={startVoiceDictation}
+                  onPlus={() => { photoMode.current = "foto"; fileInputRef.current?.click(); }}
                 />
               </div>
             </div>
@@ -582,6 +593,14 @@ export default function SociaScreen() {
           </>
         )}
       </AnimatePresence>
+
+      {/* VOICE CONFIG SHEET */}
+      <VoiceConfigSheet
+        open={voiceCfgOpen}
+        cfg={voiceCfg}
+        onChange={setVoiceCfg}
+        onClose={() => setVoiceCfgOpen(false)}
+      />
     </div>
   );
 }
@@ -596,6 +615,7 @@ function ChatBar({
   stop,
   stopVoiceDictation,
   startVoiceDictation,
+  onPlus,
 }: {
   taRef: React.RefObject<HTMLTextAreaElement | null>;
   input: string;
@@ -606,9 +626,19 @@ function ChatBar({
   stop: () => void;
   stopVoiceDictation: () => void;
   startVoiceDictation: () => void;
+  onPlus: () => void;
 }) {
+  const hasText = input.trim().length > 0;
   return (
     <div className="chatbar">
+      <button
+        type="button"
+        onClick={onPlus}
+        className="plus-btn"
+        aria-label="Adjuntar"
+      >
+        <Plus className="h-[20px] w-[20px]" strokeWidth={1.8} />
+      </button>
       <textarea
         ref={taRef}
         rows={1}
@@ -629,27 +659,35 @@ function ChatBar({
         className="chatbar-ta"
       />
       {listening ? (
-        <button type="button" onClick={stopVoiceDictation} className="pill-btn" aria-label="Detener">
+        <button type="button" onClick={stopVoiceDictation} className="icon-btn" aria-label="Detener">
           <Square className="h-[16px] w-[16px]" fill="currentColor" />
         </button>
       ) : (
-        <button type="button" onClick={startVoiceDictation} className="pill-btn" aria-label="Voz">
-          <Mic className="h-[18px] w-[18px]" strokeWidth={1.7} />
+        <button type="button" onClick={startVoiceDictation} className="icon-btn" aria-label="Voz">
+          <Mic className="h-[19px] w-[19px]" strokeWidth={1.7} />
         </button>
       )}
       {isLoading ? (
         <button type="button" onClick={stop} className="pill-btn send" aria-label="Detener">
           <Square className="h-[14px] w-[14px]" fill="currentColor" />
         </button>
-      ) : (
+      ) : hasText ? (
         <button
           type="button"
           onClick={() => send()}
-          disabled={!input.trim()}
-          className="pill-btn send disabled:opacity-30"
+          className="pill-btn send"
           aria-label="Enviar"
         >
           <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.2} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={startVoiceDictation}
+          className="pill-btn voice-mode"
+          aria-label="Modo voz"
+        >
+          <AudioLines className="h-[18px] w-[18px]" strokeWidth={2} />
         </button>
       )}
     </div>
@@ -798,6 +836,230 @@ function DynamicSubtitle() {
 }
 
 
+// ===== Voice Config =====
+type VoiceConfig = {
+  tone: "amigable" | "formal" | "peruano" | "directo";
+  length: "corto" | "normal" | "detallado";
+  emoji: boolean;
+  proactivo: boolean;
+  formato: "texto" | "listas" | "mixto";
+};
+const VOICE_CFG_KEY = "trax.socia.voice.v1";
+const DEFAULT_VOICE: VoiceConfig = {
+  tone: "amigable",
+  length: "normal",
+  emoji: true,
+  proactivo: true,
+  formato: "mixto",
+};
+function loadVoiceCfg(): VoiceConfig {
+  if (typeof window === "undefined") return DEFAULT_VOICE;
+  try {
+    const raw = localStorage.getItem(VOICE_CFG_KEY);
+    if (raw) return { ...DEFAULT_VOICE, ...JSON.parse(raw) };
+  } catch {}
+  return DEFAULT_VOICE;
+}
+
+function VoiceConfigSheet({
+  open,
+  cfg,
+  onChange,
+  onClose,
+}: {
+  open: boolean;
+  cfg: VoiceConfig;
+  onChange: (c: VoiceConfig) => void;
+  onClose: () => void;
+}) {
+  const set = <K extends keyof VoiceConfig>(k: K, v: VoiceConfig[K]) =>
+    onChange({ ...cfg, [k]: v });
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 32, stiffness: 320 }}
+            className="fixed inset-x-0 bottom-0 z-[61] mx-auto w-full max-w-[430px] rounded-t-[28px] bg-[#0b0b10] flex flex-col"
+            style={{ border: "1px solid rgba(255,255,255,0.08)", maxHeight: "88dvh" }}
+          >
+            <div className="flex items-center justify-between px-[22px] pt-[20px] pb-[10px]">
+              <div>
+                <div className="font-['Geist'] text-[10px] uppercase tracking-[1.8px] text-white/35">
+                  Asistente
+                </div>
+                <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.3px] mt-[2px]">
+                  Cómo habla socIA
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-[34px] w-[34px] rounded-full flex items-center justify-center bg-white/5 border border-white/10"
+                aria-label="Cerrar"
+              >
+                <X className="h-[15px] w-[15px] text-white/70" />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-[18px] pb-[28px] pt-[6px] flex flex-col gap-[18px]">
+              <VCSection label="Tono">
+                <VCRow
+                  options={[
+                    { v: "amigable", l: "Amigable" },
+                    { v: "peruano", l: "Peruano casual" },
+                    { v: "formal", l: "Formal" },
+                    { v: "directo", l: "Directo" },
+                  ]}
+                  value={cfg.tone}
+                  onPick={(v) => set("tone", v as VoiceConfig["tone"])}
+                />
+              </VCSection>
+              <VCSection label="Largo de respuesta">
+                <VCRow
+                  options={[
+                    { v: "corto", l: "Corto" },
+                    { v: "normal", l: "Normal" },
+                    { v: "detallado", l: "Detallado" },
+                  ]}
+                  value={cfg.length}
+                  onPick={(v) => set("length", v as VoiceConfig["length"])}
+                />
+              </VCSection>
+              <VCSection label="Formato">
+                <VCRow
+                  options={[
+                    { v: "texto", l: "Solo texto" },
+                    { v: "listas", l: "Con listas" },
+                    { v: "mixto", l: "Mixto" },
+                  ]}
+                  value={cfg.formato}
+                  onPick={(v) => set("formato", v as VoiceConfig["formato"])}
+                />
+              </VCSection>
+              <VCToggle
+                label="Usar emojis"
+                hint="Pequeños emojis para hacer más cálida la conversación."
+                value={cfg.emoji}
+                onChange={(v) => set("emoji", v)}
+              />
+              <VCToggle
+                label="Modo proactivo"
+                hint="socIA te dará tips y avisos aunque no preguntes."
+                value={cfg.proactivo}
+                onChange={(v) => set("proactivo", v)}
+              />
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-[6px] h-[50px] rounded-[16px] bg-white text-black font-['Geist'] text-[14px] font-semibold"
+              >
+                Guardar
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function VCSection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-[10px]">
+      <div className="font-['Geist'] text-[10px] uppercase tracking-[1.6px] text-white/35 px-[2px]">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function VCRow({
+  options,
+  value,
+  onPick,
+}: {
+  options: { v: string; l: string }[];
+  value: string;
+  onPick: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-[8px]">
+      {options.map((o) => {
+        const active = o.v === value;
+        return (
+          <button
+            key={o.v}
+            type="button"
+            onClick={() => onPick(o.v)}
+            className="px-[14px] h-[38px] rounded-[12px] font-['Geist'] text-[13px] flex items-center gap-[6px] transition-colors"
+            style={
+              active
+                ? { background: "#fff", color: "#0b0b10", borderColor: "#fff" }
+                : { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.78)", border: "1px solid rgba(255,255,255,0.10)" }
+            }
+          >
+            {active && <Check className="h-[13px] w-[13px]" strokeWidth={2.4} />}
+            {o.l}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function VCToggle({
+  label,
+  hint,
+  value,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!value)}
+      className="flex items-center justify-between gap-[14px] text-left rounded-[16px] p-[14px]"
+      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <div className="flex flex-col">
+        <span className="font-['Geist'] text-[14px] text-white">{label}</span>
+        {hint && <span className="font-['Geist'] text-[11.5px] text-white/45 mt-[2px]">{hint}</span>}
+      </div>
+      <span
+        className="relative w-[42px] h-[24px] rounded-full transition-colors flex-none"
+        style={{ background: value ? "#fff" : "rgba(255,255,255,0.14)" }}
+      >
+        <span
+          className="absolute top-[2px] h-[20px] w-[20px] rounded-full transition-all"
+          style={{
+            left: value ? "20px" : "2px",
+            background: value ? "#0b0b10" : "#fff",
+          }}
+        />
+      </span>
+    </button>
+  );
+}
+
+
+
+
 const SOCIA_CSS = `
 .socia-screen{ font-family:'Geist', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
 
@@ -807,6 +1069,12 @@ const SOCIA_CSS = `
   background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.09);
   color:#cfcfd4;
+}
+.socia-screen .circ-btn.small{
+  width:38px; height:38px;
+  background:rgba(255,255,255,.04);
+  border-color:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.65);
 }
 .socia-screen .statusbar{ height:14px; flex:none; }
 .socia-screen .topbar{ position:relative; z-index:6; flex:none; }
@@ -922,40 +1190,63 @@ const SOCIA_CSS = `
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
 .socia-screen .chatbar{
-  display:flex; align-items:center; gap:12px;
-  height:64px; padding:0 8px 0 22px;
-  border-radius:34px;
-  background:rgba(12,12,20,.78);
+  display:flex; align-items:center; gap:6px;
+  min-height:60px; padding:6px 6px 6px 8px;
+  border-radius:32px;
+  background:rgba(12,12,20,.82);
   border:1px solid rgba(255,255,255,.12);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 1px 0 rgba(255,255,255,.07),
     0 24px 70px -16px rgba(110,80,255,.5),
     0 12px 40px -12px rgba(0,0,0,.7);
 }
 .socia-screen .chatbar-ta{
   flex:1; background:transparent; outline:none; resize:none;
   color:#fff; font-family:'Geist', system-ui, sans-serif;
-  font-size:14.5px; line-height:1.4; padding:12px 0;
+  font-size:14.5px; line-height:1.4; padding:14px 4px;
   max-height:120px;
 }
 .socia-screen .chatbar-ta::placeholder{ color:rgba(255,255,255,.42) }
-.socia-screen .pill-btn{
-  width:48px; height:48px; border-radius:50%; flex:none;
+
+.socia-screen .plus-btn{
+  width:42px; height:42px; border-radius:50%; flex:none;
   display:grid; place-items:center;
-  background:rgba(255,255,255,.06);
+  background:transparent; color:rgba(255,255,255,.78);
+  transition:transform .12s, background .15s;
+}
+.socia-screen .plus-btn:hover{ background:rgba(255,255,255,.06); }
+.socia-screen .plus-btn:active{ transform:scale(.92) }
+
+.socia-screen .icon-btn{
+  width:38px; height:42px; flex:none;
+  display:grid; place-items:center;
+  background:transparent; color:rgba(255,255,255,.7);
+  transition:transform .12s, color .15s;
+}
+.socia-screen .icon-btn:hover{ color:#fff; }
+.socia-screen .icon-btn:active{ transform:scale(.9) }
+
+.socia-screen .pill-btn{
+  width:44px; height:44px; border-radius:50%; flex:none;
+  display:grid; place-items:center;
+  background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.10);
-  color:#d4d5db; transition:transform .12s;
+  color:#e5e5ec; transition:transform .12s;
 }
 .socia-screen .pill-btn:active{ transform:scale(.94) }
 .socia-screen .pill-btn.send{
   background:linear-gradient(180deg, #ffffff, #ece9f7);
   border-color:rgba(255,255,255,.4); color:#17122b;
 }
+.socia-screen .pill-btn.voice-mode{
+  background:linear-gradient(180deg, #ffffff, #e9e8f3);
+  border-color:rgba(255,255,255,.4); color:#17122b;
+}
 
-/* CARDS */
+/* CARDS — alineadas con la chatbar */
 .socia-screen .cards-head{
   display:flex; align-items:center; gap:8px;
-  padding:20px 18px 0;
+  padding:20px 22px 0;
 }
 .socia-screen .cards-head .lbl{
   font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
@@ -968,7 +1259,7 @@ const SOCIA_CSS = `
 }
 .socia-screen .cards{
   display:flex; gap:13px; margin-top:12px;
-  padding:4px 18px 4px;
+  padding:4px 22px 4px;
   overflow-x:auto; scrollbar-width:none;
   scroll-snap-type:x mandatory;
 }
