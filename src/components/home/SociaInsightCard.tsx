@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { useInventory } from "@/data/inventory";
 import { generateBriefing, type Briefing } from "@/lib/api/briefing.functions";
-import { BorderBeam } from "@/components/magicui/BorderBeam";
+
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
 
 function AnimatedOrb({ size = 44, spinning = false }: { size?: number; spinning?: boolean }) {
