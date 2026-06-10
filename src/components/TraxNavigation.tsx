@@ -150,26 +150,29 @@ function NavShell() {
               <AppSkeleton />
             </motion.div>
           ) : (
-            <ScreenTransition key={currentScreen} screenKey={currentScreen}>
-              {currentScreen === "inicio" && (
-                <Container
-                  onSeeAllActions={() => setQuickActionsOpen(true)}
-                  onSeeAllActivity={() => {
-                    setNegocioInitialView("finanzas");
-                    setCurrentScreen("negocio");
-                  }}
-                />
-              )}
-              {currentScreen === "negocio" && (
-                <BusinessScreen
-                  key={negocioInitialView}
-                  initialView={negocioInitialView}
-                />
-              )}
-              {currentScreen === "socia" && <SociaScreen />}
-              {currentScreen === "yo" && <MeScreen />}
-              {currentScreen === "crecer" && <GrowScreen />}
-            </ScreenTransition>
+            currentScreen === "socia" ? (
+              <SociaScreen />
+            ) : (
+              <ScreenTransition key={currentScreen} screenKey={currentScreen}>
+                {currentScreen === "inicio" && (
+                  <Container
+                    onSeeAllActions={() => setQuickActionsOpen(true)}
+                    onSeeAllActivity={() => {
+                      setNegocioInitialView("finanzas");
+                      setCurrentScreen("negocio");
+                    }}
+                  />
+                )}
+                {currentScreen === "negocio" && (
+                  <BusinessScreen
+                    key={negocioInitialView}
+                    initialView={negocioInitialView}
+                  />
+                )}
+                {currentScreen === "yo" && <MeScreen />}
+                {currentScreen === "crecer" && <GrowScreen />}
+              </ScreenTransition>
+            )
           )}
         </AnimatePresence>
       </div>
