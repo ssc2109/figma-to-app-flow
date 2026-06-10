@@ -898,10 +898,12 @@ function MessageActions({
 function MessageBubble({
   msg,
   isStreaming = false,
+  onRegenerate,
 }: {
   msg: UIMessage;
   isLast?: boolean;
   isStreaming?: boolean;
+  onRegenerate?: () => void;
 }) {
   const isUser = msg.role === "user";
   const text = uiMessageText(msg);
