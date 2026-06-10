@@ -331,11 +331,11 @@ export default function SociaScreen() {
 
   // Orb tweak values from design spec (HTML export)
   const orbStyle = {
-    "--orb-peak": "39%",
-    "--orb-bottom": "74%",
-    "--orb-size": "750px",
-    "--orb-intensity": "1.1",
-    "--orb-haze": "1.2",
+    "--orb-peak": "56%",
+    "--orb-bottom": "78%",
+    "--orb-size": "620px",
+    "--orb-intensity": "1",
+    "--orb-haze": "1.1",
     "--greet-y": "0px",
     "--stack-y": "0px",
     "--c-core": "220, 235, 255",
@@ -836,7 +836,7 @@ const SOCIA_CSS = `
 
 /* GREET */
 .socia-screen .greet{
-  text-align:center; margin-top:56px; padding:0 24px;
+  text-align:center; margin-top:88px; padding:0 24px;
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
@@ -852,7 +852,7 @@ const SOCIA_CSS = `
 }
 
 .socia-screen .spacer{ flex:1; min-height:8px; }
-.socia-screen .midstack{ position:relative; z-index:5; padding-bottom:110px; }
+.socia-screen .midstack{ position:relative; z-index:5; margin-top:auto; padding-bottom:180px; }
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
