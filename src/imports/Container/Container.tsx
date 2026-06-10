@@ -850,12 +850,13 @@ function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers({ onSeeAll }:
 
 function Main({ onSeeAllActions, onSeeAllActivity }: { onSeeAllActions: () => void; onSeeAllActivity: () => void }) {
   const { lowStock } = useInventory();
+  const { todayIncome } = useFinance();
   const alerts: StockAlert[] = lowStock.map((i) => ({ name: i.name, units: i.stock }));
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
         <Stagger className="w-full flex flex-col gap-[24px]" delay={0.1} step={0.09}>
-          <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
+          <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero value={todayIncome} />
           <QuickActions onSeeAll={onSeeAllActions} />
           <StockAlertCard alerts={alerts} />
           <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers onSeeAll={onSeeAllActivity} />
@@ -865,6 +866,7 @@ function Main({ onSeeAllActions, onSeeAllActivity }: { onSeeAllActions: () => vo
 
   );
 }
+
 
 export default function Container({
   onSeeAllActions,
