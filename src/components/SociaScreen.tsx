@@ -322,22 +322,17 @@ export default function SociaScreen() {
     setHistoryOpen(false);
   };
 
-  const greeting = useMemo(() => {
-    const h = new Date().getHours();
-    if (h < 12) return "Buenos días";
-    if (h < 19) return "Buenas tardes";
-    return "Buenas noches";
-  }, []);
+  const greeting = "Buenos días";
 
   // Orb tweak values from design spec (HTML export)
   const orbStyle = {
-    "--orb-peak": "56%",
-    "--orb-bottom": "78%",
-    "--orb-size": "620px",
-    "--orb-intensity": "1",
-    "--orb-haze": "1.1",
-    "--greet-y": "0px",
-    "--stack-y": "0px",
+    "--orb-peak": "39%",
+    "--orb-bottom": "74%",
+    "--orb-size": "750px",
+    "--orb-intensity": "1.1",
+    "--orb-haze": "1.2",
+    "--greet-y": "75px",
+    "--stack-y": "-48px",
     "--c-core": "220, 235, 255",
     "--c-mid": "0, 120, 255",
     "--c-deep": "0, 60, 180",
@@ -380,6 +375,8 @@ export default function SociaScreen() {
 
       {/* UI */}
       <div className="relative z-30 flex-1 flex flex-col">
+        <div className="statusbar" />
+
         {/* TOP BAR */}
         <div className="flex items-center justify-between px-[22px] pt-[14px]">
           <button
