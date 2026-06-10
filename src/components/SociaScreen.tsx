@@ -340,7 +340,7 @@ export default function SociaScreen() {
 
   return (
     <div
-      className="socia-screen relative w-full h-full flex flex-col overflow-hidden bg-black"
+      className="socia-screen relative w-full h-[100dvh] flex flex-col overflow-hidden bg-black"
       style={orbStyle}
     >
       <style>{SOCIA_CSS}</style>
@@ -374,7 +374,7 @@ export default function SociaScreen() {
       )}
 
       {/* UI */}
-      <div className="relative z-30 flex-1 flex flex-col">
+      <div className="relative z-30 flex-1 flex flex-col min-h-0">
         <div className="statusbar" />
 
         {/* TOP BAR */}
@@ -407,13 +407,11 @@ export default function SociaScreen() {
 
         {/* EMPTY STATE — exact replication of HTML export */}
         {empty ? (
-          <>
+          <div className="empty-ui">
             <div className="greet">
               <h1>{greeting}, Alberto.</h1>
               <p>Soy socIA. Puedo analizar, registrar y aconsejarte.</p>
             </div>
-
-            <div className="spacer" />
 
             <div className="midstack">
               <div className="composer">
@@ -450,8 +448,7 @@ export default function SociaScreen() {
                 ))}
               </div>
             </div>
-
-          </>
+          </div>
         ) : (
           /* CHAT STATE — full screen messages + bottom composer */
           <>
