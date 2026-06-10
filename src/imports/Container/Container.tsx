@@ -65,12 +65,12 @@ function HeaderTopAppBar({
       <div className="flex items-center justify-between px-[20px] py-[16px]">
         <div className="flex gap-[12px] items-center min-w-0">
           <Profile avatarUrl={avatarUrl} initials={initials} />
-          <div className="flex flex-col items-start min-w-0">
-            <div className="font-['Geist'] font-medium text-[12px] text-[rgba(255,255,255,0.6)] tracking-[0.6px] uppercase leading-[16px] truncate max-w-[200px]">
-              {businessName || "Mi negocio"}
+          <div className="flex flex-col items-start min-w-0 justify-center">
+            <div className="font-['Geist'] font-medium text-[11px] text-[rgba(255,255,255,0.5)] tracking-[1px] uppercase leading-[14px]">
+              TRAX
             </div>
-            <div className="pt-[2px] font-['Geist'] font-medium text-[20px] text-white tracking-[-0.5px] leading-[25px] truncate max-w-[220px]">
-              {greet}, {ownerName || "tú"}
+            <div className="pt-[2px] font-['Geist'] font-medium text-[15px] text-white tracking-[-0.2px] leading-[20px] truncate max-w-[220px]">
+              {businessName || "Mi negocio"}
             </div>
           </div>
         </div>
@@ -86,6 +86,7 @@ function HeaderTopAppBar({
     </div>
   );
 }
+
 
 
 function Container5() {
