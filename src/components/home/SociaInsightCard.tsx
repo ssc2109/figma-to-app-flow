@@ -10,24 +10,27 @@ import { generateBriefing, type Briefing } from "@/lib/api/briefing.functions";
 import { BorderBeam } from "@/components/magicui/BorderBeam";
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
 
-function AnimatedOrb({ size = 40, spinning = false }: { size?: number; spinning?: boolean }) {
+function AnimatedOrb({ size = 44, spinning = false }: { size?: number; spinning?: boolean }) {
   return (
     <div className="relative flex-none" style={{ width: size, height: size }} aria-hidden>
+      {/* Halo azul suave (mismo lenguaje que el orb del chat) */}
       <div
-        className="absolute inset-[-5px] rounded-full opacity-80 trax-conic-ring"
+        className="absolute inset-[-10px] rounded-full opacity-80"
         style={{
           background:
-            "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.85) 25%, transparent 50%, rgba(255,255,255,0.55) 75%, transparent 100%)",
-          filter: "blur(5px)",
+            "radial-gradient(closest-side, rgba(77,200,253,0.5), rgba(28,124,255,0.2) 55%, transparent 75%)",
+          filter: "blur(10px)",
         }}
       />
+      {/* Orb idéntico al AssistantAvatar del chat */}
       <div
         className="absolute inset-0 rounded-full socia-orb"
         data-spinning={spinning ? "true" : "false"}
         style={{
           background:
-            "radial-gradient(circle at 32% 28%, #ffffff 0%, #d6d6d6 22%, #6a6a6e 55%, #1a1a1e 88%, #000 100%)",
-          boxShadow: "0 0 18px rgba(255,255,255,0.22), inset 0 0 6px rgba(0,0,0,0.4)",
+            "radial-gradient(circle at 32% 28%, #cfe6ff 0%, #4dc8fd 22%, #1c7cff 48%, #003fc0 78%, #061535 100%)",
+          boxShadow:
+            "0 0 22px rgba(28,124,255,0.35), inset 0 0 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.35)",
         }}
       />
     </div>
