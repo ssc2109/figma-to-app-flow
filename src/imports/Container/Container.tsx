@@ -4,6 +4,7 @@ import Aurora from "@/components/Aurora";
 import { StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
 import { useInventory } from "@/data/inventory";
 import { Stagger } from "@/components/motion/Stagger";
+import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import QuickActions from "@/components/QuickActions";
 import { useAuth } from "@/hooks/useAuth";
 import { Settings } from "lucide-react";
