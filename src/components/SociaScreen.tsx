@@ -329,16 +329,18 @@ export default function SociaScreen() {
     return "Buenas noches";
   }, []);
 
-  // Orb tweak values from design spec
+  // Orb tweak values from design spec (HTML export)
   const orbStyle = {
-    "--orb-peak": "62%",
-    "--orb-bottom": "88%",
-    "--orb-size": "720px",
-    "--orb-intensity": "1",
-    "--orb-haze": "1",
-    "--c-core": "255, 255, 255",
-    "--c-mid": "200, 205, 215",
-    "--c-deep": "60, 65, 78",
+    "--orb-peak": "39%",
+    "--orb-bottom": "74%",
+    "--orb-size": "750px",
+    "--orb-intensity": "1.1",
+    "--orb-haze": "1.2",
+    "--greet-y": "75px",
+    "--stack-y": "-48px",
+    "--c-core": "220, 235, 255",
+    "--c-mid": "0, 120, 255",
+    "--c-deep": "0, 60, 180",
   } as React.CSSProperties;
 
   return (
