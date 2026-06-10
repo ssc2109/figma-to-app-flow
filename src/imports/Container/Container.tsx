@@ -863,7 +863,16 @@ function Main({ onSeeAllActions, onSeeAllActivity }: { onSeeAllActions: () => vo
   );
 }
 
-export default function Container({ onSeeAllActions, onSeeAllActivity }: { onSeeAllActions?: () => void; onSeeAllActivity?: () => void } = {}) {
+export default function Container({
+  onSeeAllActions,
+  onSeeAllActivity,
+  onOpenSettings,
+}: {
+  onSeeAllActions?: () => void;
+  onSeeAllActivity?: () => void;
+  onOpenSettings?: () => void;
+} = {}) {
+  const { profile } = useAuth();
   return (
     <div className="content-stretch flex flex-col gap-[16px] items-start relative size-full" data-name="Container">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[640px] z-0 overflow-hidden">
@@ -871,10 +880,16 @@ export default function Container({ onSeeAllActions, onSeeAllActivity }: { onSee
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 via-60% to-transparent" />
       </div>
       <div className="relative z-10 w-full flex flex-col gap-[16px] items-start">
-        <HeaderTopAppBar />
+        <HeaderTopAppBar
+          businessName={profile?.business_name ?? "Mi negocio"}
+          ownerName={profile?.owner_name ?? "tú"}
+          avatarUrl={profile?.avatar_url ?? null}
+          onOpenSettings={onOpenSettings ?? (() => {})}
+        />
         <Main onSeeAllActions={onSeeAllActions ?? (() => {})} onSeeAllActivity={onSeeAllActivity ?? (() => {})} />
       </div>
     </div>
   );
 }
+
 
