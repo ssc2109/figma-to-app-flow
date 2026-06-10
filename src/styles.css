@@ -144,7 +144,6 @@
   body.trax-socia-scroll-lock {
     overflow: hidden !important;
     overscroll-behavior: none !important;
-    touch-action: none;
   }
 
   * {

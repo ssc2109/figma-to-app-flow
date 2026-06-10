@@ -119,7 +119,6 @@ export default function SociaScreen() {
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
-    const scrollY = window.scrollY;
     const previous = {
       htmlOverflow: html.style.overflow,
       bodyOverflow: body.style.overflow,
@@ -142,7 +141,7 @@ export default function SociaScreen() {
     html.style.height = "100%";
     body.style.height = "100%";
     body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
+    body.style.top = "0";
     body.style.width = "100%";
 
     return () => {
@@ -157,7 +156,7 @@ export default function SociaScreen() {
       body.style.position = previous.bodyPosition;
       body.style.top = previous.bodyTop;
       body.style.width = previous.bodyWidth;
-      window.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     };
   }, []);
 
