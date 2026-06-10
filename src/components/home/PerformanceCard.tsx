@@ -41,45 +41,48 @@ export default function PerformanceCard() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative w-full rounded-[24px] overflow-hidden"
+      className="trax-grain relative w-full rounded-[24px] overflow-hidden"
       style={{
         background:
-          "linear-gradient(180deg, #121319 0%, #0E0E12 70%, #0C0C10 100%)",
-        border: "1px solid rgba(255,255,255,0.08)",
+          "linear-gradient(180deg, #131318 0%, #0C0C10 75%, #08080B 100%)",
+        border: "1px solid rgba(255,255,255,0.09)",
         boxShadow:
-          "inset 0 1px 0 rgba(255,255,255,0.06), 0 18px 40px -28px rgba(28,124,255,0.35)",
+          "inset 0 1px 0 rgba(255,255,255,0.07), 0 22px 50px -32px rgba(0,0,0,0.8)",
       }}
     >
-      {/* aurora echo */}
+      {/* drifting ambient light — pure white, breathing */}
       <div
         aria-hidden
-        className="absolute -top-[60px] -right-[40px] h-[200px] w-[260px] pointer-events-none opacity-70"
+        className="trax-drift absolute -top-[80px] -right-[60px] h-[240px] w-[280px] pointer-events-none"
         style={{
           background:
-            "radial-gradient(closest-side, rgba(77,200,253,0.22), rgba(28,124,255,0.08) 55%, transparent 75%)",
-          filter: "blur(2px)",
+            "radial-gradient(closest-side, rgba(255,255,255,0.10), rgba(255,255,255,0.03) 55%, transparent 75%)",
+          filter: "blur(4px)",
         }}
       />
 
       {/* eyebrow */}
-      <div className="relative px-[20px] pt-[20px] pb-[8px]">
-        <span className="font-['Geist'] text-[11px] font-medium tracking-[1.4px] uppercase text-[rgba(255,255,255,0.55)]">
+      <div className="relative px-[20px] pt-[20px] pb-[8px] flex items-center justify-between">
+        <span className="font-['Geist'] text-[10.5px] font-medium tracking-[1.6px] uppercase text-[rgba(255,255,255,0.5)]">
           Rendimiento consolidado
+        </span>
+        <span className="font-['Geist'] text-[10.5px] tracking-[1px] uppercase text-[rgba(255,255,255,0.35)]">
+          Hoy
         </span>
       </div>
 
       {/* hero amount */}
       <div className="relative px-[20px] pb-[10px] flex items-baseline gap-[6px]">
-        <span className="font-['Bai_Jamjuree'] font-medium text-[26px] leading-[30px] text-[rgba(255,255,255,0.5)] tracking-[-1px]">
+        <span className="font-['Bai_Jamjuree'] font-medium text-[26px] leading-[30px] text-[rgba(255,255,255,0.45)] tracking-[-1px]">
           S/
         </span>
-        <span className="font-['Bai_Jamjuree'] font-bold text-[44px] leading-[48px] text-white tracking-[-1.4px]">
-          <AnimatedNumber value={consolidado} duration={1} format={(n) => fmtMoney(n)} />
+        <span className="font-['Bai_Jamjuree'] font-bold text-[46px] leading-[50px] text-white tracking-[-1.6px]">
+          <AnimatedNumber value={consolidado} duration={1.2} format={(n) => fmtMoney(n)} />
         </span>
       </div>
 
       {/* delta vs ayer */}
-      <div className="relative px-[20px] pb-[18px] flex items-center gap-[6px]">
+      <div className="relative px-[20px] pb-[20px] flex items-center gap-[6px]">
         <TrendIcon
           className="h-[14px] w-[14px]"
           style={{ color: trendUp ? "#4ADE80" : "#F87171" }}
@@ -92,29 +95,19 @@ export default function PerformanceCard() {
           {trendUp ? "+" : ""}
           {deltaPct.toFixed(0)}%
         </span>
-        <span className="font-['Geist'] text-[12.5px] text-[rgba(255,255,255,0.5)]">
+        <span className="font-['Geist'] text-[12.5px] text-[rgba(255,255,255,0.45)]">
           respecto a ayer
         </span>
       </div>
 
-      {/* divider */}
-      <div className="relative h-px w-full bg-[rgba(255,255,255,0.07)]" />
+      {/* divider hairline */}
+      <div className="relative h-px w-full bg-gradient-to-r from-transparent via-white/[0.10] to-transparent" />
 
       {/* sub KPIs */}
       <div className="relative grid grid-cols-2">
-        <SubKpi
-          icon={Wallet}
-          label="Saldo en caja"
-          value={`S/ ${fmtCompact(saldoCaja)}`}
-          accent="#4ADE80"
-        />
+        <SubKpi icon={Wallet} label="Saldo en caja" value={`S/ ${fmtCompact(saldoCaja)}`} />
         <div className="border-l border-white/[0.07]">
-          <SubKpi
-            icon={Smartphone}
-            label="Flujo digital"
-            value={`S/ ${fmtCompact(flujoDigital)}`}
-            accent="#7DD3FC"
-          />
+          <SubKpi icon={Smartphone} label="Flujo digital" value={`S/ ${fmtCompact(flujoDigital)}`} />
         </div>
       </div>
     </motion.div>
@@ -125,23 +118,16 @@ function SubKpi({
   icon: Icon,
   label,
   value,
-  accent,
 }: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number; style?: React.CSSProperties }>;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   label: string;
   value: string;
-  accent: string;
 }) {
   return (
     <div className="px-[20px] py-[16px] flex flex-col gap-[8px]">
-      <div className="flex items-center gap-[8px]">
-        <div
-          className="h-[22px] w-[22px] rounded-[7px] grid place-items-center"
-          style={{ background: `${accent}1F`, border: `1px solid ${accent}33` }}
-        >
-          <Icon className="h-[12px] w-[12px]" style={{ color: accent }} strokeWidth={2} />
-        </div>
-        <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1px] font-medium text-[rgba(255,255,255,0.55)]">
+      <div className="flex items-center gap-[8px] text-[rgba(255,255,255,0.5)]">
+        <Icon className="h-[13px] w-[13px]" strokeWidth={1.7} />
+        <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1px] font-medium">
           {label}
         </span>
       </div>
@@ -151,4 +137,5 @@ function SubKpi({
     </div>
   );
 }
+
 
