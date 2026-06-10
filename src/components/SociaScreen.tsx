@@ -852,7 +852,7 @@ const SOCIA_CSS = `
 }
 
 .socia-screen .spacer{ flex:1; min-height:8px; }
-.socia-screen .midstack{ position:relative; z-index:5; margin-top:auto; padding-bottom:132px; }
+.socia-screen .midstack{ position:relative; z-index:5; margin-top:auto; padding-bottom:96px; }
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
