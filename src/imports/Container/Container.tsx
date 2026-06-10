@@ -432,16 +432,17 @@ function Container19() {
 }
 
 function Container22() {
+  const { profile } = useAuth();
+  const first = (profile?.owner_name ?? "").split(/\s+/)[0] || "Tú";
   return (
     <div className="content-stretch flex flex-col items-start max-w-[280px] relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.9)] whitespace-nowrap">
-        <p className="leading-[26px] mb-0">Rosa, hoy es un buen día para</p>
-        <p className="leading-[26px] mb-0">reponer stock de abarrotes. Tus</p>
-        <p className="leading-[26px]">ventas subieron un 12%.</p>
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.9)]">
+        <p className="leading-[26px]">{first}, hoy es un buen día para reponer stock de abarrotes. Tus ventas subieron un 12%.</p>
       </div>
     </div>
   );
 }
+
 
 function Container18() {
   return (
