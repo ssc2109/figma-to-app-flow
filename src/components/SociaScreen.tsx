@@ -605,6 +605,7 @@ function ChatBar({
   stop,
   stopVoiceDictation,
   startVoiceDictation,
+  onPlus,
 }: {
   taRef: React.RefObject<HTMLTextAreaElement | null>;
   input: string;
@@ -615,9 +616,19 @@ function ChatBar({
   stop: () => void;
   stopVoiceDictation: () => void;
   startVoiceDictation: () => void;
+  onPlus: () => void;
 }) {
+  const hasText = input.trim().length > 0;
   return (
     <div className="chatbar">
+      <button
+        type="button"
+        onClick={onPlus}
+        className="plus-btn"
+        aria-label="Adjuntar"
+      >
+        <Plus className="h-[20px] w-[20px]" strokeWidth={1.8} />
+      </button>
       <textarea
         ref={taRef}
         rows={1}
@@ -638,27 +649,35 @@ function ChatBar({
         className="chatbar-ta"
       />
       {listening ? (
-        <button type="button" onClick={stopVoiceDictation} className="pill-btn" aria-label="Detener">
+        <button type="button" onClick={stopVoiceDictation} className="icon-btn" aria-label="Detener">
           <Square className="h-[16px] w-[16px]" fill="currentColor" />
         </button>
       ) : (
-        <button type="button" onClick={startVoiceDictation} className="pill-btn" aria-label="Voz">
-          <Mic className="h-[18px] w-[18px]" strokeWidth={1.7} />
+        <button type="button" onClick={startVoiceDictation} className="icon-btn" aria-label="Voz">
+          <Mic className="h-[19px] w-[19px]" strokeWidth={1.7} />
         </button>
       )}
       {isLoading ? (
         <button type="button" onClick={stop} className="pill-btn send" aria-label="Detener">
           <Square className="h-[14px] w-[14px]" fill="currentColor" />
         </button>
-      ) : (
+      ) : hasText ? (
         <button
           type="button"
           onClick={() => send()}
-          disabled={!input.trim()}
-          className="pill-btn send disabled:opacity-30"
+          className="pill-btn send"
           aria-label="Enviar"
         >
           <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.2} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={startVoiceDictation}
+          className="pill-btn voice-mode"
+          aria-label="Modo voz"
+        >
+          <AudioLines className="h-[18px] w-[18px]" strokeWidth={2} />
         </button>
       )}
     </div>
