@@ -245,48 +245,7 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
         </div>
       </motion.div>
 
-      {/* LAUNCHER socIA */}
-      <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
-        className="w-full flex flex-col gap-[10px]"
-      >
-        <button
-          type="button"
-          onClick={() => onIntent({ kind: "chat", prompt: "" })}
-          className="w-full flex items-center gap-[12px] px-[14px] py-[13px] rounded-full transition-colors"
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <Orb size={22} />
-          <span className="flex-1 text-left font-['Geist'] text-[14.5px] text-[rgba(255,255,255,0.55)]">
-            Pregúntale algo a socIA…
-          </span>
-          <Sparkles className="h-[16px] w-[16px] text-white/60" strokeWidth={1.8} />
-        </button>
-
-        {briefing?.quickPrompts && briefing.quickPrompts.length > 0 && (
-          <div className="flex gap-[8px] overflow-x-auto no-scrollbar -mx-[2px] px-[2px] py-[2px]">
-            {briefing.quickPrompts.map((p, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => onIntent({ kind: "chat", prompt: p })}
-                className="flex-none px-[14px] py-[8px] rounded-full font-['Geist'] text-[12.5px] text-white/80 hover:text-white transition-colors"
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        )}
-      </motion.div>
     </div>
   );
 }
+
