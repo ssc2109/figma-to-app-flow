@@ -754,76 +754,76 @@ function fileToDataUrl(f: File): Promise<string> {
 }
 
 const SOCIA_CSS = `
+.socia-screen{ font-family:'Geist', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
 .socia-screen .circ-btn{
-  width:46px;height:46px;border-radius:50%;
-  display:grid;place-items:center;
+  width:46px; height:46px; border-radius:50%;
+  display:grid; place-items:center;
   background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.09);
   color:#cfcfd4;
 }
 
-.socia-screen .greet-h1{
-  background:linear-gradient(180deg,#ffffff 58%,rgba(255,255,255,.72) 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-
+/* ORB */
 .socia-screen .orb-layer{
-  position:absolute;inset:0;z-index:1;pointer-events:none;
+  position:absolute; inset:0; z-index:1; pointer-events:none;
   transform-origin:50% var(--orb-peak);
   animation:socOrbBreathe 11s ease-in-out infinite alternate;
 }
-@keyframes socOrbBreathe{from{transform:scale(1)}to{transform:scale(1.012)}}
+@keyframes socOrbBreathe{ from{transform:scale(1)} to{transform:scale(1.012)} }
 
 .socia-screen .orb{
-  position:absolute;left:50%;top:var(--orb-peak);
-  width:var(--orb-size);height:var(--orb-size);
-  transform:translateX(-50%);border-radius:50%;
+  position:absolute; left:50%; top:var(--orb-peak);
+  width:var(--orb-size); height:var(--orb-size);
+  transform:translateX(-50%); border-radius:50%;
   background:
     radial-gradient(circle closest-side at 50% 50%,
       transparent 0%,
       transparent 44%,
-      rgba(var(--c-deep),calc(.10 * var(--orb-intensity))) 54%,
-      rgba(var(--c-deep),calc(.26 * var(--orb-intensity))) 62%,
-      rgba(var(--c-mid), calc(.46 * var(--orb-intensity))) 70%,
-      rgba(var(--c-mid), calc(.72 * var(--orb-intensity))) 77%,
-      rgba(var(--c-mid), calc(.92 * var(--orb-intensity))) 82%,
-      rgba(var(--c-core),calc(.98 * var(--orb-intensity))) 87%,
-      rgba(var(--c-core),calc(1   * var(--orb-intensity))) 89%,
-      rgba(var(--c-core),calc(.82 * var(--orb-intensity))) 91%,
-      rgba(var(--c-mid), calc(.36 * var(--orb-intensity))) 94%,
-      rgba(var(--c-mid), calc(.12 * var(--orb-intensity))) 97%,
+      rgba(var(--c-deep), calc(.10 * var(--orb-intensity))) 54%,
+      rgba(var(--c-deep), calc(.26 * var(--orb-intensity))) 62%,
+      rgba(var(--c-mid),  calc(.46 * var(--orb-intensity))) 70%,
+      rgba(var(--c-mid),  calc(.72 * var(--orb-intensity))) 77%,
+      rgba(var(--c-mid),  calc(.92 * var(--orb-intensity))) 82%,
+      rgba(var(--c-core), calc(.98 * var(--orb-intensity))) 87%,
+      rgba(var(--c-core), calc(1   * var(--orb-intensity))) 89%,
+      rgba(var(--c-core), calc(.82 * var(--orb-intensity))) 91%,
+      rgba(var(--c-mid),  calc(.36 * var(--orb-intensity))) 94%,
+      rgba(var(--c-mid),  calc(.12 * var(--orb-intensity))) 97%,
       transparent 99.5%);
 }
 .socia-screen .orb-rim{
-  position:absolute;left:50%;top:var(--orb-peak);
-  width:var(--orb-size);height:var(--orb-size);
-  transform:translateX(-50%);border-radius:50%;
+  position:absolute; left:50%; top:var(--orb-peak);
+  width:var(--orb-size); height:var(--orb-size);
+  transform:translateX(-50%); border-radius:50%;
   opacity:calc(.55 * var(--orb-intensity));
   background:
     radial-gradient(circle closest-side at 50% 50%,
       transparent 87.4%,
-      rgba(var(--c-core),.50) 88.6%,
-      rgba(var(--c-core),.90) 89.2%,
-      rgba(var(--c-core),.50) 89.8%,
+      rgba(var(--c-core), .50) 88.6%,
+      rgba(var(--c-core), .90) 89.2%,
+      rgba(var(--c-core), .50) 89.8%,
       transparent 91.2%);
 }
 .socia-screen .orb-ambient{
-  position:absolute;inset:0;opacity:var(--orb-haze);
+  position:absolute; inset:0; opacity:var(--orb-haze);
   background:radial-gradient(150% 48% at 50% 55%,
-    rgba(var(--c-mid),.22) 0%,
-    rgba(var(--c-mid),.13) 34%,
-    rgba(var(--c-deep),.05) 62%,
+    rgba(var(--c-mid),  .22) 0%,
+    rgba(var(--c-mid),  .13) 34%,
+    rgba(var(--c-deep), .05) 62%,
     transparent 82%);
 }
+
+/* FADES */
 .socia-screen .fade-top{
-  position:absolute;inset:0;z-index:2;pointer-events:none;
+  position:absolute; inset:0; z-index:2; pointer-events:none;
   background:linear-gradient(to bottom,
-    #000 0%,#000 26%,
+    #000 0%, #000 26%,
     rgba(0,0,0,.5) 38%,
     rgba(0,0,0,0) 45%);
 }
 .socia-screen .fade-bottom{
-  position:absolute;inset:0;z-index:2;pointer-events:none;
+  position:absolute; inset:0; z-index:2; pointer-events:none;
   background:linear-gradient(to bottom,
     rgba(0,0,0,0) calc(var(--orb-bottom) - 9%),
     rgba(0,0,0,.45) calc(var(--orb-bottom) - 3%),
@@ -831,62 +831,120 @@ const SOCIA_CSS = `
     #000 calc(var(--orb-bottom) + 4%));
 }
 .socia-screen .grain{
-  position:absolute;inset:0;z-index:2;pointer-events:none;
+  position:absolute; inset:0; z-index:2; pointer-events:none;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:160px 160px;mix-blend-mode:overlay;opacity:.35;
+  background-size:160px 160px; mix-blend-mode:overlay; opacity:.35;
 }
 
+/* GREET */
+.socia-screen .greet{
+  text-align:center; margin-top:42px; padding:0 24px;
+  transform:translateY(var(--greet-y));
+}
+.socia-screen .greet h1{
+  font-family:'Bai Jamjuree', sans-serif;
+  font-size:34px; font-weight:600; letter-spacing:-0.5px;
+  line-height:1.15;
+  background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.socia-screen .greet p{
+  font-size:13.5px; font-weight:400; line-height:1.5;
+  color:rgba(255,255,255,.38);
+  margin-top:10px; max-width:250px; margin-inline:auto;
+}
+
+.socia-screen .spacer{ flex:1; min-height:8px; }
+.socia-screen .midstack{ transform:translateY(var(--stack-y)); position:relative; z-index:5; }
+
+/* COMPOSER */
+.socia-screen .composer{ padding:0 18px; }
 .socia-screen .chatbar{
-  display:flex;align-items:center;gap:8px;
-  min-height:64px;padding:8px 8px 8px 22px;
+  display:flex; align-items:center; gap:12px;
+  min-height:64px; padding:8px 8px 8px 22px;
   border-radius:34px;
   background:rgba(12,12,20,.78);
   border:1px solid rgba(255,255,255,.12);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.08),
-    0 18px 50px -18px rgba(0,0,0,.85),
-    0 8px 30px -12px rgba(0,0,0,.6);
+    0 24px 70px -16px rgba(110,80,255,.5),
+    0 12px 40px -12px rgba(0,0,0,.7);
 }
 .socia-screen .chatbar-ta{
-  flex:1;background:transparent;outline:none;resize:none;
-  color:#fff;font-family:'Geist',system-ui,sans-serif;
-  font-size:14.5px;line-height:1.4;padding:12px 0;
+  flex:1; background:transparent; outline:none; resize:none;
+  color:#fff; font-family:'Geist', system-ui, sans-serif;
+  font-size:14.5px; line-height:1.4; padding:12px 0;
   max-height:120px;
 }
-.socia-screen .chatbar-ta::placeholder{color:rgba(255,255,255,.42)}
+.socia-screen .chatbar-ta::placeholder{ color:rgba(255,255,255,.42) }
 .socia-screen .pill-btn{
-  width:48px;height:48px;border-radius:50%;flex:none;
-  display:grid;place-items:center;
+  width:48px; height:48px; border-radius:50%; flex:none;
+  display:grid; place-items:center;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.10);
-  color:#d4d5db;transition:transform .12s;
+  color:#d4d5db; transition:transform .12s;
 }
-.socia-screen .pill-btn:active{transform:scale(.94)}
+.socia-screen .pill-btn:active{ transform:scale(.94) }
 .socia-screen .pill-btn.send{
-  background:linear-gradient(180deg,#ffffff,#f1f3f7);
-  border-color:rgba(255,255,255,.4);color:#0a0a0a;
+  background:linear-gradient(180deg, #ffffff, #ece9f7);
+  border-color:rgba(255,255,255,.4); color:#17122b;
 }
 
-.socia-screen .cards-row{
-  display:flex;gap:13px;overflow-x:auto;
-  scrollbar-width:none;scroll-snap-type:x mandatory;
+/* CARDS */
+.socia-screen .cards-head{
+  display:flex; align-items:center; gap:8px;
+  padding:20px 24px 0;
 }
-.socia-screen .cards-row::-webkit-scrollbar{display:none}
-.socia-screen .feat-card{
-  position:relative;flex:0 0 184px;height:144px;
-  border-radius:22px;padding:18px;overflow:hidden;
+.socia-screen .cards-head .lbl{
+  font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
+  color:rgba(255,255,255,.4);
+}
+.socia-screen .cards-head .swipe{
+  margin-left:auto; font-size:11px; font-weight:500; letter-spacing:.2px;
+  color:rgba(255,255,255,.28);
+  display:flex; align-items:center; gap:4px;
+}
+.socia-screen .cards{
+  display:flex; gap:13px; margin-top:12px;
+  padding:4px 18px 4px;
+  overflow-x:auto; scrollbar-width:none;
+  scroll-snap-type:x mandatory;
+}
+.socia-screen .cards::-webkit-scrollbar{ display:none }
+.socia-screen .card{
+  position:relative; flex:0 0 184px; height:144px;
+  border-radius:22px; padding:18px; overflow:hidden;
   scroll-snap-align:start;
   background:rgba(255,255,255,.045);
   border:1px solid rgba(255,255,255,.09);
-  display:flex;flex-direction:column;justify-content:space-between;
-  text-align:left;color:#fff;
-  transition:transform .25s cubic-bezier(.2,.7,.3,1),background .25s,border-color .25s;
+  display:flex; flex-direction:column; justify-content:space-between;
+  text-align:left; color:#fff; cursor:pointer;
+  transition:transform .25s cubic-bezier(.2,.7,.3,1), background .25s, border-color .25s;
 }
-.socia-screen .feat-card:active{transform:scale(.97)}
-.socia-screen .feat-ic{
-  width:42px;height:42px;border-radius:13px;
-  display:grid;place-items:center;color:#e9e7f5;
+.socia-screen .card:hover{
+  transform:translateY(-3px);
+  background:rgba(255,255,255,.07);
+  border-color:rgba(255,255,255,.16);
+}
+.socia-screen .card:active{ transform:scale(.97) }
+.socia-screen .card .row{ display:flex; align-items:flex-start; justify-content:space-between; }
+.socia-screen .card .ic{
+  width:42px; height:42px; border-radius:13px;
+  display:grid; place-items:center; color:#e9e7f5;
   background:rgba(255,255,255,.07);
   border:1px solid rgba(255,255,255,.10);
+}
+.socia-screen .card .chev{
+  color:rgba(255,255,255,.3);
+  transition:transform .25s, color .25s;
+}
+.socia-screen .card:hover .chev{ transform:translateX(2px); color:rgba(255,255,255,.55); }
+.socia-screen .card h3{
+  font-family:'Bai Jamjuree', sans-serif;
+  font-size:15px; font-weight:600; color:#f4f3f8;
+  margin-bottom:3px; letter-spacing:-.2px;
+}
+.socia-screen .card p{
+  font-size:11px; font-weight:400; color:rgba(255,255,255,.42); line-height:1.35;
 }
 `;
