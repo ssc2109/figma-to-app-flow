@@ -137,9 +137,9 @@ export default function Container({
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 via-60% to-transparent" />
       </div>
       <div className="relative z-10 w-full flex flex-col gap-[16px] items-start">
-        <HeaderTopAppBar
+        <HeaderBlock
           businessName={profile?.business_name ?? "Mi negocio"}
-          ownerName={profile?.owner_name ?? "tú"}
+          ownerFirst={(profile?.owner_name ?? "").split(/\s+/)[0] || "tú"}
           avatarUrl={profile?.avatar_url ?? null}
           onOpenSettings={onOpenSettings ?? (() => {})}
         />
