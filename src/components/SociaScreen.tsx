@@ -1070,6 +1070,12 @@ const SOCIA_CSS = `
   border:1px solid rgba(255,255,255,.09);
   color:#cfcfd4;
 }
+.socia-screen .circ-btn.small{
+  width:38px; height:38px;
+  background:rgba(255,255,255,.04);
+  border-color:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.65);
+}
 .socia-screen .statusbar{ height:14px; flex:none; }
 .socia-screen .topbar{ position:relative; z-index:6; flex:none; }
 
