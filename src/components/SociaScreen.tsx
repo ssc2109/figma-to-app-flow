@@ -944,7 +944,7 @@ const SOCIA_CSS = `
 /* CARDS */
 .socia-screen .cards-head{
   display:flex; align-items:center; gap:8px;
-  padding:20px 24px 0;
+  padding:20px 18px 0;
 }
 .socia-screen .cards-head .lbl{
   font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
