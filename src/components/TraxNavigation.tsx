@@ -129,8 +129,10 @@ function NavShell() {
                     setNegocioInitialView("finanzas");
                     setCurrentScreen("negocio");
                   }}
+                  onOpenSettings={() => setSettingsOpen(true)}
                 />
               )}
+
               {currentScreen === "negocio" && (
                 <BusinessScreen
                   key={negocioInitialView}
