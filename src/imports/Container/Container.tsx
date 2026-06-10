@@ -3,12 +3,11 @@ import svgPaths from "./svg-hc6bxk0av9";
 import Aurora from "@/components/Aurora";
 import { StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
 import { useInventory } from "@/data/inventory";
-import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { Stagger } from "@/components/motion/Stagger";
 import QuickActions from "@/components/QuickActions";
 import { useAuth } from "@/hooks/useAuth";
 import { Settings } from "lucide-react";
-import { useFinance } from "@/data/finance";
+import ProactiveHero, { type HomeNavIntent } from "@/components/home/ProactiveHero";
 
 function greetingByHour() {
   const h = new Date().getHours();
