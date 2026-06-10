@@ -931,10 +931,10 @@ function MessageBubble({
           <div
             className="px-[16px] py-[11px] rounded-[22px] rounded-br-[8px] font-['Geist'] text-[14px] leading-[1.45] text-white"
             style={{
-              background: "linear-gradient(135deg, #2a2255 0%, #3d2f7a 60%, #5a3fb5 100%)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              background: "linear-gradient(135deg, #0a2a6b 0%, #1849c7 55%, #1c7cff 100%)",
+              border: "1px solid rgba(120,190,255,.22)",
               boxShadow:
-                "0 6px 20px -8px rgba(90,63,181,.55), inset 0 1px 0 rgba(255,255,255,.10)",
+                "0 6px 22px -10px rgba(28,124,255,.6), inset 0 1px 0 rgba(255,255,255,.14)",
             }}
           >
             {text}
