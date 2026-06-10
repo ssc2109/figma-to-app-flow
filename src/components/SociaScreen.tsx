@@ -877,21 +877,34 @@ const SOCIA_CSS = `
 .socia-screen .greet{
   position:absolute; left:0; right:0; top:var(--greet-top);
   text-align:center; padding:0 24px;
+  pointer-events:auto;
+  -webkit-user-select:text; user-select:text;
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
   display:inline-block;
-  font-size:clamp(28px, 7.2vw, 34px); font-weight:600; letter-spacing:-0.5px;
-  line-height:1.15;
+  font-size:clamp(32px, 8.4vw, 40px); font-weight:600; letter-spacing:-0.6px;
+  line-height:1.12;
   white-space:nowrap;
   background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
+  -webkit-user-select:text; user-select:text;
 }
 .socia-screen .greet p{
   font-size:13.5px; font-weight:400; line-height:1.5;
-  color:rgba(255,255,255,.38);
-  margin-top:10px; max-width:250px; margin-inline:auto;
+  color:rgba(255,255,255,.45);
+  margin-top:12px; max-width:280px; margin-inline:auto;
+  min-height:2.2em;
+  -webkit-user-select:text; user-select:text;
 }
+.socia-screen .greet p .caret{
+  display:inline-block; width:1.5px; height:1em;
+  background:rgba(255,255,255,.55); margin-left:2px;
+  vertical-align:-2px;
+  animation:socCaret 1s steps(1) infinite;
+}
+@keyframes socCaret{ 50%{opacity:0} }
+
 
 .socia-screen .midstack{ position:absolute; left:50%; right:auto; top:var(--stack-top); width:100%; max-width:430px; transform:translateX(-50%); z-index:5; padding-bottom:0; pointer-events:auto; }
 
