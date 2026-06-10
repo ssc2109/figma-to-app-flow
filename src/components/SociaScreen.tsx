@@ -331,8 +331,8 @@ export default function SociaScreen() {
     "--orb-size": "750px",
     "--orb-intensity": "1.1",
     "--orb-haze": "1.2",
-    "--greet-y": "75px",
-    "--stack-y": "-48px",
+    "--greet-top": "25.4%",
+    "--stack-top": "52.1%",
     "--c-core": "220, 235, 255",
     "--c-mid": "0, 120, 255",
     "--c-deep": "0, 60, 180",
@@ -830,9 +830,10 @@ const SOCIA_CSS = `
 }
 
 /* GREET */
+.socia-screen .empty-ui{ position:absolute; inset:0; z-index:4; }
 .socia-screen .greet{
-  text-align:center; margin-top:42px; padding:0 24px;
-  transform:translateY(var(--greet-y));
+  position:absolute; left:0; right:0; top:var(--greet-top);
+  text-align:center; padding:0 24px;
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
@@ -847,8 +848,7 @@ const SOCIA_CSS = `
   margin-top:10px; max-width:250px; margin-inline:auto;
 }
 
-.socia-screen .spacer{ flex:1; min-height:8px; }
-.socia-screen .midstack{ position:relative; z-index:5; margin-top:auto; padding-bottom:0; transform:translateY(var(--stack-y)); }
+.socia-screen .midstack{ position:absolute; left:0; right:0; top:var(--stack-top); z-index:5; padding-bottom:0; }
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
