@@ -409,7 +409,7 @@ export default function SociaScreen() {
         {empty ? (
           <div className="empty-ui">
             <div className="greet">
-              <h1>{greeting}, Alberto.</h1>
+              <h1>{greeting},&nbsp;Alberto.</h1>
               <p>Soy socIA. Puedo analizar, registrar y aconsejarte.</p>
             </div>
 
