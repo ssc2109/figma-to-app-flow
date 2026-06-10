@@ -103,7 +103,7 @@ function SubKpi({
   value: string;
 }) {
   return (
-    <div className="px-[20px] py-[16px] flex flex-col gap-[8px]">
+    <div className="py-[2px] flex flex-col gap-[6px]">
       <div className="flex items-center gap-[8px] text-[rgba(255,255,255,0.5)]">
         <Icon className="h-[13px] w-[13px]" strokeWidth={1.7} />
         <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1px] font-medium">
