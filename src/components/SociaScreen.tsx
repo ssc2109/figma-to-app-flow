@@ -756,6 +756,7 @@ const SOCIA_CSS = `
   color:#cfcfd4;
 }
 .socia-screen .statusbar{ height:14px; flex:none; }
+.socia-screen .topbar{ position:relative; z-index:6; flex:none; }
 
 /* ORB */
 .socia-screen .orb-layer{
@@ -830,7 +831,7 @@ const SOCIA_CSS = `
 }
 
 /* GREET */
-.socia-screen .empty-ui{ position:absolute; inset:0; z-index:4; }
+.socia-screen .empty-ui{ position:fixed; inset:0; z-index:4; pointer-events:none; }
 .socia-screen .greet{
   position:absolute; left:0; right:0; top:var(--greet-top);
   text-align:center; padding:0 24px;
@@ -848,7 +849,7 @@ const SOCIA_CSS = `
   margin-top:10px; max-width:250px; margin-inline:auto;
 }
 
-.socia-screen .midstack{ position:absolute; left:0; right:0; top:var(--stack-top); z-index:5; padding-bottom:0; }
+.socia-screen .midstack{ position:absolute; left:50%; right:auto; top:var(--stack-top); width:100%; max-width:430px; transform:translateX(-50%); z-index:5; padding-bottom:0; pointer-events:auto; }
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
