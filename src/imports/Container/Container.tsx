@@ -21,95 +21,72 @@ function greetingByHour() {
 
 
 
-function Profile() {
+function Profile({ avatarUrl, initials }: { avatarUrl: string | null; initials: string }) {
   return (
-    <div className="pointer-events-none relative rounded-[9999px] shrink-0 size-[48px]" data-name="Profile">
-      <div className="absolute inset-0 overflow-hidden rounded-[9999px]">
-        <img alt="" className="absolute left-0 max-w-none size-full top-0" src={imgProfile} />
-      </div>
-      <div aria-hidden className="absolute border-2 border-[rgba(255,255,255,0.1)] border-solid inset-0 rounded-[9999px]" />
+    <div className="relative rounded-full shrink-0 size-[48px] overflow-hidden grid place-items-center"
+      style={{
+        background:
+          "radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 60%)",
+        border: "1px solid rgba(255,255,255,0.10)",
+      }}
+    >
+      {avatarUrl ? (
+        <img alt="" className="absolute inset-0 size-full object-cover" src={avatarUrl} />
+      ) : (
+        <span className="font-['Bai_Jamjuree'] text-[17px] font-bold text-white tracking-[-0.3px]">
+          {initials}
+        </span>
+      )}
     </div>
   );
 }
 
-function Container3() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[12px] text-[rgba(255,255,255,0.6)] tracking-[0.6px] uppercase whitespace-nowrap">
-        <p className="leading-[16px]">Ecoarom</p>
-      </div>
-    </div>
-  );
-}
-
-function Heading() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 1">
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[20px] text-white tracking-[-0.5px] w-full">
-        <p className="leading-[25px]">Buenos días, Alberto</p>
-      </div>
-    </div>
-  );
-}
-
-function Heading1Margin() {
-  return (
-    <div className="content-stretch flex flex-col items-start pt-[2px] relative shrink-0 w-full" data-name="Heading 1:margin">
-      <Heading />
-    </div>
-  );
-}
-
-function Container2() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-[200px]" data-name="Container">
-      <Container3 />
-      <Heading1Margin />
-    </div>
-  );
-}
-
-function Container1() {
-  return (
-    <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Container">
-      <Profile />
-      <Container2 />
-    </div>
-  );
-}
-
-function Container4() {
-  return (
-    <div className="relative shrink-0 size-[21px]" data-name="Container">
-      <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 21 21">
-        <g id="Container">
-          <path d={svgPaths.p23e76100} fill="var(--fill-0, white)" id="Icon" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function Button() {
-  return (
-    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0" data-name="Button">
-      <Container4 />
-    </div>
-  );
-}
-
-function HeaderTopAppBar() {
+function HeaderTopAppBar({
+  businessName,
+  ownerName,
+  avatarUrl,
+  onOpenSettings,
+}: {
+  businessName: string;
+  ownerName: string;
+  avatarUrl: string | null;
+  onOpenSettings: () => void;
+}) {
+  const initials =
+    (businessName || "TU")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join("") || "TU";
+  const greet = greetingByHour();
   return (
     <div className="relative shrink-0 w-full" data-name="Header - TopAppBar">
-      <div className="flex flex-row items-center size-full">
-        <div className="content-stretch flex items-center justify-between px-[20px] py-[16px] relative size-full">
-          <Container1 />
-          <Button />
+      <div className="flex items-center justify-between px-[20px] py-[16px]">
+        <div className="flex gap-[12px] items-center min-w-0">
+          <Profile avatarUrl={avatarUrl} initials={initials} />
+          <div className="flex flex-col items-start min-w-0">
+            <div className="font-['Geist'] font-medium text-[12px] text-[rgba(255,255,255,0.6)] tracking-[0.6px] uppercase leading-[16px] truncate max-w-[200px]">
+              {businessName || "Mi negocio"}
+            </div>
+            <div className="pt-[2px] font-['Geist'] font-medium text-[20px] text-white tracking-[-0.5px] leading-[25px] truncate max-w-[220px]">
+              {greet}, {ownerName || "tú"}
+            </div>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          aria-label="Ajustes"
+          className="h-[40px] w-[40px] rounded-full grid place-items-center bg-white/[0.05] border border-white/[0.08] active:scale-95 transition-transform"
+        >
+          <Settings className="h-[18px] w-[18px] text-white" strokeWidth={1.7} />
+        </button>
       </div>
     </div>
   );
 }
+
 
 function Container5() {
   return (
