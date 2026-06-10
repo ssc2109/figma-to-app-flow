@@ -7,7 +7,6 @@ import {
   Camera,
   Mic,
   Search,
-  Sparkles,
   ScanLine,
   TrendingUp,
   Plus,
@@ -16,6 +15,8 @@ import {
   X,
   Square,
   Loader2,
+  ChevronRight,
+  ArrowRight,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useServerFn } from "@tanstack/react-start";
@@ -30,7 +31,6 @@ import {
   deleteThread,
   getThreadMessages,
 } from "@/lib/api/chat.functions";
-import ShaderOrb from "./socia/ShaderOrb";
 
 type FeatureKey = "foto" | "voz" | "analisis" | "mercado" | "escanear";
 
@@ -39,53 +39,42 @@ const FEATURES: Array<{
   icon: typeof Camera;
   title: string;
   subtitle: string;
-  hue: number;
   prompt?: string;
 }> = [
   {
     key: "foto",
     icon: Camera,
     title: "Foto a libreta",
-    subtitle: "Foto y extraigo ventas/gastos",
-    hue: 0.62,
+    subtitle: "Saca una foto y extraigo ventas y gastos al instante",
   },
   {
     key: "voz",
     icon: Mic,
     title: "Dictado por voz",
-    subtitle: "Hablame y lo registro",
-    hue: 0.05,
+    subtitle: "Háblame con naturalidad y lo registro por ti",
   },
   {
     key: "analisis",
     icon: TrendingUp,
     title: "Análisis del día",
-    subtitle: "Resumen e insights inteligentes",
-    hue: 0.4,
-    prompt: "Hazme un análisis completo de cómo va mi negocio hoy: ventas, gastos, fiados y stock crítico. Dame insights y 3 sugerencias accionables.",
+    subtitle: "Tu resumen de ventas, margen y alertas en segundos",
+    prompt:
+      "Hazme un análisis completo de cómo va mi negocio hoy: ventas, gastos, fiados y stock crítico. Dame insights y 3 sugerencias accionables.",
   },
   {
     key: "mercado",
     icon: Search,
     title: "Investigación",
-    subtitle: "Precios y competencia",
-    hue: 0.78,
-    prompt: "Necesito que me ayudes a investigar precios de mercado para los productos top de mi negocio. ¿Qué información necesitas de mí?",
+    subtitle: "Precios y competencia del mercado",
+    prompt:
+      "Necesito que me ayudes a investigar precios de mercado para los productos top de mi negocio. ¿Qué información necesitas de mí?",
   },
   {
     key: "escanear",
     icon: ScanLine,
     title: "Escanear producto",
-    subtitle: "Foto al producto y lo añado",
-    hue: 0.85,
+    subtitle: "Foto al producto y lo añado al stock",
   },
-];
-
-const QUICK_PROMPTS = [
-  "¿Cómo voy hoy?",
-  "Registra 50 de luz",
-  "¿Qué me falta de stock?",
-  "¿Cuánto gané este mes?",
 ];
 
 type DbMessageRow = {
@@ -118,9 +107,10 @@ export default function SociaScreen() {
 
   // ---------- threads ----------
   const listFn = useServerFn(listThreads);
-  const createFn = useServerFn(createThread);
+  const _createFn = useServerFn(createThread);
   const deleteFn = useServerFn(deleteThread);
   const getMessagesFn = useServerFn(getThreadMessages);
+  void _createFn;
 
   const { data: threadsData } = useQuery({
     queryKey: ["chat-threads"],
@@ -131,7 +121,6 @@ export default function SociaScreen() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // Load initial messages for active thread
   const { data: threadMessages } = useQuery({
     queryKey: ["chat-messages", activeThreadId],
     queryFn: () =>
@@ -157,19 +146,10 @@ export default function SociaScreen() {
     };
   }, []);
 
-  // Build context for the model: live snapshot of business data
   const liveContext = useMemo(
     () => ({
-      hoy: {
-        ventas: fin.todayIncome,
-        gastos: fin.todayExpense,
-        neto: fin.todayNet,
-      },
-      mes: {
-        ventas: fin.monthIncome,
-        gastos: fin.monthExpense,
-        neto: fin.monthNet,
-      },
+      hoy: { ventas: fin.todayIncome, gastos: fin.todayExpense, neto: fin.todayNet },
+      mes: { ventas: fin.monthIncome, gastos: fin.monthExpense, neto: fin.monthNet },
       fiados: {
         pendientes_total: fin.fiadosPending,
         cuenta_pendientes: fin.fiados.filter((f) => !f.settled).length,
@@ -193,12 +173,7 @@ export default function SociaScreen() {
           return token ? { Authorization: `Bearer ${token}` } : {};
         },
         prepareSendMessagesRequest: ({ messages, body }) => ({
-          body: {
-            ...body,
-            messages,
-            threadId: activeThreadId,
-            context: liveContext,
-          },
+          body: { ...body, messages, threadId: activeThreadId, context: liveContext },
         }),
       }),
     [activeThreadId, liveContext],
@@ -218,22 +193,18 @@ export default function SociaScreen() {
       toast.error("La IA no pudo responder. Intenta de nuevo.");
     },
     onFinish: async () => {
-      // Server may have created a thread; reflect that in the list
       qc.invalidateQueries({ queryKey: ["chat-threads"] });
     },
   });
 
-  // Adopt initial messages when thread changes
   useEffect(() => {
     if (initialMessages.length) setMessages(initialMessages);
     else setMessages([]);
   }, [chatKey, initialMessages, setMessages]);
 
-  // Adopt threadId from response header (when a new thread was auto-created)
   useEffect(() => {
     if (activeThreadId || !bearer) return;
     if (messages.length === 0 || status !== "ready") return;
-    // refresh thread list to pick up the new one
     qc.invalidateQueries({ queryKey: ["chat-threads"] });
   }, [messages.length, status, activeThreadId, bearer, qc]);
 
@@ -243,7 +214,6 @@ export default function SociaScreen() {
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Focus textarea on mount / after send / after thread switch
   useEffect(() => {
     taRef.current?.focus();
   }, [chatKey, status]);
@@ -292,7 +262,6 @@ export default function SociaScreen() {
     });
   };
 
-  // Voice via WebSpeech API (browser-specific, untyped)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
   const [listening, setListening] = useState(false);
@@ -353,9 +322,6 @@ export default function SociaScreen() {
     setHistoryOpen(false);
   };
 
-  // Orb intensity reacts to chat state
-  const orbIntensity = isLoading ? 1.0 : empty ? 0.35 : 0.55;
-
   const greeting = useMemo(() => {
     const h = new Date().getHours();
     if (h < 12) return "Buenos días";
@@ -363,9 +329,28 @@ export default function SociaScreen() {
     return "Buenas noches";
   }, []);
 
+  // Orb tweak values from design spec
+  const orbStyle = {
+    "--orb-peak": "39%",
+    "--orb-bottom": "74%",
+    "--orb-size": "750px",
+    "--orb-intensity": "1.1",
+    "--orb-haze": "1.2",
+    "--greet-y": "72px",
+    "--stack-y": "-48px",
+    "--c-core": "238, 235, 255",
+    "--c-mid": "124, 84, 255",
+    "--c-deep": "42, 22, 158",
+  } as React.CSSProperties;
+
   return (
-    <div className="relative w-full min-h-screen flex flex-col overflow-hidden">
-      {/* hidden file input for photo features */}
+    <div
+      className="socia-screen relative w-full h-full flex flex-col overflow-hidden bg-black"
+      style={orbStyle}
+    >
+      <style>{SOCIA_CSS}</style>
+
+      {/* hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -379,182 +364,96 @@ export default function SociaScreen() {
         }}
       />
 
-      {/* HEADER */}
-      <div className="relative z-30 px-[20px] pt-[22px] pb-[10px] flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => setHistoryOpen(true)}
-          className="h-[36px] w-[36px] rounded-full flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-          aria-label="Historial"
-        >
-          <History className="h-[15px] w-[15px] text-white/70" strokeWidth={1.8} />
-        </button>
-        <div className="text-center min-h-[36px] flex flex-col justify-center">
-          {empty ? (
-            <>
-              <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
-                Asistente
-              </div>
-              <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.4px] leading-none mt-[3px]">
-                soc<span className="text-white/55">IA</span>
-              </div>
-            </>
-          ) : (
-            <div className="h-[36px] w-[36px]" />
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={onNewThread}
-          className="h-[36px] w-[36px] rounded-full flex items-center justify-center active:scale-95 transition-transform"
-          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-          aria-label="Nueva conversación"
-        >
-          <Plus className="h-[16px] w-[16px] text-white/70" strokeWidth={1.8} />
-        </button>
-      </div>
-
-      {/* MAIN AREA */}
-      <div className="relative flex-1 flex flex-col">
-        {/* ORB — stays in place. Lives above the chat bar. */}
-        <AnimatePresence>
-          {empty && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.35 } }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute left-1/2 -translate-x-1/2 top-[20px] z-10 flex flex-col items-center pointer-events-none"
-            >
-              <ShaderOrb size={360} intensity={orbIntensity} />
-              <div className="mt-[-40px] text-center px-[24px]">
-                <div className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.5px]">
-                  {greeting}, Alberto.
-                </div>
-                <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/45 max-w-[280px]">
-                  Soy socIA. Puedo analizar, registrar y aconsejarte.
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* MINI ORB in header during chat */}
-        <AnimatePresence>
-          {!empty && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="absolute left-1/2 -translate-x-1/2 top-[14px] z-30 pointer-events-none"
-            >
-              <ShaderOrb size={56} intensity={orbIntensity} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* MESSAGES — full-screen chat once started (ChatGPT style) */}
-        {!empty && (
-          <div
-            ref={scrollRef}
-            className="relative z-10 flex-1 overflow-y-auto px-[20px] pt-[80px] pb-[180px] flex flex-col gap-[16px]"
-          >
-            {messages.map((m) => (
-              <MessageBubble key={m.id} msg={m} />
-            ))}
-            {isLoading && status === "submitted" && (
-              <div className="self-start flex items-center gap-[6px] px-[2px] py-[6px]">
-                {[0, 1, 2].map((i) => (
-                  <motion.span
-                    key={i}
-                    className="h-[6px] w-[6px] rounded-full bg-white/50"
-                    animate={{ opacity: [0.25, 0.95, 0.25] }}
-                    transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.15 }}
-                  />
-                ))}
-              </div>
-            )}
+      {/* ORB BG (only in empty state) */}
+      {empty && (
+        <>
+          <div className="orb-layer">
+            <div className="orb-ambient" />
+            <div className="orb" />
+            <div className="orb-rim" />
           </div>
-        )}
+          <div className="fade-top" />
+          <div className="fade-bottom" />
+          <div className="grain" />
+        </>
+      )}
 
-        {/* BOTTOM CONTROL ZONE (composer + cards) */}
-        <div
-          className={`absolute left-0 right-0 z-20 ${
-            empty ? "top-[58%]" : "bottom-0 pb-[110px]"
-          }`}
-        >
-          {/* gradient mask so messages fade behind the controls */}
-          {!empty && (
-            <div className="pointer-events-none absolute inset-x-0 -top-[60px] h-[60px] bg-gradient-to-b from-transparent to-black" />
-          )}
-
-          {/* CHAT BAR */}
-          <div className="px-[18px]">
-            <div
-              className="flex items-end gap-[6px] min-h-[54px] pl-[18px] pr-[6px] py-[6px] rounded-[28px] backdrop-blur-xl"
-              style={{
-                background: "rgba(10,14,28,0.55)",
-                border: "1px solid rgba(255,255,255,0.10)",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-              }}
-            >
-              <textarea
-                ref={taRef}
-                rows={1}
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  const el = e.target as HTMLTextAreaElement;
-                  el.style.height = "auto";
-                  el.style.height = Math.min(el.scrollHeight, 140) + "px";
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    send();
-                  }
-                }}
-                placeholder={listening ? "Escuchando…" : "Pregúntame algo…"}
-                className="flex-1 bg-transparent outline-none resize-none font-['Geist'] text-[14.5px] text-white placeholder:text-white/35 py-[10px] leading-[1.4]"
-                style={{ maxHeight: 140 }}
-              />
-              {listening ? (
-                <button
-                  type="button"
-                  onClick={stopVoiceDictation}
-                  className="h-[42px] w-[42px] rounded-full bg-[#F87171] text-white flex items-center justify-center active:scale-95"
-                  aria-label="Detener"
-                >
-                  <Square className="h-[14px] w-[14px]" fill="currentColor" />
-                </button>
-              ) : isLoading ? (
-                <button
-                  type="button"
-                  onClick={() => stop()}
-                  className="h-[42px] w-[42px] rounded-full bg-white/15 text-white flex items-center justify-center active:scale-95"
-                  aria-label="Detener"
-                >
-                  <Square className="h-[12px] w-[12px]" fill="currentColor" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => send()}
-                  disabled={!input.trim()}
-                  className="h-[42px] w-[42px] rounded-full bg-white text-black flex items-center justify-center active:scale-95 disabled:opacity-25 transition-opacity"
-                  aria-label="Enviar"
-                >
-                  <ArrowUp className="h-[17px] w-[17px]" strokeWidth={2.4} />
-                </button>
-              )}
+      {/* UI */}
+      <div className="relative z-30 flex-1 flex flex-col">
+        {/* TOP BAR */}
+        <div className="flex items-center justify-between px-[22px] pt-[14px]">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="circ-btn"
+            aria-label="Historial"
+          >
+            <History className="h-[18px] w-[18px]" strokeWidth={1.7} />
+          </button>
+          <div className="text-center leading-[1.1]">
+            <div className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.8px] text-white/35">
+              Asistente
+            </div>
+            <div className="font-['Bai_Jamjuree'] text-[19px] font-semibold text-white tracking-[-0.4px] mt-[3px]">
+              soc<span className="text-white/40 font-semibold">IA</span>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={onNewThread}
+            className="circ-btn"
+            aria-label="Nuevo"
+          >
+            <Plus className="h-[18px] w-[18px]" strokeWidth={1.7} />
+          </button>
+        </div>
 
-          {/* FEATURE CARDS — only in empty state, below chat bar */}
-          {empty && (
-            <div className="mt-[14px] pl-[18px]">
-              <div className="flex gap-[10px] overflow-x-auto no-scrollbar pr-[18px] pb-[2px]">
+        {/* EMPTY STATE — greeting + orb (BG) + chat bar + cards */}
+        {empty ? (
+          <>
+            <div
+              className="text-center mt-[42px] px-[24px]"
+              style={{ transform: "translateY(var(--greet-y))" }}
+            >
+              <h1 className="greet-h1 font-['Bai_Jamjuree'] text-[34px] font-semibold tracking-[-0.5px] leading-[1.15]">
+                {greeting}, Alberto.
+              </h1>
+              <p className="font-['Geist'] text-[13.5px] text-white/40 leading-[1.5] mt-[10px] max-w-[250px] mx-auto">
+                Soy socIA. Puedo analizar, registrar y aconsejarte.
+              </p>
+            </div>
+
+            <div className="flex-1 min-h-[8px]" />
+
+            <div style={{ transform: "translateY(var(--stack-y))" }}>
+              {/* COMPOSER */}
+              <div className="px-[18px]">
+                <ChatBar
+                  taRef={taRef}
+                  input={input}
+                  setInput={setInput}
+                  send={send}
+                  isLoading={isLoading}
+                  listening={listening}
+                  stop={stop}
+                  stopVoiceDictation={stopVoiceDictation}
+                  startVoiceDictation={startVoiceDictation}
+                />
+              </div>
+
+              {/* CARDS HEAD */}
+              <div className="flex items-center gap-[8px] px-[24px] pt-[20px]">
+                <span className="font-['Geist'] text-[11px] font-semibold uppercase tracking-[1.6px] text-white/40">
+                  Atajos rápidos
+                </span>
+                <span className="ml-auto flex items-center gap-[4px] font-['Geist'] text-[11px] text-white/30">
+                  Desliza
+                  <ArrowRight className="h-[13px] w-[13px]" strokeWidth={1.7} />
+                </span>
+              </div>
+
+              {/* CARDS */}
+              <div className="cards-row mt-[12px] px-[18px] pb-[8px]">
                 {FEATURES.map((f) => (
                   <FeatureCard
                     key={f.key}
@@ -566,10 +465,49 @@ export default function SociaScreen() {
                 ))}
               </div>
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          /* CHAT STATE — full screen messages + bottom composer */
+          <>
+            <div
+              ref={scrollRef}
+              className="relative flex-1 overflow-y-auto px-[20px] pt-[20px] pb-[140px] flex flex-col gap-[16px]"
+            >
+              {messages.map((m) => (
+                <MessageBubble key={m.id} msg={m} />
+              ))}
+              {isLoading && status === "submitted" && (
+                <div className="self-start flex items-center gap-[6px] px-[2px] py-[6px]">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="h-[6px] w-[6px] rounded-full bg-white/50"
+                      animate={{ opacity: [0.25, 0.95, 0.25] }}
+                      transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.15 }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="absolute left-0 right-0 bottom-0 pb-[110px] z-20">
+              <div className="pointer-events-none absolute inset-x-0 -top-[60px] h-[60px] bg-gradient-to-b from-transparent to-black" />
+              <div className="px-[18px]">
+                <ChatBar
+                  taRef={taRef}
+                  input={input}
+                  setInput={setInput}
+                  send={send}
+                  isLoading={isLoading}
+                  listening={listening}
+                  stop={stop}
+                  stopVoiceDictation={stopVoiceDictation}
+                  startVoiceDictation={startVoiceDictation}
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
-
 
       {/* THREAD HISTORY SHEET */}
       <AnimatePresence>
@@ -621,9 +559,7 @@ export default function SociaScreen() {
                 {threads.map((t) => (
                   <div
                     key={t.id}
-                    className={`group flex items-center gap-[6px] mb-[2px] rounded-[12px] ${
-                      activeThreadId === t.id ? "bg-white/06" : ""
-                    }`}
+                    className="group flex items-center gap-[6px] mb-[2px] rounded-[12px]"
                     style={
                       activeThreadId === t.id
                         ? { background: "rgba(255,255,255,0.06)" }
@@ -656,6 +592,76 @@ export default function SociaScreen() {
   );
 }
 
+function ChatBar({
+  taRef,
+  input,
+  setInput,
+  send,
+  isLoading,
+  listening,
+  stop,
+  stopVoiceDictation,
+  startVoiceDictation,
+}: {
+  taRef: React.RefObject<HTMLTextAreaElement>;
+  input: string;
+  setInput: (v: string) => void;
+  send: (t?: string) => void;
+  isLoading: boolean;
+  listening: boolean;
+  stop: () => void;
+  stopVoiceDictation: () => void;
+  startVoiceDictation: () => void;
+}) {
+  return (
+    <div className="chatbar">
+      <textarea
+        ref={taRef}
+        rows={1}
+        value={input}
+        onChange={(e) => {
+          setInput(e.target.value);
+          const el = e.target as HTMLTextAreaElement;
+          el.style.height = "auto";
+          el.style.height = Math.min(el.scrollHeight, 120) + "px";
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            send();
+          }
+        }}
+        placeholder={listening ? "Escuchando…" : "Pregúntame algo…"}
+        className="chatbar-ta"
+      />
+      {listening ? (
+        <button type="button" onClick={stopVoiceDictation} className="pill-btn" aria-label="Detener">
+          <Square className="h-[16px] w-[16px]" fill="currentColor" />
+        </button>
+      ) : (
+        <button type="button" onClick={startVoiceDictation} className="pill-btn" aria-label="Voz">
+          <Mic className="h-[18px] w-[18px]" strokeWidth={1.7} />
+        </button>
+      )}
+      {isLoading ? (
+        <button type="button" onClick={stop} className="pill-btn send" aria-label="Detener">
+          <Square className="h-[14px] w-[14px]" fill="currentColor" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => send()}
+          disabled={!input.trim()}
+          className="pill-btn send disabled:opacity-30"
+          aria-label="Enviar"
+        >
+          <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.2} />
+        </button>
+      )}
+    </div>
+  );
+}
+
 function FeatureCard({
   icon: Icon,
   title,
@@ -668,26 +674,18 @@ function FeatureCard({
   onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="shrink-0 w-[148px] h-[112px] rounded-[20px] p-[14px] flex flex-col justify-between text-left active:scale-[0.97] transition-transform"
-      style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.08)",
-      }}
-    >
-      <div
-        className="h-[32px] w-[32px] rounded-full flex items-center justify-center"
-        style={{ background: "rgba(255,255,255,0.06)" }}
-      >
-        <Icon className="h-[15px] w-[15px] text-white/85" strokeWidth={1.7} />
+    <button type="button" onClick={onClick} className="feat-card">
+      <div className="flex items-start justify-between">
+        <div className="feat-ic">
+          <Icon className="h-[21px] w-[21px]" strokeWidth={1.7} />
+        </div>
+        <ChevronRight className="h-[18px] w-[18px] text-white/30" strokeWidth={1.8} />
       </div>
       <div>
-        <div className="font-['Geist'] text-[12.5px] font-medium text-white leading-[1.2]">
+        <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-[#f4f3f8] tracking-[-0.2px] mb-[3px]">
           {title}
         </div>
-        <div className="font-['Geist'] text-[10.5px] text-white/40 leading-[1.3] mt-[3px]">
+        <div className="font-['Geist'] text-[11px] text-white/40 leading-[1.35]">
           {subtitle}
         </div>
       </div>
@@ -711,12 +709,7 @@ function MessageBubble({ msg }: { msg: UIMessage }) {
         className="max-w-[82%] self-end flex flex-col items-end gap-[6px]"
       >
         {files.map((f, i) => (
-          <img
-            key={i}
-            src={f.url}
-            alt="adjunto"
-            className="max-w-[200px] rounded-[14px]"
-          />
+          <img key={i} src={f.url} alt="adjunto" className="max-w-[200px] rounded-[14px]" />
         ))}
         {text && (
           <div className="px-[16px] py-[10px] rounded-[20px] bg-white text-black font-['Geist'] text-[14px] leading-[1.45]">
@@ -770,3 +763,141 @@ function fileToDataUrl(f: File): Promise<string> {
     r.readAsDataURL(f);
   });
 }
+
+const SOCIA_CSS = `
+.socia-screen .circ-btn{
+  width:46px;height:46px;border-radius:50%;
+  display:grid;place-items:center;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.09);
+  color:#cfcfd4;
+}
+
+.socia-screen .greet-h1{
+  background:linear-gradient(180deg,#ffffff 58%,rgba(255,255,255,.72) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+
+.socia-screen .orb-layer{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  transform-origin:50% var(--orb-peak);
+  animation:socOrbBreathe 11s ease-in-out infinite alternate;
+}
+@keyframes socOrbBreathe{from{transform:scale(1)}to{transform:scale(1.012)}}
+
+.socia-screen .orb{
+  position:absolute;left:50%;top:var(--orb-peak);
+  width:var(--orb-size);height:var(--orb-size);
+  transform:translateX(-50%);border-radius:50%;
+  background:
+    radial-gradient(circle closest-side at 50% 50%,
+      transparent 0%,
+      transparent 44%,
+      rgba(var(--c-deep),calc(.10 * var(--orb-intensity))) 54%,
+      rgba(var(--c-deep),calc(.26 * var(--orb-intensity))) 62%,
+      rgba(var(--c-mid), calc(.46 * var(--orb-intensity))) 70%,
+      rgba(var(--c-mid), calc(.72 * var(--orb-intensity))) 77%,
+      rgba(var(--c-mid), calc(.92 * var(--orb-intensity))) 82%,
+      rgba(var(--c-core),calc(.98 * var(--orb-intensity))) 87%,
+      rgba(var(--c-core),calc(1   * var(--orb-intensity))) 89%,
+      rgba(var(--c-core),calc(.82 * var(--orb-intensity))) 91%,
+      rgba(var(--c-mid), calc(.36 * var(--orb-intensity))) 94%,
+      rgba(var(--c-mid), calc(.12 * var(--orb-intensity))) 97%,
+      transparent 99.5%);
+}
+.socia-screen .orb-rim{
+  position:absolute;left:50%;top:var(--orb-peak);
+  width:var(--orb-size);height:var(--orb-size);
+  transform:translateX(-50%);border-radius:50%;
+  opacity:calc(.55 * var(--orb-intensity));
+  background:
+    radial-gradient(circle closest-side at 50% 50%,
+      transparent 87.4%,
+      rgba(var(--c-core),.50) 88.6%,
+      rgba(var(--c-core),.90) 89.2%,
+      rgba(var(--c-core),.50) 89.8%,
+      transparent 91.2%);
+}
+.socia-screen .orb-ambient{
+  position:absolute;inset:0;opacity:var(--orb-haze);
+  background:radial-gradient(150% 48% at 50% 55%,
+    rgba(var(--c-mid),.22) 0%,
+    rgba(var(--c-mid),.13) 34%,
+    rgba(var(--c-deep),.05) 62%,
+    transparent 82%);
+}
+.socia-screen .fade-top{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(to bottom,
+    #000 0%,#000 26%,
+    rgba(0,0,0,.5) 38%,
+    rgba(0,0,0,0) 45%);
+}
+.socia-screen .fade-bottom{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(to bottom,
+    rgba(0,0,0,0) calc(var(--orb-bottom) - 9%),
+    rgba(0,0,0,.45) calc(var(--orb-bottom) - 3%),
+    rgba(0,0,0,.9) var(--orb-bottom),
+    #000 calc(var(--orb-bottom) + 4%));
+}
+.socia-screen .grain{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px;mix-blend-mode:overlay;opacity:.35;
+}
+
+.socia-screen .chatbar{
+  display:flex;align-items:center;gap:8px;
+  min-height:64px;padding:8px 8px 8px 22px;
+  border-radius:34px;
+  background:rgba(12,12,20,.78);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 24px 70px -16px rgba(110,80,255,.5),
+    0 12px 40px -12px rgba(0,0,0,.7);
+}
+.socia-screen .chatbar-ta{
+  flex:1;background:transparent;outline:none;resize:none;
+  color:#fff;font-family:'Geist',system-ui,sans-serif;
+  font-size:14.5px;line-height:1.4;padding:12px 0;
+  max-height:120px;
+}
+.socia-screen .chatbar-ta::placeholder{color:rgba(255,255,255,.42)}
+.socia-screen .pill-btn{
+  width:48px;height:48px;border-radius:50%;flex:none;
+  display:grid;place-items:center;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:#d4d5db;transition:transform .12s;
+}
+.socia-screen .pill-btn:active{transform:scale(.94)}
+.socia-screen .pill-btn.send{
+  background:linear-gradient(180deg,#ffffff,#ece9f7);
+  border-color:rgba(255,255,255,.4);color:#17122b;
+}
+
+.socia-screen .cards-row{
+  display:flex;gap:13px;overflow-x:auto;
+  scrollbar-width:none;scroll-snap-type:x mandatory;
+}
+.socia-screen .cards-row::-webkit-scrollbar{display:none}
+.socia-screen .feat-card{
+  position:relative;flex:0 0 184px;height:144px;
+  border-radius:22px;padding:18px;overflow:hidden;
+  scroll-snap-align:start;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.09);
+  display:flex;flex-direction:column;justify-content:space-between;
+  text-align:left;color:#fff;
+  transition:transform .25s cubic-bezier(.2,.7,.3,1),background .25s,border-color .25s;
+}
+.socia-screen .feat-card:active{transform:scale(.97)}
+.socia-screen .feat-ic{
+  width:42px;height:42px;border-radius:13px;
+  display:grid;place-items:center;color:#e9e7f5;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.10);
+}
+`;
