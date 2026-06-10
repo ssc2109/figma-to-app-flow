@@ -10,6 +10,7 @@ import SalesOverlay from "@/components/SalesOverlay";
 import QuickActionsScreen from "@/components/QuickActionsScreen";
 import AuthScreen from "@/components/AuthScreen";
 import OnboardingFlow from "@/components/OnboardingFlow";
+import SettingsScreen from "@/components/SettingsScreen";
 import { InventoryProvider } from "@/data/inventory";
 import { FinanceProvider } from "@/data/finance";
 import { MeProvider } from "@/data/me";
@@ -19,6 +20,7 @@ import { AppSkeleton } from "@/components/motion/AppSkeleton";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { Toaster } from "@/components/ui/sonner";
 import { AnimatePresence, motion } from "motion/react";
+
 
 
 function NavShell() {
