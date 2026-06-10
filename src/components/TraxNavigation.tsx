@@ -101,7 +101,11 @@ function NavShell() {
           />
         </div>
       )}
-      <div className="relative z-10 mx-auto w-full max-w-[430px] pb-[140px]">
+      <div
+        className={`relative z-10 mx-auto w-full max-w-[430px] ${
+          currentScreen === "socia" ? "pb-0" : "pb-[140px]"
+        }`}
+      >
         <AnimatePresence mode="wait">
           {booting ? (
             <motion.div

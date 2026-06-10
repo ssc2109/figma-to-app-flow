@@ -838,8 +838,9 @@ const SOCIA_CSS = `
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
-  font-size:34px; font-weight:600; letter-spacing:-0.5px;
+  font-size:clamp(32px, 8.35vw, 34px); font-weight:600; letter-spacing:-0.5px;
   line-height:1.15;
+  white-space:nowrap;
   background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
