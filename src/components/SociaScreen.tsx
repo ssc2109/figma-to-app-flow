@@ -484,14 +484,23 @@ export default function SociaScreen() {
               ref={scrollRef}
               className="relative flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[260px] flex flex-col gap-[18px]"
             >
-              {messages.map((m, i) => (
-                <MessageBubble
-                  key={m.id}
-                  msg={m}
-                  isLast={i === messages.length - 1}
-                  isStreaming={isLoading && i === messages.length - 1 && m.role === "assistant"}
-                />
-              ))}
+              {messages.map((m, i) => {
+                const isLast = i === messages.length - 1;
+                const lastUser = [...messages].slice(0, i).reverse().find((mm) => mm.role === "user");
+                return (
+                  <MessageBubble
+                    key={m.id}
+                    msg={m}
+                    isLast={isLast}
+                    isStreaming={isLoading && isLast && m.role === "assistant"}
+                    onRegenerate={
+                      isLast && m.role === "assistant" && !isLoading && lastUser
+                        ? () => send(uiMessageText(lastUser))
+                        : undefined
+                    }
+                  />
+                );
+              })}
               {isLoading && status === "submitted" && <TypingIndicator />}
             </div>
             <div className="absolute left-0 right-0 bottom-0 pb-[110px] z-20">
