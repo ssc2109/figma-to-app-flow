@@ -14,11 +14,11 @@ function AnimatedOrb({ size = 40, spinning = false }: { size?: number; spinning?
   return (
     <div className="relative flex-none" style={{ width: size, height: size }} aria-hidden>
       <div
-        className="absolute inset-[-4px] rounded-full opacity-70 trax-conic-ring"
+        className="absolute inset-[-5px] rounded-full opacity-80 trax-conic-ring"
         style={{
           background:
-            "conic-gradient(from 0deg, transparent 0%, #1c7cff 25%, transparent 50%, #4dc8fd 75%, transparent 100%)",
-          filter: "blur(4px)",
+            "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.85) 25%, transparent 50%, rgba(255,255,255,0.55) 75%, transparent 100%)",
+          filter: "blur(5px)",
         }}
       />
       <div
@@ -26,8 +26,8 @@ function AnimatedOrb({ size = 40, spinning = false }: { size?: number; spinning?
         data-spinning={spinning ? "true" : "false"}
         style={{
           background:
-            "radial-gradient(circle at 32% 28%, #cfe6ff 0%, #4dc8fd 22%, #1c7cff 48%, #003fc0 78%, #061535 100%)",
-          boxShadow: "0 0 18px rgba(28,124,255,0.55)",
+            "radial-gradient(circle at 32% 28%, #ffffff 0%, #d6d6d6 22%, #6a6a6e 55%, #1a1a1e 88%, #000 100%)",
+          boxShadow: "0 0 18px rgba(255,255,255,0.22), inset 0 0 6px rgba(0,0,0,0.4)",
         }}
       />
     </div>
