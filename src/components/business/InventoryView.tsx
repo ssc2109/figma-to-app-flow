@@ -35,7 +35,9 @@ function Stepper({ value, onDelta }: { value: number; onDelta: (d: number) => vo
 
 function InventoryRow({ item, last }: { item: InventoryItem; last?: boolean }) {
   const { adjustStock } = useInventory();
-  const isLow = item.stock <= LOW_STOCK_THRESHOLD;
+  const { profile } = useAuth();
+  const isLow = item.stock <= (profile?.low_stock_threshold ?? 5);
+
   return (
     <>
       <div className="flex items-center gap-[14px] px-[16px] py-[12px]">
