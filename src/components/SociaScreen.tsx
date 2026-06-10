@@ -331,11 +331,11 @@ export default function SociaScreen() {
 
   // Orb tweak values from design spec (HTML export)
   const orbStyle = {
-    "--orb-peak": "39%",
-    "--orb-bottom": "74%",
-    "--orb-size": "750px",
-    "--orb-intensity": "1.1",
-    "--orb-haze": "1.2",
+    "--orb-peak": "56%",
+    "--orb-bottom": "78%",
+    "--orb-size": "620px",
+    "--orb-intensity": "1",
+    "--orb-haze": "1.1",
     "--greet-y": "0px",
     "--stack-y": "0px",
     "--c-core": "220, 235, 255",
