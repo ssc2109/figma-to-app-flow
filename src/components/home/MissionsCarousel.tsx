@@ -22,7 +22,8 @@ export default function MissionsCarousel({
   isLoading: boolean;
   onIntent: (i: HomeNavIntent) => void;
 }) {
-  const items = (briefing?.insights ?? []).slice(1);
+  const all = briefing?.insights ?? [];
+  const items = all.length <= 1 ? all : all.slice(1);
 
   if (!isLoading && items.length === 0) return null;
 
