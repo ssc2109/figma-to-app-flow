@@ -1,16 +1,14 @@
-import svgPaths from "./svg-hc6bxk0av9";
-
 import Aurora from "@/components/Aurora";
-import { StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
-import { useInventory } from "@/data/inventory";
 import { Stagger } from "@/components/motion/Stagger";
-import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import QuickActions from "@/components/QuickActions";
 import { useAuth } from "@/hooks/useAuth";
 import { Settings } from "lucide-react";
-import ProactiveHero, { type HomeNavIntent } from "@/components/home/ProactiveHero";
-import PulseStats from "@/components/home/PulseStats";
-import FocusCard from "@/components/home/FocusCard";
+import { type HomeNavIntent } from "@/components/home/ProactiveHero";
+import PerformanceCard from "@/components/home/PerformanceCard";
+import SociaInsightCard, { useBriefing } from "@/components/home/SociaInsightCard";
+import MissionsCarousel from "@/components/home/MissionsCarousel";
+import RecentActivity from "@/components/home/RecentActivity";
+
 
 
 function greetingByHour() {
