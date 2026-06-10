@@ -336,8 +336,8 @@ export default function SociaScreen() {
     "--orb-size": "750px",
     "--orb-intensity": "1.1",
     "--orb-haze": "1.2",
-    "--greet-y": "75px",
-    "--stack-y": "-48px",
+    "--greet-y": "0px",
+    "--stack-y": "0px",
     "--c-core": "220, 235, 255",
     "--c-mid": "0, 120, 255",
     "--c-deep": "0, 60, 180",
@@ -454,8 +454,6 @@ export default function SociaScreen() {
               </div>
             </div>
 
-            {/* spacer for floating nav */}
-            <div style={{ height: 110 }} />
           </>
         ) : (
           /* CHAT STATE — full screen messages + bottom composer */
@@ -838,8 +836,7 @@ const SOCIA_CSS = `
 
 /* GREET */
 .socia-screen .greet{
-  text-align:center; margin-top:42px; padding:0 24px;
-  transform:translateY(var(--greet-y));
+  text-align:center; margin-top:56px; padding:0 24px;
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
@@ -855,7 +852,7 @@ const SOCIA_CSS = `
 }
 
 .socia-screen .spacer{ flex:1; min-height:8px; }
-.socia-screen .midstack{ transform:translateY(var(--stack-y)); position:relative; z-index:5; }
+.socia-screen .midstack{ position:relative; z-index:5; padding-bottom:110px; }
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
