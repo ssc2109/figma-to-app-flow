@@ -34,59 +34,9 @@ function NavShell() {
     return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const previous = {
-      htmlOverflow: html.style.overflow,
-      htmlHeight: html.style.height,
-      htmlPosition: html.style.position,
-      bodyOverflow: body.style.overflow,
-      bodyHeight: body.style.height,
-      bodyPosition: body.style.position,
-      bodyTop: body.style.top,
-      bodyWidth: body.style.width,
-    };
-    const preventScroll = (event: Event) => event.preventDefault();
+  // SocIA uses its own fixed layout; no need for aggressive global scroll lock.
+  // Internal scroll containers (chat messages) must stay scrollable.
 
-    if (currentScreen !== "socia") {
-      html.classList.remove("trax-socia-scroll-lock");
-      body.classList.remove("trax-socia-scroll-lock");
-      body.style.position = "";
-      body.style.top = "";
-      body.style.width = "";
-      return;
-    }
-
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    html.classList.add("trax-socia-scroll-lock");
-    body.classList.add("trax-socia-scroll-lock");
-    html.style.overflow = "hidden";
-    html.style.height = "100%";
-    html.style.position = "fixed";
-    body.style.position = "fixed";
-    body.style.top = "0";
-    body.style.width = "100%";
-    body.style.height = "100dvh";
-    body.style.overflow = "hidden";
-    window.addEventListener("wheel", preventScroll, { passive: false });
-    window.addEventListener("touchmove", preventScroll, { passive: false });
-
-    return () => {
-      html.classList.remove("trax-socia-scroll-lock");
-      body.classList.remove("trax-socia-scroll-lock");
-      html.style.overflow = previous.htmlOverflow;
-      html.style.height = previous.htmlHeight;
-      html.style.position = previous.htmlPosition;
-      body.style.overflow = previous.bodyOverflow;
-      body.style.height = previous.bodyHeight;
-      body.style.position = previous.bodyPosition;
-      body.style.top = previous.bodyTop;
-      body.style.width = previous.bodyWidth;
-      window.removeEventListener("wheel", preventScroll);
-      window.removeEventListener("touchmove", preventScroll);
-    };
-  }, [currentScreen]);
 
   // wire quick action handlers
   useEffect(() => {
