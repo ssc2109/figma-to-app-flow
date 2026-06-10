@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import type { Briefing } from "@/lib/api/briefing.functions";
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
 
