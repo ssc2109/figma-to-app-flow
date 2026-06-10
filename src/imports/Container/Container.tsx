@@ -1,103 +1,92 @@
 import svgPaths from "./svg-hc6bxk0av9";
-import imgProfile from "./752b2ffc6c9d7d95b1254f5a3ea754226cbf7bb2.png";
+
 import Aurora from "@/components/Aurora";
 import { StockAlertCard, type StockAlert } from "@/components/TraxBlocks";
 import { useInventory } from "@/data/inventory";
 import { AnimatedNumber } from "@/components/motion/AnimatedNumber";
 import { Stagger } from "@/components/motion/Stagger";
 import QuickActions from "@/components/QuickActions";
+import { useAuth } from "@/hooks/useAuth";
+import { Settings } from "lucide-react";
+import { useFinance } from "@/data/finance";
+
+function greetingByHour() {
+  const h = new Date().getHours();
+  if (h < 12) return "Buenos días";
+  if (h < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
 
 
 
-function Profile() {
+
+
+function Profile({ avatarUrl, initials }: { avatarUrl: string | null; initials: string }) {
   return (
-    <div className="pointer-events-none relative rounded-[9999px] shrink-0 size-[48px]" data-name="Profile">
-      <div className="absolute inset-0 overflow-hidden rounded-[9999px]">
-        <img alt="" className="absolute left-0 max-w-none size-full top-0" src={imgProfile} />
-      </div>
-      <div aria-hidden className="absolute border-2 border-[rgba(255,255,255,0.1)] border-solid inset-0 rounded-[9999px]" />
+    <div className="relative rounded-full shrink-0 size-[48px] overflow-hidden grid place-items-center"
+      style={{
+        background:
+          "radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 60%)",
+        border: "1px solid rgba(255,255,255,0.10)",
+      }}
+    >
+      {avatarUrl ? (
+        <img alt="" className="absolute inset-0 size-full object-cover" src={avatarUrl} />
+      ) : (
+        <span className="font-['Bai_Jamjuree'] text-[17px] font-bold text-white tracking-[-0.3px]">
+          {initials}
+        </span>
+      )}
     </div>
   );
 }
 
-function Container3() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[12px] text-[rgba(255,255,255,0.6)] tracking-[0.6px] uppercase whitespace-nowrap">
-        <p className="leading-[16px]">Ecoarom</p>
-      </div>
-    </div>
-  );
-}
-
-function Heading() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-full" data-name="Heading 1">
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[20px] text-white tracking-[-0.5px] w-full">
-        <p className="leading-[25px]">Buenos días, Alberto</p>
-      </div>
-    </div>
-  );
-}
-
-function Heading1Margin() {
-  return (
-    <div className="content-stretch flex flex-col items-start pt-[2px] relative shrink-0 w-full" data-name="Heading 1:margin">
-      <Heading />
-    </div>
-  );
-}
-
-function Container2() {
-  return (
-    <div className="content-stretch flex flex-col items-start relative shrink-0 w-[200px]" data-name="Container">
-      <Container3 />
-      <Heading1Margin />
-    </div>
-  );
-}
-
-function Container1() {
-  return (
-    <div className="content-stretch flex gap-[12px] items-center relative shrink-0" data-name="Container">
-      <Profile />
-      <Container2 />
-    </div>
-  );
-}
-
-function Container4() {
-  return (
-    <div className="relative shrink-0 size-[21px]" data-name="Container">
-      <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 21 21">
-        <g id="Container">
-          <path d={svgPaths.p23e76100} fill="var(--fill-0, white)" id="Icon" />
-        </g>
-      </svg>
-    </div>
-  );
-}
-
-function Button() {
-  return (
-    <div className="content-stretch flex flex-col items-center justify-center relative shrink-0" data-name="Button">
-      <Container4 />
-    </div>
-  );
-}
-
-function HeaderTopAppBar() {
+function HeaderTopAppBar({
+  businessName,
+  ownerName,
+  avatarUrl,
+  onOpenSettings,
+}: {
+  businessName: string;
+  ownerName: string;
+  avatarUrl: string | null;
+  onOpenSettings: () => void;
+}) {
+  const initials =
+    (businessName || "TU")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join("") || "TU";
+  const greet = greetingByHour();
   return (
     <div className="relative shrink-0 w-full" data-name="Header - TopAppBar">
-      <div className="flex flex-row items-center size-full">
-        <div className="content-stretch flex items-center justify-between px-[20px] py-[16px] relative size-full">
-          <Container1 />
-          <Button />
+      <div className="flex items-center justify-between px-[20px] py-[16px]">
+        <div className="flex gap-[12px] items-center min-w-0">
+          <Profile avatarUrl={avatarUrl} initials={initials} />
+          <div className="flex flex-col items-start min-w-0">
+            <div className="font-['Geist'] font-medium text-[12px] text-[rgba(255,255,255,0.6)] tracking-[0.6px] uppercase leading-[16px] truncate max-w-[200px]">
+              {businessName || "Mi negocio"}
+            </div>
+            <div className="pt-[2px] font-['Geist'] font-medium text-[20px] text-white tracking-[-0.5px] leading-[25px] truncate max-w-[220px]">
+              {greet}, {ownerName || "tú"}
+            </div>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          aria-label="Ajustes"
+          className="h-[40px] w-[40px] rounded-full grid place-items-center bg-white/[0.05] border border-white/[0.08] active:scale-95 transition-transform"
+        >
+          <Settings className="h-[18px] w-[18px] text-white" strokeWidth={1.7} />
+        </button>
       </div>
     </div>
   );
 }
+
 
 function Container5() {
   return (
@@ -117,7 +106,9 @@ function Margin() {
   );
 }
 
-function Paragraph() {
+function Paragraph({ value }: { value: number }) {
+  const display = value >= 1000 ? value / 1000 : value;
+  const suffix = value >= 1000 ? "K" : "";
   return (
     <div className="[word-break:break-word] content-stretch flex gap-[3.99px] items-start justify-center leading-[0] not-italic relative shrink-0 text-center tracking-[-1.6px] whitespace-nowrap" data-name="Paragraph">
       <div className="flex flex-col font-['Bai_Jamjuree:Medium',sans-serif] justify-center relative shrink-0 text-[32px] text-[rgba(255,255,255,0.6)]">
@@ -126,9 +117,9 @@ function Paragraph() {
         <div className="flex flex-col font-['Bai_Jamjuree:Bold',sans-serif] justify-center relative shrink-0 text-[72px] text-white">
           <p className="leading-[72px]">
             <AnimatedNumber
-              value={1.25}
-              duration={1.4}
-              format={(n) => `${n.toFixed(2)}K`}
+              value={display}
+              duration={1.2}
+              format={(n) => `${n.toFixed(2)}${suffix}`}
             />
           </p>
         </div>
@@ -137,24 +128,25 @@ function Paragraph() {
 }
 
 
-function Shadow() {
+function Shadow({ value }: { value: number }) {
   return (
     <div className="content-stretch flex items-start justify-center relative shrink-0" data-name="Shadow">
-      <Paragraph />
+      <Paragraph value={value} />
     </div>
   );
 }
 
-function HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero() {
+function HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero({ value }: { value: number }) {
   return (
     <div className="content-stretch flex flex-col items-center justify-center py-[32px] gap-[16px] relative shrink-0 w-full" data-name="Hero Section (Floating Number) - Keeps Bai Jamjuree as requested for Hero">
       <div className="content-stretch flex flex-col items-center w-full">
         <Margin />
-        <Shadow />
+        <Shadow value={value} />
       </div>
     </div>
   );
 }
+
 
 
 function Container6() {
@@ -440,16 +432,17 @@ function Container19() {
 }
 
 function Container22() {
+  const { profile } = useAuth();
+  const first = (profile?.owner_name ?? "").split(/\s+/)[0] || "Tú";
   return (
     <div className="content-stretch flex flex-col items-start max-w-[280px] relative shrink-0 w-full" data-name="Container">
-      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.9)] whitespace-nowrap">
-        <p className="leading-[26px] mb-0">Rosa, hoy es un buen día para</p>
-        <p className="leading-[26px] mb-0">reponer stock de abarrotes. Tus</p>
-        <p className="leading-[26px]">ventas subieron un 12%.</p>
+      <div className="[word-break:break-word] flex flex-col font-['Geist:Regular',sans-serif] font-medium justify-center leading-[0] relative shrink-0 text-[16px] text-[rgba(255,255,255,0.9)]">
+        <p className="leading-[26px]">{first}, hoy es un buen día para reponer stock de abarrotes. Tus ventas subieron un 12%.</p>
       </div>
     </div>
   );
 }
+
 
 function Container18() {
   return (
@@ -858,12 +851,13 @@ function SectionActividadRecienteNowUsingGeistForAllTextAndNumbers({ onSeeAll }:
 
 function Main({ onSeeAllActions, onSeeAllActivity }: { onSeeAllActions: () => void; onSeeAllActivity: () => void }) {
   const { lowStock } = useInventory();
+  const { todayIncome } = useFinance();
   const alerts: StockAlert[] = lowStock.map((i) => ({ name: i.name, units: i.stock }));
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
         <Stagger className="w-full flex flex-col gap-[24px]" delay={0.1} step={0.09}>
-          <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero />
+          <HeroSectionFloatingNumberKeepsBaiJamjureeAsRequestedForHero value={todayIncome} />
           <QuickActions onSeeAll={onSeeAllActions} />
           <StockAlertCard alerts={alerts} />
           <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers onSeeAll={onSeeAllActivity} />
@@ -874,7 +868,17 @@ function Main({ onSeeAllActions, onSeeAllActivity }: { onSeeAllActions: () => vo
   );
 }
 
-export default function Container({ onSeeAllActions, onSeeAllActivity }: { onSeeAllActions?: () => void; onSeeAllActivity?: () => void } = {}) {
+
+export default function Container({
+  onSeeAllActions,
+  onSeeAllActivity,
+  onOpenSettings,
+}: {
+  onSeeAllActions?: () => void;
+  onSeeAllActivity?: () => void;
+  onOpenSettings?: () => void;
+} = {}) {
+  const { profile } = useAuth();
   return (
     <div className="content-stretch flex flex-col gap-[16px] items-start relative size-full" data-name="Container">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[640px] z-0 overflow-hidden">
@@ -882,10 +886,16 @@ export default function Container({ onSeeAllActions, onSeeAllActivity }: { onSee
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 via-60% to-transparent" />
       </div>
       <div className="relative z-10 w-full flex flex-col gap-[16px] items-start">
-        <HeaderTopAppBar />
+        <HeaderTopAppBar
+          businessName={profile?.business_name ?? "Mi negocio"}
+          ownerName={profile?.owner_name ?? "tú"}
+          avatarUrl={profile?.avatar_url ?? null}
+          onOpenSettings={onOpenSettings ?? (() => {})}
+        />
         <Main onSeeAllActions={onSeeAllActions ?? (() => {})} onSeeAllActivity={onSeeAllActivity ?? (() => {})} />
       </div>
     </div>
   );
 }
+
 

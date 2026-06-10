@@ -236,28 +236,58 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
+          avatar_url: string | null
           business_name: string
+          business_type: string | null
+          close_time: string | null
           created_at: string
+          currency: string
+          daily_goal: number
           id: string
+          locale: string
+          low_stock_threshold: number
+          notifications_enabled: boolean
           onboarding_done: boolean
+          open_time: string | null
           owner_name: string
           phone: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
+          avatar_url?: string | null
           business_name?: string
+          business_type?: string | null
+          close_time?: string | null
           created_at?: string
+          currency?: string
+          daily_goal?: number
           id: string
+          locale?: string
+          low_stock_threshold?: number
+          notifications_enabled?: boolean
           onboarding_done?: boolean
+          open_time?: string | null
           owner_name?: string
           phone?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
+          avatar_url?: string | null
           business_name?: string
+          business_type?: string | null
+          close_time?: string | null
           created_at?: string
+          currency?: string
+          daily_goal?: number
           id?: string
+          locale?: string
+          low_stock_threshold?: number
+          notifications_enabled?: boolean
           onboarding_done?: boolean
+          open_time?: string | null
           owner_name?: string
           phone?: string | null
           updated_at?: string

@@ -10,6 +10,7 @@ import SalesOverlay from "@/components/SalesOverlay";
 import QuickActionsScreen from "@/components/QuickActionsScreen";
 import AuthScreen from "@/components/AuthScreen";
 import OnboardingFlow from "@/components/OnboardingFlow";
+import SettingsScreen from "@/components/SettingsScreen";
 import { InventoryProvider } from "@/data/inventory";
 import { FinanceProvider } from "@/data/finance";
 import { MeProvider } from "@/data/me";
@@ -21,13 +22,16 @@ import { Toaster } from "@/components/ui/sonner";
 import { AnimatePresence, motion } from "motion/react";
 
 
+
 function NavShell() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("inicio");
   const [booting, setBooting] = useState(true);
   const [salesOpen, setSalesOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "finanzas">("hub");
   const { setHandler } = useQuickActions();
+
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 700);
@@ -125,8 +129,10 @@ function NavShell() {
                     setNegocioInitialView("finanzas");
                     setCurrentScreen("negocio");
                   }}
+                  onOpenSettings={() => setSettingsOpen(true)}
                 />
               )}
+
               {currentScreen === "negocio" && (
                 <BusinessScreen
                   key={negocioInitialView}
@@ -156,8 +162,25 @@ function NavShell() {
 
       <SalesOverlay open={salesOpen} onClose={() => setSalesOpen(false)} />
       <QuickActionsScreen open={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
+      <AnimatePresence>
+        {settingsOpen && (
+          <motion.div
+            key="settings-sheet"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[60] bg-black overflow-y-auto"
+          >
+            <div className="mx-auto w-full max-w-[430px] min-h-screen">
+              <SettingsScreen onBack={() => setSettingsOpen(false)} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
+
 }
 
 function AuthGate() {

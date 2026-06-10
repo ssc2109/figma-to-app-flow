@@ -23,6 +23,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
 import { useInventory } from "@/data/inventory";
 import { useFinance } from "@/data/finance";
 import {
@@ -104,6 +106,9 @@ export default function SociaScreen() {
   const inv = useInventory();
   const fin = useFinance();
   const qc = useQueryClient();
+  const { profile } = useAuth();
+  const firstName = (profile?.owner_name ?? "").split(/\s+/)[0] || "tú";
+
 
   // ---------- threads ----------
   const listFn = useServerFn(listThreads);
@@ -322,7 +327,13 @@ export default function SociaScreen() {
     setHistoryOpen(false);
   };
 
-  const greeting = "Buenos días";
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Buenos días";
+    if (h < 19) return "Buenas tardes";
+    return "Buenas noches";
+  })();
+
 
   // Orb tweak values from design spec (HTML export)
   const orbStyle = {
@@ -409,7 +420,7 @@ export default function SociaScreen() {
         {empty ? (
           <div className="empty-ui">
             <div className="greet">
-              <h1>{`${greeting},\u00A0Alberto.`}</h1>
+              <h1>{`${greeting},\u00A0${firstName}.`}</h1>
               <DynamicSubtitle />
             </div>
 

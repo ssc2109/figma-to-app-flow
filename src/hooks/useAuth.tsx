@@ -8,6 +8,16 @@ export type Profile = {
   owner_name: string;
   phone: string | null;
   onboarding_done: boolean;
+  avatar_url: string | null;
+  business_type: string | null;
+  address: string | null;
+  currency: string;
+  low_stock_threshold: number;
+  locale: string;
+  open_time: string | null;
+  close_time: string | null;
+  daily_goal: number;
+  notifications_enabled: boolean;
 };
 
 type Ctx = {
@@ -29,11 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfile = async (uid: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, business_name, owner_name, phone, onboarding_done")
+      .select("*")
       .eq("id", uid)
       .maybeSingle();
     setProfile((data as Profile) ?? null);
   };
+
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
