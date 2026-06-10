@@ -409,7 +409,7 @@ export default function SociaScreen() {
         {empty ? (
           <div className="empty-ui">
             <div className="greet">
-              <h1>{greeting},&nbsp;Alberto.</h1>
+              <h1>{`${greeting},\u00A0Alberto.`}</h1>
               <p>Soy socIA. Puedo analizar, registrar y aconsejarte.</p>
             </div>
 
@@ -838,7 +838,8 @@ const SOCIA_CSS = `
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
-  font-size:clamp(30px, 7.85vw, 34px); font-weight:600; letter-spacing:-0.5px;
+  display:inline-block;
+  font-size:clamp(28px, 7.2vw, 34px); font-weight:600; letter-spacing:-0.5px;
   line-height:1.15;
   white-space:nowrap;
   background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);

@@ -140,6 +140,12 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    overflow-x: hidden;
+  }
+
+  html:has(.socia-screen),
+  body:has(.socia-screen) {
+    overflow: hidden;
   }
 }
 
