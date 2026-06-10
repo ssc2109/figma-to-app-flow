@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { ArrowUpRight } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,11 +14,11 @@ function AnimatedOrb({ size = 40, spinning = false }: { size?: number; spinning?
   return (
     <div className="relative flex-none" style={{ width: size, height: size }} aria-hidden>
       <div
-        className="absolute inset-[-4px] rounded-full opacity-70 trax-conic-ring"
+        className="absolute inset-[-5px] rounded-full opacity-80 trax-conic-ring"
         style={{
           background:
-            "conic-gradient(from 0deg, transparent 0%, #1c7cff 25%, transparent 50%, #4dc8fd 75%, transparent 100%)",
-          filter: "blur(4px)",
+            "conic-gradient(from 0deg, transparent 0%, rgba(255,255,255,0.85) 25%, transparent 50%, rgba(255,255,255,0.55) 75%, transparent 100%)",
+          filter: "blur(5px)",
         }}
       />
       <div
@@ -26,8 +26,8 @@ function AnimatedOrb({ size = 40, spinning = false }: { size?: number; spinning?
         data-spinning={spinning ? "true" : "false"}
         style={{
           background:
-            "radial-gradient(circle at 32% 28%, #cfe6ff 0%, #4dc8fd 22%, #1c7cff 48%, #003fc0 78%, #061535 100%)",
-          boxShadow: "0 0 18px rgba(28,124,255,0.55)",
+            "radial-gradient(circle at 32% 28%, #ffffff 0%, #d6d6d6 22%, #6a6a6e 55%, #1a1a1e 88%, #000 100%)",
+          boxShadow: "0 0 18px rgba(255,255,255,0.22), inset 0 0 6px rgba(0,0,0,0.4)",
         }}
       />
     </div>
@@ -102,24 +102,49 @@ export default function SociaInsightCard({
   isLoading: boolean;
   onIntent: (i: HomeNavIntent) => void;
 }) {
-  const lead = briefing?.insights[0];
+  // Construye el ciclo de mensajes: todos los insights + prompts como filler conversacional.
+  const messages = useMemo(() => {
+    if (!briefing) return [];
+    const fromInsights = briefing.insights.map((ins) => ({
+      text: ins.text,
+      cta: ins.cta,
+      key: `i-${ins.id}`,
+    }));
+    const fromPrompts = (briefing.quickPrompts ?? []).map((p, i) => ({
+      text: p,
+      cta: { label: "Pregúntame", action: "chat" as const, payload: p },
+      key: `p-${i}`,
+    }));
+    const all = [...fromInsights, ...fromPrompts];
+    return all.length > 0 ? all : [{ text: "Todo está bajo control. Disfruta tu café.", cta: null, key: "fallback" }];
+  }, [briefing]);
+
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (messages.length <= 1) return;
+    const id = setInterval(() => setIdx((i) => (i + 1) % messages.length), 5000);
+    return () => clearInterval(id);
+  }, [messages.length]);
+
+  const current = messages[idx] ?? messages[0];
 
   const handleTap = () => {
-    if (!lead) {
+    if (!current) {
       onIntent({ kind: "screen", screen: "socia" });
       return;
     }
-    if (!lead.cta) {
-      onIntent({ kind: "chat", prompt: lead.text });
+    const cta = current.cta;
+    if (!cta) {
+      onIntent({ kind: "chat", prompt: current.text });
       return;
     }
-    const a = lead.cta.action;
-    if (a === "reponer") onIntent({ kind: "reponer", productHint: lead.cta.payload });
+    const a = cta.action;
+    if (a === "reponer") onIntent({ kind: "reponer", productHint: cta.payload });
     else if (a === "cobrar_fiado") onIntent({ kind: "screen", screen: "negocio" });
     else if (a === "finanzas") onIntent({ kind: "screen", screen: "negocio", subview: "finanzas" });
     else if (a === "ventas") onIntent({ kind: "sales" });
     else if (a === "promo") onIntent({ kind: "screen", screen: "crecer" });
-    else onIntent({ kind: "chat", prompt: lead.text });
+    else onIntent({ kind: "chat", prompt: cta.payload ?? current.text });
   };
 
   return (
@@ -130,20 +155,21 @@ export default function SociaInsightCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.05 }}
-      className="relative w-full rounded-[24px] overflow-hidden text-left"
+      className="trax-grain relative w-full rounded-[24px] overflow-hidden text-left"
       style={{
-        background: "#0F0F12",
-        border: "1px solid rgba(255,255,255,0.07)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+        background:
+          "linear-gradient(180deg, #131318 0%, #0C0C10 80%, #08080B 100%)",
+        border: "1px solid rgba(255,255,255,0.09)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
-      <BorderBeam size={240} duration={10} colorFrom="#4dc8fd" colorTo="#1c7cff" />
-      <BorderBeam size={240} duration={10} delay={5} colorFrom="#a78bfa" colorTo="#1c7cff" />
+      <BorderBeam size={240} duration={10} colorFrom="rgba(255,255,255,0.85)" colorTo="rgba(255,255,255,0.15)" />
+      <BorderBeam size={240} duration={10} delay={5} colorFrom="rgba(255,255,255,0.6)" colorTo="rgba(255,255,255,0.05)" />
 
       <div className="relative p-[18px] flex items-start gap-[14px]">
         <AnimatedOrb size={44} spinning={isLoading} />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-[8px] mb-[6px]">
+          <div className="flex items-center gap-[8px] mb-[8px]">
             <span className="font-['Geist'] text-[10.5px] font-semibold tracking-[1.4px] uppercase text-white">
               socIA
             </span>
@@ -151,21 +177,48 @@ export default function SociaInsightCard({
             <span className="font-['Geist'] text-[10.5px] tracking-[0.6px] uppercase text-[rgba(255,255,255,0.45)]">
               Asistente
             </span>
+            {messages.length > 1 && (
+              <span className="ml-auto flex items-center gap-[4px]">
+                {messages.map((_, i) => (
+                  <span
+                    key={i}
+                    className="h-[3px] rounded-full transition-all duration-500"
+                    style={{
+                      width: i === idx ? 14 : 4,
+                      background: i === idx ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.18)",
+                    }}
+                  />
+                ))}
+              </span>
+            )}
           </div>
-          {isLoading || !lead ? (
+
+          {isLoading || !current ? (
             <>
               <div className="h-[16px] w-[85%] rounded trax-skeleton mb-[6px]" />
               <div className="h-[16px] w-[60%] rounded trax-skeleton" />
             </>
           ) : (
-            <p className="font-['Geist'] text-[14.5px] leading-[21px] text-white/90">
-              {lead.text}
-            </p>
-          )}
-          {lead?.cta && (
-            <div className="mt-[12px] inline-flex items-center gap-[6px] px-[12px] py-[7px] rounded-full bg-white text-black text-[12.5px] font-medium font-['Geist']">
-              {lead.cta.label}
-              <ArrowUpRight className="h-[12px] w-[12px]" strokeWidth={2.4} />
+            <div className="relative min-h-[44px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current.key}
+                  initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <p className="font-['Geist'] text-[14.5px] leading-[21px] text-white/90">
+                    {current.text}
+                  </p>
+                  {current.cta && (
+                    <div className="mt-[12px] inline-flex items-center gap-[6px] px-[12px] py-[7px] rounded-full bg-white text-black text-[12.5px] font-medium font-['Geist']">
+                      {current.cta.label}
+                      <ArrowUpRight className="h-[12px] w-[12px]" strokeWidth={2.4} />
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           )}
         </div>
