@@ -1012,8 +1012,8 @@ function MessageBubble({
           )}
         </div>
         {!isStreaming && text && (
-          <div className="mt-[6px] flex items-center gap-[4px]">
-            <CopyButton text={text} />
+          <div className="mt-[8px]">
+            <MessageActions text={text} variant="assistant" />
           </div>
         )}
       </div>
