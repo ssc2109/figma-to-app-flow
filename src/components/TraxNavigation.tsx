@@ -28,8 +28,10 @@ function NavShell() {
   const [booting, setBooting] = useState(true);
   const [salesOpen, setSalesOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "finanzas">("hub");
   const { setHandler } = useQuickActions();
+
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 700);
