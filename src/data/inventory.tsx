@@ -1,7 +1,20 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
-import { PRODUCTS, type Product } from "./products";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { PRODUCTS, PRODUCTS_BY_ID, type Product } from "./products";
 
-const INITIAL_STOCK: Record<string, number> = {
+export const LOW_STOCK_THRESHOLD = 5; // kept for backward compat
+
+const SEED_STOCK: Record<string, number> = {
   "inca-kola": 24,
   "pan-frances": 120,
   "papas-lays": 3,
@@ -9,16 +22,7 @@ const INITIAL_STOCK: Record<string, number> = {
   "cafe-altomayo": 8,
   "arroz-costeno": 45,
 };
-
-export const LOW_STOCK_THRESHOLD = 5;
-
-export type InventoryItem = Product & {
-  stock: number;
-  category: string;
-  cost: number;
-};
-
-const CATEGORY: Record<string, string> = {
+const SEED_CATEGORY: Record<string, string> = {
   "inca-kola": "Bebidas",
   "pan-frances": "Panadería",
   "papas-lays": "Snacks",
@@ -26,8 +30,7 @@ const CATEGORY: Record<string, string> = {
   "cafe-altomayo": "Abarrotes",
   "arroz-costeno": "Abarrotes",
 };
-
-const COST: Record<string, number> = {
+const SEED_COST: Record<string, number> = {
   "inca-kola": 2.4,
   "pan-frances": 0.18,
   "papas-lays": 3.1,
@@ -36,12 +39,33 @@ const COST: Record<string, number> = {
   "arroz-costeno": 9.8,
 };
 
+export type InventoryItem = Product & {
+  stock: number;
+  category: string;
+  cost: number;
+  dbId: string; // uuid in supabase
+};
+
+type DbProduct = {
+  id: string;
+  name: string;
+  price: number;
+  cost: number;
+  stock: number;
+  category: string;
+  sku: string | null;
+  image_url: string | null;
+  low_stock_threshold: number;
+};
+
 type Ctx = {
   items: InventoryItem[];
-  stock: Record<string, number>;
+  loading: boolean;
   lowStock: InventoryItem[];
-  setStock: (id: string, n: number) => void;
-  adjustStock: (id: string, delta: number) => void;
+  setStock: (slug: string, n: number) => Promise<void>;
+  adjustStock: (slug: string, delta: number) => Promise<void>;
+  addProduct: (p: { name: string; price: number; cost: number; stock: number; category: string }) => Promise<void>;
+  refresh: () => Promise<void>;
   totalValue: number;
   totalUnits: number;
   productCount: number;
@@ -49,37 +73,142 @@ type Ctx = {
 
 const InventoryCtx = createContext<Ctx | null>(null);
 
-export function InventoryProvider({ children }: { children: ReactNode }) {
-  const [stock, setStockState] = useState<Record<string, number>>(INITIAL_STOCK);
+function rowToItem(row: DbProduct): InventoryItem {
+  const slug = row.sku || row.id;
+  const seed = PRODUCTS_BY_ID[slug];
+  return {
+    id: slug,
+    dbId: row.id,
+    name: row.name,
+    price: Number(row.price),
+    image: seed?.image ?? row.image_url ?? "",
+    stock: row.stock,
+    category: row.category || "General",
+    cost: Number(row.cost),
+  };
+}
 
-  const setStock = (id: string, n: number) =>
-    setStockState((s) => ({ ...s, [id]: Math.max(0, Math.round(n)) }));
-  const adjustStock = (id: string, delta: number) =>
-    setStockState((s) => ({ ...s, [id]: Math.max(0, (s[id] ?? 0) + delta) }));
+export function InventoryProvider({ children }: { children: ReactNode }) {
+  const { user, profile } = useAuth();
+  const [items, setItems] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const seededRef = useRef(false);
+
+  const load = useCallback(async () => {
+    if (!user) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true });
+    if (error) {
+      console.error("inventory load", error);
+      setLoading(false);
+      return;
+    }
+    if ((!data || data.length === 0) && !seededRef.current) {
+      seededRef.current = true;
+      const seed = PRODUCTS.map((p) => ({
+        user_id: user.id,
+        name: p.name,
+        price: p.price,
+        cost: SEED_COST[p.id] ?? p.price * 0.7,
+        stock: SEED_STOCK[p.id] ?? 0,
+        category: SEED_CATEGORY[p.id] ?? "General",
+        sku: p.id,
+        low_stock_threshold: profile?.low_stock_threshold ?? 5,
+      }));
+      const { data: inserted, error: insErr } = await supabase
+        .from("products")
+        .insert(seed)
+        .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold");
+      if (insErr) console.error("inventory seed", insErr);
+      setItems((inserted ?? []).map(rowToItem));
+      setLoading(false);
+      return;
+    }
+    setItems((data ?? []).map(rowToItem));
+    setLoading(false);
+  }, [user, profile?.low_stock_threshold]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const setStock = useCallback(
+    async (slug: string, n: number) => {
+      const item = items.find((i) => i.id === slug);
+      if (!item) return;
+      const next = Math.max(0, Math.round(n));
+      setItems((arr) => arr.map((i) => (i.id === slug ? { ...i, stock: next } : i)));
+      const { error } = await supabase.from("products").update({ stock: next }).eq("id", item.dbId);
+      if (error) {
+        console.error("setStock", error);
+        await load();
+      }
+    },
+    [items, load],
+  );
+
+  const adjustStock = useCallback(
+    async (slug: string, delta: number) => {
+      const item = items.find((i) => i.id === slug);
+      if (!item) return;
+      await setStock(slug, item.stock + delta);
+    },
+    [items, setStock],
+  );
+
+  const addProduct: Ctx["addProduct"] = useCallback(
+    async (p) => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from("products")
+        .insert({
+          user_id: user.id,
+          name: p.name,
+          price: p.price,
+          cost: p.cost,
+          stock: p.stock,
+          category: p.category,
+          low_stock_threshold: profile?.low_stock_threshold ?? 5,
+        })
+        .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold")
+        .single();
+      if (error) {
+        console.error("addProduct", error);
+        return;
+      }
+      if (data) setItems((arr) => [...arr, rowToItem(data)]);
+    },
+    [user, profile?.low_stock_threshold],
+  );
 
   const value = useMemo<Ctx>(() => {
-    const items: InventoryItem[] = PRODUCTS.map((p) => ({
-      ...p,
-      stock: stock[p.id] ?? 0,
-      category: CATEGORY[p.id] ?? "General",
-      cost: COST[p.id] ?? p.price * 0.7,
-    }));
+    const threshold = profile?.low_stock_threshold ?? LOW_STOCK_THRESHOLD;
     const lowStock = items
-      .filter((i) => i.stock <= LOW_STOCK_THRESHOLD)
+      .filter((i) => i.stock <= threshold)
       .sort((a, b) => a.stock - b.stock);
     const totalValue = items.reduce((s, i) => s + i.stock * i.cost, 0);
     const totalUnits = items.reduce((s, i) => s + i.stock, 0);
     return {
       items,
-      stock,
+      loading,
       lowStock,
       setStock,
       adjustStock,
+      addProduct,
+      refresh: load,
       totalValue,
       totalUnits,
       productCount: items.length,
     };
-  }, [stock]);
+  }, [items, loading, profile?.low_stock_threshold, setStock, adjustStock, addProduct, load]);
 
   return <InventoryCtx.Provider value={value}>{children}</InventoryCtx.Provider>;
 }
