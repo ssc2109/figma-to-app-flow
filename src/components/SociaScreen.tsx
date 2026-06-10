@@ -322,22 +322,17 @@ export default function SociaScreen() {
     setHistoryOpen(false);
   };
 
-  const greeting = useMemo(() => {
-    const h = new Date().getHours();
-    if (h < 12) return "Buenos días";
-    if (h < 19) return "Buenas tardes";
-    return "Buenas noches";
-  }, []);
+  const greeting = "Buenos días";
 
   // Orb tweak values from design spec (HTML export)
   const orbStyle = {
-    "--orb-peak": "56%",
-    "--orb-bottom": "78%",
-    "--orb-size": "620px",
-    "--orb-intensity": "1",
-    "--orb-haze": "1.1",
-    "--greet-y": "0px",
-    "--stack-y": "0px",
+    "--orb-peak": "39%",
+    "--orb-bottom": "74%",
+    "--orb-size": "750px",
+    "--orb-intensity": "1.1",
+    "--orb-haze": "1.2",
+    "--greet-top": "25.4dvh",
+    "--stack-top": "52.6dvh",
     "--c-core": "220, 235, 255",
     "--c-mid": "0, 120, 255",
     "--c-deep": "0, 60, 180",
@@ -345,7 +340,7 @@ export default function SociaScreen() {
 
   return (
     <div
-      className="socia-screen relative w-full h-full flex flex-col overflow-hidden bg-black"
+      className="socia-screen relative w-full h-[100dvh] flex flex-col overflow-hidden bg-black"
       style={orbStyle}
     >
       <style>{SOCIA_CSS}</style>
@@ -379,9 +374,11 @@ export default function SociaScreen() {
       )}
 
       {/* UI */}
-      <div className="relative z-30 flex-1 flex flex-col">
+      <div className="relative z-30 flex-1 flex flex-col min-h-0">
+        <div className="statusbar" />
+
         {/* TOP BAR */}
-        <div className="flex items-center justify-between px-[22px] pt-[14px]">
+        <div className="topbar flex items-center justify-between px-[22px] pt-[14px]">
           <button
             type="button"
             onClick={() => setHistoryOpen(true)}
@@ -410,13 +407,11 @@ export default function SociaScreen() {
 
         {/* EMPTY STATE — exact replication of HTML export */}
         {empty ? (
-          <>
+          <div className="empty-ui">
             <div className="greet">
-              <h1>{greeting}, Alberto.</h1>
+              <h1>{`${greeting},\u00A0Alberto.`}</h1>
               <p>Soy socIA. Puedo analizar, registrar y aconsejarte.</p>
             </div>
-
-            <div className="spacer" />
 
             <div className="midstack">
               <div className="composer">
@@ -453,8 +448,7 @@ export default function SociaScreen() {
                 ))}
               </div>
             </div>
-
-          </>
+          </div>
         ) : (
           /* CHAT STATE — full screen messages + bottom composer */
           <>
@@ -761,6 +755,8 @@ const SOCIA_CSS = `
   border:1px solid rgba(255,255,255,.09);
   color:#cfcfd4;
 }
+.socia-screen .statusbar{ height:14px; flex:none; }
+.socia-screen .topbar{ position:relative; z-index:6; flex:none; }
 
 /* ORB */
 .socia-screen .orb-layer{
@@ -835,13 +831,17 @@ const SOCIA_CSS = `
 }
 
 /* GREET */
+.socia-screen .empty-ui{ position:fixed; inset:0; z-index:4; pointer-events:none; }
 .socia-screen .greet{
-  text-align:center; margin-top:104px; padding:0 24px;
+  position:absolute; left:0; right:0; top:var(--greet-top);
+  text-align:center; padding:0 24px;
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
-  font-size:34px; font-weight:600; letter-spacing:-0.5px;
+  display:inline-block;
+  font-size:clamp(28px, 7.2vw, 34px); font-weight:600; letter-spacing:-0.5px;
   line-height:1.15;
+  white-space:nowrap;
   background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
@@ -851,14 +851,13 @@ const SOCIA_CSS = `
   margin-top:10px; max-width:250px; margin-inline:auto;
 }
 
-.socia-screen .spacer{ flex:1; min-height:8px; }
-.socia-screen .midstack{ position:relative; z-index:5; margin-top:auto; padding-bottom:40px; }
+.socia-screen .midstack{ position:absolute; left:50%; right:auto; top:var(--stack-top); width:100%; max-width:430px; transform:translateX(-50%); z-index:5; padding-bottom:0; pointer-events:auto; }
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
 .socia-screen .chatbar{
   display:flex; align-items:center; gap:12px;
-  min-height:64px; padding:8px 8px 8px 22px;
+  height:64px; padding:0 8px 0 22px;
   border-radius:34px;
   background:rgba(12,12,20,.78);
   border:1px solid rgba(255,255,255,.12);
