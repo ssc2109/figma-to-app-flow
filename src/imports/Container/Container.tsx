@@ -118,7 +118,7 @@ function Main({
         <div className="w-full px-[20px]">
           <Stagger className="w-full flex flex-col gap-[20px]" delay={0.1} step={0.07}>
             <PerformanceCard />
-            <div className="w-full mt-[4px]"><QuickActions onSeeAll={onSeeAllActions} /></div>
+            <QuickActions onSeeAll={onSeeAllActions} />
             <SociaInsightCard briefing={briefing} isLoading={isLoading} onIntent={onIntent} />
             <MissionsCarousel briefing={briefing} isLoading={isLoading} onIntent={onIntent} />
             <RecentActivity onSeeAll={onSeeAllActivity} />
