@@ -758,6 +758,7 @@ const SOCIA_CSS = `
   border:1px solid rgba(255,255,255,.09);
   color:#cfcfd4;
 }
+.socia-screen .statusbar{ height:14px; flex:none; }
 
 /* ORB */
 .socia-screen .orb-layer{
@@ -833,7 +834,8 @@ const SOCIA_CSS = `
 
 /* GREET */
 .socia-screen .greet{
-  text-align:center; margin-top:104px; padding:0 24px;
+  text-align:center; margin-top:42px; padding:0 24px;
+  transform:translateY(var(--greet-y));
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
@@ -849,13 +851,13 @@ const SOCIA_CSS = `
 }
 
 .socia-screen .spacer{ flex:1; min-height:8px; }
-.socia-screen .midstack{ position:relative; z-index:5; margin-top:auto; padding-bottom:40px; }
+.socia-screen .midstack{ position:relative; z-index:5; margin-top:auto; padding-bottom:0; transform:translateY(var(--stack-y)); }
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
 .socia-screen .chatbar{
   display:flex; align-items:center; gap:12px;
-  min-height:64px; padding:8px 8px 8px 22px;
+  height:64px; padding:0 8px 0 22px;
   border-radius:34px;
   background:rgba(12,12,20,.78);
   border:1px solid rgba(255,255,255,.12);
