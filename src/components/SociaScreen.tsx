@@ -438,87 +438,111 @@ export default function SociaScreen() {
           )}
         </AnimatePresence>
 
-        {/* HERO-STYLE BACKGROUND — subtle grid + giant bottom dome with bright rim */}
+        {/* RUIXEN MOON BACKGROUND — soft blurred orb with blue+violet glow */}
         <AnimatePresence>
           {empty && (
             <motion.div
-              key="hero-bg"
+              key="moon-bg"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, transition: { duration: 0.3 } }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
             >
-              {/* Grid background */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)",
-                  backgroundSize: "64px 64px",
-                  WebkitMaskImage:
-                    "radial-gradient(ellipse at 50% 30%, black 0%, black 35%, transparent 75%)",
-                  maskImage:
-                    "radial-gradient(ellipse at 50% 30%, black 0%, black 35%, transparent 75%)",
-                }}
-              />
-
-              {/* Atmospheric blue glow halo */}
+              {/* Wide ambient violet wash */}
               <div
                 aria-hidden
-                className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
+                className="absolute left-1/2 -translate-x-1/2 rounded-full"
                 style={{
-                  bottom: "-10%",
-                  width: "160%",
+                  top: "12%",
+                  width: "180%",
                   aspectRatio: "1 / 1",
                   background:
-                    "radial-gradient(circle at 50% 35%, rgba(99,140,255,0.55) 0%, rgba(70,100,230,0.35) 18%, rgba(120,80,220,0.22) 35%, rgba(30,50,160,0.12) 55%, transparent 72%)",
-                  filter: "blur(80px)",
-                  opacity: 0.9,
+                    "radial-gradient(circle at 50% 50%, rgba(120,90,240,0.35) 0%, rgba(70,100,230,0.22) 25%, rgba(40,60,180,0.1) 45%, transparent 65%)",
+                  filter: "blur(120px)",
                 }}
               />
 
-              {/* Giant dome — raised, multi-tone blue */}
-              <div
-                aria-hidden
-                className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
-                style={{
-                  bottom: "-40%",
-                  width: "150%",
-                  aspectRatio: "1 / 1",
-                  background:
-                    "radial-gradient(circle at 50% 28%, #1a2a6c 0%, #0d1850 18%, #070d35 38%, #03061c 60%, #000 80%)",
-                  boxShadow:
-                    "0 -1px 0 0.5px rgba(180,200,255,0.9), 0 -22px 100px -10px rgba(120,160,255,0.55), 0 -80px 200px -40px rgba(140,110,255,0.35)",
-                }}
-              />
-
-              {/* Soft pulsing glow above the rim */}
+              {/* Inner cyan-blue glow */}
               <motion.div
-                className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+                aria-hidden
+                className="absolute left-1/2 -translate-x-1/2 rounded-full"
                 style={{
-                  bottom: "30%",
-                  width: "140%",
-                  height: "45%",
+                  top: "22%",
+                  width: "120%",
+                  aspectRatio: "1 / 1",
                   background:
-                    "radial-gradient(ellipse at 50% 100%, rgba(160,190,255,0.45) 0%, rgba(130,100,230,0.22) 28%, rgba(80,60,200,0.1) 50%, transparent 72%)",
-                  filter: "blur(50px)",
+                    "radial-gradient(circle at 50% 45%, rgba(140,180,255,0.6) 0%, rgba(90,130,255,0.4) 18%, rgba(120,90,230,0.25) 38%, rgba(60,40,160,0.12) 55%, transparent 72%)",
+                  filter: "blur(90px)",
                 }}
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.03, 1] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              />
+
+              {/* The moon — defined circle with bright apex */}
+              <div
+                aria-hidden
+                className="absolute left-1/2 -translate-x-1/2 rounded-full"
+                style={{
+                  top: "26%",
+                  width: "min(78vw, 340px)",
+                  aspectRatio: "1 / 1",
+                  background:
+                    "radial-gradient(circle at 42% 32%, rgba(220,225,255,0.95) 0%, rgba(150,170,255,0.85) 12%, rgba(90,110,230,0.75) 28%, rgba(60,55,180,0.55) 48%, rgba(35,25,110,0.4) 68%, rgba(10,8,50,0.25) 85%, transparent 100%)",
+                  filter: "blur(28px)",
+                }}
+              />
+
+              {/* Bright specular core */}
+              <div
+                aria-hidden
+                className="absolute left-1/2 -translate-x-1/2 rounded-full"
+                style={{
+                  top: "30%",
+                  width: "min(36vw, 160px)",
+                  aspectRatio: "1 / 1",
+                  background:
+                    "radial-gradient(circle at 45% 40%, rgba(255,255,255,0.8) 0%, rgba(200,210,255,0.45) 30%, transparent 70%)",
+                  filter: "blur(22px)",
+                  mixBlendMode: "screen",
+                }}
+              />
+
+              {/* Bottom magenta accent */}
+              <div
+                aria-hidden
+                className="absolute left-1/2 -translate-x-1/2 rounded-full"
+                style={{
+                  top: "45%",
+                  width: "120%",
+                  aspectRatio: "1 / 1",
+                  background:
+                    "radial-gradient(circle at 50% 40%, rgba(180,90,220,0.25) 0%, rgba(120,60,200,0.15) 30%, transparent 60%)",
+                  filter: "blur(100px)",
+                  mixBlendMode: "screen",
+                }}
               />
 
               {/* Top vignette */}
               <div
-                className="absolute inset-x-0 top-0 h-[40%] pointer-events-none"
+                className="absolute inset-x-0 top-0 h-[30%] pointer-events-none"
                 style={{
                   background:
                     "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%)",
                 }}
               />
+              {/* Bottom vignette to deepen near chat */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-[35%] pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)",
+                }}
+              />
             </motion.div>
           )}
         </AnimatePresence>
+
 
 
 
