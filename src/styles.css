@@ -140,14 +140,25 @@
     background: #000000;
   }
 
-  html.trax-socia-scroll-lock,
+  html.trax-socia-scroll-lock {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    scrollbar-width: none;
+  }
+
   body.trax-socia-scroll-lock {
     position: fixed !important;
     inset: 0 !important;
     width: 100% !important;
-    height: 100% !important;
+    height: 100dvh !important;
     overflow: hidden !important;
     overscroll-behavior: none !important;
+    scrollbar-width: none;
+  }
+
+  html.trax-socia-scroll-lock::-webkit-scrollbar,
+  body.trax-socia-scroll-lock::-webkit-scrollbar {
+    display: none;
   }
 
   * {

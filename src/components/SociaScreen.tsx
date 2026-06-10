@@ -116,50 +116,6 @@ export default function SociaScreen() {
   const fin = useFinance();
   const qc = useQueryClient();
 
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const previous = {
-      htmlOverflow: html.style.overflow,
-      bodyOverflow: body.style.overflow,
-      htmlOverscroll: html.style.overscrollBehavior,
-      bodyOverscroll: body.style.overscrollBehavior,
-      htmlHeight: html.style.height,
-      bodyHeight: body.style.height,
-      bodyPosition: body.style.position,
-      bodyTop: body.style.top,
-      bodyWidth: body.style.width,
-    };
-
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    html.classList.add("trax-socia-scroll-lock");
-    body.classList.add("trax-socia-scroll-lock");
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-    html.style.overscrollBehavior = "none";
-    body.style.overscrollBehavior = "none";
-    html.style.height = "100%";
-    body.style.height = "100%";
-    body.style.position = "fixed";
-    body.style.top = "0";
-    body.style.width = "100%";
-
-    return () => {
-      html.classList.remove("trax-socia-scroll-lock");
-      body.classList.remove("trax-socia-scroll-lock");
-      html.style.overflow = previous.htmlOverflow;
-      body.style.overflow = previous.bodyOverflow;
-      html.style.overscrollBehavior = previous.htmlOverscroll;
-      body.style.overscrollBehavior = previous.bodyOverscroll;
-      html.style.height = previous.htmlHeight;
-      body.style.height = previous.bodyHeight;
-      body.style.position = previous.bodyPosition;
-      body.style.top = previous.bodyTop;
-      body.style.width = previous.bodyWidth;
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    };
-  }, []);
-
   // ---------- threads ----------
   const listFn = useServerFn(listThreads);
   const createFn = useServerFn(createThread);
