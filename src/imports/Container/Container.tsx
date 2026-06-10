@@ -43,12 +43,11 @@ function Profile({ avatarUrl, initials }: { avatarUrl: string | null; initials: 
 
 function HeaderTopAppBar({
   businessName,
-  ownerName,
   avatarUrl,
   onOpenSettings,
 }: {
   businessName: string;
-  ownerName: string;
+  ownerName?: string;
   avatarUrl: string | null;
   onOpenSettings: () => void;
 }) {
@@ -59,7 +58,7 @@ function HeaderTopAppBar({
       .slice(0, 2)
       .map((w) => w[0]?.toUpperCase())
       .join("") || "TU";
-  const greet = greetingByHour();
+
   return (
     <div className="relative shrink-0 w-full" data-name="Header - TopAppBar">
       <div className="flex items-center justify-between px-[20px] py-[16px]">
