@@ -34,6 +34,60 @@ function NavShell() {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = {
+      htmlOverflow: html.style.overflow,
+      htmlHeight: html.style.height,
+      htmlPosition: html.style.position,
+      bodyOverflow: body.style.overflow,
+      bodyHeight: body.style.height,
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyWidth: body.style.width,
+    };
+    const preventScroll = (event: Event) => event.preventDefault();
+
+    if (currentScreen !== "socia") {
+      html.classList.remove("trax-socia-scroll-lock");
+      body.classList.remove("trax-socia-scroll-lock");
+      body.style.position = "";
+      body.style.top = "";
+      body.style.width = "";
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    html.classList.add("trax-socia-scroll-lock");
+    body.classList.add("trax-socia-scroll-lock");
+    html.style.overflow = "hidden";
+    html.style.height = "100%";
+    html.style.position = "fixed";
+    body.style.position = "fixed";
+    body.style.top = "0";
+    body.style.width = "100%";
+    body.style.height = "100dvh";
+    body.style.overflow = "hidden";
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+
+    return () => {
+      html.classList.remove("trax-socia-scroll-lock");
+      body.classList.remove("trax-socia-scroll-lock");
+      html.style.overflow = previous.htmlOverflow;
+      html.style.height = previous.htmlHeight;
+      html.style.position = previous.htmlPosition;
+      body.style.overflow = previous.bodyOverflow;
+      body.style.height = previous.bodyHeight;
+      body.style.position = previous.bodyPosition;
+      body.style.top = previous.bodyTop;
+      body.style.width = previous.bodyWidth;
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
+    };
+  }, [currentScreen]);
+
   // wire quick action handlers
   useEffect(() => {
     setHandler((id: ActionId) => {
@@ -66,7 +120,7 @@ function NavShell() {
   }, [setHandler]);
 
   return (
-    <div className="min-h-screen bg-black relative">
+    <div className="fixed inset-0 bg-black overflow-hidden">
       {currentScreen === "inicio" && (
         <div
           className="fixed top-0 left-0 right-0 h-[55vh] z-0 pointer-events-none overflow-hidden"
@@ -101,7 +155,11 @@ function NavShell() {
           />
         </div>
       )}
-      <div className="relative z-10 mx-auto w-full max-w-[430px] pb-[140px]">
+      <div
+        className={`relative z-10 mx-auto w-full max-w-[430px] h-full ${
+          currentScreen === "socia" ? "overflow-hidden" : "overflow-y-auto pb-[140px] no-scrollbar"
+        }`}
+      >
         <AnimatePresence mode="wait">
           {booting ? (
             <motion.div
@@ -113,26 +171,29 @@ function NavShell() {
               <AppSkeleton />
             </motion.div>
           ) : (
-            <ScreenTransition key={currentScreen} screenKey={currentScreen}>
-              {currentScreen === "inicio" && (
-                <Container
-                  onSeeAllActions={() => setQuickActionsOpen(true)}
-                  onSeeAllActivity={() => {
-                    setNegocioInitialView("finanzas");
-                    setCurrentScreen("negocio");
-                  }}
-                />
-              )}
-              {currentScreen === "negocio" && (
-                <BusinessScreen
-                  key={negocioInitialView}
-                  initialView={negocioInitialView}
-                />
-              )}
-              {currentScreen === "socia" && <SociaScreen />}
-              {currentScreen === "yo" && <MeScreen />}
-              {currentScreen === "crecer" && <GrowScreen />}
-            </ScreenTransition>
+            currentScreen === "socia" ? (
+              <SociaScreen />
+            ) : (
+              <ScreenTransition key={currentScreen} screenKey={currentScreen}>
+                {currentScreen === "inicio" && (
+                  <Container
+                    onSeeAllActions={() => setQuickActionsOpen(true)}
+                    onSeeAllActivity={() => {
+                      setNegocioInitialView("finanzas");
+                      setCurrentScreen("negocio");
+                    }}
+                  />
+                )}
+                {currentScreen === "negocio" && (
+                  <BusinessScreen
+                    key={negocioInitialView}
+                    initialView={negocioInitialView}
+                  />
+                )}
+                {currentScreen === "yo" && <MeScreen />}
+                {currentScreen === "crecer" && <GrowScreen />}
+              </ScreenTransition>
+            )
           )}
         </AnimatePresence>
       </div>
