@@ -475,23 +475,17 @@ export default function SociaScreen() {
           <>
             <div
               ref={scrollRef}
-              className="relative flex-1 overflow-y-auto px-[20px] pt-[20px] pb-[140px] flex flex-col gap-[16px]"
+              className="relative flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[260px] flex flex-col gap-[18px]"
             >
-              {messages.map((m) => (
-                <MessageBubble key={m.id} msg={m} />
+              {messages.map((m, i) => (
+                <MessageBubble
+                  key={m.id}
+                  msg={m}
+                  isLast={i === messages.length - 1}
+                  isStreaming={isLoading && i === messages.length - 1 && m.role === "assistant"}
+                />
               ))}
-              {isLoading && status === "submitted" && (
-                <div className="self-start flex items-center gap-[6px] px-[2px] py-[6px]">
-                  {[0, 1, 2].map((i) => (
-                    <motion.span
-                      key={i}
-                      className="h-[6px] w-[6px] rounded-full bg-white/50"
-                      animate={{ opacity: [0.25, 0.95, 0.25] }}
-                      transition={{ duration: 1.1, repeat: Infinity, delay: i * 0.15 }}
-                    />
-                  ))}
-                </div>
-              )}
+              {isLoading && status === "submitted" && <TypingIndicator />}
             </div>
             <div className="absolute left-0 right-0 bottom-0 pb-[110px] z-20">
               <div className="pointer-events-none absolute inset-x-0 -top-[60px] h-[60px] bg-gradient-to-b from-transparent to-black" />
