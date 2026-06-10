@@ -338,9 +338,9 @@ export default function SociaScreen() {
     "--orb-haze": "1.2",
     "--greet-y": "72px",
     "--stack-y": "-48px",
-    "--c-core": "238, 235, 255",
-    "--c-mid": "124, 84, 255",
-    "--c-deep": "42, 22, 158",
+    "--c-core": "235, 244, 255",
+    "--c-mid": "92, 150, 240",
+    "--c-deep": "20, 52, 132",
   } as React.CSSProperties;
 
   return (
