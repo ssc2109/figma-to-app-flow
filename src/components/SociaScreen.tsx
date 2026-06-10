@@ -593,6 +593,14 @@ export default function SociaScreen() {
           </>
         )}
       </AnimatePresence>
+
+      {/* VOICE CONFIG SHEET */}
+      <VoiceConfigSheet
+        open={voiceCfgOpen}
+        cfg={voiceCfg}
+        onChange={setVoiceCfg}
+        onClose={() => setVoiceCfgOpen(false)}
+      />
     </div>
   );
 }
