@@ -162,8 +162,25 @@ function NavShell() {
 
       <SalesOverlay open={salesOpen} onClose={() => setSalesOpen(false)} />
       <QuickActionsScreen open={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
+      <AnimatePresence>
+        {settingsOpen && (
+          <motion.div
+            key="settings-sheet"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[60] bg-black overflow-y-auto"
+          >
+            <div className="mx-auto w-full max-w-[430px] min-h-screen">
+              <SettingsScreen onBack={() => setSettingsOpen(false)} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
+
 }
 
 function AuthGate() {
