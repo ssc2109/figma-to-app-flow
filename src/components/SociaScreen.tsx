@@ -1447,12 +1447,13 @@ const SOCIA_CSS = `
   display:flex; align-items:center; gap:6px;
   min-height:60px; padding:6px 6px 6px 8px;
   border-radius:32px;
-  background:rgba(12,12,20,.82);
-  border:1px solid rgba(255,255,255,.12);
+  background:rgba(14,16,24,.55);
+  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+  border:1px solid rgba(255,255,255,.10);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.07),
-    0 24px 70px -16px rgba(110,80,255,.5),
-    0 12px 40px -12px rgba(0,0,0,.7);
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 12px 40px -16px rgba(0,0,0,.85);
 }
 .socia-screen .chatbar-ta{
   flex:1; background:transparent; outline:none; resize:none;
@@ -1489,12 +1490,22 @@ const SOCIA_CSS = `
 }
 .socia-screen .pill-btn:active{ transform:scale(.94) }
 .socia-screen .pill-btn.send{
-  background:linear-gradient(180deg, #ffffff, #ece9f7);
-  border-color:rgba(255,255,255,.4); color:#17122b;
+  background:linear-gradient(180deg, #4dc8fd 0%, #1c7cff 60%, #003fc0 100%);
+  border-color:rgba(120,190,255,.55); color:#fff;
+  box-shadow: 0 6px 18px -6px rgba(28,124,255,.65), inset 0 1px 0 rgba(255,255,255,.25);
 }
 .socia-screen .pill-btn.voice-mode{
-  background:linear-gradient(180deg, #ffffff, #e9e8f3);
-  border-color:rgba(255,255,255,.4); color:#17122b;
+  background:linear-gradient(180deg, #ffffff, #e6efff);
+  border-color:rgba(255,255,255,.5); color:#0a1f55;
+}
+
+/* assistant subtle bubble — like Gemini's grey card */
+.socia-screen .assistant-bubble{
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+  border-top-left-radius: 6px;
+  padding: 14px 16px;
 }
 
 /* CARDS — alineadas con la chatbar */
