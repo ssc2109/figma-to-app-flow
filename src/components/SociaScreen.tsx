@@ -1031,7 +1031,7 @@ function MessageBubble({
         </div>
         {!isStreaming && text && (
           <div className="mt-[8px]">
-            <MessageActions text={text} variant="assistant" />
+            <MessageActions text={text} variant="assistant" onRegenerate={onRegenerate} />
           </div>
         )}
       </div>
