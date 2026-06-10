@@ -1543,4 +1543,53 @@ const SOCIA_CSS = `
 .socia-screen .card p{
   font-size:11px; font-weight:400; color:rgba(255,255,255,.42); line-height:1.35;
 }
+
+/* SocIA orb logo — blue energy sphere with layered inset glow.
+   Static when idle, spins smoothly while generating. */
+.socia-orb{
+  box-shadow:
+    inset 0 4px 8px 0 #38bdf8,
+    inset 0 8px 14px 0 #005dff,
+    inset 0 22px 22px 0 #1e40af,
+    0 0 2px 1px rgba(56,189,248,.35),
+    0 0 8px 2px rgba(0,93,255,.25);
+  transition: box-shadow .4s ease;
+}
+.socia-orb[data-spinning="true"]{
+  animation: socOrbSpin 4.5s linear infinite;
+}
+@keyframes socOrbSpin{
+  0%{
+    transform: rotate(0deg);
+    box-shadow:
+      inset 0 4px 8px 0 #38bdf8,
+      inset 0 8px 14px 0 #005dff,
+      inset 0 22px 22px 0 #1e40af,
+      0 0 3px 1.2px rgba(56,189,248,.5),
+      0 0 10px 2px rgba(0,93,255,.35);
+  }
+  50%{
+    transform: rotate(180deg);
+    box-shadow:
+      inset 0 4px 10px 0 #60a5fa,
+      inset 0 10px 6px 0 #0284c7,
+      inset 0 18px 28px 0 #005dff,
+      0 0 4px 1.2px rgba(56,189,248,.55),
+      0 0 14px 3px rgba(0,93,255,.4);
+  }
+  100%{
+    transform: rotate(360deg);
+    box-shadow:
+      inset 0 4px 8px 0 #4dc8fd,
+      inset 0 8px 14px 0 #005dff,
+      inset 0 22px 22px 0 #1e40af,
+      0 0 3px 1.2px rgba(56,189,248,.5),
+      0 0 10px 2px rgba(0,93,255,.35);
+  }
+}
+
+@keyframes socShimmer{
+  0%{ background-position: 200% 0 }
+  100%{ background-position: -200% 0 }
+}
 `;
