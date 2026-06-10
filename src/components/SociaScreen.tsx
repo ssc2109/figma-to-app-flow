@@ -20,6 +20,13 @@ import {
   Settings2,
   AudioLines,
   Check,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  RotateCw,
+  Share2,
+  MoreHorizontal,
+  Volume2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useServerFn } from "@tanstack/react-start";
@@ -477,14 +484,23 @@ export default function SociaScreen() {
               ref={scrollRef}
               className="relative flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[260px] flex flex-col gap-[18px]"
             >
-              {messages.map((m, i) => (
-                <MessageBubble
-                  key={m.id}
-                  msg={m}
-                  isLast={i === messages.length - 1}
-                  isStreaming={isLoading && i === messages.length - 1 && m.role === "assistant"}
-                />
-              ))}
+              {messages.map((m, i) => {
+                const isLast = i === messages.length - 1;
+                const lastUser = [...messages].slice(0, i).reverse().find((mm) => mm.role === "user");
+                return (
+                  <MessageBubble
+                    key={m.id}
+                    msg={m}
+                    isLast={isLast}
+                    isStreaming={isLoading && isLast && m.role === "assistant"}
+                    onRegenerate={
+                      isLast && m.role === "assistant" && !isLoading && lastUser
+                        ? () => send(uiMessageText(lastUser))
+                        : undefined
+                    }
+                  />
+                );
+              })}
               {isLoading && status === "submitted" && <TypingIndicator />}
             </div>
             <div className="absolute left-0 right-0 bottom-0 pb-[110px] z-20">
@@ -717,79 +733,177 @@ function FeatureCard({
   );
 }
 
-function AssistantAvatar() {
+/**
+ * SocIA logo: blue energy orb with concentric inset shadows.
+ * Spins when `spinning` (model is generating), static otherwise.
+ * Inspired by the "ai-loader" component (without the text).
+ */
+function AssistantAvatar({
+  size = 28,
+  spinning = false,
+}: {
+  size?: number;
+  spinning?: boolean;
+}) {
   return (
     <div
-      className="relative h-[28px] w-[28px] rounded-full flex-none overflow-hidden"
+      className="flex-none relative rounded-full socia-orb"
+      data-spinning={spinning ? "true" : "false"}
       style={{
+        width: size,
+        height: size,
+        // Layered radial bg + inset blue glows mimic the loader's depth
         background:
-          "radial-gradient(circle at 30% 25%, #d8d0ff 0%, #8a7bff 35%, #4b3aa8 70%, #0e0a26 100%)",
-        boxShadow:
-          "inset 0 0 8px rgba(255,255,255,.35), 0 0 12px rgba(139,108,255,.45)",
+          "radial-gradient(circle at 32% 28%, #cfe6ff 0%, #4dc8fd 22%, #1c7cff 48%, #003fc0 78%, #061535 100%)",
       }}
-    >
-      <div
-        className="absolute inset-0 opacity-60 mix-blend-overlay"
-        style={{
-          background:
-            "radial-gradient(circle at 70% 75%, rgba(255,180,220,.6) 0%, transparent 55%)",
-        }}
-      />
-    </div>
+      aria-hidden
+    />
   );
 }
+
+/**
+ * Claude-style "doing now" status. Rotates through phrases adapted
+ * to the bodega/business context so it doesn't feel generic.
+ */
+const THINKING_PHRASES = [
+  "Pensando",
+  "Revisando tus ventas del día",
+  "Analizando tu stock",
+  "Cruzando datos del negocio",
+  "Calculando márgenes",
+  "Buscando patrones",
+  "Redactando respuesta",
+];
 
 function TypingIndicator() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((p) => (p + 1) % THINKING_PHRASES.length), 2200);
+    return () => clearInterval(t);
+  }, []);
   return (
-    <div className="self-start flex items-center gap-[10px] mt-[-4px]">
-      <AssistantAvatar />
-      <motion.span
-        className="font-['Geist'] text-[13px]"
-        initial={{ opacity: 0.4 }}
-        animate={{ opacity: [0.45, 1, 0.45] }}
-        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          background:
-            "linear-gradient(90deg, rgba(255,255,255,.35), rgba(255,255,255,.95), rgba(255,255,255,.35))",
-          backgroundSize: "200% 100%",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
-      >
-        socIA está pensando…
-      </motion.span>
+    <div className="self-start flex items-center gap-[10px] mt-[-2px]">
+      <AssistantAvatar size={26} spinning />
+      <div className="flex items-baseline gap-[6px]">
+        <motion.span
+          key={idx}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.35 }}
+          className="font-['Geist'] text-[13px]"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(255,255,255,.4), rgba(255,255,255,1), rgba(255,255,255,.4))",
+            backgroundSize: "200% 100%",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            animation: "socShimmer 2.2s linear infinite",
+          }}
+        >
+          {THINKING_PHRASES[idx]}
+        </motion.span>
+        <span className="text-white/40 font-['Geist'] text-[13px]">…</span>
+      </div>
     </div>
   );
 }
 
-function CopyButton({ text }: { text: string }) {
-  const [done, setDone] = useState(false);
-  if (!text) return null;
+/** Small icon action button used in the message action bar. */
+function MsgAction({
+  icon: Icon,
+  label,
+  onClick,
+  active = false,
+}: {
+  icon: typeof Copy;
+  label: string;
+  onClick?: () => void;
+  active?: boolean;
+}) {
   return (
     <button
       type="button"
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          setDone(true);
-          setTimeout(() => setDone(false), 1400);
-        } catch {}
-      }}
-      className="opacity-0 group-hover:opacity-100 transition-opacity text-[10.5px] font-['Geist'] text-white/45 hover:text-white/80 flex items-center gap-[4px] px-[6px] py-[3px] rounded-md hover:bg-white/[0.05]"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="h-[28px] w-[28px] rounded-[8px] flex items-center justify-center text-white/45 hover:text-white hover:bg-white/[0.06] transition-colors"
+      style={active ? { color: "#fff", background: "rgba(255,255,255,.08)" } : undefined}
     >
-      {done ? <Check className="h-[11px] w-[11px]" /> : null}
-      {done ? "Copiado" : "Copiar"}
+      <Icon className="h-[14px] w-[14px]" strokeWidth={1.7} />
     </button>
+  );
+}
+
+/** Chat-app style action row (copy / like / dislike / regenerate / TTS). */
+function MessageActions({
+  text,
+  onRegenerate,
+  variant,
+}: {
+  text: string;
+  onRegenerate?: () => void;
+  variant: "user" | "assistant";
+}) {
+  const [copied, setCopied] = useState(false);
+  const [vote, setVote] = useState<"up" | "down" | null>(null);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {}
+  };
+  const speak = () => {
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "es-PE";
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch {}
+  };
+  return (
+    <div
+      className={`flex items-center gap-[2px] ${
+        variant === "user" ? "justify-end opacity-0 group-hover:opacity-100" : "opacity-80"
+      } transition-opacity`}
+    >
+      <MsgAction icon={copied ? Check : Copy} label={copied ? "Copiado" : "Copiar"} onClick={copy} />
+      {variant === "assistant" && (
+        <>
+          <MsgAction icon={Volume2} label="Leer en voz alta" onClick={speak} />
+          <MsgAction
+            icon={ThumbsUp}
+            label="Buena respuesta"
+            active={vote === "up"}
+            onClick={() => setVote(vote === "up" ? null : "up")}
+          />
+          <MsgAction
+            icon={ThumbsDown}
+            label="No me sirvió"
+            active={vote === "down"}
+            onClick={() => setVote(vote === "down" ? null : "down")}
+          />
+          {onRegenerate && (
+            <MsgAction icon={RotateCw} label="Regenerar" onClick={onRegenerate} />
+          )}
+          <MsgAction icon={Share2} label="Compartir" />
+          <MsgAction icon={MoreHorizontal} label="Más" />
+        </>
+      )}
+    </div>
   );
 }
 
 function MessageBubble({
   msg,
   isStreaming = false,
+  onRegenerate,
 }: {
   msg: UIMessage;
   isLast?: boolean;
   isStreaming?: boolean;
+  onRegenerate?: () => void;
 }) {
   const isUser = msg.role === "user";
   const text = uiMessageText(msg);
@@ -826,9 +940,16 @@ function MessageBubble({
             {text}
           </div>
         )}
+        {text && (
+          <div className="mt-[2px] w-full">
+            <MessageActions text={text} variant="user" />
+          </div>
+        )}
       </motion.div>
     );
   }
+
+
 
   return (
     <motion.div
@@ -838,7 +959,7 @@ function MessageBubble({
       className="max-w-[94%] self-start flex gap-[10px] group"
     >
       <div className="pt-[2px]">
-        <AssistantAvatar />
+        <AssistantAvatar spinning={isStreaming} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-[8px] mb-[4px]">
@@ -909,8 +1030,8 @@ function MessageBubble({
           )}
         </div>
         {!isStreaming && text && (
-          <div className="mt-[6px] flex items-center gap-[4px]">
-            <CopyButton text={text} />
+          <div className="mt-[8px]">
+            <MessageActions text={text} variant="assistant" onRegenerate={onRegenerate} />
           </div>
         )}
       </div>
@@ -1432,5 +1553,54 @@ const SOCIA_CSS = `
 }
 .socia-screen .card p{
   font-size:11px; font-weight:400; color:rgba(255,255,255,.42); line-height:1.35;
+}
+
+/* SocIA orb logo — blue energy sphere with layered inset glow.
+   Static when idle, spins smoothly while generating. */
+.socia-orb{
+  box-shadow:
+    inset 0 4px 8px 0 #38bdf8,
+    inset 0 8px 14px 0 #005dff,
+    inset 0 22px 22px 0 #1e40af,
+    0 0 2px 1px rgba(56,189,248,.35),
+    0 0 8px 2px rgba(0,93,255,.25);
+  transition: box-shadow .4s ease;
+}
+.socia-orb[data-spinning="true"]{
+  animation: socOrbSpin 4.5s linear infinite;
+}
+@keyframes socOrbSpin{
+  0%{
+    transform: rotate(0deg);
+    box-shadow:
+      inset 0 4px 8px 0 #38bdf8,
+      inset 0 8px 14px 0 #005dff,
+      inset 0 22px 22px 0 #1e40af,
+      0 0 3px 1.2px rgba(56,189,248,.5),
+      0 0 10px 2px rgba(0,93,255,.35);
+  }
+  50%{
+    transform: rotate(180deg);
+    box-shadow:
+      inset 0 4px 10px 0 #60a5fa,
+      inset 0 10px 6px 0 #0284c7,
+      inset 0 18px 28px 0 #005dff,
+      0 0 4px 1.2px rgba(56,189,248,.55),
+      0 0 14px 3px rgba(0,93,255,.4);
+  }
+  100%{
+    transform: rotate(360deg);
+    box-shadow:
+      inset 0 4px 8px 0 #4dc8fd,
+      inset 0 8px 14px 0 #005dff,
+      inset 0 22px 22px 0 #1e40af,
+      0 0 3px 1.2px rgba(56,189,248,.5),
+      0 0 10px 2px rgba(0,93,255,.35);
+  }
+}
+
+@keyframes socShimmer{
+  0%{ background-position: 200% 0 }
+  100%{ background-position: -200% 0 }
 }
 `;
