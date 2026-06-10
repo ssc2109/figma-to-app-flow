@@ -410,7 +410,7 @@ export default function SociaScreen() {
           <div className="empty-ui">
             <div className="greet">
               <h1>{`${greeting},\u00A0Alberto.`}</h1>
-              <p>Soy socIA. Puedo analizar, registrar y aconsejarte.</p>
+              <DynamicSubtitle />
             </div>
 
             <div className="midstack">
@@ -745,6 +745,48 @@ function fileToDataUrl(f: File): Promise<string> {
   });
 }
 
+const SUBTITLES = [
+  "Soy socIA. Puedo analizar, registrar y aconsejarte.",
+  "¿Sabías que registrar a diario mejora tu margen hasta 12%?",
+  "Pídeme un resumen del día y te lo armo en segundos.",
+  "Una foto a tu libreta y extraigo ventas y gastos al instante.",
+  "Puedo detectar productos con stock crítico antes que se acaben.",
+  "Háblame con naturalidad, te entiendo en peruano.",
+  "Tus fiados pendientes están a un mensaje de distancia.",
+  "Compárate con el mercado: precios, márgenes y oportunidades.",
+];
+
+function DynamicSubtitle() {
+  const [idx, setIdx] = useState(0);
+  const [typed, setTyped] = useState("");
+  const full = SUBTITLES[idx];
+
+  useEffect(() => {
+    setTyped("");
+    let i = 0;
+    const typer = setInterval(() => {
+      i++;
+      setTyped(full.slice(0, i));
+      if (i >= full.length) clearInterval(typer);
+    }, 28);
+    const next = setTimeout(() => {
+      setIdx((p) => (p + 1) % SUBTITLES.length);
+    }, 5000);
+    return () => {
+      clearInterval(typer);
+      clearTimeout(next);
+    };
+  }, [idx, full]);
+
+  return (
+    <p aria-live="polite">
+      {typed}
+      <span className="caret" />
+    </p>
+  );
+}
+
+
 const SOCIA_CSS = `
 .socia-screen{ font-family:'Geist', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
 
@@ -835,21 +877,34 @@ const SOCIA_CSS = `
 .socia-screen .greet{
   position:absolute; left:0; right:0; top:var(--greet-top);
   text-align:center; padding:0 24px;
+  pointer-events:auto;
+  -webkit-user-select:text; user-select:text;
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
   display:inline-block;
-  font-size:clamp(28px, 7.2vw, 34px); font-weight:600; letter-spacing:-0.5px;
-  line-height:1.15;
+  font-size:clamp(32px, 8.4vw, 40px); font-weight:600; letter-spacing:-0.6px;
+  line-height:1.12;
   white-space:nowrap;
   background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
+  -webkit-user-select:text; user-select:text;
 }
 .socia-screen .greet p{
   font-size:13.5px; font-weight:400; line-height:1.5;
-  color:rgba(255,255,255,.38);
-  margin-top:10px; max-width:250px; margin-inline:auto;
+  color:rgba(255,255,255,.45);
+  margin-top:12px; max-width:280px; margin-inline:auto;
+  min-height:2.2em;
+  -webkit-user-select:text; user-select:text;
 }
+.socia-screen .greet p .caret{
+  display:inline-block; width:1.5px; height:1em;
+  background:rgba(255,255,255,.55); margin-left:2px;
+  vertical-align:-2px;
+  animation:socCaret 1s steps(1) infinite;
+}
+@keyframes socCaret{ 50%{opacity:0} }
+
 
 .socia-screen .midstack{ position:absolute; left:50%; right:auto; top:var(--stack-top); width:100%; max-width:430px; transform:translateX(-50%); z-index:5; padding-bottom:0; pointer-events:auto; }
 
@@ -889,7 +944,7 @@ const SOCIA_CSS = `
 /* CARDS */
 .socia-screen .cards-head{
   display:flex; align-items:center; gap:8px;
-  padding:20px 24px 0;
+  padding:20px 18px 0;
 }
 .socia-screen .cards-head .lbl{
   font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
