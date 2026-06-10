@@ -70,8 +70,9 @@ function HeaderBlock({
             <div className="font-['Geist'] font-medium text-[10.5px] text-[rgba(255,255,255,0.55)] tracking-[1.6px] uppercase leading-[14px] truncate max-w-[240px]">
               {businessName || "Mi negocio"}
             </div>
-            <h1 className="pt-[2px] font-['Geist'] font-medium text-[22px] leading-[28px] tracking-[-0.4px] text-white truncate max-w-[260px]">
-              {greetingByHour()}, {ownerFirst}
+            <h1 className="pt-[3px] font-['Geist'] text-[18px] leading-[24px] tracking-[-0.3px] text-white truncate max-w-[260px]">
+              <span className="font-light text-[rgba(255,255,255,0.65)]">{greetingByHour()},</span>{" "}
+              <span className="font-medium">{ownerFirst}</span>
             </h1>
           </div>
         </div>
