@@ -42,13 +42,14 @@ function Profile({ avatarUrl, initials }: { avatarUrl: string | null; initials: 
   );
 }
 
-function HeaderTopAppBar({
+function HeaderBlock({
   businessName,
+  ownerFirst,
   avatarUrl,
   onOpenSettings,
 }: {
   businessName: string;
-  ownerName?: string;
+  ownerFirst: string;
   avatarUrl: string | null;
   onOpenSettings: () => void;
 }) {
@@ -61,41 +62,28 @@ function HeaderTopAppBar({
       .join("") || "TU";
 
   return (
-    <div className="relative shrink-0 w-full" data-name="Header - TopAppBar">
-      <div className="flex items-center justify-between px-[20px] py-[16px]">
-        <div className="flex gap-[12px] items-center min-w-0">
+    <div className="relative shrink-0 w-full" data-name="Header">
+      <div className="flex items-start justify-between gap-[12px] px-[20px] pt-[16px] pb-[8px]">
+        <div className="flex gap-[14px] items-center min-w-0 flex-1">
           <Profile avatarUrl={avatarUrl} initials={initials} />
           <div className="flex flex-col items-start min-w-0 justify-center">
-            <div className="font-['Geist'] font-medium text-[11px] text-[rgba(255,255,255,0.5)] tracking-[1px] uppercase leading-[14px]">
-              TRAX
-            </div>
-            <div className="pt-[2px] font-['Geist'] font-medium text-[15px] text-white tracking-[-0.2px] leading-[20px] truncate max-w-[220px]">
+            <div className="font-['Geist'] font-medium text-[10.5px] text-[rgba(255,255,255,0.55)] tracking-[1.6px] uppercase leading-[14px] truncate max-w-[240px]">
               {businessName || "Mi negocio"}
             </div>
+            <h1 className="pt-[2px] font-['Geist'] font-medium text-[22px] leading-[28px] tracking-[-0.4px] text-white truncate max-w-[260px]">
+              {greetingByHour()}, {ownerFirst}
+            </h1>
           </div>
         </div>
         <button
           type="button"
           onClick={onOpenSettings}
           aria-label="Ajustes"
-          className="h-[40px] w-[40px] rounded-full grid place-items-center bg-white/[0.05] border border-white/[0.08] active:scale-95 transition-transform"
+          className="mt-[4px] h-[40px] w-[40px] rounded-full grid place-items-center bg-white/[0.05] border border-white/[0.08] active:scale-95 transition-transform flex-none"
         >
           <Settings className="h-[18px] w-[18px] text-white" strokeWidth={1.7} />
         </button>
       </div>
-    </div>
-  );
-}
-
-
-function Greeting() {
-  const { profile } = useAuth();
-  const first = (profile?.owner_name ?? "").split(/\s+/)[0] || "tú";
-  return (
-    <div className="px-[20px] pt-[4px] pb-[8px]">
-      <h1 className="font-['Geist'] font-medium text-[26px] leading-[32px] tracking-[-0.5px] text-white">
-        {greetingByHour()}, {first}
-      </h1>
     </div>
   );
 }
