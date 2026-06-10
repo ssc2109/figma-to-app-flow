@@ -30,6 +30,7 @@ function NavShell() {
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "finanzas">("hub");
+  const [sociaPrompt, setSociaPrompt] = useState<string | undefined>(undefined);
   const { setHandler } = useQuickActions();
 
 
@@ -130,6 +131,21 @@ function NavShell() {
                     setCurrentScreen("negocio");
                   }}
                   onOpenSettings={() => setSettingsOpen(true)}
+                  onIntent={(intent) => {
+                    if (intent.kind === "chat") {
+                      setSociaPrompt(intent.prompt);
+                      setCurrentScreen("socia");
+                    } else if (intent.kind === "sales") {
+                      setSalesOpen(true);
+                    } else if (intent.kind === "reponer") {
+                      setCurrentScreen("negocio");
+                    } else if (intent.kind === "screen") {
+                      if (intent.screen === "negocio" && intent.subview === "finanzas") {
+                        setNegocioInitialView("finanzas");
+                      }
+                      setCurrentScreen(intent.screen);
+                    }
+                  }}
                 />
               )}
 
@@ -139,7 +155,9 @@ function NavShell() {
                   initialView={negocioInitialView}
                 />
               )}
-              {currentScreen === "socia" && <SociaScreen />}
+              {currentScreen === "socia" && (
+                <SociaScreen initialPrompt={sociaPrompt} />
+              )}
               {currentScreen === "yo" && <MeScreen />}
               {currentScreen === "crecer" && <GrowScreen />}
             </ScreenTransition>
@@ -155,6 +173,7 @@ function NavShell() {
             setQuickActionsOpen(false);
             window.scrollTo({ top: 0, behavior: "auto" });
             if (s === "negocio") setNegocioInitialView("hub");
+            if (s !== "socia") setSociaPrompt(undefined);
             setCurrentScreen(s);
           }}
         />
