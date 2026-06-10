@@ -62,7 +62,7 @@ export default function RecentActivity({ onSeeAll }: { onSeeAll: () => void }) {
         </button>
       </div>
 
-      <div className="flex flex-col gap-[10px]">
+      <div className="flex flex-col">
         {items.map((t, i) => {
           const isIn = t.kind === "ingreso";
           const color = isIn ? "#4ADE80" : "#F87171";
@@ -74,21 +74,16 @@ export default function RecentActivity({ onSeeAll }: { onSeeAll: () => void }) {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="w-full rounded-[20px] px-[14px] py-[12px] flex items-center gap-[14px]"
+              className="w-full py-[14px] flex items-center gap-[14px]"
               style={{
-                background: "#0F0F12",
-                border: "1px solid rgba(255,255,255,0.07)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+                borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.06)",
               }}
             >
               <div
-                className="h-[40px] w-[40px] rounded-full grid place-items-center flex-none"
-                style={{
-                  background: `${color}1F`,
-                  border: `1px solid ${color}33`,
-                }}
+                className="h-[34px] w-[34px] rounded-full grid place-items-center flex-none"
+                style={{ background: `${color}14`, border: `1px solid ${color}26` }}
               >
-                <Icon className="h-[16px] w-[16px]" style={{ color }} strokeWidth={2.4} />
+                <Icon className="h-[14px] w-[14px]" style={{ color }} strokeWidth={2.4} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-['Geist'] text-[14px] font-medium text-white truncate">
