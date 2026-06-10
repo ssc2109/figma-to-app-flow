@@ -20,6 +20,13 @@ import {
   Settings2,
   AudioLines,
   Check,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  RotateCw,
+  Share2,
+  MoreHorizontal,
+  Volume2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useServerFn } from "@tanstack/react-start";
