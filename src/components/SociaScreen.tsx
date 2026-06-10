@@ -420,7 +420,7 @@ export default function SociaScreen() {
         {empty ? (
           <div className="empty-ui">
             <div className="greet">
-              <h1>{`${greeting},\u00A0Alberto.`}</h1>
+              <h1>{`${greeting},\u00A0${firstName}.`}</h1>
               <DynamicSubtitle />
             </div>
 
