@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Search, Plus, Minus, PackagePlus } from "lucide-react";
-import { useInventory, LOW_STOCK_THRESHOLD, type InventoryItem } from "@/data/inventory";
+import { useInventory, type InventoryItem } from "@/data/inventory";
+import { useAuth } from "@/hooks/useAuth";
+
 import { SubHeader, SubScreen, ListGroup } from "./shared";
 
 function Stepper({ value, onDelta }: { value: number; onDelta: (d: number) => void }) {
