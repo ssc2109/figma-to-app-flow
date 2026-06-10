@@ -39,13 +39,24 @@ export default function RecentActivity({ onSeeAll }: { onSeeAll: () => void }) {
   return (
     <div className="w-full flex flex-col gap-[14px]">
       <div className="flex items-center justify-between">
-        <h2 className="font-['Bai_Jamjuree'] font-semibold text-[20px] leading-[26px] text-white tracking-[-0.3px]">
-          Actividad
-        </h2>
+        <div className="flex items-center gap-[10px]">
+          <h2 className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[26px] text-white tracking-[-0.4px]">
+            Actividad
+          </h2>
+          <span className="inline-flex items-center gap-[5px] px-[8px] py-[3px] rounded-full bg-white/[0.06] border border-white/[0.08]">
+            <span className="relative grid place-items-center h-[6px] w-[6px]">
+              <span className="absolute inset-0 rounded-full bg-white/80 animate-ping opacity-60" />
+              <span className="relative h-[6px] w-[6px] rounded-full bg-white" />
+            </span>
+            <span className="font-['Geist'] text-[9.5px] font-semibold tracking-[1px] uppercase text-white/85">
+              En vivo
+            </span>
+          </span>
+        </div>
         <button
           type="button"
           onClick={onSeeAll}
-          className="font-['Geist'] text-[12.5px] text-[rgba(255,255,255,0.6)] hover:text-white transition-colors"
+          className="font-['Geist'] text-[11px] font-medium tracking-[1px] uppercase text-[rgba(255,255,255,0.55)] hover:text-white transition-colors"
         >
           Ver historial
         </button>
