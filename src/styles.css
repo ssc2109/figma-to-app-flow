@@ -142,6 +142,10 @@
 
   html.trax-socia-scroll-lock,
   body.trax-socia-scroll-lock {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     overflow: hidden !important;
     overscroll-behavior: none !important;
   }

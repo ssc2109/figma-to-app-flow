@@ -34,6 +34,35 @@ function NavShell() {
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+
+    if (currentScreen !== "socia") {
+      html.classList.remove("trax-socia-scroll-lock");
+      body.classList.remove("trax-socia-scroll-lock");
+      body.style.position = "";
+      body.style.top = "";
+      body.style.width = "";
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    html.classList.add("trax-socia-scroll-lock");
+    body.classList.add("trax-socia-scroll-lock");
+    body.style.position = "fixed";
+    body.style.top = "0";
+    body.style.width = "100%";
+
+    return () => {
+      html.classList.remove("trax-socia-scroll-lock");
+      body.classList.remove("trax-socia-scroll-lock");
+      body.style.position = "";
+      body.style.top = "";
+      body.style.width = "";
+    };
+  }, [currentScreen]);
+
   // wire quick action handlers
   useEffect(() => {
     setHandler((id: ActionId) => {
