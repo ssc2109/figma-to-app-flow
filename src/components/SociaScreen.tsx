@@ -454,8 +454,6 @@ export default function SociaScreen() {
               </div>
             </div>
 
-            {/* spacer for floating nav */}
-            <div style={{ height: 110 }} />
           </>
         ) : (
           /* CHAT STATE — full screen messages + bottom composer */
