@@ -603,7 +603,7 @@ function ChatBar({
   stopVoiceDictation,
   startVoiceDictation,
 }: {
-  taRef: React.RefObject<HTMLTextAreaElement>;
+  taRef: React.RefObject<HTMLTextAreaElement | null>;
   input: string;
   setInput: (v: string) => void;
   send: (t?: string) => void;
