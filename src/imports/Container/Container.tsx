@@ -102,7 +102,6 @@ function Main({
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
       <div className="content-stretch flex flex-col gap-[20px] items-start relative size-full">
-        <Greeting />
         <div className="w-full px-[20px]">
           <Stagger className="w-full flex flex-col gap-[20px]" delay={0.1} step={0.07}>
             <PerformanceCard />
