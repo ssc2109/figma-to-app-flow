@@ -172,8 +172,9 @@ export default function SociaScreen() {
         unidades: p.stock,
       })),
       total_productos: inv.productCount,
+      voz_ia: voiceCfg,
     }),
-    [fin.todayIncome, fin.todayExpense, fin.todayNet, fin.monthIncome, fin.monthExpense, fin.monthNet, fin.fiadosPending, fin.fiados, inv.lowStock, inv.productCount],
+    [fin.todayIncome, fin.todayExpense, fin.todayNet, fin.monthIncome, fin.monthExpense, fin.monthNet, fin.fiadosPending, fin.fiados, inv.lowStock, inv.productCount, voiceCfg],
   );
 
   const transport = useMemo(
