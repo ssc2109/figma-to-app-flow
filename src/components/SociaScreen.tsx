@@ -745,6 +745,48 @@ function fileToDataUrl(f: File): Promise<string> {
   });
 }
 
+const SUBTITLES = [
+  "Soy socIA. Puedo analizar, registrar y aconsejarte.",
+  "¿Sabías que registrar a diario mejora tu margen hasta 12%?",
+  "Pídeme un resumen del día y te lo armo en segundos.",
+  "Una foto a tu libreta y extraigo ventas y gastos al instante.",
+  "Puedo detectar productos con stock crítico antes que se acaben.",
+  "Háblame con naturalidad, te entiendo en peruano.",
+  "Tus fiados pendientes están a un mensaje de distancia.",
+  "Compárate con el mercado: precios, márgenes y oportunidades.",
+];
+
+function DynamicSubtitle() {
+  const [idx, setIdx] = useState(0);
+  const [typed, setTyped] = useState("");
+  const full = SUBTITLES[idx];
+
+  useEffect(() => {
+    setTyped("");
+    let i = 0;
+    const typer = setInterval(() => {
+      i++;
+      setTyped(full.slice(0, i));
+      if (i >= full.length) clearInterval(typer);
+    }, 28);
+    const next = setTimeout(() => {
+      setIdx((p) => (p + 1) % SUBTITLES.length);
+    }, 5000);
+    return () => {
+      clearInterval(typer);
+      clearTimeout(next);
+    };
+  }, [idx, full]);
+
+  return (
+    <p aria-live="polite">
+      {typed}
+      <span className="caret" />
+    </p>
+  );
+}
+
+
 const SOCIA_CSS = `
 .socia-screen{ font-family:'Geist', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
 
