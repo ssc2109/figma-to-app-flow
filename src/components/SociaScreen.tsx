@@ -416,7 +416,7 @@ export default function SociaScreen() {
       </div>
 
       {/* MAIN AREA */}
-      <div className="relative flex-1 flex flex-col">
+      <div className="relative flex-1 flex flex-col overflow-hidden">
         {/* GREETING — top, completely separate from the orb */}
         <AnimatePresence>
           {empty && (
@@ -463,38 +463,54 @@ export default function SociaScreen() {
                 }}
               />
 
-              {/* Giant dome at the bottom — only top rim visible */}
+              {/* Atmospheric blue glow halo */}
               <div
-                className="absolute left-1/2 -translate-x-1/2 rounded-full"
+                aria-hidden
+                className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
                 style={{
-                  bottom: "-90%",
-                  width: "220%",
+                  bottom: "-10%",
+                  width: "160%",
                   aspectRatio: "1 / 1",
                   background:
-                    "radial-gradient(circle at 50% 50%, #1a1a1a 0%, #0a0a0a 55%, #050505 70%, #000 80%)",
-                  boxShadow:
-                    "0 -2px 0 0.5px rgba(255,255,255,0.9), 0 -18px 80px -10px rgba(255,255,255,0.45), 0 -60px 160px -40px rgba(180,200,255,0.25)",
+                    "radial-gradient(circle at 50% 35%, rgba(99,140,255,0.55) 0%, rgba(70,100,230,0.35) 18%, rgba(120,80,220,0.22) 35%, rgba(30,50,160,0.12) 55%, transparent 72%)",
+                  filter: "blur(80px)",
+                  opacity: 0.9,
                 }}
               />
 
-              {/* Soft glow above the rim */}
-              <motion.div
-                className="absolute left-1/2 -translate-x-1/2"
+              {/* Giant dome — raised, multi-tone blue */}
+              <div
+                aria-hidden
+                className="absolute left-1/2 -translate-x-1/2 rounded-full pointer-events-none"
                 style={{
-                  bottom: "8%",
-                  width: "120%",
-                  height: "40%",
+                  bottom: "-40%",
+                  width: "150%",
+                  aspectRatio: "1 / 1",
                   background:
-                    "radial-gradient(ellipse at 50% 100%, rgba(220,230,255,0.35) 0%, rgba(160,180,240,0.12) 30%, transparent 60%)",
-                  filter: "blur(20px)",
+                    "radial-gradient(circle at 50% 28%, #1a2a6c 0%, #0d1850 18%, #070d35 38%, #03061c 60%, #000 80%)",
+                  boxShadow:
+                    "0 -1px 0 0.5px rgba(180,200,255,0.9), 0 -22px 100px -10px rgba(120,160,255,0.55), 0 -80px 200px -40px rgba(140,110,255,0.35)",
                 }}
-                animate={{ opacity: [0.7, 1, 0.7] }}
+              />
+
+              {/* Soft pulsing glow above the rim */}
+              <motion.div
+                className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
+                style={{
+                  bottom: "30%",
+                  width: "140%",
+                  height: "45%",
+                  background:
+                    "radial-gradient(ellipse at 50% 100%, rgba(160,190,255,0.45) 0%, rgba(130,100,230,0.22) 28%, rgba(80,60,200,0.1) 50%, transparent 72%)",
+                  filter: "blur(50px)",
+                }}
+                animate={{ opacity: [0.6, 1, 0.6] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               />
 
-              {/* Top vignette to deepen black */}
+              {/* Top vignette */}
               <div
-                className="absolute inset-x-0 top-0 h-[40%]"
+                className="absolute inset-x-0 top-0 h-[40%] pointer-events-none"
                 style={{
                   background:
                     "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%)",
@@ -503,6 +519,7 @@ export default function SociaScreen() {
             </motion.div>
           )}
         </AnimatePresence>
+
 
 
 
