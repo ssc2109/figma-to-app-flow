@@ -112,7 +112,7 @@ function uiMessageText(m: UIMessage): string {
     .join("");
 }
 
-export default function SociaScreen() {
+export default function SociaScreen({ initialPrompt }: { initialPrompt?: string } = {}) {
   const inv = useInventory();
   const fin = useFinance();
   const qc = useQueryClient();
@@ -238,6 +238,21 @@ export default function SociaScreen() {
   useEffect(() => {
     taRef.current?.focus();
   }, [chatKey, status]);
+
+  // Prompt prellenado desde Inicio (launcher / chips / insight CTA)
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current) return;
+    if (initialPrompt && initialPrompt.trim()) {
+      setInput(initialPrompt);
+      seededRef.current = true;
+      requestAnimationFrame(() => taRef.current?.focus());
+    } else if (initialPrompt === "") {
+      // sólo abrir foco
+      requestAnimationFrame(() => taRef.current?.focus());
+      seededRef.current = true;
+    }
+  }, [initialPrompt]);
 
   const stickToBottomRef = useRef(true);
   useEffect(() => {
