@@ -110,25 +110,25 @@ function Main({
   onSeeAllActivity: () => void;
   onIntent: (i: HomeNavIntent) => void;
 }) {
-  const { lowStock } = useInventory();
-  const alerts: StockAlert[] = lowStock.map((i) => ({ name: i.name, units: i.stock }));
+  const { data: briefing, isLoading } = useBriefing();
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
-      <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
-        <Stagger className="w-full flex flex-col gap-[20px]" delay={0.1} step={0.08}>
-          <ProactiveHero onIntent={onIntent} />
-          <PulseStats />
-          <FocusCard />
-          <QuickActions onSeeAll={onSeeAllActions} />
-          <StockAlertCard alerts={alerts} />
-          <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers onSeeAll={onSeeAllActivity} />
-        </Stagger>
+      <div className="content-stretch flex flex-col gap-[20px] items-start relative size-full">
+        <Greeting />
+        <div className="w-full px-[20px]">
+          <Stagger className="w-full flex flex-col gap-[20px]" delay={0.1} step={0.07}>
+            <PerformanceCard />
+            <QuickActions onSeeAll={onSeeAllActions} />
+            <SociaInsightCard briefing={briefing} isLoading={isLoading} onIntent={onIntent} />
+            <MissionsCarousel briefing={briefing} isLoading={isLoading} onIntent={onIntent} />
+            <RecentActivity onSeeAll={onSeeAllActivity} />
+          </Stagger>
+        </div>
       </div>
     </div>
-
-
   );
 }
+
 
 
 export default function Container({
