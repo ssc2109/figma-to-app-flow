@@ -717,7 +717,80 @@ function FeatureCard({
   );
 }
 
-function MessageBubble({ msg }: { msg: UIMessage }) {
+function AssistantAvatar() {
+  return (
+    <div
+      className="relative h-[28px] w-[28px] rounded-full flex-none overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(circle at 30% 25%, #d8d0ff 0%, #8a7bff 35%, #4b3aa8 70%, #0e0a26 100%)",
+        boxShadow:
+          "inset 0 0 8px rgba(255,255,255,.35), 0 0 12px rgba(139,108,255,.45)",
+      }}
+    >
+      <div
+        className="absolute inset-0 opacity-60 mix-blend-overlay"
+        style={{
+          background:
+            "radial-gradient(circle at 70% 75%, rgba(255,180,220,.6) 0%, transparent 55%)",
+        }}
+      />
+    </div>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <div className="self-start flex items-center gap-[10px] mt-[-4px]">
+      <AssistantAvatar />
+      <motion.span
+        className="font-['Geist'] text-[13px]"
+        initial={{ opacity: 0.4 }}
+        animate={{ opacity: [0.45, 1, 0.45] }}
+        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(255,255,255,.35), rgba(255,255,255,.95), rgba(255,255,255,.35))",
+          backgroundSize: "200% 100%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        socIA está pensando…
+      </motion.span>
+    </div>
+  );
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [done, setDone] = useState(false);
+  if (!text) return null;
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setDone(true);
+          setTimeout(() => setDone(false), 1400);
+        } catch {}
+      }}
+      className="opacity-0 group-hover:opacity-100 transition-opacity text-[10.5px] font-['Geist'] text-white/45 hover:text-white/80 flex items-center gap-[4px] px-[6px] py-[3px] rounded-md hover:bg-white/[0.05]"
+    >
+      {done ? <Check className="h-[11px] w-[11px]" /> : null}
+      {done ? "Copiado" : "Copiar"}
+    </button>
+  );
+}
+
+function MessageBubble({
+  msg,
+  isStreaming = false,
+}: {
+  msg: UIMessage;
+  isLast?: boolean;
+  isStreaming?: boolean;
+}) {
   const isUser = msg.role === "user";
   const text = uiMessageText(msg);
   const files = (msg.parts ?? []).filter(
@@ -727,54 +800,120 @@ function MessageBubble({ msg }: { msg: UIMessage }) {
   if (isUser) {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.22 }}
-        className="max-w-[82%] self-end flex flex-col items-end gap-[6px]"
+        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.25, ease: [0.2, 0.7, 0.3, 1] }}
+        className="max-w-[84%] self-end flex flex-col items-end gap-[6px] group"
       >
         {files.map((f, i) => (
-          <img key={i} src={f.url} alt="adjunto" className="max-w-[200px] rounded-[14px]" />
+          <img
+            key={i}
+            src={f.url}
+            alt="adjunto"
+            className="max-w-[220px] rounded-[16px] border border-white/10"
+          />
         ))}
         {text && (
-          <div className="px-[16px] py-[10px] rounded-[20px] bg-white text-black font-['Geist'] text-[14px] leading-[1.45]">
+          <div
+            className="px-[16px] py-[11px] rounded-[22px] rounded-br-[8px] font-['Geist'] text-[14px] leading-[1.45] text-white"
+            style={{
+              background: "linear-gradient(135deg, #2a2255 0%, #3d2f7a 60%, #5a3fb5 100%)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              boxShadow:
+                "0 6px 20px -8px rgba(90,63,181,.55), inset 0 1px 0 rgba(255,255,255,.10)",
+            }}
+          >
             {text}
           </div>
         )}
       </motion.div>
     );
   }
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22 }}
-      className="max-w-[92%] self-start font-['Geist'] text-[14.5px] text-white/90 leading-[1.6] px-[2px] prose-socia"
+      transition={{ duration: 0.28, ease: [0.2, 0.7, 0.3, 1] }}
+      className="max-w-[94%] self-start flex gap-[10px] group"
     >
-      {text ? (
-        <ReactMarkdown
-          components={{
-            p: ({ children }) => <p className="m-0 mb-[6px] last:mb-0">{children}</p>,
-            strong: ({ children }) => (
-              <strong className="text-white font-semibold">{children}</strong>
-            ),
-            ul: ({ children }) => (
-              <ul className="my-[6px] pl-[16px] list-disc marker:text-white/40">{children}</ul>
-            ),
-            ol: ({ children }) => (
-              <ol className="my-[6px] pl-[18px] list-decimal marker:text-white/40">{children}</ol>
-            ),
-            code: ({ children }) => (
-              <code className="px-[5px] py-[1px] rounded bg-white/8 text-[13px] font-['Geist']">
-                {children}
-              </code>
-            ),
-          }}
+      <div className="pt-[2px]">
+        <AssistantAvatar />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-[8px] mb-[4px]">
+          <span className="font-['Bai_Jamjuree'] text-[12px] font-semibold tracking-[-.2px] text-white/85">
+            socIA
+          </span>
+          <span className="h-[3px] w-[3px] rounded-full bg-white/20" />
+          <span className="font-['Geist'] text-[10.5px] text-white/35 uppercase tracking-[.8px]">
+            asistente
+          </span>
+        </div>
+        <div
+          className="font-['Geist'] text-[14.5px] text-white/92 leading-[1.6] prose-socia select-text"
+          style={{ userSelect: "text" }}
         >
-          {text}
-        </ReactMarkdown>
-      ) : (
-        <Loader2 className="h-[14px] w-[14px] animate-spin text-white/50" />
-      )}
+          {text ? (
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p className="m-0 mb-[8px] last:mb-0">{children}</p>,
+                strong: ({ children }) => (
+                  <strong className="text-white font-semibold">{children}</strong>
+                ),
+                ul: ({ children }) => (
+                  <ul className="my-[8px] pl-[18px] list-disc marker:text-white/35 space-y-[3px]">
+                    {children}
+                  </ul>
+                ),
+                ol: ({ children }) => (
+                  <ol className="my-[8px] pl-[20px] list-decimal marker:text-white/35 space-y-[3px]">
+                    {children}
+                  </ol>
+                ),
+                code: ({ children }) => (
+                  <code className="px-[6px] py-[1px] rounded-[6px] bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/90">
+                    {children}
+                  </code>
+                ),
+                a: ({ children, href }) => (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[#b9a8ff] underline underline-offset-2 decoration-white/20 hover:decoration-[#b9a8ff]"
+                  >
+                    {children}
+                  </a>
+                ),
+                blockquote: ({ children }) => (
+                  <blockquote className="border-l-2 border-white/15 pl-[10px] my-[6px] text-white/70 italic">
+                    {children}
+                  </blockquote>
+                ),
+              }}
+            >
+              {text}
+            </ReactMarkdown>
+          ) : (
+            <span className="inline-flex items-center gap-[6px] text-white/45 text-[13px]">
+              <Loader2 className="h-[12px] w-[12px] animate-spin" />
+              redactando…
+            </span>
+          )}
+          {isStreaming && text && (
+            <span
+              className="inline-block w-[7px] h-[14px] align-[-2px] ml-[2px] rounded-[1px] bg-white/70"
+              style={{ animation: "socCaret 1s steps(1) infinite" }}
+            />
+          )}
+        </div>
+        {!isStreaming && text && (
+          <div className="mt-[6px] flex items-center gap-[4px]">
+            <CopyButton text={text} />
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }
