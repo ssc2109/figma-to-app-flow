@@ -128,6 +128,11 @@ export default function SociaScreen() {
 
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [voiceCfgOpen, setVoiceCfgOpen] = useState(false);
+  const [voiceCfg, setVoiceCfg] = useState<VoiceConfig>(() => loadVoiceCfg());
+  useEffect(() => {
+    try { localStorage.setItem(VOICE_CFG_KEY, JSON.stringify(voiceCfg)); } catch {}
+  }, [voiceCfg]);
 
   const { data: threadMessages } = useQuery({
     queryKey: ["chat-messages", activeThreadId],
