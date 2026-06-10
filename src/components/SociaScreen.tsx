@@ -106,6 +106,9 @@ export default function SociaScreen() {
   const inv = useInventory();
   const fin = useFinance();
   const qc = useQueryClient();
+  const { profile } = useAuth();
+  const firstName = (profile?.owner_name ?? "").split(/\s+/)[0] || "tú";
+
 
   // ---------- threads ----------
   const listFn = useServerFn(listThreads);
