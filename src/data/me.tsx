@@ -127,7 +127,7 @@ export function MeProvider({ children }: { children: ReactNode }) {
     const todayTotal =
       routine.length + todos.filter((t) => t.due === "Hoy").length;
     return {
-      name: "Alberto",
+      name: "tú",
       level,
       xp,
       xpToNext,
