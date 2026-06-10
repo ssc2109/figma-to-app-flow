@@ -9,6 +9,9 @@ import QuickActions from "@/components/QuickActions";
 import { useAuth } from "@/hooks/useAuth";
 import { Settings } from "lucide-react";
 import ProactiveHero, { type HomeNavIntent } from "@/components/home/ProactiveHero";
+import PulseStats from "@/components/home/PulseStats";
+import FocusCard from "@/components/home/FocusCard";
+
 
 function greetingByHour() {
   const h = new Date().getHours();
@@ -863,14 +866,17 @@ function Main({
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
       <div className="content-stretch flex flex-col gap-[24px] items-start px-[20px] relative size-full">
-        <Stagger className="w-full flex flex-col gap-[24px]" delay={0.1} step={0.09}>
+        <Stagger className="w-full flex flex-col gap-[20px]" delay={0.1} step={0.08}>
           <ProactiveHero onIntent={onIntent} />
+          <PulseStats />
+          <FocusCard />
           <QuickActions onSeeAll={onSeeAllActions} />
           <StockAlertCard alerts={alerts} />
           <SectionActividadRecienteNowUsingGeistForAllTextAndNumbers onSeeAll={onSeeAllActivity} />
         </Stagger>
       </div>
     </div>
+
 
   );
 }
