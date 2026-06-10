@@ -410,7 +410,7 @@ export default function SociaScreen() {
           <div className="empty-ui">
             <div className="greet">
               <h1>{`${greeting},\u00A0Alberto.`}</h1>
-              <p>Soy socIA. Puedo analizar, registrar y aconsejarte.</p>
+              <DynamicSubtitle />
             </div>
 
             <div className="midstack">
