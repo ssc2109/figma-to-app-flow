@@ -158,27 +158,18 @@ export default function SociaInsightCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.05 }}
-      className="trax-grain relative w-full rounded-[24px] overflow-hidden text-left"
-      style={{
-        background:
-          "linear-gradient(180deg, #131318 0%, #0C0C10 80%, #08080B 100%)",
-        border: "1px solid rgba(255,255,255,0.09)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-      }}
+      className="relative w-full text-left"
     >
-      <BorderBeam size={240} duration={10} colorFrom="rgba(255,255,255,0.85)" colorTo="rgba(255,255,255,0.15)" />
-      <BorderBeam size={240} duration={10} delay={5} colorFrom="rgba(255,255,255,0.6)" colorTo="rgba(255,255,255,0.05)" />
-
-      <div className="relative p-[18px] flex items-start gap-[14px]">
-        <AnimatedOrb size={44} spinning={isLoading} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-[8px] mb-[8px]">
-            <span className="font-['Geist'] text-[10.5px] font-semibold tracking-[1.4px] uppercase text-white">
+      <div className="relative flex items-start gap-[16px]">
+        <AnimatedOrb size={48} spinning={isLoading} />
+        <div className="flex-1 min-w-0 pt-[2px]">
+          <div className="flex items-center gap-[8px] mb-[10px]">
+            <span className="font-['Geist'] text-[10.5px] font-semibold tracking-[1.6px] uppercase text-white">
               socIA
             </span>
-            <span className="h-[3px] w-[3px] rounded-full bg-white/40" />
-            <span className="font-['Geist'] text-[10.5px] tracking-[0.6px] uppercase text-[rgba(255,255,255,0.45)]">
-              Asistente
+            <span className="h-[3px] w-[3px] rounded-full bg-white/30" />
+            <span className="font-['Geist'] text-[10.5px] tracking-[0.8px] uppercase text-[rgba(255,255,255,0.4)]">
+              te escribe
             </span>
             {messages.length > 1 && (
               <span className="ml-auto flex items-center gap-[4px]">
@@ -188,7 +179,7 @@ export default function SociaInsightCard({
                     className="h-[3px] rounded-full transition-all duration-500"
                     style={{
                       width: i === idx ? 14 : 4,
-                      background: i === idx ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.18)",
+                      background: i === idx ? "rgba(77,200,253,0.85)" : "rgba(255,255,255,0.16)",
                     }}
                   />
                 ))}
@@ -211,13 +202,13 @@ export default function SociaInsightCard({
                   exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <p className="font-['Geist'] text-[14.5px] leading-[21px] text-white/90">
+                  <p className="font-['Geist'] text-[15.5px] leading-[22px] text-white/92 tracking-[-0.1px]">
                     {current.text}
                   </p>
                   {current.cta && (
-                    <div className="mt-[12px] inline-flex items-center gap-[6px] px-[12px] py-[7px] rounded-full bg-white text-black text-[12.5px] font-medium font-['Geist']">
+                    <div className="mt-[14px] inline-flex items-center gap-[6px] text-white/85 font-['Geist'] text-[12.5px] font-medium border-b border-white/25 pb-[2px]">
                       {current.cta.label}
-                      <ArrowUpRight className="h-[12px] w-[12px]" strokeWidth={2.4} />
+                      <ArrowUpRight className="h-[13px] w-[13px]" strokeWidth={2.4} />
                     </div>
                   )}
                 </motion.div>
