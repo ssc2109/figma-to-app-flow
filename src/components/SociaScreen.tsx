@@ -331,8 +331,8 @@ export default function SociaScreen() {
     "--orb-size": "750px",
     "--orb-intensity": "1.1",
     "--orb-haze": "1.2",
-    "--greet-top": "25.4%",
-    "--stack-top": "52.1%",
+    "--greet-top": "23.2dvh",
+    "--stack-top": "52.8dvh",
     "--c-core": "220, 235, 255",
     "--c-mid": "0, 120, 255",
     "--c-deep": "0, 60, 180",
@@ -378,7 +378,7 @@ export default function SociaScreen() {
         <div className="statusbar" />
 
         {/* TOP BAR */}
-        <div className="flex items-center justify-between px-[22px] pt-[14px]">
+        <div className="topbar flex items-center justify-between px-[22px] pt-[14px]">
           <button
             type="button"
             onClick={() => setHistoryOpen(true)}
