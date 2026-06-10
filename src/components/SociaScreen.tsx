@@ -364,7 +364,7 @@ export default function SociaScreen() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col overflow-hidden">
+    <div className="relative w-full h-[100dvh] flex flex-col overflow-hidden">
       {/* hidden file input for photo features */}
       <input
         ref={fileInputRef}
