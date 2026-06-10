@@ -948,7 +948,7 @@ function MessageBubble({
       className="max-w-[94%] self-start flex gap-[10px] group"
     >
       <div className="pt-[2px]">
-        <AssistantAvatar />
+        <AssistantAvatar spinning={isStreaming} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-[8px] mb-[4px]">
