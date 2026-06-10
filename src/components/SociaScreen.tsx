@@ -929,9 +929,16 @@ function MessageBubble({
             {text}
           </div>
         )}
+        {text && (
+          <div className="mt-[2px] w-full">
+            <MessageActions text={text} variant="user" />
+          </div>
+        )}
       </motion.div>
     );
   }
+
+
 
   return (
     <motion.div
