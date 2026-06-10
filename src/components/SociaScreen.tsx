@@ -445,6 +445,7 @@ export default function SociaScreen() {
                   stop={stop}
                   stopVoiceDictation={stopVoiceDictation}
                   startVoiceDictation={startVoiceDictation}
+                  onPlus={() => { photoMode.current = "foto"; fileInputRef.current?.click(); }}
                 />
               </div>
 
