@@ -136,6 +136,7 @@
   html,
   body,
   #root {
+    width: 100%;
     min-height: 100%;
     background: #000000;
   }
@@ -179,6 +180,16 @@
     height: 100dvh !important;
     overflow: hidden !important;
     overscroll-behavior: none !important;
+  }
+
+  html:has([data-socia-screen]) *,
+  body:has([data-socia-screen]) * {
+    scrollbar-width: none;
+  }
+
+  html:has([data-socia-screen]) *::-webkit-scrollbar,
+  body:has([data-socia-screen]) *::-webkit-scrollbar {
+    display: none;
   }
 
   * {
