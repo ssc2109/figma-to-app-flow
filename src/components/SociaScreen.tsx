@@ -364,7 +364,7 @@ export default function SociaScreen() {
   }, []);
 
   return (
-    <div data-socia-screen className="fixed inset-0 left-1/2 z-20 flex h-[100dvh] w-full max-w-[430px] -translate-x-1/2 flex-col overflow-hidden bg-black">
+    <div className="relative w-full min-h-screen flex flex-col overflow-hidden">
       {/* hidden file input for photo features */}
       <input
         ref={fileInputRef}
@@ -416,136 +416,29 @@ export default function SociaScreen() {
       </div>
 
       {/* MAIN AREA */}
-      <div className="relative flex-1 flex flex-col overflow-hidden">
-        {/* GREETING — top, completely separate from the orb */}
+      <div className="relative flex-1 flex flex-col">
+        {/* ORB — stays in place. Lives above the chat bar. */}
         <AnimatePresence>
           {empty && (
             <motion.div
-              key="greeting"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6, transition: { duration: 0.25 } }}
-              transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-20 px-[24px] pt-[24px] text-center pointer-events-none"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.35 } }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute left-1/2 -translate-x-1/2 top-[20px] z-10 flex flex-col items-center pointer-events-none"
             >
-              <div className="font-['Bai_Jamjuree'] text-[32px] font-semibold text-white tracking-[-0.7px] leading-[1.05]">
-                {greeting},<br />Alberto.
-              </div>
-              <div className="mt-[14px] font-['Geist'] text-[13.5px] text-white/45 max-w-[300px] mx-auto leading-[1.45]">
-                Soy socIA. Puedo analizar, registrar y aconsejarte sobre tu negocio.
+              <ShaderOrb size={360} intensity={orbIntensity} />
+              <div className="mt-[-40px] text-center px-[24px]">
+                <div className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.5px]">
+                  {greeting}, Alberto.
+                </div>
+                <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/45 max-w-[280px]">
+                  Soy socIA. Puedo analizar, registrar y aconsejarte.
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* RUIXEN MOON BACKGROUND — soft blurred orb with blue+violet glow */}
-        <AnimatePresence>
-          {empty && (
-            <motion.div
-              key="moon-bg"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.3 } }}
-              transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
-            >
-              {/* Wide ambient violet wash */}
-              <div
-                aria-hidden
-                className="absolute left-1/2 -translate-x-1/2 rounded-full"
-                style={{
-                  top: "12%",
-                  width: "180%",
-                  aspectRatio: "1 / 1",
-                  background:
-                    "radial-gradient(circle at 50% 50%, rgba(120,90,240,0.35) 0%, rgba(70,100,230,0.22) 25%, rgba(40,60,180,0.1) 45%, transparent 65%)",
-                  filter: "blur(120px)",
-                }}
-              />
-
-              {/* Inner cyan-blue glow */}
-              <motion.div
-                aria-hidden
-                className="absolute left-1/2 -translate-x-1/2 rounded-full"
-                style={{
-                  top: "22%",
-                  width: "120%",
-                  aspectRatio: "1 / 1",
-                  background:
-                    "radial-gradient(circle at 50% 45%, rgba(140,180,255,0.6) 0%, rgba(90,130,255,0.4) 18%, rgba(120,90,230,0.25) 38%, rgba(60,40,160,0.12) 55%, transparent 72%)",
-                  filter: "blur(90px)",
-                }}
-                animate={{ opacity: [0.7, 1, 0.7], scale: [1, 1.03, 1] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              />
-
-              {/* The moon — defined circle with bright apex */}
-              <div
-                aria-hidden
-                className="absolute left-1/2 -translate-x-1/2 rounded-full"
-                style={{
-                  top: "26%",
-                  width: "min(78vw, 340px)",
-                  aspectRatio: "1 / 1",
-                  background:
-                    "radial-gradient(circle at 42% 32%, rgba(220,225,255,0.95) 0%, rgba(150,170,255,0.85) 12%, rgba(90,110,230,0.75) 28%, rgba(60,55,180,0.55) 48%, rgba(35,25,110,0.4) 68%, rgba(10,8,50,0.25) 85%, transparent 100%)",
-                  filter: "blur(28px)",
-                }}
-              />
-
-              {/* Bright specular core */}
-              <div
-                aria-hidden
-                className="absolute left-1/2 -translate-x-1/2 rounded-full"
-                style={{
-                  top: "30%",
-                  width: "min(36vw, 160px)",
-                  aspectRatio: "1 / 1",
-                  background:
-                    "radial-gradient(circle at 45% 40%, rgba(255,255,255,0.8) 0%, rgba(200,210,255,0.45) 30%, transparent 70%)",
-                  filter: "blur(22px)",
-                  mixBlendMode: "screen",
-                }}
-              />
-
-              {/* Bottom magenta accent */}
-              <div
-                aria-hidden
-                className="absolute left-1/2 -translate-x-1/2 rounded-full"
-                style={{
-                  top: "45%",
-                  width: "120%",
-                  aspectRatio: "1 / 1",
-                  background:
-                    "radial-gradient(circle at 50% 40%, rgba(180,90,220,0.25) 0%, rgba(120,60,200,0.15) 30%, transparent 60%)",
-                  filter: "blur(100px)",
-                  mixBlendMode: "screen",
-                }}
-              />
-
-              {/* Top vignette */}
-              <div
-                className="absolute inset-x-0 top-0 h-[30%] pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%)",
-                }}
-              />
-              {/* Bottom vignette to deepen near chat */}
-              <div
-                className="absolute inset-x-0 bottom-0 h-[35%] pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)",
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-
-
-
 
         {/* MINI ORB in header during chat */}
         <AnimatePresence>
@@ -560,7 +453,6 @@ export default function SociaScreen() {
             </motion.div>
           )}
         </AnimatePresence>
-
 
         {/* MESSAGES — full-screen chat once started (ChatGPT style) */}
         {!empty && (
@@ -589,7 +481,7 @@ export default function SociaScreen() {
         {/* BOTTOM CONTROL ZONE (composer + cards) */}
         <div
           className={`absolute left-0 right-0 z-20 ${
-            empty ? "top-[62%]" : "bottom-0 pb-[110px]"
+            empty ? "top-[58%]" : "bottom-0 pb-[110px]"
           }`}
         >
           {/* gradient mask so messages fade behind the controls */}
@@ -602,10 +494,9 @@ export default function SociaScreen() {
             <div
               className="flex items-end gap-[6px] min-h-[54px] pl-[18px] pr-[6px] py-[6px] rounded-[28px] backdrop-blur-xl"
               style={{
-                background: "rgba(8,12,26,0.72)",
-                border: "1px solid rgba(140,170,255,0.16)",
-                boxShadow:
-                  "0 12px 44px rgba(30,70,200,0.28), inset 0 0 0 1px rgba(255,255,255,0.03)",
+                background: "rgba(10,14,28,0.55)",
+                border: "1px solid rgba(255,255,255,0.10)",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
               }}
             >
               <textarea

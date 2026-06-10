@@ -34,10 +34,6 @@ function NavShell() {
     return () => clearTimeout(t);
   }, []);
 
-  // SocIA uses its own fixed layout; no need for aggressive global scroll lock.
-  // Internal scroll containers (chat messages) must stay scrollable.
-
-
   // wire quick action handlers
   useEffect(() => {
     setHandler((id: ActionId) => {
@@ -70,7 +66,7 @@ function NavShell() {
   }, [setHandler]);
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden">
+    <div className="min-h-screen bg-black relative">
       {currentScreen === "inicio" && (
         <div
           className="fixed top-0 left-0 right-0 h-[55vh] z-0 pointer-events-none overflow-hidden"
@@ -105,11 +101,7 @@ function NavShell() {
           />
         </div>
       )}
-      <div
-        className={`relative z-10 mx-auto w-full max-w-[430px] h-full ${
-          currentScreen === "socia" ? "overflow-hidden" : "overflow-y-auto pb-[140px] no-scrollbar"
-        }`}
-      >
+      <div className="relative z-10 mx-auto w-full max-w-[430px] pb-[140px]">
         <AnimatePresence mode="wait">
           {booting ? (
             <motion.div
@@ -121,29 +113,26 @@ function NavShell() {
               <AppSkeleton />
             </motion.div>
           ) : (
-            currentScreen === "socia" ? (
-              <SociaScreen />
-            ) : (
-              <ScreenTransition key={currentScreen} screenKey={currentScreen}>
-                {currentScreen === "inicio" && (
-                  <Container
-                    onSeeAllActions={() => setQuickActionsOpen(true)}
-                    onSeeAllActivity={() => {
-                      setNegocioInitialView("finanzas");
-                      setCurrentScreen("negocio");
-                    }}
-                  />
-                )}
-                {currentScreen === "negocio" && (
-                  <BusinessScreen
-                    key={negocioInitialView}
-                    initialView={negocioInitialView}
-                  />
-                )}
-                {currentScreen === "yo" && <MeScreen />}
-                {currentScreen === "crecer" && <GrowScreen />}
-              </ScreenTransition>
-            )
+            <ScreenTransition key={currentScreen} screenKey={currentScreen}>
+              {currentScreen === "inicio" && (
+                <Container
+                  onSeeAllActions={() => setQuickActionsOpen(true)}
+                  onSeeAllActivity={() => {
+                    setNegocioInitialView("finanzas");
+                    setCurrentScreen("negocio");
+                  }}
+                />
+              )}
+              {currentScreen === "negocio" && (
+                <BusinessScreen
+                  key={negocioInitialView}
+                  initialView={negocioInitialView}
+                />
+              )}
+              {currentScreen === "socia" && <SociaScreen />}
+              {currentScreen === "yo" && <MeScreen />}
+              {currentScreen === "crecer" && <GrowScreen />}
+            </ScreenTransition>
           )}
         </AnimatePresence>
       </div>
