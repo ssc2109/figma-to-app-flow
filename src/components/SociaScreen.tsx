@@ -838,8 +838,7 @@ const SOCIA_CSS = `
 
 /* GREET */
 .socia-screen .greet{
-  text-align:center; margin-top:42px; padding:0 24px;
-  transform:translateY(var(--greet-y));
+  text-align:center; margin-top:56px; padding:0 24px;
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
@@ -855,7 +854,7 @@ const SOCIA_CSS = `
 }
 
 .socia-screen .spacer{ flex:1; min-height:8px; }
-.socia-screen .midstack{ transform:translateY(var(--stack-y)); position:relative; z-index:5; }
+.socia-screen .midstack{ position:relative; z-index:5; padding-bottom:110px; }
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
