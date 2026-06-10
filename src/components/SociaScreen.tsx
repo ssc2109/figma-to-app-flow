@@ -438,67 +438,111 @@ export default function SociaScreen() {
           )}
         </AnimatePresence>
 
-        {/* DOME — pure CSS radial glow rising from below, faded under the chat bar */}
+        {/* MOON ORB — a real visible sphere of blue energy */}
         <AnimatePresence>
           {empty && (
             <motion.div
-              key="dome"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.35 } }}
+              key="moon"
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.3 } }}
               transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute left-1/2 -translate-x-1/2 z-0 pointer-events-none overflow-hidden"
+              className="absolute left-1/2 -translate-x-1/2 z-0 pointer-events-none"
               style={{
-                top: "38%",
-                width: "180%",
+                top: "34%",
+                width: "min(82vw, 360px)",
                 aspectRatio: "1 / 1",
-                maxWidth: "none",
                 WebkitMaskImage:
-                  "linear-gradient(to bottom, black 0%, black 40%, transparent 62%)",
+                  "linear-gradient(to bottom, black 0%, black 78%, transparent 100%)",
                 maskImage:
-                  "linear-gradient(to bottom, black 0%, black 40%, transparent 62%)",
+                  "linear-gradient(to bottom, black 0%, black 78%, transparent 100%)",
               }}
             >
-              {/* outer halo */}
+              {/* outer atmospheric glow (extends beyond sphere) */}
               <div
-                className="absolute inset-0 rounded-full"
+                className="absolute rounded-full"
                 style={{
+                  inset: "-28%",
                   background:
-                    "radial-gradient(circle at 50% 50%, rgba(99,130,255,0.55) 0%, rgba(70,100,240,0.32) 18%, rgba(40,70,200,0.14) 32%, rgba(20,40,140,0.04) 46%, transparent 58%)",
+                    "radial-gradient(circle at 50% 50%, rgba(80,130,255,0.45) 0%, rgba(50,90,220,0.22) 22%, rgba(30,60,180,0.08) 40%, transparent 58%)",
+                  filter: "blur(8px)",
                 }}
               />
-              {/* mid arc */}
+
+              {/* the sphere itself — clearly bounded */}
               <div
-                className="absolute inset-0 rounded-full"
+                className="absolute inset-0 rounded-full overflow-hidden"
                 style={{
                   background:
-                    "radial-gradient(circle at 50% 50%, rgba(160,180,255,0.85) 0%, rgba(110,140,255,0.55) 10%, rgba(70,100,240,0.18) 22%, transparent 36%)",
-                  mixBlendMode: "screen",
+                    "radial-gradient(circle at 38% 30%, #c8d4ff 0%, #6d8bff 14%, #3a5be0 34%, #1d36a8 58%, #0a1556 82%, #050a2e 100%)",
+                  boxShadow:
+                    "0 0 60px 8px rgba(70,110,255,0.55), 0 0 140px 20px rgba(40,80,220,0.35), inset -28px -42px 80px rgba(0,0,8,0.65), inset 18px 22px 60px rgba(180,210,255,0.18)",
                 }}
-              />
-              {/* bright apex */}
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background:
-                    "radial-gradient(circle at 50% 50%, rgba(230,235,255,0.95) 0%, rgba(180,200,255,0.5) 5%, transparent 14%)",
-                  mixBlendMode: "screen",
-                }}
-              />
-              {/* breathing pulse */}
+              >
+                {/* specular highlight (bright apex) */}
+                <div
+                  className="absolute rounded-full"
+                  style={{
+                    top: "10%",
+                    left: "26%",
+                    width: "52%",
+                    height: "42%",
+                    background:
+                      "radial-gradient(ellipse at 50% 40%, rgba(240,245,255,0.85) 0%, rgba(200,220,255,0.35) 28%, transparent 60%)",
+                    filter: "blur(6px)",
+                    mixBlendMode: "screen",
+                  }}
+                />
+                {/* soft inner energy wash */}
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 55% 60%, rgba(100,140,255,0.35) 0%, transparent 55%)",
+                    mixBlendMode: "screen",
+                  }}
+                  animate={{ opacity: [0.5, 0.9, 0.5] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                />
+                {/* terminator shadow on the lower-right limb */}
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 78% 82%, rgba(0,0,10,0.55) 0%, rgba(0,0,10,0.25) 22%, transparent 48%)",
+                  }}
+                />
+                {/* crisp rim light along the top edge */}
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 50% 50%, transparent 76%, rgba(170,200,255,0.55) 88%, rgba(220,230,255,0.85) 95%, transparent 100%)",
+                    WebkitMaskImage:
+                      "linear-gradient(to bottom, black 0%, black 35%, transparent 65%)",
+                    maskImage:
+                      "linear-gradient(to bottom, black 0%, black 35%, transparent 65%)",
+                    mixBlendMode: "screen",
+                  }}
+                />
+              </div>
+
+              {/* breathing pulse halo */}
               <motion.div
-                className="absolute inset-0 rounded-full"
+                className="absolute rounded-full"
                 style={{
+                  inset: "-12%",
                   background:
-                    "radial-gradient(circle at 50% 50%, rgba(120,150,255,0.35) 0%, transparent 28%)",
+                    "radial-gradient(circle at 50% 50%, transparent 52%, rgba(120,160,255,0.28) 60%, transparent 72%)",
                   mixBlendMode: "screen",
                 }}
-                animate={{ opacity: [0.55, 0.95, 0.55], scale: [1, 1.04, 1] }}
+                animate={{ opacity: [0.4, 0.85, 0.4], scale: [1, 1.04, 1] }}
                 transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
               />
             </motion.div>
           )}
         </AnimatePresence>
+
 
         {/* MINI ORB in header during chat */}
         <AnimatePresence>
