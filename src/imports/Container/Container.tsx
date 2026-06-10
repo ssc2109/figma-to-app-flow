@@ -70,8 +70,9 @@ function HeaderBlock({
             <div className="font-['Geist'] font-medium text-[10.5px] text-[rgba(255,255,255,0.55)] tracking-[1.6px] uppercase leading-[14px] truncate max-w-[240px]">
               {businessName || "Mi negocio"}
             </div>
-            <h1 className="pt-[2px] font-['Geist'] font-medium text-[22px] leading-[28px] tracking-[-0.4px] text-white truncate max-w-[260px]">
-              {greetingByHour()}, {ownerFirst}
+            <h1 className="pt-[3px] font-['Geist'] text-[18px] leading-[24px] tracking-[-0.3px] text-white truncate max-w-[260px]">
+              <span className="font-light text-[rgba(255,255,255,0.65)]">{greetingByHour()},</span>{" "}
+              <span className="font-medium">{ownerFirst}</span>
             </h1>
           </div>
         </div>
@@ -101,9 +102,9 @@ function Main({
   const { data: briefing, isLoading } = useBriefing();
   return (
     <div className="relative shrink-0 w-full" data-name="Main">
-      <div className="content-stretch flex flex-col gap-[20px] items-start relative size-full">
+      <div className="content-stretch flex flex-col gap-[28px] items-start relative size-full">
         <div className="w-full px-[20px]">
-          <Stagger className="w-full flex flex-col gap-[20px]" delay={0.1} step={0.07}>
+          <Stagger className="w-full flex flex-col gap-[28px]" delay={0.1} step={0.07}>
             <PerformanceCard />
             <QuickActions onSeeAll={onSeeAllActions} />
             <SociaInsightCard briefing={briefing} isLoading={isLoading} onIntent={onIntent} />
@@ -131,12 +132,12 @@ export default function Container({
 } = {}) {
   const { profile } = useAuth();
   return (
-    <div className="content-stretch flex flex-col gap-[16px] items-start relative size-full" data-name="Container">
+    <div className="content-stretch flex flex-col gap-[20px] items-start relative size-full" data-name="Container">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[640px] z-0 overflow-hidden">
         <Aurora colorStops={["#3a7fff", "#0052e0", "#6899ff"]} amplitude={0.35} blend={1.2} />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 via-60% to-transparent" />
       </div>
-      <div className="relative z-10 w-full flex flex-col gap-[16px] items-start">
+      <div className="relative z-10 w-full flex flex-col gap-[24px] items-start">
         <HeaderBlock
           businessName={profile?.business_name ?? "Mi negocio"}
           ownerFirst={(profile?.owner_name ?? "").split(/\s+/)[0] || "tú"}
