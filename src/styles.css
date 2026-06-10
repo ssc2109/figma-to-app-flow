@@ -283,12 +283,54 @@
 }
 .trax-lift:active { transform: translateY(0) scale(0.99); }
 
+/* Border beam — animated traveling light on card borders */
+@keyframes border-beam {
+  100% { offset-distance: 100%; }
+}
+.animate-border-beam {
+  animation: border-beam var(--duration) infinite linear;
+  offset-distance: 0%;
+}
+
+/* Animated conic gradient for AI orb halo / accent rings */
+@keyframes trax-conic-spin {
+  to { transform: rotate(360deg); }
+}
+.trax-conic-ring {
+  animation: trax-conic-spin 8s linear infinite;
+}
+
+/* Shimmer text — for AI generated lines */
+@keyframes trax-text-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.trax-text-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.55) 0%,
+    rgba(255,255,255,0.55) 35%,
+    rgba(255,255,255,1)    50%,
+    rgba(255,255,255,0.55) 65%,
+    rgba(255,255,255,0.55) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: trax-text-shimmer 3.2s linear infinite;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .trax-skeleton,
   .trax-halo,
   .trax-breathe,
-  .trax-shine::after { animation: none !important; }
+  .trax-shine::after,
+  .animate-border-beam,
+  .trax-conic-ring,
+  .trax-text-shimmer { animation: none !important; }
   .trax-lift { transition: none !important; }
 }
+
 
