@@ -42,10 +42,16 @@ export default function MissionsCarousel({
 
   return (
     <div className="w-full flex flex-col gap-[12px]">
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-['Bai_Jamjuree'] font-semibold text-[20px] leading-[26px] text-white tracking-[-0.3px]">
-          Prioridades de hoy
-        </h2>
+      <div className="flex items-end justify-between">
+        <div className="flex flex-col gap-[4px]">
+          <span className="font-['Geist'] text-[10.5px] font-semibold tracking-[1.6px] uppercase text-[rgba(255,255,255,0.5)]">
+            Prioridades de socIA
+          </span>
+          <h2 className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[26px] text-white tracking-[-0.4px]">
+            Misiones Críticas
+          </h2>
+        </div>
+        <Sparkles className="h-[16px] w-[16px] text-[rgba(255,255,255,0.35)] mb-[6px]" strokeWidth={1.6} />
       </div>
 
       <div className="-mx-[20px] px-[20px] flex gap-[12px] overflow-x-auto no-scrollbar pb-[4px] snap-x snap-mandatory">
