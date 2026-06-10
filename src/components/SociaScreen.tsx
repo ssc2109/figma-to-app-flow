@@ -665,20 +665,18 @@ function FeatureCard({
   onClick: () => void;
 }) {
   return (
-    <button type="button" onClick={onClick} className="feat-card">
-      <div className="flex items-start justify-between">
-        <div className="feat-ic">
+    <button type="button" onClick={onClick} className="card">
+      <div className="row">
+        <div className="ic">
           <Icon className="h-[21px] w-[21px]" strokeWidth={1.7} />
         </div>
-        <ChevronRight className="h-[18px] w-[18px] text-white/30" strokeWidth={1.8} />
+        <div className="chev">
+          <ChevronRight className="h-[18px] w-[18px]" strokeWidth={1.8} />
+        </div>
       </div>
-      <div>
-        <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-[#f4f3f8] tracking-[-0.2px] mb-[3px]">
-          {title}
-        </div>
-        <div className="font-['Geist'] text-[11px] text-white/40 leading-[1.35]">
-          {subtitle}
-        </div>
+      <div className="txt">
+        <h3>{title}</h3>
+        <p>{subtitle}</p>
       </div>
     </button>
   );
