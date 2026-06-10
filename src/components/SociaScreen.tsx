@@ -408,58 +408,54 @@ export default function SociaScreen() {
           </button>
         </div>
 
-        {/* EMPTY STATE — greeting + orb (BG) + chat bar + cards */}
+        {/* EMPTY STATE — exact replication of HTML export */}
         {empty ? (
           <>
-            <div className="text-center mt-[28px] px-[24px]">
-              <h1 className="greet-h1 font-['Bai_Jamjuree'] text-[30px] font-semibold tracking-[-0.5px] leading-[1.15]">
-                {greeting}, Alberto.
-              </h1>
-              <p className="font-['Geist'] text-[13px] text-white/40 leading-[1.5] mt-[8px] max-w-[250px] mx-auto">
-                Soy socIA. Puedo analizar, registrar y aconsejarte.
-              </p>
+            <div className="greet">
+              <h1>{greeting}, Alberto.</h1>
+              <p>Soy socIA. Puedo analizar, registrar y aconsejarte.</p>
             </div>
 
-            <div className="flex-1" />
+            <div className="spacer" />
 
-            {/* COMPOSER */}
-            <div className="px-[18px] relative z-10">
-              <ChatBar
-                taRef={taRef}
-                input={input}
-                setInput={setInput}
-                send={send}
-                isLoading={isLoading}
-                listening={listening}
-                stop={stop}
-                stopVoiceDictation={stopVoiceDictation}
-                startVoiceDictation={startVoiceDictation}
-              />
-            </div>
-
-            {/* CARDS HEAD */}
-            <div className="flex items-center gap-[8px] px-[24px] pt-[22px] relative z-10">
-              <span className="font-['Geist'] text-[11px] font-semibold uppercase tracking-[1.6px] text-white/40">
-                Atajos rápidos
-              </span>
-              <span className="ml-auto flex items-center gap-[4px] font-['Geist'] text-[11px] text-white/30">
-                Desliza
-                <ArrowRight className="h-[13px] w-[13px]" strokeWidth={1.7} />
-              </span>
-            </div>
-
-            {/* CARDS */}
-            <div className="cards-row mt-[12px] px-[18px] pb-[200px] relative z-10">
-              {FEATURES.map((f) => (
-                <FeatureCard
-                  key={f.key}
-                  icon={f.icon}
-                  title={f.title}
-                  subtitle={f.subtitle}
-                  onClick={() => handleFeature(f)}
+            <div className="midstack">
+              <div className="composer">
+                <ChatBar
+                  taRef={taRef}
+                  input={input}
+                  setInput={setInput}
+                  send={send}
+                  isLoading={isLoading}
+                  listening={listening}
+                  stop={stop}
+                  stopVoiceDictation={stopVoiceDictation}
+                  startVoiceDictation={startVoiceDictation}
                 />
-              ))}
+              </div>
+
+              <div className="cards-head">
+                <span className="lbl">Atajos rápidos</span>
+                <span className="swipe">
+                  Desliza
+                  <ArrowRight className="h-[13px] w-[13px]" strokeWidth={1.7} />
+                </span>
+              </div>
+
+              <div className="cards">
+                {FEATURES.map((f) => (
+                  <FeatureCard
+                    key={f.key}
+                    icon={f.icon}
+                    title={f.title}
+                    subtitle={f.subtitle}
+                    onClick={() => handleFeature(f)}
+                  />
+                ))}
+              </div>
             </div>
+
+            {/* spacer for floating nav */}
+            <div style={{ height: 110 }} />
           </>
         ) : (
           /* CHAT STATE — full screen messages + bottom composer */
