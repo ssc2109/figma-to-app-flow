@@ -37,6 +37,7 @@ function NavShell() {
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
+    const preventScroll = (event: Event) => event.preventDefault();
 
     if (currentScreen !== "socia") {
       html.classList.remove("trax-socia-scroll-lock");
@@ -53,6 +54,8 @@ function NavShell() {
     body.style.position = "fixed";
     body.style.top = "0";
     body.style.width = "100%";
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
 
     return () => {
       html.classList.remove("trax-socia-scroll-lock");
@@ -60,6 +63,8 @@ function NavShell() {
       body.style.position = "";
       body.style.top = "";
       body.style.width = "";
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
     };
   }, [currentScreen]);
 
