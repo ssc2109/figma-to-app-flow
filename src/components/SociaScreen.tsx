@@ -409,59 +409,54 @@ export default function SociaScreen() {
         {/* EMPTY STATE — greeting + orb (BG) + chat bar + cards */}
         {empty ? (
           <>
-            <div
-              className="text-center mt-[42px] px-[24px]"
-              style={{ transform: "translateY(var(--greet-y))" }}
-            >
-              <h1 className="greet-h1 font-['Bai_Jamjuree'] text-[34px] font-semibold tracking-[-0.5px] leading-[1.15]">
+            <div className="text-center mt-[28px] px-[24px]">
+              <h1 className="greet-h1 font-['Bai_Jamjuree'] text-[30px] font-semibold tracking-[-0.5px] leading-[1.15]">
                 {greeting}, Alberto.
               </h1>
-              <p className="font-['Geist'] text-[13.5px] text-white/40 leading-[1.5] mt-[10px] max-w-[250px] mx-auto">
+              <p className="font-['Geist'] text-[13px] text-white/40 leading-[1.5] mt-[8px] max-w-[250px] mx-auto">
                 Soy socIA. Puedo analizar, registrar y aconsejarte.
               </p>
             </div>
 
-            <div className="flex-1 min-h-[8px]" />
+            <div className="flex-1" />
 
-            <div style={{ transform: "translateY(var(--stack-y))" }}>
-              {/* COMPOSER */}
-              <div className="px-[18px]">
-                <ChatBar
-                  taRef={taRef}
-                  input={input}
-                  setInput={setInput}
-                  send={send}
-                  isLoading={isLoading}
-                  listening={listening}
-                  stop={stop}
-                  stopVoiceDictation={stopVoiceDictation}
-                  startVoiceDictation={startVoiceDictation}
+            {/* COMPOSER */}
+            <div className="px-[18px] relative z-10">
+              <ChatBar
+                taRef={taRef}
+                input={input}
+                setInput={setInput}
+                send={send}
+                isLoading={isLoading}
+                listening={listening}
+                stop={stop}
+                stopVoiceDictation={stopVoiceDictation}
+                startVoiceDictation={startVoiceDictation}
+              />
+            </div>
+
+            {/* CARDS HEAD */}
+            <div className="flex items-center gap-[8px] px-[24px] pt-[22px] relative z-10">
+              <span className="font-['Geist'] text-[11px] font-semibold uppercase tracking-[1.6px] text-white/40">
+                Atajos rápidos
+              </span>
+              <span className="ml-auto flex items-center gap-[4px] font-['Geist'] text-[11px] text-white/30">
+                Desliza
+                <ArrowRight className="h-[13px] w-[13px]" strokeWidth={1.7} />
+              </span>
+            </div>
+
+            {/* CARDS */}
+            <div className="cards-row mt-[12px] px-[18px] pb-[200px] relative z-10">
+              {FEATURES.map((f) => (
+                <FeatureCard
+                  key={f.key}
+                  icon={f.icon}
+                  title={f.title}
+                  subtitle={f.subtitle}
+                  onClick={() => handleFeature(f)}
                 />
-              </div>
-
-              {/* CARDS HEAD */}
-              <div className="flex items-center gap-[8px] px-[24px] pt-[20px]">
-                <span className="font-['Geist'] text-[11px] font-semibold uppercase tracking-[1.6px] text-white/40">
-                  Atajos rápidos
-                </span>
-                <span className="ml-auto flex items-center gap-[4px] font-['Geist'] text-[11px] text-white/30">
-                  Desliza
-                  <ArrowRight className="h-[13px] w-[13px]" strokeWidth={1.7} />
-                </span>
-              </div>
-
-              {/* CARDS */}
-              <div className="cards-row mt-[12px] px-[18px] pb-[8px]">
-                {FEATURES.map((f) => (
-                  <FeatureCard
-                    key={f.key}
-                    icon={f.icon}
-                    title={f.title}
-                    subtitle={f.subtitle}
-                    onClick={() => handleFeature(f)}
-                  />
-                ))}
-              </div>
+              ))}
             </div>
           </>
         ) : (
