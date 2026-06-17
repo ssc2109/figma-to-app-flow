@@ -1,5 +1,17 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import {
+  ArrowUpRight,
+  Sparkles,
+  AlertTriangle,
+  Coins,
+  Package,
+  TrendingUp,
+  PartyPopper,
+  Megaphone,
+  ShoppingCart,
+  MessageCircle,
+  Info,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -10,6 +22,38 @@ import { generateBriefing, type Briefing } from "@/lib/api/briefing.functions";
 
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
 
+type Tone = Briefing["insights"][number]["tone"];
+
+const TONE: Record<
+  Tone,
+  { accent: string; soft: string; ring: string; label: string }
+> = {
+  warning: {
+    accent: "#FFB270",
+    soft: "rgba(255,178,112,0.14)",
+    ring: "rgba(255,178,112,0.30)",
+    label: "Atención",
+  },
+  opportunity: {
+    accent: "#7CC3FF",
+    soft: "rgba(124,195,255,0.14)",
+    ring: "rgba(124,195,255,0.30)",
+    label: "Oportunidad",
+  },
+  celebration: {
+    accent: "#5EEAA0",
+    soft: "rgba(94,234,160,0.14)",
+    ring: "rgba(94,234,160,0.32)",
+    label: "Logro",
+  },
+  info: {
+    accent: "rgba(255,255,255,0.85)",
+    soft: "rgba(255,255,255,0.06)",
+    ring: "rgba(255,255,255,0.14)",
+    label: "Info",
+  },
+};
+
 /** Mismo avatar que usa el chat (AIChat header): círculo glass + Sparkles. */
 function ChatStyleAvatar({ size = 44 }: { size?: number }) {
   return (
@@ -18,12 +62,17 @@ function ChatStyleAvatar({ size = 44 }: { size?: number }) {
       style={{
         width: size,
         height: size,
-        background: "linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04))",
-        border: "1px solid rgba(255,255,255,0.12)",
+        background:
+          "linear-gradient(135deg, rgba(255,255,255,0.20), rgba(255,255,255,0.06))",
+        border: "1px solid rgba(255,255,255,0.16)",
       }}
       aria-hidden
     >
-      <Sparkles className="text-white" style={{ height: size * 0.42, width: size * 0.42 }} strokeWidth={1.8} />
+      <Sparkles
+        className="text-white"
+        style={{ height: size * 0.42, width: size * 0.42 }}
+        strokeWidth={1.8}
+      />
     </div>
   );
 }
@@ -48,7 +97,11 @@ export function useBriefing() {
     const y = new Date();
     y.setDate(y.getDate() - 1);
     return fin.tx
-      .filter((t) => t.kind === "ingreso" && new Date(t.date).toDateString() === y.toDateString())
+      .filter(
+        (t) =>
+          t.kind === "ingreso" &&
+          new Date(t.date).toDateString() === y.toDateString(),
+      )
       .reduce((s, t) => s + t.amount, 0);
   }, [fin.tx]);
 
@@ -77,7 +130,9 @@ export function useBriefing() {
           fiadosPendingTotal: fin.fiadosPending,
           fiadosPendingCount: fin.fiados.filter((f) => !f.settled).length,
           fiadosOverdueTotal: fin.fiadosOverdue,
-          lowStock: inv.lowStock.slice(0, 6).map((p) => ({ name: p.name, units: p.stock })),
+          lowStock: inv.lowStock
+            .slice(0, 6)
+            .map((p) => ({ name: p.name, units: p.stock })),
           newUser: fin.tx.length === 0 && inv.items.length === 0,
         },
       }),
@@ -91,16 +146,35 @@ type ActionShortcut = {
   key: string;
   label: string;
   hint: string;
+  tone: Tone;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   intent: HomeNavIntent;
 };
 
+function iconFor(action: string, tone: Tone) {
+  if (action === "reponer") return Package;
+  if (action === "cobrar_fiado") return Coins;
+  if (action === "finanzas") return TrendingUp;
+  if (action === "ventas") return ShoppingCart;
+  if (action === "promo") return Megaphone;
+  if (action === "chat") return MessageCircle;
+  if (tone === "warning") return AlertTriangle;
+  if (tone === "celebration") return PartyPopper;
+  if (tone === "opportunity") return TrendingUp;
+  return Info;
+}
+
+/**
+ * Sólo construye atajos a partir de insights REALES con CTA.
+ * Si no hay nada accionable, retorna [] y no se renderiza la sección.
+ */
 function shortcutsFor(briefing: Briefing | undefined): ActionShortcut[] {
   const out: ActionShortcut[] = [];
   const seen = new Set<string>();
   for (const ins of briefing?.insights ?? []) {
     if (!ins.cta) continue;
     const a = ins.cta.action;
-    let intent: HomeNavIntent | null = null;
+    let intent: HomeNavIntent;
     let hint = "";
     if (a === "reponer") {
       intent = { kind: "reponer", productHint: ins.cta.payload };
@@ -119,27 +193,18 @@ function shortcutsFor(briefing: Briefing | undefined): ActionShortcut[] {
       hint = "Crecer";
     } else {
       intent = { kind: "chat", prompt: ins.cta.payload ?? ins.text };
-      hint = "Chat";
+      hint = "Pregúntale";
     }
-    if (seen.has(hint)) continue;
-    seen.add(hint);
-    out.push({ key: ins.id, label: ins.cta.label, hint, intent });
-  }
-  // Asegura al menos 2 atajos.
-  if (!seen.has("Chat")) {
+    const dedupe = `${hint}:${ins.cta.payload ?? ""}`;
+    if (seen.has(dedupe)) continue;
+    seen.add(dedupe);
     out.push({
-      key: "ask",
-      label: "Pregúntale a socIA",
-      hint: "Chat",
-      intent: { kind: "screen", screen: "socia" },
-    });
-  }
-  if (out.length < 2) {
-    out.push({
-      key: "ventas",
-      label: "Registrar venta",
-      hint: "Cobrar",
-      intent: { kind: "sales" },
+      key: ins.id,
+      label: ins.cta.label,
+      hint,
+      tone: ins.tone,
+      icon: iconFor(a, ins.tone),
+      intent,
     });
   }
   return out.slice(0, 3);
@@ -156,21 +221,44 @@ export default function SociaInsightCard({
 }) {
   const messages = useMemo(() => {
     if (!briefing) return [];
-    const fromInsights = briefing.insights.map((ins) => ({ text: ins.text, key: `i-${ins.id}` }));
-    const fromPrompts = (briefing.quickPrompts ?? []).map((p, i) => ({ text: p, key: `p-${i}` }));
+    const fromInsights = briefing.insights.map((ins) => ({
+      text: ins.text,
+      key: `i-${ins.id}`,
+      tone: ins.tone,
+    }));
+    const fromPrompts = (briefing.quickPrompts ?? []).map((p, i) => ({
+      text: p,
+      key: `p-${i}`,
+      tone: "info" as Tone,
+    }));
     const all = [...fromInsights, ...fromPrompts];
-    return all.length > 0 ? all : [{ text: "Todo está bajo control. Disfruta tu café.", key: "fallback" }];
+    return all.length > 0
+      ? all
+      : [
+          {
+            text: "Todo está bajo control. Disfruta tu café.",
+            key: "fallback",
+            tone: "info" as Tone,
+          },
+        ];
   }, [briefing]);
 
   const [idx, setIdx] = useState(0);
   useEffect(() => {
     if (messages.length <= 1) return;
-    const id = setInterval(() => setIdx((i) => (i + 1) % messages.length), 5000);
+    const id = setInterval(
+      () => setIdx((i) => (i + 1) % messages.length),
+      5000,
+    );
     return () => clearInterval(id);
   }, [messages.length]);
 
   const current = messages[idx] ?? messages[0];
   const shortcuts = useMemo(() => shortcutsFor(briefing), [briefing]);
+
+  // Tono dominante = primer insight con cta, sino info.
+  const dominantTone: Tone = shortcuts[0]?.tone ?? "info";
+  const dom = TONE[dominantTone];
 
   return (
     <motion.div
@@ -180,11 +268,22 @@ export default function SociaInsightCard({
       className="relative w-full rounded-[22px] overflow-hidden p-[18px] flex flex-col gap-[16px]"
       style={{
         background:
-          "linear-gradient(180deg, rgba(28,124,255,0.10) 0%, rgba(255,255,255,0.04) 60%, rgba(255,255,255,0.03) 100%)",
-        border: "1px solid rgba(255,255,255,0.09)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 30px -20px rgba(28,124,255,0.4)",
+          "linear-gradient(180deg, rgba(22,22,28,0.92) 0%, rgba(16,16,20,0.96) 100%)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        boxShadow:
+          "inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 40px -22px rgba(0,0,0,0.7)",
       }}
     >
+      {/* Línea de tensión vertical tonal — signature element */}
+      <span
+        className="absolute left-0 top-[18px] bottom-[18px] w-[2px] rounded-r-full"
+        style={{
+          background: `linear-gradient(180deg, ${dom.accent} 0%, transparent 100%)`,
+          opacity: 0.7,
+        }}
+        aria-hidden
+      />
+
       <div className="flex items-start gap-[14px]">
         <ChatStyleAvatar size={44} />
         <div className="flex-1 min-w-0 pt-[2px]">
@@ -204,7 +303,10 @@ export default function SociaInsightCard({
                     className="h-[3px] rounded-full transition-all duration-500"
                     style={{
                       width: i === idx ? 14 : 4,
-                      background: i === idx ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.16)",
+                      background:
+                        i === idx
+                          ? "rgba(255,255,255,0.85)"
+                          : "rgba(255,255,255,0.16)",
                     }}
                   />
                 ))}
@@ -236,35 +338,59 @@ export default function SociaInsightCard({
         </div>
       </div>
 
-      {/* Atajos sugeridos por socIA — cards dentro de la card */}
+      {/* Atajos sólo si socIA detectó algo accionable */}
       {!isLoading && shortcuts.length > 0 && (
         <div className="flex flex-col gap-[8px]">
-          {shortcuts.map((s, i) => (
-            <motion.button
-              key={s.key}
-              type="button"
-              onClick={() => onIntent(s.intent)}
-              whileTap={{ scale: 0.985 }}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + i * 0.05 }}
-              className="w-full rounded-[14px] px-[14px] py-[12px] flex items-center justify-between gap-[10px]"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div className="flex flex-col items-start gap-[2px] min-w-0">
-                <span className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.1px] text-[rgba(255,255,255,0.5)]">
-                  {s.hint}
+          {shortcuts.map((s, i) => {
+            const t = TONE[s.tone];
+            const Icon = s.icon;
+            return (
+              <motion.button
+                key={s.key}
+                type="button"
+                onClick={() => onIntent(s.intent)}
+                whileTap={{ scale: 0.985 }}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.05 }}
+                className="group relative w-full rounded-[14px] pl-[12px] pr-[14px] py-[12px] flex items-center gap-[12px] overflow-hidden"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.04) 100%)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                }}
+              >
+                <span
+                  className="h-[34px] w-[34px] rounded-[10px] grid place-items-center flex-none"
+                  style={{
+                    background: t.soft,
+                    border: `1px solid ${t.ring}`,
+                  }}
+                >
+                  <Icon
+                    className="h-[15px] w-[15px]"
+                    strokeWidth={2.2}
+                    {...({ style: { color: t.accent } } as any)}
+                  />
                 </span>
-                <span className="font-['Geist'] text-[13.5px] font-medium text-white truncate">
-                  {s.label}
-                </span>
-              </div>
-              <ArrowUpRight className="h-[15px] w-[15px] text-white/70 flex-none" strokeWidth={2.2} />
-            </motion.button>
-          ))}
+                <div className="flex flex-col items-start gap-[1px] min-w-0 flex-1">
+                  <span
+                    className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.1px]"
+                    style={{ color: t.accent, opacity: 0.85 }}
+                  >
+                    {s.hint}
+                  </span>
+                  <span className="font-['Geist'] text-[13.5px] font-medium text-white truncate w-full">
+                    {s.label}
+                  </span>
+                </div>
+                <ArrowUpRight
+                  className="h-[15px] w-[15px] text-white/55 flex-none transition-transform group-hover:translate-x-[1px] group-hover:-translate-y-[1px]"
+                  strokeWidth={2.2}
+                />
+              </motion.button>
+            );
+          })}
         </div>
       )}
     </motion.div>

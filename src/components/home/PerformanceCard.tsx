@@ -122,8 +122,10 @@ function RotatingKpi({ keyId, label, value }: { keyId: string; label: string; va
   return (
     <div className="relative h-[64px] overflow-hidden rounded-[16px] flex items-center justify-center"
       style={{
-        background: "rgba(255,255,255,0.035)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background:
+          "linear-gradient(180deg, rgba(28,28,34,0.85) 0%, rgba(20,20,24,0.92) 100%)",
+        border: "1px solid rgba(255,255,255,0.09)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
       }}
     >
       <AnimatePresence mode="wait">
