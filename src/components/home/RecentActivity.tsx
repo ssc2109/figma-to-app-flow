@@ -68,9 +68,11 @@ export default function RecentActivity({ onSeeAll }: { onSeeAll: () => void }) {
       <div
         className="rounded-[22px] overflow-hidden px-[6px]"
         style={{
-          background: "rgba(255,255,255,0.035)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+          background:
+            "linear-gradient(180deg, rgba(22,22,28,0.92) 0%, rgba(16,16,20,0.96) 100%)",
+          border: "1px solid rgba(255,255,255,0.10)",
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.05), 0 14px 40px -22px rgba(0,0,0,0.7)",
         }}
       >
         {items.map((t, i) => {
