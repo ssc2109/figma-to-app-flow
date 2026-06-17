@@ -46,10 +46,10 @@ export default function MissionsCarousel({
       <div className="flex items-end justify-between">
         <div className="flex flex-col gap-[4px]">
           <span className="font-['Geist'] text-[10.5px] font-semibold tracking-[1.6px] uppercase text-[rgba(255,255,255,0.5)]">
-            Prioridades de socIA
+            Sugerido por socIA
           </span>
           <h2 className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[26px] text-white tracking-[-0.4px]">
-            Misiones Críticas
+            Tus tareas
           </h2>
         </div>
         <Sparkles className="h-[16px] w-[16px] text-[rgba(255,255,255,0.35)] mb-[6px]" strokeWidth={1.6} />
