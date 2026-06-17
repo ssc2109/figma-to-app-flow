@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -10,29 +10,20 @@ import { generateBriefing, type Briefing } from "@/lib/api/briefing.functions";
 
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
 
-function AnimatedOrb({ size = 44, spinning = false }: { size?: number; spinning?: boolean }) {
+/** Mismo avatar que usa el chat (AIChat header): círculo glass + Sparkles. */
+function ChatStyleAvatar({ size = 44 }: { size?: number }) {
   return (
-    <div className="relative flex-none" style={{ width: size, height: size }} aria-hidden>
-      {/* Halo azul suave (mismo lenguaje que el orb del chat) */}
-      <div
-        className="absolute inset-[-10px] rounded-full opacity-80"
-        style={{
-          background:
-            "radial-gradient(closest-side, rgba(77,200,253,0.5), rgba(28,124,255,0.2) 55%, transparent 75%)",
-          filter: "blur(10px)",
-        }}
-      />
-      {/* Orb idéntico al AssistantAvatar del chat */}
-      <div
-        className="absolute inset-0 rounded-full socia-orb"
-        data-spinning={spinning ? "true" : "false"}
-        style={{
-          background:
-            "radial-gradient(circle at 32% 28%, #cfe6ff 0%, #4dc8fd 22%, #1c7cff 48%, #003fc0 78%, #061535 100%)",
-          boxShadow:
-            "0 0 22px rgba(28,124,255,0.35), inset 0 0 8px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.35)",
-        }}
-      />
+    <div
+      className="rounded-full flex items-center justify-center flex-none"
+      style={{
+        width: size,
+        height: size,
+        background: "linear-gradient(135deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04))",
+        border: "1px solid rgba(255,255,255,0.12)",
+      }}
+      aria-hidden
+    >
+      <Sparkles className="text-white" style={{ height: size * 0.42, width: size * 0.42 }} strokeWidth={1.8} />
     </div>
   );
 }
@@ -96,6 +87,64 @@ export function useBriefing() {
   });
 }
 
+type ActionShortcut = {
+  key: string;
+  label: string;
+  hint: string;
+  intent: HomeNavIntent;
+};
+
+function shortcutsFor(briefing: Briefing | undefined): ActionShortcut[] {
+  const out: ActionShortcut[] = [];
+  const seen = new Set<string>();
+  for (const ins of briefing?.insights ?? []) {
+    if (!ins.cta) continue;
+    const a = ins.cta.action;
+    let intent: HomeNavIntent | null = null;
+    let hint = "";
+    if (a === "reponer") {
+      intent = { kind: "reponer", productHint: ins.cta.payload };
+      hint = "Inventario";
+    } else if (a === "cobrar_fiado") {
+      intent = { kind: "screen", screen: "negocio" };
+      hint = "Fiados";
+    } else if (a === "finanzas") {
+      intent = { kind: "screen", screen: "negocio", subview: "finanzas" };
+      hint = "Finanzas";
+    } else if (a === "ventas") {
+      intent = { kind: "sales" };
+      hint = "Cobrar";
+    } else if (a === "promo") {
+      intent = { kind: "screen", screen: "crecer" };
+      hint = "Crecer";
+    } else {
+      intent = { kind: "chat", prompt: ins.cta.payload ?? ins.text };
+      hint = "Chat";
+    }
+    if (seen.has(hint)) continue;
+    seen.add(hint);
+    out.push({ key: ins.id, label: ins.cta.label, hint, intent });
+  }
+  // Asegura al menos 2 atajos.
+  if (!seen.has("Chat")) {
+    out.push({
+      key: "ask",
+      label: "Pregúntale a socIA",
+      hint: "Chat",
+      intent: { kind: "screen", screen: "socia" },
+    });
+  }
+  if (out.length < 2) {
+    out.push({
+      key: "ventas",
+      label: "Registrar venta",
+      hint: "Cobrar",
+      intent: { kind: "sales" },
+    });
+  }
+  return out.slice(0, 3);
+}
+
 export default function SociaInsightCard({
   briefing,
   isLoading,
@@ -105,21 +154,12 @@ export default function SociaInsightCard({
   isLoading: boolean;
   onIntent: (i: HomeNavIntent) => void;
 }) {
-  // Construye el ciclo de mensajes: todos los insights + prompts como filler conversacional.
   const messages = useMemo(() => {
     if (!briefing) return [];
-    const fromInsights = briefing.insights.map((ins) => ({
-      text: ins.text,
-      cta: ins.cta,
-      key: `i-${ins.id}`,
-    }));
-    const fromPrompts = (briefing.quickPrompts ?? []).map((p, i) => ({
-      text: p,
-      cta: { label: "Pregúntame", action: "chat" as const, payload: p },
-      key: `p-${i}`,
-    }));
+    const fromInsights = briefing.insights.map((ins) => ({ text: ins.text, key: `i-${ins.id}` }));
+    const fromPrompts = (briefing.quickPrompts ?? []).map((p, i) => ({ text: p, key: `p-${i}` }));
     const all = [...fromInsights, ...fromPrompts];
-    return all.length > 0 ? all : [{ text: "Todo está bajo control. Disfruta tu café.", cta: null, key: "fallback" }];
+    return all.length > 0 ? all : [{ text: "Todo está bajo control. Disfruta tu café.", key: "fallback" }];
   }, [briefing]);
 
   const [idx, setIdx] = useState(0);
@@ -130,40 +170,25 @@ export default function SociaInsightCard({
   }, [messages.length]);
 
   const current = messages[idx] ?? messages[0];
-
-  const handleTap = () => {
-    if (!current) {
-      onIntent({ kind: "screen", screen: "socia" });
-      return;
-    }
-    const cta = current.cta;
-    if (!cta) {
-      onIntent({ kind: "chat", prompt: current.text });
-      return;
-    }
-    const a = cta.action;
-    if (a === "reponer") onIntent({ kind: "reponer", productHint: cta.payload });
-    else if (a === "cobrar_fiado") onIntent({ kind: "screen", screen: "negocio" });
-    else if (a === "finanzas") onIntent({ kind: "screen", screen: "negocio", subview: "finanzas" });
-    else if (a === "ventas") onIntent({ kind: "sales" });
-    else if (a === "promo") onIntent({ kind: "screen", screen: "crecer" });
-    else onIntent({ kind: "chat", prompt: cta.payload ?? current.text });
-  };
+  const shortcuts = useMemo(() => shortcutsFor(briefing), [briefing]);
 
   return (
-    <motion.button
-      type="button"
-      onClick={handleTap}
-      whileTap={{ scale: 0.99 }}
+    <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.05 }}
-      className="relative w-full text-left"
+      className="relative w-full rounded-[22px] overflow-hidden p-[18px] flex flex-col gap-[16px]"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(28,124,255,0.10) 0%, rgba(255,255,255,0.04) 60%, rgba(255,255,255,0.03) 100%)",
+        border: "1px solid rgba(255,255,255,0.09)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 30px -20px rgba(28,124,255,0.4)",
+      }}
     >
-      <div className="relative flex items-start gap-[16px]">
-        <AnimatedOrb size={48} spinning={isLoading} />
+      <div className="flex items-start gap-[14px]">
+        <ChatStyleAvatar size={44} />
         <div className="flex-1 min-w-0 pt-[2px]">
-          <div className="flex items-center gap-[8px] mb-[10px]">
+          <div className="flex items-center gap-[8px] mb-[8px]">
             <span className="font-['Geist'] text-[10.5px] font-semibold tracking-[1.6px] uppercase text-white">
               socIA
             </span>
@@ -179,7 +204,7 @@ export default function SociaInsightCard({
                     className="h-[3px] rounded-full transition-all duration-500"
                     style={{
                       width: i === idx ? 14 : 4,
-                      background: i === idx ? "rgba(77,200,253,0.85)" : "rgba(255,255,255,0.16)",
+                      background: i === idx ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.16)",
                     }}
                   />
                 ))}
@@ -195,28 +220,53 @@ export default function SociaInsightCard({
           ) : (
             <div className="relative min-h-[44px]">
               <AnimatePresence mode="wait">
-                <motion.div
+                <motion.p
                   key={current.key}
                   initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="font-['Geist'] text-[15px] leading-[21px] text-white/92 tracking-[-0.1px]"
                 >
-                  <p className="font-['Geist'] text-[15.5px] leading-[22px] text-white/92 tracking-[-0.1px]">
-                    {current.text}
-                  </p>
-                  {current.cta && (
-                    <div className="mt-[14px] inline-flex items-center gap-[6px] text-white/85 font-['Geist'] text-[12.5px] font-medium border-b border-white/25 pb-[2px]">
-                      {current.cta.label}
-                      <ArrowUpRight className="h-[13px] w-[13px]" strokeWidth={2.4} />
-                    </div>
-                  )}
-                </motion.div>
+                  {current.text}
+                </motion.p>
               </AnimatePresence>
             </div>
           )}
         </div>
       </div>
-    </motion.button>
+
+      {/* Atajos sugeridos por socIA — cards dentro de la card */}
+      {!isLoading && shortcuts.length > 0 && (
+        <div className="flex flex-col gap-[8px]">
+          {shortcuts.map((s, i) => (
+            <motion.button
+              key={s.key}
+              type="button"
+              onClick={() => onIntent(s.intent)}
+              whileTap={{ scale: 0.985 }}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05 }}
+              className="w-full rounded-[14px] px-[14px] py-[12px] flex items-center justify-between gap-[10px]"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div className="flex flex-col items-start gap-[2px] min-w-0">
+                <span className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.1px] text-[rgba(255,255,255,0.5)]">
+                  {s.hint}
+                </span>
+                <span className="font-['Geist'] text-[13.5px] font-medium text-white truncate">
+                  {s.label}
+                </span>
+              </div>
+              <ArrowUpRight className="h-[15px] w-[15px] text-white/70 flex-none" strokeWidth={2.2} />
+            </motion.button>
+          ))}
+        </div>
+      )}
+    </motion.div>
   );
 }

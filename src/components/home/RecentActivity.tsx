@@ -29,6 +29,9 @@ function categoryLabel(catId: string, kind: "ingreso" | "egreso") {
   return list.find((c) => c.id === catId)?.label ?? "Movimiento";
 }
 
+const GREEN = "#5EEAA0";
+const RED = "#FF8A8A";
+
 export default function RecentActivity({ onSeeAll }: { onSeeAll: () => void }) {
   const fin = useFinance();
   const items = fin.tx.slice(0, 4);
@@ -62,10 +65,17 @@ export default function RecentActivity({ onSeeAll }: { onSeeAll: () => void }) {
         </button>
       </div>
 
-      <div className="flex flex-col">
+      <div
+        className="rounded-[22px] overflow-hidden px-[6px]"
+        style={{
+          background: "rgba(255,255,255,0.035)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
+        }}
+      >
         {items.map((t, i) => {
           const isIn = t.kind === "ingreso";
-          const color = isIn ? "#4ADE80" : "#F87171";
+          const color = isIn ? GREEN : RED;
           const Icon = isIn ? Plus : Minus;
           const title = `${isIn ? "Venta" : "Pago"}: ${categoryLabel(t.category, t.kind)}`;
           return (
@@ -74,16 +84,19 @@ export default function RecentActivity({ onSeeAll }: { onSeeAll: () => void }) {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="w-full py-[14px] flex items-center gap-[14px]"
+              className="w-full px-[10px] py-[14px] flex items-center gap-[14px]"
               style={{
-                borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.06)",
+                borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.05)",
               }}
             >
               <div
-                className="h-[34px] w-[34px] rounded-full grid place-items-center flex-none"
-                style={{ background: `${color}14`, border: `1px solid ${color}26` }}
+                className="h-[36px] w-[36px] rounded-full grid place-items-center flex-none"
+                style={{
+                  background: isIn ? "rgba(94,234,160,0.14)" : "rgba(255,138,138,0.14)",
+                  border: `1px solid ${isIn ? "rgba(94,234,160,0.32)" : "rgba(255,138,138,0.32)"}`,
+                }}
               >
-                <Icon className="h-[14px] w-[14px]" style={{ color }} strokeWidth={2.4} />
+                <Icon className="h-[15px] w-[15px]" style={{ color }} strokeWidth={2.6} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-['Geist'] text-[14px] font-medium text-white truncate">
@@ -105,7 +118,7 @@ export default function RecentActivity({ onSeeAll }: { onSeeAll: () => void }) {
       </div>
 
       {todayCount > 0 && (
-        <p className="text-center font-['Geist'] italic text-[12px] text-[rgba(255,255,255,0.4)] mt-[4px]">
+        <p className="text-center font-['Geist'] italic text-[12px] text-[rgba(255,255,255,0.4)]">
           Juntos hemos asegurado {todayCount} {todayCount === 1 ? "transacción" : "transacciones"} hoy
           sin errores.
         </p>
