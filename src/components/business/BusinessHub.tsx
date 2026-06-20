@@ -580,13 +580,14 @@ function OperationArea(p: Props) {
         ]}
       />
 
-      <ShortcutsRow title="Ir a"
+      <ShortcutsRow title="Módulos"
         items={[
-          { label: "Catálogo", onClick: p.onInventory },
-          { label: "Inventario", onClick: p.onInventory },
-          { label: "Compras", soon: true },
-          { label: "Proveedores", soon: true },
+          { label: "Catálogo", sub: productCount > 0 ? "Ver productos" : "Crear primero", onClick: p.onInventory },
+          { label: "Inventario", sub: "Ajustar stock", onClick: p.onInventory },
+          { label: "Compras", sub: "Reposiciones", soon: true },
+          { label: "Proveedores", sub: "A quién compras", soon: true },
         ]} />
+
 
       {productCount < 3 ? (
         <SociaTip title="Agrega tus productos más vendidos"
