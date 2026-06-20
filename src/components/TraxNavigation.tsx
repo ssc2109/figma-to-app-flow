@@ -29,7 +29,7 @@ function NavShell() {
   const [salesOpen, setSalesOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "debts">("hub");
+  const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "receivables">("hub");
   const [sociaPrompt, setSociaPrompt] = useState<string | undefined>(undefined);
   const { setHandler } = useQuickActions();
 
@@ -127,7 +127,7 @@ function NavShell() {
                 <Container
                   onSeeAllActions={() => setQuickActionsOpen(true)}
                   onSeeAllActivity={() => {
-                    setNegocioInitialView("debts");
+                    setNegocioInitialView("receivables");
                     setCurrentScreen("negocio");
                   }}
                   onOpenSettings={() => setSettingsOpen(true)}
@@ -141,7 +141,7 @@ function NavShell() {
                       setCurrentScreen("negocio");
                     } else if (intent.kind === "screen") {
                       if (intent.screen === "negocio" && intent.subview === "finanzas") {
-                        setNegocioInitialView("debts");
+                        setNegocioInitialView("receivables");
                       }
                       setCurrentScreen(intent.screen);
                     }

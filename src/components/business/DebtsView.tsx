@@ -90,9 +90,11 @@ function DebtSheet({
   );
 }
 
-export default function DebtsView({ onBack }: { onBack: () => void }) {
+export default function DebtsView({
+  onBack, initialKind = "cobrar", lockKind = false,
+}: { onBack: () => void; initialKind?: Kind; lockKind?: boolean }) {
   const { user } = useAuth();
-  const [tab, setTab] = useState<Kind>("cobrar");
+  const [tab, setTab] = useState<Kind>(initialKind);
   const [items, setItems] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheet, setSheet] = useState<Kind | null>(null);
@@ -146,8 +148,8 @@ export default function DebtsView({ onBack }: { onBack: () => void }) {
   return (
     <SubScreen>
       <SubHeader
-        eyebrow="Cuentas pendientes"
-        title="Deudas"
+        eyebrow={lockKind ? (initialKind === "cobrar" ? "Lo que te deben" : "Lo que debes") : "Cuentas pendientes"}
+        title={lockKind ? (initialKind === "cobrar" ? "Por cobrar" : "Por pagar") : "Deudas"}
         onBack={onBack}
         action={
           <button onClick={() => setSheet(tab)}
@@ -159,7 +161,7 @@ export default function DebtsView({ onBack }: { onBack: () => void }) {
 
       <div className="px-[20px] pt-[6px]">
         {/* tabs */}
-        <div className="flex items-center gap-[6px] p-[4px] rounded-full mb-[14px]"
+        {!lockKind && <div className="flex items-center gap-[6px] p-[4px] rounded-full mb-[14px]"
           style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
           {(["cobrar", "pagar"] as const).map((k) => {
             const active = tab === k;
@@ -176,7 +178,7 @@ export default function DebtsView({ onBack }: { onBack: () => void }) {
               </button>
             );
           })}
-        </div>
+        </div>}
 
         {/* summary */}
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
