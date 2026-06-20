@@ -1064,9 +1064,9 @@ export default function BusinessHub(p: Props) {
       <div
         aria-hidden
         className="pointer-events-none absolute left-0 right-0 z-0 overflow-hidden"
-        style={{ top: -50, height: 280, opacity: 0.45, maskImage: "linear-gradient(to top, transparent 0%, #000 55%, #000 100%)", WebkitMaskImage: "linear-gradient(to top, transparent 0%, #000 55%, #000 100%)" }}
+        style={{ top: -40, height: 300, opacity: 0.6, maskImage: "linear-gradient(to top, transparent 0%, #000 45%, #000 100%)", WebkitMaskImage: "linear-gradient(to top, transparent 0%, #000 45%, #000 100%)" }}
       >
-        <Aurora colorStops={["#1e40af", "#3b82f6", "#60a5fa"]} amplitude={0.7} blend={0.4} speed={0.6} />
+        <Aurora colorStops={["#003fc0", "#1c7cff", "#4dc8fd"]} amplitude={0.7} blend={0.15} speed={0.6} />
       </div>
       <div className="relative z-10 flex flex-col gap-[18px] pt-[88px] pb-[200px]">
         <BizHeader />
