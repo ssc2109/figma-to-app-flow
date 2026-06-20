@@ -655,11 +655,8 @@ function ClientsArea(p: Props) {
       <SectionTitle>Relación con clientes</SectionTitle>
 
       <DashboardCard
-        eyebrow="Directorio"
-        title={count > 0 ? `${count} cliente${count === 1 ? "" : "s"} registrado${count === 1 ? "" : "s"}` : "Aún sin clientes"}
-        headline={count > 0 ? String(count) : "—"}
-        tone={count > 0 ? "default" : "muted"}
         visual={
+
           <div className="grid grid-cols-3 gap-[10px]">
             <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
               <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Activos</div>
