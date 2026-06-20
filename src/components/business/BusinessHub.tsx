@@ -327,54 +327,23 @@ const TONE_COLOR: Record<ToneKey, string> = {
 
 type MetricItem = { label: string; value: string; sub?: string; tone?: ToneKey };
 
-function RotatingMetrics({ items }: { items: MetricItem[] }) {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    if (items.length <= 1) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % items.length), 3200);
-    return () => clearInterval(t);
-  }, [items.length]);
-  const it = items[idx];
-  if (!it) return null;
+function InnerMetric({ m }: { m: MetricItem }) {
   return (
-    <div className="flex items-end justify-between gap-[12px]">
-      <div className="min-w-0 flex-1">
-        <AnimatePresence mode="wait">
-          <motion.div key={idx}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
-            <div className="font-['Geist'] text-[10px] uppercase tracking-[1.6px] text-white/45">{it.label}</div>
-            <div className="mt-[2px] font-['Bai_Jamjuree'] text-[24px] font-bold tracking-[-0.6px] tabular-nums leading-[1.05]"
-              style={{ color: TONE_COLOR[it.tone ?? "default"] }}>
-              {it.value}
-            </div>
-            {it.sub && <div className="mt-[1px] font-['Geist'] text-[11px] text-white/45 leading-[1.3] truncate">{it.sub}</div>}
-          </motion.div>
-        </AnimatePresence>
+    <div className="flex flex-col gap-[3px] min-w-0">
+      <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/45 truncate">{m.label}</div>
+      <div className="font-['Bai_Jamjuree'] text-[22px] font-bold tracking-[-0.6px] tabular-nums leading-[1.05]"
+        style={{ color: TONE_COLOR[m.tone ?? "default"] }}>
+        {m.value}
       </div>
-      <div className="flex items-center gap-[5px] shrink-0 pb-[3px]">
-        {items.map((_, i) => (
-          <button key={i} onClick={() => setIdx(i)}
-            className="h-[5px] rounded-full transition-all"
-            style={{
-              width: i === idx ? 16 : 5,
-              background: i === idx ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.18)",
-            }} />
-        ))}
-      </div>
+      {m.sub && <div className="font-['Geist'] text-[10.5px] text-white/40 leading-[1.2] truncate">{m.sub}</div>}
     </div>
   );
 }
 
 function DashboardCard({
-  eyebrow, title, headline, tone = "default", visual, metrics,
+  eyebrow, visual, metrics,
 }: {
   eyebrow?: string;
-  title: string;
-  headline?: string;
-  tone?: ToneKey;
   visual?: React.ReactNode;
   metrics: MetricItem[];
 }) {
@@ -384,26 +353,22 @@ function DashboardCard({
         background: "linear-gradient(150deg, rgba(255,255,255,0.06), rgba(255,255,255,0.012))",
         border: "1px solid rgba(255,255,255,0.10)",
       }}>
-      <div className="px-[18px] pt-[16px] pb-[14px]">
-        {eyebrow && (
-          <div className="font-['Geist'] text-[10px] uppercase tracking-[1.8px] text-white/40 mb-[6px]">{eyebrow}</div>
-        )}
-        <h3 className="font-['Geist'] text-[14.5px] font-medium text-white/85 tracking-[-0.2px]">{title}</h3>
-        {headline && (
-          <div className="mt-[3px] font-['Bai_Jamjuree'] text-[28px] font-bold tracking-[-0.8px] tabular-nums leading-[1.05]"
-            style={{ color: TONE_COLOR[tone] }}>
-            {headline}
-          </div>
-        )}
-        {visual && <div className="mt-[10px]">{visual}</div>}
-      </div>
+      {(eyebrow || visual) && (
+        <div className="px-[18px] pt-[16px] pb-[14px]">
+          {eyebrow && (
+            <div className="font-['Geist'] text-[10px] uppercase tracking-[1.8px] text-white/40 mb-[10px]">{eyebrow}</div>
+          )}
+          {visual}
+        </div>
+      )}
       <div className="h-px mx-[18px]" style={{ background: "rgba(255,255,255,0.06)" }} />
-      <div className="px-[18px] py-[14px]">
-        <RotatingMetrics items={metrics} />
+      <div className="px-[18px] py-[16px] grid grid-cols-2 gap-x-[18px] gap-y-[16px]">
+        {metrics.slice(0, 4).map((m, i) => <InnerMetric key={i} m={m} />)}
       </div>
     </div>
   );
 }
+
 
 type Shortcut = { label: string; sub: string; onClick?: () => void; soon?: boolean };
 
@@ -558,10 +523,6 @@ function OperationArea(p: Props) {
       <SectionTitle>Operación del negocio</SectionTitle>
 
       <DashboardCard
-        eyebrow="Salud del inventario"
-        title={productCount > 0 ? `${productCount} producto${productCount === 1 ? "" : "s"} activos` : "Aún sin catálogo"}
-        headline={productCount > 0 ? (alertCount > 0 ? `${alertCount} en alerta` : "Stock OK") : "—"}
-        tone={productCount === 0 ? "muted" : alertCount > 0 ? "yellow" : "green"}
         visual={
           <>
             <StockSparkBars healthy={healthy} low={low} out={out} />
@@ -573,12 +534,13 @@ function OperationArea(p: Props) {
           </>
         }
         metrics={[
-          { label: "Productos activos", value: String(productCount), sub: "en catálogo", tone: productCount > 0 ? "default" : "muted" },
+          { label: "Productos", value: String(productCount), sub: "en catálogo", tone: productCount > 0 ? "default" : "muted" },
           { label: "Stock crítico", value: String(alertCount), sub: out > 0 ? `${out} agotados` : "bajo umbral", tone: alertCount > 0 ? "yellow" : "green" },
           { label: "Valor inventario", value: productCount > 0 ? money(totalValue) : "—", sub: "al costo", tone: productCount > 0 ? "blue" : "muted" },
           { label: "Última compra", value: "—", sub: "próximamente", tone: "muted" },
         ]}
       />
+
 
       <ShortcutsRow title="Módulos"
         items={[
@@ -620,11 +582,8 @@ function CashArea(p: Props) {
       <SectionTitle>Caja del negocio</SectionTitle>
 
       <DashboardCard
-        eyebrow="Ingresos vs gastos · últimos 7 días"
-        title="Movimiento de caja"
-        headline={`${weekNet >= 0 ? "+" : "-"}${money(weekNet)} neto`}
-        tone={weekNet >= 0 ? "green" : "red"}
         visual={
+
           <>
             <CashLineChart />
             <div className="mt-[6px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
@@ -696,11 +655,8 @@ function ClientsArea(p: Props) {
       <SectionTitle>Relación con clientes</SectionTitle>
 
       <DashboardCard
-        eyebrow="Directorio"
-        title={count > 0 ? `${count} cliente${count === 1 ? "" : "s"} registrado${count === 1 ? "" : "s"}` : "Aún sin clientes"}
-        headline={count > 0 ? String(count) : "—"}
-        tone={count > 0 ? "default" : "muted"}
         visual={
+
           <div className="grid grid-cols-3 gap-[10px]">
             <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
               <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Activos</div>
@@ -772,11 +728,8 @@ function ChannelsArea(p: Props) {
       <SectionTitle>Cómo te encuentran</SectionTitle>
 
       <DashboardCard
-        eyebrow="Presencia básica"
-        title={ready === 4 ? "Tu perfil está completo" : "Completa tu presencia"}
-        headline={`${ready}/4`}
-        tone={ready === 4 ? "green" : ready >= 2 ? "yellow" : "muted"}
         visual={<PresenceDots items={items} />}
+
         metrics={[
           { label: "Canales activos", value: String(ready), sub: "de 4", tone: ready > 0 ? "default" : "muted" },
           { label: "Perfil público", value: ready === 4 ? "Listo" : "Parcial", sub: `${ready}/4 datos`, tone: ready === 4 ? "green" : "yellow" },
