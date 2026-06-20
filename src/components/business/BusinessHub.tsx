@@ -785,13 +785,14 @@ function ChannelsArea(p: Props) {
         ]}
       />
 
-      <ShortcutsRow title="Ir a"
+      <ShortcutsRow title="Módulos"
         items={[
-          { label: "WhatsApp", onClick: p.onInfo },
-          { label: "Perfil público", onClick: p.onInfo },
-          { label: "Catálogo", soon: true },
-          { label: "Canales venta", soon: true },
+          { label: "WhatsApp", sub: hasWA ? profile?.phone ?? "" : "Configurar", onClick: p.onInfo },
+          { label: "Perfil público", sub: "Dirección y horario", onClick: p.onInfo },
+          { label: "Catálogo", sub: "Compartir productos", soon: true },
+          { label: "Canales venta", sub: "Delivery, redes", soon: true },
         ]} />
+
 
       {ready < 4 ? (
         <SociaTip title="Completa tu presencia básica"
