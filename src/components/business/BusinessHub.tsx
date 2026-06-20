@@ -556,34 +556,36 @@ function OperationArea(p: Props) {
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Operación del negocio</SectionTitle>
 
-      <HeroCard
+      <DashboardCard
         eyebrow="Salud del inventario"
         title={productCount > 0 ? `${productCount} producto${productCount === 1 ? "" : "s"} activos` : "Aún sin catálogo"}
         headline={productCount > 0 ? (alertCount > 0 ? `${alertCount} en alerta` : "Stock OK") : "—"}
         tone={productCount === 0 ? "muted" : alertCount > 0 ? "yellow" : "green"}
-      >
-        <StockSparkBars healthy={healthy} low={low} out={out} />
-        <div className="mt-[10px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
-          <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />OK {healthy}</span>
-          <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FFD76F]" />Bajo {low}</span>
-          <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />Agotado {out}</span>
-        </div>
-      </HeroCard>
+        visual={
+          <>
+            <StockSparkBars healthy={healthy} low={low} out={out} />
+            <div className="mt-[10px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
+              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />OK {healthy}</span>
+              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FFD76F]" />Bajo {low}</span>
+              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />Agotado {out}</span>
+            </div>
+          </>
+        }
+        metrics={[
+          { label: "Productos activos", value: String(productCount), sub: "en catálogo", tone: productCount > 0 ? "default" : "muted" },
+          { label: "Stock crítico", value: String(alertCount), sub: out > 0 ? `${out} agotados` : "bajo umbral", tone: alertCount > 0 ? "yellow" : "green" },
+          { label: "Valor inventario", value: productCount > 0 ? money(totalValue) : "—", sub: "al costo", tone: productCount > 0 ? "blue" : "muted" },
+          { label: "Última compra", value: "—", sub: "próximamente", tone: "muted" },
+        ]}
+      />
 
-      <MetricsGrid>
-        <Metric label="Productos" value={String(productCount)} sub="activos en catálogo" tone={productCount > 0 ? "default" : "muted"} />
-        <Metric label="Stock crítico" value={String(alertCount)} sub={out > 0 ? `${out} agotados` : "bajo umbral"} tone={alertCount > 0 ? "yellow" : "green"} />
-        <Metric label="Valor inventario" value={productCount > 0 ? money(totalValue) : "—"} sub="al costo" tone={productCount > 0 ? "blue" : "muted"} />
-        <Metric label="Última compra" value="—" sub="próximamente" tone="muted" />
-      </MetricsGrid>
-
-      <SectionTitle>Acciones</SectionTitle>
-      <ActionsGrid>
-        <ActionCard title="Catálogo" sub={productCount > 0 ? "Ver productos" : "Crear primero"} onClick={p.onInventory} />
-        <ActionCard title="Inventario" sub="Ajustar stock" onClick={p.onInventory} />
-        <ActionCard title="Compras" sub="Reposiciones" onClick={p.onSuppliers} soon />
-        <ActionCard title="Proveedores" sub="A quién compras" onClick={p.onSuppliers} soon />
-      </ActionsGrid>
+      <ShortcutsRow title="Ir a"
+        items={[
+          { label: "Catálogo", onClick: p.onInventory },
+          { label: "Inventario", onClick: p.onInventory },
+          { label: "Compras", soon: true },
+          { label: "Proveedores", soon: true },
+        ]} />
 
       {productCount < 3 ? (
         <SociaTip title="Agrega tus productos más vendidos"
@@ -602,7 +604,7 @@ function OperationArea(p: Props) {
 }
 
 /* ============================================================
-   AREA: Caja (matches mockup)
+   AREA: Caja
    ============================================================ */
 function CashArea(p: Props) {
   const {
@@ -615,32 +617,36 @@ function CashArea(p: Props) {
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Caja del negocio</SectionTitle>
 
-      <HeroCard
-        title="Ingresos vs gastos · últimos 7 días"
+      <DashboardCard
+        eyebrow="Ingresos vs gastos · últimos 7 días"
+        title="Movimiento de caja"
         headline={`${weekNet >= 0 ? "+" : "-"}${money(weekNet)} neto`}
         tone={weekNet >= 0 ? "green" : "red"}
-      >
-        <CashLineChart />
-        <div className="mt-[6px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
-          <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />Ingresos</span>
-          <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />Egresos</span>
-        </div>
-      </HeroCard>
+        visual={
+          <>
+            <CashLineChart />
+            <div className="mt-[6px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
+              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />Ingresos</span>
+              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />Egresos</span>
+            </div>
+          </>
+        }
+        metrics={[
+          { label: "Caja hoy", value: money(todayIncome - todayExpense), sub: "efectivo + digital", tone: "green" },
+          { label: "Gastos hoy", value: money(todayExpense), sub: "registrados", tone: todayExpense > 0 ? "red" : "muted" },
+          { label: "Margen del mes", value: monthIncome > 0 ? `${margin}%` : "—", sub: "ingresos vs gastos", tone: monthIncome > 0 ? "blue" : "muted" },
+          { label: "Por cobrar", value: fiadosPending > 0 ? money(fiadosPending) : "S/ 0", sub: "fiados abiertos", tone: fiadosPending > 0 ? "yellow" : "muted" },
+        ]}
+      />
 
-      <MetricsGrid>
-        <Metric label="Caja hoy" value={money(todayIncome - todayExpense)} sub="efectivo + digital" tone="green" />
-        <Metric label="Gastos" value={money(todayExpense)} sub="registrados hoy" tone={todayExpense > 0 ? "red" : "muted"} />
-        <Metric label="Margen" value={monthIncome > 0 ? `${margin}%` : "—"} sub="del mes" tone={monthIncome > 0 ? "blue" : "muted"} />
-        <Metric label="Deudas" value={fiadosPending > 0 ? money(fiadosPending) : "S/ 0"} sub="por cobrar" tone={fiadosPending > 0 ? "yellow" : "muted"} />
-      </MetricsGrid>
-
-      <SectionTitle>Acciones</SectionTitle>
-      <ActionsGrid>
-        <ActionCard title="Ventas" sub="Registrar" onClick={p.onPayments} />
-        <ActionCard title="Gastos" sub="Agregar" onClick={p.onPayments} />
-        <ActionCard title="Deudas" sub="Por cobrar / pagar" onClick={p.onReceivables} />
-        <ActionCard title="Reportes" sub="Analizar" onClick={p.onDocuments} soon />
-      </ActionsGrid>
+      <ShortcutsRow title="Ir a"
+        items={[
+          { label: "Ventas", onClick: p.onPayments },
+          { label: "Gastos", onClick: p.onPayments },
+          { label: "Por cobrar", onClick: p.onReceivables },
+          { label: "Por pagar", onClick: p.onPayables },
+          { label: "Reportes", soon: true },
+        ]} />
 
       {monthIncome === 0 && monthExpense === 0 ? (
         <SociaTip title="Empieza a registrar tu caja"
@@ -681,47 +687,48 @@ function ClientsArea(p: Props) {
 
   const pending = fiados.filter((f) => !f.settled);
   const debtors = new Set(pending.map((f) => f.client.trim().toLowerCase())).size;
+  const debtAmount = pending.reduce((s, f) => s + f.amount, 0);
 
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Relación con clientes</SectionTitle>
 
-      <HeroCard
+      <DashboardCard
         eyebrow="Directorio"
         title={count > 0 ? `${count} cliente${count === 1 ? "" : "s"} registrado${count === 1 ? "" : "s"}` : "Aún sin clientes"}
         headline={count > 0 ? String(count) : "—"}
         tone={count > 0 ? "default" : "muted"}
-      >
-        <div className="grid grid-cols-3 gap-[10px]">
-          <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Activos</div>
-            <div className="font-['Bai_Jamjuree'] text-[18px] font-bold text-white tabular-nums">{loading ? "…" : count}</div>
+        visual={
+          <div className="grid grid-cols-3 gap-[10px]">
+            <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Activos</div>
+              <div className="font-['Bai_Jamjuree'] text-[18px] font-bold text-white tabular-nums">{loading ? "…" : count}</div>
+            </div>
+            <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Con fiado</div>
+              <div className="font-['Bai_Jamjuree'] text-[18px] font-bold tabular-nums" style={{ color: debtors > 0 ? "#FFD76F" : "#ffffff" }}>{debtors}</div>
+            </div>
+            <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Nuevos</div>
+              <div className="font-['Bai_Jamjuree'] text-[18px] font-bold text-white/50 tabular-nums">—</div>
+            </div>
           </div>
-          <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Con fiado</div>
-            <div className="font-['Bai_Jamjuree'] text-[18px] font-bold tabular-nums" style={{ color: debtors > 0 ? "#FFD76F" : "#ffffff" }}>{debtors}</div>
-          </div>
-          <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Nuevos</div>
-            <div className="font-['Bai_Jamjuree'] text-[18px] font-bold text-white/50 tabular-nums">—</div>
-          </div>
-        </div>
-      </HeroCard>
+        }
+        metrics={[
+          { label: "Registrados", value: loading ? "…" : String(count), sub: "en directorio", tone: count > 0 ? "default" : "muted" },
+          { label: "Con fiado", value: String(debtors), sub: debtors > 0 ? money(debtAmount) : "sin deudas", tone: debtors > 0 ? "yellow" : "muted" },
+          { label: "Frecuentes", value: "—", sub: "próximamente", tone: "muted" },
+          { label: "Seguimientos", value: "0", sub: "pendientes", tone: "muted" },
+        ]}
+      />
 
-      <MetricsGrid>
-        <Metric label="Registrados" value={loading ? "…" : String(count)} sub="en directorio" tone={count > 0 ? "default" : "muted"} />
-        <Metric label="Con fiado" value={String(debtors)} sub={debtors > 0 ? money(pending.reduce((s, f) => s + f.amount, 0)) : "sin deudas"} tone={debtors > 0 ? "yellow" : "muted"} />
-        <Metric label="Frecuentes" value="—" sub="próximamente" tone="muted" />
-        <Metric label="Seguimientos" value="0" sub="pendientes" tone="muted" />
-      </MetricsGrid>
-
-      <SectionTitle>Acciones</SectionTitle>
-      <ActionsGrid>
-        <ActionCard title="Directorio" sub={count > 0 ? "Ver clientes" : "Agregar primero"} onClick={p.onClients} />
-        <ActionCard title="Frecuentes" sub="Quiénes vuelven" onClick={p.onClients} soon />
-        <ActionCard title="Seguimientos" sub="Recordar contactar" onClick={p.onClients} soon />
-        <ActionCard title="Historial" sub="Compras por cliente" onClick={p.onClients} soon />
-      </ActionsGrid>
+      <ShortcutsRow title="Ir a"
+        items={[
+          { label: "Directorio", onClick: p.onClients },
+          { label: "Frecuentes", soon: true },
+          { label: "Seguimientos", soon: true },
+          { label: "Historial", soon: true },
+        ]} />
 
       {count === 0 ? (
         <SociaTip title="Registra a tus clientes frecuentes"
@@ -761,29 +768,27 @@ function ChannelsArea(p: Props) {
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Cómo te encuentran</SectionTitle>
 
-      <HeroCard
+      <DashboardCard
         eyebrow="Presencia básica"
         title={ready === 4 ? "Tu perfil está completo" : "Completa tu presencia"}
         headline={`${ready}/4`}
         tone={ready === 4 ? "green" : ready >= 2 ? "yellow" : "muted"}
-      >
-        <PresenceDots items={items} />
-      </HeroCard>
+        visual={<PresenceDots items={items} />}
+        metrics={[
+          { label: "Canales activos", value: String(ready), sub: "de 4", tone: ready > 0 ? "default" : "muted" },
+          { label: "Perfil público", value: ready === 4 ? "Listo" : "Parcial", sub: `${ready}/4 datos`, tone: ready === 4 ? "green" : "yellow" },
+          { label: "Catálogo", value: "—", sub: "compartible · pronto", tone: "muted" },
+          { label: "Contacto", value: hasWA ? "1" : "0", sub: "WhatsApp", tone: hasWA ? "green" : "muted" },
+        ]}
+      />
 
-      <MetricsGrid>
-        <Metric label="Canales activos" value={String(ready)} sub="de 4" tone={ready > 0 ? "default" : "muted"} />
-        <Metric label="Perfil público" value={ready === 4 ? "Listo" : "Parcial"} sub={`${ready}/4 datos`} tone={ready === 4 ? "green" : "yellow"} />
-        <Metric label="Catálogo" value="—" sub="compartible · pronto" tone="muted" />
-        <Metric label="Contacto" value={hasWA ? "1" : "0"} sub="WhatsApp" tone={hasWA ? "green" : "muted"} />
-      </MetricsGrid>
-
-      <SectionTitle>Acciones</SectionTitle>
-      <ActionsGrid>
-        <ActionCard title="WhatsApp" sub={hasWA ? profile?.phone ?? "" : "Configurar"} onClick={p.onInfo} />
-        <ActionCard title="Perfil público" sub="Dirección y horario" onClick={p.onInfo} />
-        <ActionCard title="Catálogo" sub="Compartir productos" onClick={p.onChannels} soon />
-        <ActionCard title="Canales venta" sub="Delivery, redes" onClick={p.onChannels} soon />
-      </ActionsGrid>
+      <ShortcutsRow title="Ir a"
+        items={[
+          { label: "WhatsApp", onClick: p.onInfo },
+          { label: "Perfil público", onClick: p.onInfo },
+          { label: "Catálogo", soon: true },
+          { label: "Canales venta", soon: true },
+        ]} />
 
       {ready < 4 ? (
         <SociaTip title="Completa tu presencia básica"
@@ -799,6 +804,7 @@ function ChannelsArea(p: Props) {
     </div>
   );
 }
+
 
 /* ============================================================
    Advanced configuration row
