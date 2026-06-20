@@ -523,10 +523,6 @@ function OperationArea(p: Props) {
       <SectionTitle>Operación del negocio</SectionTitle>
 
       <DashboardCard
-        eyebrow="Salud del inventario"
-        title={productCount > 0 ? `${productCount} producto${productCount === 1 ? "" : "s"} activos` : "Aún sin catálogo"}
-        headline={productCount > 0 ? (alertCount > 0 ? `${alertCount} en alerta` : "Stock OK") : "—"}
-        tone={productCount === 0 ? "muted" : alertCount > 0 ? "yellow" : "green"}
         visual={
           <>
             <StockSparkBars healthy={healthy} low={low} out={out} />
@@ -538,12 +534,13 @@ function OperationArea(p: Props) {
           </>
         }
         metrics={[
-          { label: "Productos activos", value: String(productCount), sub: "en catálogo", tone: productCount > 0 ? "default" : "muted" },
+          { label: "Productos", value: String(productCount), sub: "en catálogo", tone: productCount > 0 ? "default" : "muted" },
           { label: "Stock crítico", value: String(alertCount), sub: out > 0 ? `${out} agotados` : "bajo umbral", tone: alertCount > 0 ? "yellow" : "green" },
           { label: "Valor inventario", value: productCount > 0 ? money(totalValue) : "—", sub: "al costo", tone: productCount > 0 ? "blue" : "muted" },
           { label: "Última compra", value: "—", sub: "próximamente", tone: "muted" },
         ]}
       />
+
 
       <ShortcutsRow title="Módulos"
         items={[
