@@ -35,8 +35,9 @@ function EditSheet({
   const submit = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles")
-      .update({ [field]: v.trim() || null })
+    const patch: Record<string, string | null> = { [field]: v.trim() || null };
+    const { error } = await (supabase.from("profiles") as any)
+      .update(patch)
       .eq("id", user.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
