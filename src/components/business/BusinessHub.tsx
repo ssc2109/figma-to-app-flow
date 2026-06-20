@@ -325,82 +325,110 @@ const TONE_COLOR: Record<ToneKey, string> = {
   muted: "rgba(255,255,255,0.45)",
 };
 
-function Metric({
-  label, value, sub, tone = "default",
-}: { label: string; value: string; sub?: string; tone?: ToneKey }) {
+type MetricItem = { label: string; value: string; sub?: string; tone?: ToneKey };
+
+function RotatingMetrics({ items }: { items: MetricItem[] }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (items.length <= 1) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % items.length), 3200);
+    return () => clearInterval(t);
+  }, [items.length]);
+  const it = items[idx];
+  if (!it) return null;
   return (
-    <div className="rounded-[20px] p-[14px] flex flex-col gap-[4px] min-h-[92px]"
-      style={{ background: "rgba(13,15,15,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/45">{label}</div>
-      <div className="font-['Bai_Jamjuree'] text-[22px] font-bold tracking-[-0.6px] tabular-nums leading-[1.1]" style={{ color: TONE_COLOR[tone] }}>
-        {value}
+    <div className="flex items-end justify-between gap-[12px]">
+      <div className="min-w-0 flex-1">
+        <AnimatePresence mode="wait">
+          <motion.div key={idx}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
+            <div className="font-['Geist'] text-[10px] uppercase tracking-[1.6px] text-white/45">{it.label}</div>
+            <div className="mt-[2px] font-['Bai_Jamjuree'] text-[24px] font-bold tracking-[-0.6px] tabular-nums leading-[1.05]"
+              style={{ color: TONE_COLOR[it.tone ?? "default"] }}>
+              {it.value}
+            </div>
+            {it.sub && <div className="mt-[1px] font-['Geist'] text-[11px] text-white/45 leading-[1.3] truncate">{it.sub}</div>}
+          </motion.div>
+        </AnimatePresence>
       </div>
-      {sub && <div className="font-['Geist'] text-[11px] text-white/40 leading-[1.3] truncate">{sub}</div>}
+      <div className="flex items-center gap-[5px] shrink-0 pb-[3px]">
+        {items.map((_, i) => (
+          <button key={i} onClick={() => setIdx(i)}
+            className="h-[5px] rounded-full transition-all"
+            style={{
+              width: i === idx ? 16 : 5,
+              background: i === idx ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.18)",
+            }} />
+        ))}
+      </div>
     </div>
   );
 }
 
-function MetricsGrid({ children }: { children: React.ReactNode }) {
-  return <div className="px-[22px] grid grid-cols-2 gap-[10px]">{children}</div>;
-}
-
-function ActionCard({
-  title, sub, onClick, soon,
-}: { title: string; sub: string; onClick?: () => void; soon?: boolean }) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={!onClick}
-      className="relative text-left rounded-[20px] p-[16px] active:scale-[0.985] transition-transform disabled:active:scale-100 min-h-[82px] flex flex-col justify-between"
-      style={{
-        background: "rgba(13,15,15,0.85)",
-        border: "1px solid rgba(255,255,255,0.08)",
-      }}
-    >
-      <div className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white tracking-[-0.4px] leading-[1.1]">
-        {title}
-      </div>
-      <div className="font-['Geist'] text-[11.5px] text-white/45 leading-[1.3]">{sub}</div>
-      {soon && (
-        <span className="absolute top-[12px] right-[12px] font-['Geist'] text-[9px] uppercase tracking-[1.2px] text-white/45 px-[6px] py-[2px] rounded-full"
-          style={{ border: "1px solid rgba(255,255,255,0.10)" }}>
-          Pronto
-        </span>
-      )}
-    </button>
-  );
-}
-
-function ActionsGrid({ children }: { children: React.ReactNode }) {
-  return <div className="px-[22px] grid grid-cols-2 gap-[10px]">{children}</div>;
-}
-
-function HeroCard({
-  eyebrow, title, headline, tone = "default", children,
+function DashboardCard({
+  eyebrow, title, headline, tone = "default", visual, metrics,
 }: {
   eyebrow?: string;
   title: string;
   headline?: string;
   tone?: ToneKey;
-  children?: React.ReactNode;
+  visual?: React.ReactNode;
+  metrics: MetricItem[];
 }) {
   return (
-    <div className="mx-[22px] rounded-[24px] p-[18px] overflow-hidden"
+    <div className="mx-[22px] rounded-[26px] overflow-hidden"
       style={{
-        background: "linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.012))",
+        background: "linear-gradient(150deg, rgba(255,255,255,0.06), rgba(255,255,255,0.012))",
         border: "1px solid rgba(255,255,255,0.10)",
       }}>
-      {eyebrow && (
-        <div className="font-['Geist'] text-[10px] uppercase tracking-[1.8px] text-white/40 mb-[6px]">{eyebrow}</div>
-      )}
-      <h3 className="font-['Geist'] text-[15px] font-medium text-white tracking-[-0.2px]">{title}</h3>
-      {headline && (
-        <div className="mt-[4px] font-['Bai_Jamjuree'] text-[28px] font-bold tracking-[-0.8px] tabular-nums leading-[1.05]"
-          style={{ color: TONE_COLOR[tone] }}>
-          {headline}
-        </div>
-      )}
-      {children && <div className="mt-[10px]">{children}</div>}
+      <div className="px-[18px] pt-[16px] pb-[14px]">
+        {eyebrow && (
+          <div className="font-['Geist'] text-[10px] uppercase tracking-[1.8px] text-white/40 mb-[6px]">{eyebrow}</div>
+        )}
+        <h3 className="font-['Geist'] text-[14.5px] font-medium text-white/85 tracking-[-0.2px]">{title}</h3>
+        {headline && (
+          <div className="mt-[3px] font-['Bai_Jamjuree'] text-[28px] font-bold tracking-[-0.8px] tabular-nums leading-[1.05]"
+            style={{ color: TONE_COLOR[tone] }}>
+            {headline}
+          </div>
+        )}
+        {visual && <div className="mt-[10px]">{visual}</div>}
+      </div>
+      <div className="h-px mx-[18px]" style={{ background: "rgba(255,255,255,0.06)" }} />
+      <div className="px-[18px] py-[14px]">
+        <RotatingMetrics items={metrics} />
+      </div>
+    </div>
+  );
+}
+
+type Shortcut = { label: string; onClick?: () => void; soon?: boolean };
+
+function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
+  return (
+    <div className="px-[22px]">
+      <div className="font-['Geist'] text-[11px] uppercase tracking-[3px] text-white/40 mb-[10px]">{title}</div>
+      <div className="flex flex-wrap gap-[8px]">
+        {items.map((s) => (
+          <button key={s.label} onClick={s.onClick} disabled={!s.onClick || s.soon}
+            className="inline-flex items-center gap-[6px] h-[34px] px-[14px] rounded-full font-['Geist'] text-[12.5px] active:scale-[0.97] transition-transform disabled:active:scale-100"
+            style={{
+              background: s.soon ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              color: s.soon ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.88)",
+            }}>
+            {s.label}
+            {s.soon ? (
+              <span className="font-['Geist'] text-[9px] uppercase tracking-[1px] text-white/35">pronto</span>
+            ) : (
+              <ArrowRight className="h-[11px] w-[11px] opacity-60" strokeWidth={2} />
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
