@@ -1,31 +1,14 @@
 import { useEffect, useState } from "react";
-import {
-  Package,
-  Wallet,
-  FileText,
-  CreditCard,
-  AlertTriangle,
-  ChevronRight,
-  ChevronLeft,
-} from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useInventory } from "@/data/inventory";
-import { useFinance } from "@/data/finance";
-import { useAuth } from "@/hooks/useAuth";
-import {
-  SectionLabel,
-  ListGroup,
-  PlainRow,
-  RowDivider,
-  FooterMark,
-} from "./business/shared";
 import InventoryView from "./business/InventoryView";
 import PaymentsView from "./business/PaymentsView";
 import InfoView from "./business/InfoView";
 import FinanceScreen from "./FinanceScreen";
-import BusinessInsights from "./business/BusinessInsights";
+import BusinessHub from "./business/BusinessHub";
 
 type View = "hub" | "inventory" | "payments" | "info" | "finanzas";
+
 
 const fmtK = (n: number) =>
   n >= 1000 ? `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K` : n.toFixed(0);
