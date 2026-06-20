@@ -6,7 +6,7 @@ import {
   Users, UserCheck, Bell, History,
   MessageCircle, Globe, Share2, Megaphone,
   ChevronRight, Sparkles, ArrowRight, Settings2,
-  AlertTriangle,
+  
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
