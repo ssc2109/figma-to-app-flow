@@ -403,16 +403,18 @@ type Shortcut = { label: string; sub: string; onClick?: () => void; soon?: boole
 
 function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
   return (
-    <div className="flex flex-col gap-[10px]">
+    <div className="flex flex-col gap-[10px] px-[22px]">
       <div className="px-[22px] font-['Geist'] text-[11px] uppercase tracking-[3.5px] text-white/45">{title}</div>
-      <div className="px-[22px] grid grid-cols-2 gap-[10px]">
+      <div
+        className="grid grid-cols-2 overflow-hidden rounded-[24px]"
+        style={{ background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.075)" }}
+      >
         {items.map((s) => (
           <button
             key={s.label}
             onClick={s.onClick}
             disabled={!s.onClick}
-            className="relative text-left rounded-[20px] p-[16px] active:scale-[0.985] transition-transform disabled:active:scale-100 min-h-[82px] flex flex-col justify-between"
-            style={{ background: "rgba(13,15,15,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}
+            className="relative min-h-[78px] text-left p-[16px] active:bg-white/[0.035] transition-colors disabled:active:bg-transparent flex flex-col justify-between border-white/[0.06] odd:border-r [&:nth-child(-n+2)]:border-b"
           >
             <div className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white tracking-[-0.4px] leading-[1.1]">
               {s.label}
