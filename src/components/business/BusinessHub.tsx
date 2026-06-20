@@ -834,12 +834,6 @@ function CashArea(p: Props, s: Signals) {
     );
   }
 
-  const incomeWeek = Math.max(0, s.weekNet < 0 ? 0 : 0);
-  // recompute from finance hook
-  const { last7Days } = useFinance();
-  const income = last7Days.reduce((sum, d) => sum + d.income, 0);
-  const expense = last7Days.reduce((sum, d) => sum + d.expense, 0);
-
   const chips: MetricItem[] = [
     {
       label: "Caja hoy",
@@ -875,7 +869,7 @@ function CashArea(p: Props, s: Signals) {
         headlineLabel={s.expenseCount === 0 ? "Ingresos de la semana" : "Neto de la semana"}
         headline={`${s.weekNet < 0 ? "-" : ""}${money(s.weekNet)}`}
         headlineTone={s.expenseCount === 0 ? "green" : (s.weekNet >= 0 ? "green" : "red")}
-        visual={<CashBar income={income} expense={expense} />}
+        visual={<CashBar income={s.weekIncome} expense={s.weekExpense} />}
         chips={chips}
       />
       <ShortcutsRow
