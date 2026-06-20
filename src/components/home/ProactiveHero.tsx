@@ -146,7 +146,7 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
         transition={{ duration: 0.5 }}
         className="pt-[8px] pb-[2px]"
       >
-        <h1 className="font-['Geist'] font-medium text-[28px] leading-[34px] tracking-[-0.6px] text-white">
+        <h1 className="font-['Geist'] font-medium text-[34px] leading-[40px] tracking-[-0.6px] text-white break-words">
           {greeting.line1}
         </h1>
         <p className="mt-[6px] font-['Geist'] text-[15px] leading-[22px] text-[rgba(255,255,255,0.62)]">
