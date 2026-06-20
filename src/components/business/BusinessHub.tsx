@@ -582,11 +582,8 @@ function CashArea(p: Props) {
       <SectionTitle>Caja del negocio</SectionTitle>
 
       <DashboardCard
-        eyebrow="Ingresos vs gastos · últimos 7 días"
-        title="Movimiento de caja"
-        headline={`${weekNet >= 0 ? "+" : "-"}${money(weekNet)} neto`}
-        tone={weekNet >= 0 ? "green" : "red"}
         visual={
+
           <>
             <CashLineChart />
             <div className="mt-[6px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
