@@ -115,8 +115,10 @@ function useBusinessSignals(): Signals {
 
     const salesCount = tx.filter((t) => t.kind === "ingreso").length;
     const expenseCount = tx.filter((t) => t.kind === "egreso").length;
-    const weekNet = last7Days.reduce((s, d) => s + (d.income - d.expense), 0);
-    const weekHasMovement = last7Days.some((d) => d.income > 0 || d.expense > 0);
+    const weekIncome = last7Days.reduce((sum, d) => sum + d.income, 0);
+    const weekExpense = last7Days.reduce((sum, d) => sum + d.expense, 0);
+    const weekNet = weekIncome - weekExpense;
+    const weekHasMovement = weekIncome > 0 || weekExpense > 0;
 
     const pending = fiados.filter((f) => !f.settled);
     const debtors = new Set(pending.map((f) => f.client.trim().toLowerCase())).size;
