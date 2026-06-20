@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
-import { ChevronRight, Sparkles, ArrowRight, Settings2 } from "lucide-react";
+import { ChevronRight, ArrowRight, Settings2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
 import { useFinance } from "@/data/finance";
 import { supabase } from "@/integrations/supabase/client";
 
 /* ============================================================
-   Trax · Business HQ (v5 — Command Center, mockup-aligned)
-   Header grande · Panel HQ · Tabs chunky · Hero chart · 2x2 acciones
+   Trax · Business HQ — calm operating view
+   Fórmula: visual grande + módulos. Sin capas extra.
    ============================================================ */
 
 type Props = {
@@ -50,14 +50,14 @@ function isOpenNow(open: string | null, close: string | null) {
 const money = (n: number) =>
   `S/ ${Math.abs(n).toLocaleString("es-PE", { maximumFractionDigits: n >= 100 ? 0 : 2 })}`;
 
-/* ---------- ambient (verde sutil, mockup vibe) ---------- */
+/* ---------- ambient silencioso ---------- */
 function Ambient() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -top-[60px] left-[10%] h-[360px] w-[360px] rounded-full opacity-[0.55]"
-        style={{ background: "radial-gradient(closest-side, rgba(102,240,156,0.13), transparent 70%)", filter: "blur(50px)" }} />
-      <div className="absolute top-[420px] -right-[140px] h-[360px] w-[360px] rounded-full opacity-[0.35]"
-        style={{ background: "radial-gradient(closest-side, rgba(102,240,156,0.10), transparent 70%)", filter: "blur(60px)" }} />
+      <div
+        className="absolute -top-[90px] left-1/2 h-[320px] w-[320px] -translate-x-1/2 rounded-full opacity-[0.35]"
+        style={{ background: "radial-gradient(closest-side, rgba(255,255,255,0.10), transparent 72%)", filter: "blur(56px)" }}
+      />
     </div>
   );
 }
