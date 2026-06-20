@@ -76,6 +76,8 @@ type Signals = {
   monthIncome: number;
   monthExpense: number;
   monthNet: number;
+  weekIncome: number;
+  weekExpense: number;
   weekNet: number;
   weekHasMovement: boolean;
   margin: number | null;
