@@ -641,14 +641,14 @@ function CashArea(p: Props) {
         ]}
       />
 
-      <ShortcutsRow title="Ir a"
+      <ShortcutsRow title="Módulos"
         items={[
-          { label: "Ventas", onClick: p.onPayments },
-          { label: "Gastos", onClick: p.onPayments },
-          { label: "Por cobrar", onClick: p.onReceivables },
-          { label: "Por pagar", onClick: p.onPayables },
-          { label: "Reportes", soon: true },
+          { label: "Ventas", sub: "Registrar", onClick: p.onPayments },
+          { label: "Gastos", sub: "Agregar", onClick: p.onPayments },
+          { label: "Deudas", sub: "Por cobrar / pagar", onClick: p.onReceivables },
+          { label: "Reportes", sub: "Analizar", soon: true },
         ]} />
+
 
       {monthIncome === 0 && monthExpense === 0 ? (
         <SociaTip title="Empieza a registrar tu caja"
