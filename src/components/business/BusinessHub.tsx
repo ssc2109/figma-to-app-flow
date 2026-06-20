@@ -109,8 +109,8 @@ function BizHeader() {
                   transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
                   className="h-[5px] w-[5px] rounded-full"
                   style={{
-                    background: open ? "#66F09C" : "#FF7C6D",
-                    boxShadow: open ? "0 0 8px rgba(102,240,156,0.7)" : "0 0 8px rgba(255,124,109,0.5)",
+                    background: open ? "#4ADE80" : "#F87171",
+                    boxShadow: open ? "0 0 8px rgba(74,222,128,0.45)" : "0 0 8px rgba(248,113,113,0.35)",
                   }} />
               )}
               {status}
@@ -404,7 +404,7 @@ type Shortcut = { label: string; sub: string; onClick?: () => void; soon?: boole
 function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
   return (
     <div className="flex flex-col gap-[10px] px-[22px]">
-      <div className="px-[22px] font-['Geist'] text-[11px] uppercase tracking-[3.5px] text-white/45">{title}</div>
+      <div className="font-['Geist'] text-[11px] uppercase tracking-[3.5px] text-white/45">{title}</div>
       <div
         className="grid grid-cols-2 overflow-hidden rounded-[24px]"
         style={{ background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.075)" }}
@@ -459,25 +459,30 @@ function buildLinePath(values: number[], w: number, h: number, padY = 8) {
 
 function CashLineChart() {
   const { last7Days } = useFinance();
-  const W = 320,
-    H = 110;
-  const incomePath = buildLinePath(last7Days.map((d) => d.income), W, H);
-  const expensePath = buildLinePath(last7Days.map((d) => d.expense), W, H);
+  const income = last7Days.reduce((s, d) => s + d.income, 0);
+  const expense = last7Days.reduce((s, d) => s + d.expense, 0);
+  const total = Math.max(1, income + expense);
+  const incomePct = Math.max(6, (income / total) * 100);
+  const expensePct = Math.max(6, (expense / total) * 100);
   return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[110px]">
-        <path d={incomePath} fill="none" stroke="#66F09C" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
-        <path d={expensePath} fill="none" stroke="#FF7C6D" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <div className="mt-[6px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
-        <span className="flex items-center gap-[5px]">
-          <span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />
-          Ingresos
-        </span>
-        <span className="flex items-center gap-[5px]">
-          <span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />
-          Egresos
-        </span>
+    <div className="py-[10px]">
+      <div className="flex h-[18px] overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.07)" }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${incomePct}%` }}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+          style={{ background: "#4ADE80" }}
+        />
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${expensePct}%` }}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+          style={{ background: "#F87171" }}
+        />
+      </div>
+      <div className="mt-[18px] grid grid-cols-2 gap-[18px]">
+        <InnerMetric m={{ label: "Ingresos", value: money(income), tone: income > 0 ? "green" : "muted" }} />
+        <InnerMetric m={{ label: "Egresos", value: money(expense), tone: expense > 0 ? "red" : "muted" }} />
       </div>
     </div>
   );
@@ -486,9 +491,9 @@ function CashLineChart() {
 function StockHealth({ healthy, low, out }: { healthy: number; low: number; out: number }) {
   const total = healthy + low + out;
   const segs = [
-    { v: healthy, c: "#66F09C", label: "OK" },
-    { v: low, c: "#FFD76F", label: "Bajo" },
-    { v: out, c: "#FF7C6D", label: "Agotado" },
+    { v: healthy, c: "#4ADE80", label: "OK" },
+    { v: low, c: "rgba(255,255,255,0.46)", label: "Bajo" },
+    { v: out, c: "#F87171", label: "Agotado" },
   ];
   return (
     <div>
@@ -510,11 +515,11 @@ function StockHealth({ healthy, low, out }: { healthy: number; low: number; out:
           )}
         </div>
       )}
-      <div className="mt-[10px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
+      <div className="mt-[14px] grid grid-cols-3 gap-[10px] font-['Geist'] text-[11px] text-white/55">
         {segs.map((s) => (
-          <span key={s.label} className="flex items-center gap-[5px]">
+          <span key={s.label} className="flex items-center gap-[5px] min-w-0">
             <span className="h-[6px] w-[6px] rounded-full" style={{ background: s.c }} />
-            {s.label} {s.v}
+            <span className="truncate">{s.label} {s.v}</span>
           </span>
         ))}
       </div>
