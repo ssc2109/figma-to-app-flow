@@ -127,7 +127,7 @@ function NavShell() {
                 <Container
                   onSeeAllActions={() => setQuickActionsOpen(true)}
                   onSeeAllActivity={() => {
-                    setNegocioInitialView("finanzas");
+                    setNegocioInitialView("debts");
                     setCurrentScreen("negocio");
                   }}
                   onOpenSettings={() => setSettingsOpen(true)}
