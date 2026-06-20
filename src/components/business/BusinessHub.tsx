@@ -308,10 +308,10 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 type ToneKey = "default" | "green" | "red" | "blue" | "yellow" | "muted";
 const TONE_COLOR: Record<ToneKey, string> = {
   default: "#ffffff",
-  green: "#66F09C",
-  red: "#FF7C6D",
-  blue: "#76BEFF",
-  yellow: "#FFD76F",
+  green: "#4ADE80",
+  red: "#F87171",
+  blue: "rgba(255,255,255,0.82)",
+  yellow: "rgba(255,255,255,0.70)",
   muted: "rgba(255,255,255,0.45)",
 };
 
