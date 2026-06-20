@@ -1060,7 +1060,15 @@ export default function BusinessHub(p: Props) {
   return (
     <div className="relative w-full">
       <Ambient />
-      <div className="relative flex flex-col gap-[18px] pb-[200px]">
+      {/* Aurora top — apunta hacia abajo */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-0 right-0 top-0 z-0 overflow-hidden"
+        style={{ height: 420, transform: "scaleY(-1)", opacity: 0.55, maskImage: "linear-gradient(to top, transparent 0%, #000 45%, #000 100%)", WebkitMaskImage: "linear-gradient(to top, transparent 0%, #000 45%, #000 100%)" }}
+      >
+        <Aurora colorStops={["#4ADE80", "#ffffff", "#3a7fff"]} amplitude={0.9} blend={0.5} speed={0.6} />
+      </div>
+      <div className="relative z-10 flex flex-col gap-[18px] pb-[200px]">
         <BizHeader />
         <HQPanel insights={insights} signals={signals} />
 
