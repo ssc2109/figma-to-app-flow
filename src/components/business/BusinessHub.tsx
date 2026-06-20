@@ -529,22 +529,18 @@ function StockHealth({ healthy, low, out }: { healthy: number; low: number; out:
 
 function PresenceDots({ items }: { items: { label: string; ok: boolean }[] }) {
   return (
-    <div className="grid grid-cols-2 gap-[8px]">
+    <div className="flex flex-col gap-[10px]">
       {items.map((it) => (
         <div
           key={it.label}
-          className="flex items-center gap-[8px] px-[10px] py-[9px] rounded-[12px]"
-          style={{
-            background: it.ok ? "rgba(102,240,156,0.06)" : "rgba(255,255,255,0.02)",
-            border: `1px solid ${it.ok ? "rgba(102,240,156,0.20)" : "rgba(255,255,255,0.07)"}`,
-          }}
+          className="flex items-center gap-[10px]"
         >
           <span
-            className="h-[7px] w-[7px] rounded-full"
-            style={{ background: it.ok ? "#66F09C" : "rgba(255,255,255,0.25)" }}
+            className="h-[8px] w-[8px] rounded-full shrink-0"
+            style={{ background: it.ok ? "#4ADE80" : "rgba(255,255,255,0.22)" }}
           />
           <span
-            className="font-['Geist'] text-[12.5px]"
+            className="font-['Geist'] text-[14px]"
             style={{ color: it.ok ? "#ffffff" : "rgba(255,255,255,0.55)" }}
           >
             {it.label}
@@ -566,20 +562,19 @@ function ClientsDistribution({
 }) {
   const cells = [
     { label: "Activos", value: registered, color: "#ffffff" },
-    { label: "Con fiado", value: withDebt, color: "#FFD76F" },
+    { label: "Con fiado", value: withDebt, color: "rgba(255,255,255,0.70)" },
     { label: "Nuevos", value: newOnes, color: "rgba(255,255,255,0.45)" },
   ];
   return (
-    <div className="grid grid-cols-3 gap-[10px]">
+    <div className="grid grid-cols-3 gap-[14px]">
       {cells.map((c) => (
         <div
           key={c.label}
-          className="rounded-[14px] p-[12px]"
-          style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}
+          className="min-w-0"
         >
           <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">{c.label}</div>
           <div
-            className="mt-[4px] font-['Bai_Jamjuree'] text-[22px] font-bold tabular-nums leading-[1]"
+            className="mt-[6px] font-['Bai_Jamjuree'] text-[28px] font-bold tabular-nums leading-[1]"
             style={{ color: c.color }}
           >
             {c.value === 0 && c.label === "Nuevos" ? "—" : c.value}
