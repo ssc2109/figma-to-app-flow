@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
 import { useFinance } from "@/data/finance";
 import { supabase } from "@/integrations/supabase/client";
+import Aurora from "@/components/Aurora";
 
 /* ============================================================
    Trax · Business HQ — vivo, condicional, basado en data real
