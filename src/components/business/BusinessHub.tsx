@@ -61,6 +61,7 @@ type Signals = {
   hasHours: boolean;
   hasWA: boolean;
   hasLogo: boolean;
+  phone: string | null;
   // operación
   productCount: number;
   productsNoCost: number;
