@@ -15,14 +15,15 @@ type View =
   | "payments"
   | "info"
   | "clients"
-  | "debts"
+  | "receivables"
+  | "payables"
   | "suppliers"
   | "channels"
   | "documents"
   | "team";
 
 const COMING: Record<
-  Exclude<View, "hub" | "inventory" | "payments" | "info" | "clients" | "debts">,
+  Exclude<View, "hub" | "inventory" | "payments" | "info" | "clients" | "receivables" | "payables">,
   { title: string; icon: any; description: string; bullets: string[] }
 > = {
   suppliers: {
@@ -72,7 +73,8 @@ export default function BusinessScreen({ initialView = "hub" }: { initialView?: 
               onInventory={() => setView("inventory")}
               onPayments={() => setView("payments")}
               onClients={() => setView("clients")}
-              onDebts={() => setView("debts")}
+              onReceivables={() => setView("receivables")}
+              onPayables={() => setView("payables")}
               onSuppliers={() => setView("suppliers")}
               onChannels={() => setView("channels")}
               onDocuments={() => setView("documents")}
@@ -85,7 +87,8 @@ export default function BusinessScreen({ initialView = "hub" }: { initialView?: 
         {view === "payments" && <PaymentsView key="payments" onBack={back} />}
         {view === "info" && <InfoView key="info" onBack={back} />}
         {view === "clients" && <ClientsView key="clients" onBack={back} />}
-        {view === "debts" && <DebtsView key="debts" onBack={back} />}
+        {view === "receivables" && <DebtsView key="receivables" onBack={back} initialKind="cobrar" lockKind />}
+        {view === "payables" && <DebtsView key="payables" onBack={back} initialKind="pagar" lockKind />}
 
         {(view === "suppliers" || view === "channels" || view === "documents" || view === "team") && (
           <ComingSoonView key={view} onBack={back} {...COMING[view]} />
