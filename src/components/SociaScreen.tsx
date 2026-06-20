@@ -1549,6 +1549,9 @@ const SOCIA_CSS = `
   font-size:clamp(32px, 8.4vw, 40px); font-weight:600; letter-spacing:-0.6px;
   line-height:1.12;
   white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
   background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
   -webkit-user-select:text; user-select:text;
