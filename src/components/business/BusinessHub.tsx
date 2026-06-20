@@ -405,26 +405,26 @@ function DashboardCard({
   );
 }
 
-type Shortcut = { label: string; onClick?: () => void; soon?: boolean };
+type Shortcut = { label: string; sub: string; onClick?: () => void; soon?: boolean };
 
 function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
   return (
-    <div className="px-[22px]">
-      <div className="font-['Geist'] text-[11px] uppercase tracking-[3px] text-white/40 mb-[10px]">{title}</div>
-      <div className="flex flex-wrap gap-[8px]">
+    <div className="flex flex-col gap-[10px]">
+      <div className="px-[22px] font-['Geist'] text-[11px] uppercase tracking-[3.5px] text-white/45">{title}</div>
+      <div className="px-[22px] grid grid-cols-2 gap-[10px]">
         {items.map((s) => (
-          <button key={s.label} onClick={s.onClick} disabled={!s.onClick || s.soon}
-            className="inline-flex items-center gap-[6px] h-[34px] px-[14px] rounded-full font-['Geist'] text-[12.5px] active:scale-[0.97] transition-transform disabled:active:scale-100"
-            style={{
-              background: s.soon ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.10)",
-              color: s.soon ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.88)",
-            }}>
-            {s.label}
-            {s.soon ? (
-              <span className="font-['Geist'] text-[9px] uppercase tracking-[1px] text-white/35">pronto</span>
-            ) : (
-              <ArrowRight className="h-[11px] w-[11px] opacity-60" strokeWidth={2} />
+          <button key={s.label} onClick={s.onClick} disabled={!s.onClick}
+            className="relative text-left rounded-[20px] p-[16px] active:scale-[0.985] transition-transform disabled:active:scale-100 min-h-[82px] flex flex-col justify-between"
+            style={{ background: "rgba(13,15,15,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white tracking-[-0.4px] leading-[1.1]">
+              {s.label}
+            </div>
+            <div className="font-['Geist'] text-[11.5px] text-white/45 leading-[1.3]">{s.sub}</div>
+            {s.soon && (
+              <span className="absolute top-[12px] right-[12px] font-['Geist'] text-[9px] uppercase tracking-[1.2px] text-white/45 px-[6px] py-[2px] rounded-full"
+                style={{ border: "1px solid rgba(255,255,255,0.10)" }}>
+                Pronto
+              </span>
             )}
           </button>
         ))}
@@ -432,6 +432,7 @@ function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
     </div>
   );
 }
+
 
 function SociaTip({ title, body, cta, onClick }: { title: string; body: string; cta?: string; onClick?: () => void }) {
   return (
@@ -579,13 +580,14 @@ function OperationArea(p: Props) {
         ]}
       />
 
-      <ShortcutsRow title="Ir a"
+      <ShortcutsRow title="Módulos"
         items={[
-          { label: "Catálogo", onClick: p.onInventory },
-          { label: "Inventario", onClick: p.onInventory },
-          { label: "Compras", soon: true },
-          { label: "Proveedores", soon: true },
+          { label: "Catálogo", sub: productCount > 0 ? "Ver productos" : "Crear primero", onClick: p.onInventory },
+          { label: "Inventario", sub: "Ajustar stock", onClick: p.onInventory },
+          { label: "Compras", sub: "Reposiciones", soon: true },
+          { label: "Proveedores", sub: "A quién compras", soon: true },
         ]} />
+
 
       {productCount < 3 ? (
         <SociaTip title="Agrega tus productos más vendidos"
@@ -639,14 +641,14 @@ function CashArea(p: Props) {
         ]}
       />
 
-      <ShortcutsRow title="Ir a"
+      <ShortcutsRow title="Módulos"
         items={[
-          { label: "Ventas", onClick: p.onPayments },
-          { label: "Gastos", onClick: p.onPayments },
-          { label: "Por cobrar", onClick: p.onReceivables },
-          { label: "Por pagar", onClick: p.onPayables },
-          { label: "Reportes", soon: true },
+          { label: "Ventas", sub: "Registrar", onClick: p.onPayments },
+          { label: "Gastos", sub: "Agregar", onClick: p.onPayments },
+          { label: "Deudas", sub: "Por cobrar / pagar", onClick: p.onReceivables },
+          { label: "Reportes", sub: "Analizar", soon: true },
         ]} />
+
 
       {monthIncome === 0 && monthExpense === 0 ? (
         <SociaTip title="Empieza a registrar tu caja"
@@ -722,13 +724,14 @@ function ClientsArea(p: Props) {
         ]}
       />
 
-      <ShortcutsRow title="Ir a"
+      <ShortcutsRow title="Módulos"
         items={[
-          { label: "Directorio", onClick: p.onClients },
-          { label: "Frecuentes", soon: true },
-          { label: "Seguimientos", soon: true },
-          { label: "Historial", soon: true },
+          { label: "Directorio", sub: count > 0 ? "Ver clientes" : "Agregar primero", onClick: p.onClients },
+          { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
+          { label: "Seguimientos", sub: "Recordar contactar", soon: true },
+          { label: "Historial", sub: "Compras por cliente", soon: true },
         ]} />
+
 
       {count === 0 ? (
         <SociaTip title="Registra a tus clientes frecuentes"
@@ -782,13 +785,14 @@ function ChannelsArea(p: Props) {
         ]}
       />
 
-      <ShortcutsRow title="Ir a"
+      <ShortcutsRow title="Módulos"
         items={[
-          { label: "WhatsApp", onClick: p.onInfo },
-          { label: "Perfil público", onClick: p.onInfo },
-          { label: "Catálogo", soon: true },
-          { label: "Canales venta", soon: true },
+          { label: "WhatsApp", sub: hasWA ? profile?.phone ?? "" : "Configurar", onClick: p.onInfo },
+          { label: "Perfil público", sub: "Dirección y horario", onClick: p.onInfo },
+          { label: "Catálogo", sub: "Compartir productos", soon: true },
+          { label: "Canales venta", sub: "Delivery, redes", soon: true },
         ]} />
+
 
       {ready < 4 ? (
         <SociaTip title="Completa tu presencia básica"
