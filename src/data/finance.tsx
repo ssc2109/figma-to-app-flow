@@ -1,13 +1,25 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export type TxKind = "ingreso" | "egreso";
+export type PayMethod = "Efectivo" | "Yape" | "Plin" | "Tarjeta";
+
 export type Transaction = {
   id: string;
   kind: TxKind;
   amount: number;
   category: string;
   note?: string;
-  method?: "Efectivo" | "Yape" | "Plin" | "Tarjeta";
+  method?: PayMethod;
   date: string; // ISO
 };
 
@@ -35,40 +47,31 @@ export const INCOME_CATEGORIES = [
   { id: "otros", label: "Otros", icon: "•" },
 ];
 
-const today = () => new Date().toISOString();
-const daysAgo = (n: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  d.setHours(10 + (n % 8), (n * 7) % 60, 0, 0);
-  return d.toISOString();
-};
+function methodFromDb(m: string | null | undefined): PayMethod {
+  const v = (m ?? "efectivo").toLowerCase();
+  if (v === "yape") return "Yape";
+  if (v === "plin") return "Plin";
+  if (v === "tarjeta" || v === "card") return "Tarjeta";
+  return "Efectivo";
+}
 
-const SEED_TX: Transaction[] = [
-  { id: "t1", kind: "ingreso", amount: 1250, category: "ventas", method: "Yape", date: today() },
-  { id: "t2", kind: "egreso", amount: 320, category: "mercaderia", note: "Proveedor abarrotes", method: "Efectivo", date: today() },
-  { id: "t3", kind: "ingreso", amount: 980, category: "ventas", method: "Efectivo", date: daysAgo(1) },
-  { id: "t4", kind: "egreso", amount: 80, category: "servicios", note: "Luz", method: "Yape", date: daysAgo(1) },
-  { id: "t5", kind: "ingreso", amount: 1420, category: "ventas", method: "Yape", date: daysAgo(2) },
-  { id: "t6", kind: "ingreso", amount: 1100, category: "ventas", method: "Efectivo", date: daysAgo(3) },
-  { id: "t7", kind: "egreso", amount: 600, category: "alquiler", method: "Efectivo", date: daysAgo(3) },
-  { id: "t8", kind: "ingreso", amount: 1340, category: "ventas", method: "Yape", date: daysAgo(4) },
-  { id: "t9", kind: "ingreso", amount: 890, category: "ventas", method: "Efectivo", date: daysAgo(5) },
-  { id: "t10", kind: "egreso", amount: 150, category: "transporte", method: "Efectivo", date: daysAgo(5) },
-  { id: "t11", kind: "ingreso", amount: 1580, category: "ventas", method: "Yape", date: daysAgo(6) },
-];
-
-const SEED_FIADOS: Fiado[] = [
-  { id: "f1", client: "Sra. Rosa", amount: 35, date: daysAgo(2), dueDate: daysAgo(-3), settled: false },
-  { id: "f2", client: "Don Julio", amount: 22, date: daysAgo(4), settled: false },
-  { id: "f3", client: "Marta (vecina)", amount: 48, date: daysAgo(1), settled: false },
-];
+function methodToDb(m: PayMethod | undefined): string {
+  if (!m) return "efectivo";
+  return m.toLowerCase();
+}
 
 type Ctx = {
   tx: Transaction[];
   fiados: Fiado[];
-  addTransaction: (t: Omit<Transaction, "id" | "date"> & { date?: string }) => void;
-  addFiado: (f: Omit<Fiado, "id" | "date" | "settled">) => void;
-  settleFiado: (id: string) => void;
+  loading: boolean;
+  addTransaction: (
+    t: Omit<Transaction, "id" | "date"> & { date?: string },
+  ) => Promise<void>;
+  addFiado: (
+    f: Omit<Fiado, "id" | "date" | "settled"> & { dueDate?: string },
+  ) => Promise<void>;
+  settleFiado: (id: string) => Promise<void>;
+  refresh: () => Promise<void>;
   // computed
   todayIncome: number;
   todayExpense: number;
@@ -94,39 +97,247 @@ function isSameMonth(iso: string, ref: Date) {
 }
 
 export function FinanceProvider({ children }: { children: ReactNode }) {
-  const [tx, setTx] = useState<Transaction[]>(SEED_TX);
-  const [fiados, setFiados] = useState<Fiado[]>(SEED_FIADOS);
+  const { user } = useAuth();
+  const [tx, setTx] = useState<Transaction[]>([]);
+  const [fiados, setFiados] = useState<Fiado[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addTransaction: Ctx["addTransaction"] = (t) =>
-    setTx((arr) => [{ ...t, id: `t${Date.now()}`, date: t.date ?? today() }, ...arr]);
+  const load = useCallback(async () => {
+    if (!user) {
+      setTx([]);
+      setFiados([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
 
-  const addFiado: Ctx["addFiado"] = (f) =>
-    setFiados((arr) => [
-      { ...f, id: `f${Date.now()}`, date: today(), settled: false },
-      ...arr,
+    const since = new Date();
+    since.setDate(since.getDate() - 60); // ventana razonable
+    const sinceIso = since.toISOString();
+
+    const [salesRes, expensesRes, fiadosRes] = await Promise.all([
+      supabase
+        .from("sales")
+        .select("id, total, payment_method, note, created_at, is_credit")
+        .eq("user_id", user.id)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("expenses")
+        .select("id, amount, category, note, created_at")
+        .eq("user_id", user.id)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("fiados")
+        .select("id, customer_name, amount, due_date, created_at, paid")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false }),
     ]);
 
-  const settleFiado = (id: string) => {
-    setFiados((arr) => {
-      const target = arr.find((x) => x.id === id);
-      if (target && !target.settled) {
-        // also create an ingreso
-        setTx((t) => [
+    if (salesRes.error) console.error("sales load", salesRes.error);
+    if (expensesRes.error) console.error("expenses load", expensesRes.error);
+    if (fiadosRes.error) console.error("fiados load", fiadosRes.error);
+
+    const incomeTx: Transaction[] = (salesRes.data ?? [])
+      .filter((s) => !s.is_credit) // fiados se cobran cuando se settlean
+      .map((s) => ({
+        id: `s_${s.id}`,
+        kind: "ingreso",
+        amount: Number(s.total),
+        category: "ventas",
+        note: s.note ?? undefined,
+        method: methodFromDb(s.payment_method),
+        date: s.created_at,
+      }));
+
+    const expenseTx: Transaction[] = (expensesRes.data ?? []).map((e) => ({
+      id: `e_${e.id}`,
+      kind: "egreso",
+      amount: Number(e.amount),
+      category: e.category || "otros",
+      note: e.note ?? undefined,
+      method: "Efectivo",
+      date: e.created_at,
+    }));
+
+    const all = [...incomeTx, ...expenseTx].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    const mappedFiados: Fiado[] = (fiadosRes.data ?? []).map((f) => ({
+      id: f.id,
+      client: f.customer_name,
+      amount: Number(f.amount),
+      date: f.created_at,
+      dueDate: f.due_date ?? undefined,
+      settled: f.paid,
+    }));
+
+    setTx(all);
+    setFiados(mappedFiados);
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const addTransaction: Ctx["addTransaction"] = useCallback(
+    async (t) => {
+      if (!user) return;
+      if (t.kind === "ingreso") {
+        const { data, error } = await supabase
+          .from("sales")
+          .insert({
+            user_id: user.id,
+            total: t.amount,
+            payment_method: methodToDb(t.method),
+            note: t.note ?? null,
+            is_credit: false,
+            paid: true,
+          })
+          .select("id, total, payment_method, note, created_at")
+          .single();
+        if (error) {
+          console.error("addTransaction ingreso", error);
+          return;
+        }
+        if (data) {
+          setTx((arr) => [
+            {
+              id: `s_${data.id}`,
+              kind: "ingreso",
+              amount: Number(data.total),
+              category: t.category || "ventas",
+              note: data.note ?? undefined,
+              method: methodFromDb(data.payment_method),
+              date: data.created_at,
+            },
+            ...arr,
+          ]);
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("expenses")
+          .insert({
+            user_id: user.id,
+            amount: t.amount,
+            category: t.category || "otros",
+            note: t.note ?? null,
+          })
+          .select("id, amount, category, note, created_at")
+          .single();
+        if (error) {
+          console.error("addTransaction egreso", error);
+          return;
+        }
+        if (data) {
+          setTx((arr) => [
+            {
+              id: `e_${data.id}`,
+              kind: "egreso",
+              amount: Number(data.amount),
+              category: data.category,
+              note: data.note ?? undefined,
+              method: "Efectivo",
+              date: data.created_at,
+            },
+            ...arr,
+          ]);
+        }
+      }
+    },
+    [user],
+  );
+
+  const addFiado: Ctx["addFiado"] = useCallback(
+    async (f) => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from("fiados")
+        .insert({
+          user_id: user.id,
+          customer_name: f.client,
+          amount: f.amount,
+          due_date: f.dueDate ?? null,
+        })
+        .select("id, customer_name, amount, due_date, created_at, paid")
+        .single();
+      if (error) {
+        console.error("addFiado", error);
+        return;
+      }
+      if (data) {
+        setFiados((arr) => [
           {
-            id: `t${Date.now()}`,
-            kind: "ingreso",
-            amount: target.amount,
-            category: "cobro-fiado",
-            note: `Cobro a ${target.client}`,
-            method: "Efectivo",
-            date: today(),
+            id: data.id,
+            client: data.customer_name,
+            amount: Number(data.amount),
+            date: data.created_at,
+            dueDate: data.due_date ?? undefined,
+            settled: data.paid,
           },
-          ...t,
+          ...arr,
         ]);
       }
-      return arr.map((x) => (x.id === id ? { ...x, settled: true } : x));
-    });
-  };
+    },
+    [user],
+  );
+
+  const settleFiado: Ctx["settleFiado"] = useCallback(
+    async (id) => {
+      if (!user) return;
+      const target = fiados.find((x) => x.id === id);
+      if (!target || target.settled) return;
+
+      setFiados((arr) => arr.map((x) => (x.id === id ? { ...x, settled: true } : x)));
+
+      const { error: upErr } = await supabase
+        .from("fiados")
+        .update({ paid: true, paid_at: new Date().toISOString() })
+        .eq("id", id);
+      if (upErr) {
+        console.error("settleFiado update", upErr);
+        await load();
+        return;
+      }
+
+      // Registrar el cobro como ingreso real
+      const { data: sale, error: sErr } = await supabase
+        .from("sales")
+        .insert({
+          user_id: user.id,
+          total: target.amount,
+          payment_method: "efectivo",
+          note: `Cobro fiado · ${target.client}`,
+          is_credit: false,
+          paid: true,
+        })
+        .select("id, total, payment_method, note, created_at")
+        .single();
+
+      if (sErr) {
+        console.error("settleFiado sale", sErr);
+        return;
+      }
+      if (sale) {
+        setTx((arr) => [
+          {
+            id: `s_${sale.id}`,
+            kind: "ingreso",
+            amount: Number(sale.total),
+            category: "cobro-fiado",
+            note: sale.note ?? undefined,
+            method: methodFromDb(sale.payment_method),
+            date: sale.created_at,
+          },
+          ...arr,
+        ]);
+      }
+    },
+    [fiados, user, load],
+  );
 
   const value = useMemo<Ctx>(() => {
     const now = new Date();
@@ -171,9 +382,11 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     return {
       tx,
       fiados,
+      loading,
       addTransaction,
       addFiado,
       settleFiado,
+      refresh: load,
       todayIncome,
       todayExpense,
       todayNet: todayIncome - todayExpense,
@@ -185,7 +398,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       last7Days,
       expensesByCategory,
     };
-  }, [tx, fiados]);
+  }, [tx, fiados, loading, addTransaction, addFiado, settleFiado, load]);
 
   return <FinanceCtx.Provider value={value}>{children}</FinanceCtx.Provider>;
 }

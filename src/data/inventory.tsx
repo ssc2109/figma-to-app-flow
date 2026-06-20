@@ -4,46 +4,24 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { PRODUCTS, PRODUCTS_BY_ID, type Product } from "./products";
 
-export const LOW_STOCK_THRESHOLD = 5; // kept for backward compat
+export const LOW_STOCK_THRESHOLD = 5;
 
-const SEED_STOCK: Record<string, number> = {
-  "inca-kola": 24,
-  "pan-frances": 120,
-  "papas-lays": 3,
-  "agua-cielo": 18,
-  "cafe-altomayo": 8,
-  "arroz-costeno": 45,
-};
-const SEED_CATEGORY: Record<string, string> = {
-  "inca-kola": "Bebidas",
-  "pan-frances": "Panadería",
-  "papas-lays": "Snacks",
-  "agua-cielo": "Bebidas",
-  "cafe-altomayo": "Abarrotes",
-  "arroz-costeno": "Abarrotes",
-};
-const SEED_COST: Record<string, number> = {
-  "inca-kola": 2.4,
-  "pan-frances": 0.18,
-  "papas-lays": 3.1,
-  "agua-cielo": 1.2,
-  "cafe-altomayo": 1.0,
-  "arroz-costeno": 9.8,
-};
-
-export type InventoryItem = Product & {
+export type InventoryItem = {
+  id: string; // = dbId
+  dbId: string;
+  name: string;
+  price: number;
+  cost: number;
   stock: number;
   category: string;
-  cost: number;
-  dbId: string; // uuid in supabase
+  image: string;
+  lowStockThreshold: number;
 };
 
 type DbProduct = {
@@ -62,9 +40,17 @@ type Ctx = {
   items: InventoryItem[];
   loading: boolean;
   lowStock: InventoryItem[];
-  setStock: (slug: string, n: number) => Promise<void>;
-  adjustStock: (slug: string, delta: number) => Promise<void>;
-  addProduct: (p: { name: string; price: number; cost: number; stock: number; category: string }) => Promise<void>;
+  setStock: (id: string, n: number) => Promise<void>;
+  adjustStock: (id: string, delta: number) => Promise<void>;
+  addProduct: (p: {
+    name: string;
+    price: number;
+    cost?: number;
+    stock?: number;
+    category?: string;
+  }) => Promise<void>;
+  updateProduct: (id: string, patch: Partial<Omit<InventoryItem, "id" | "dbId">>) => Promise<void>;
+  removeProduct: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
   totalValue: number;
   totalUnits: number;
@@ -74,17 +60,16 @@ type Ctx = {
 const InventoryCtx = createContext<Ctx | null>(null);
 
 function rowToItem(row: DbProduct): InventoryItem {
-  const slug = row.sku || row.id;
-  const seed = PRODUCTS_BY_ID[slug];
   return {
-    id: slug,
+    id: row.id,
     dbId: row.id,
     name: row.name,
     price: Number(row.price),
-    image: seed?.image ?? row.image_url ?? "",
+    cost: Number(row.cost),
     stock: row.stock,
     category: row.category || "General",
-    cost: Number(row.cost),
+    image: row.image_url ?? "",
+    lowStockThreshold: row.low_stock_threshold ?? LOW_STOCK_THRESHOLD,
   };
 }
 
@@ -92,7 +77,6 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const seededRef = useRef(false);
 
   const load = useCallback(async () => {
     if (!user) {
@@ -108,44 +92,24 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       .order("created_at", { ascending: true });
     if (error) {
       console.error("inventory load", error);
-      setLoading(false);
-      return;
-    }
-    if ((!data || data.length === 0) && !seededRef.current) {
-      seededRef.current = true;
-      const seed = PRODUCTS.map((p) => ({
-        user_id: user.id,
-        name: p.name,
-        price: p.price,
-        cost: SEED_COST[p.id] ?? p.price * 0.7,
-        stock: SEED_STOCK[p.id] ?? 0,
-        category: SEED_CATEGORY[p.id] ?? "General",
-        sku: p.id,
-        low_stock_threshold: profile?.low_stock_threshold ?? 5,
-      }));
-      const { data: inserted, error: insErr } = await supabase
-        .from("products")
-        .insert(seed)
-        .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold");
-      if (insErr) console.error("inventory seed", insErr);
-      setItems((inserted ?? []).map(rowToItem));
+      setItems([]);
       setLoading(false);
       return;
     }
     setItems((data ?? []).map(rowToItem));
     setLoading(false);
-  }, [user, profile?.low_stock_threshold]);
+  }, [user]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   const setStock = useCallback(
-    async (slug: string, n: number) => {
-      const item = items.find((i) => i.id === slug);
+    async (id: string, n: number) => {
+      const item = items.find((i) => i.id === id);
       if (!item) return;
       const next = Math.max(0, Math.round(n));
-      setItems((arr) => arr.map((i) => (i.id === slug ? { ...i, stock: next } : i)));
+      setItems((arr) => arr.map((i) => (i.id === id ? { ...i, stock: next } : i)));
       const { error } = await supabase.from("products").update({ stock: next }).eq("id", item.dbId);
       if (error) {
         console.error("setStock", error);
@@ -156,10 +120,10 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   );
 
   const adjustStock = useCallback(
-    async (slug: string, delta: number) => {
-      const item = items.find((i) => i.id === slug);
+    async (id: string, delta: number) => {
+      const item = items.find((i) => i.id === id);
       if (!item) return;
-      await setStock(slug, item.stock + delta);
+      await setStock(id, item.stock + delta);
     },
     [items, setStock],
   );
@@ -173,10 +137,10 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           user_id: user.id,
           name: p.name,
           price: p.price,
-          cost: p.cost,
-          stock: p.stock,
-          category: p.category,
-          low_stock_threshold: profile?.low_stock_threshold ?? 5,
+          cost: p.cost ?? 0,
+          stock: p.stock ?? 0,
+          category: p.category ?? "General",
+          low_stock_threshold: profile?.low_stock_threshold ?? LOW_STOCK_THRESHOLD,
         })
         .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold")
         .single();
@@ -189,10 +153,44 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     [user, profile?.low_stock_threshold],
   );
 
+  const updateProduct: Ctx["updateProduct"] = useCallback(
+    async (id, patch) => {
+      const item = items.find((i) => i.id === id);
+      if (!item) return;
+      const dbPatch: Record<string, unknown> = {};
+      if (patch.name !== undefined) dbPatch.name = patch.name;
+      if (patch.price !== undefined) dbPatch.price = patch.price;
+      if (patch.cost !== undefined) dbPatch.cost = patch.cost;
+      if (patch.stock !== undefined) dbPatch.stock = patch.stock;
+      if (patch.category !== undefined) dbPatch.category = patch.category;
+      if (patch.lowStockThreshold !== undefined) dbPatch.low_stock_threshold = patch.lowStockThreshold;
+      setItems((arr) => arr.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+      const { error } = await supabase.from("products").update(dbPatch).eq("id", item.dbId);
+      if (error) {
+        console.error("updateProduct", error);
+        await load();
+      }
+    },
+    [items, load],
+  );
+
+  const removeProduct: Ctx["removeProduct"] = useCallback(
+    async (id) => {
+      const item = items.find((i) => i.id === id);
+      if (!item) return;
+      setItems((arr) => arr.filter((i) => i.id !== id));
+      const { error } = await supabase.from("products").delete().eq("id", item.dbId);
+      if (error) {
+        console.error("removeProduct", error);
+        await load();
+      }
+    },
+    [items, load],
+  );
+
   const value = useMemo<Ctx>(() => {
-    const threshold = profile?.low_stock_threshold ?? LOW_STOCK_THRESHOLD;
     const lowStock = items
-      .filter((i) => i.stock <= threshold)
+      .filter((i) => i.stock <= i.lowStockThreshold)
       .sort((a, b) => a.stock - b.stock);
     const totalValue = items.reduce((s, i) => s + i.stock * i.cost, 0);
     const totalUnits = items.reduce((s, i) => s + i.stock, 0);
@@ -203,12 +201,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       setStock,
       adjustStock,
       addProduct,
+      updateProduct,
+      removeProduct,
       refresh: load,
       totalValue,
       totalUnits,
       productCount: items.length,
     };
-  }, [items, loading, profile?.low_stock_threshold, setStock, adjustStock, addProduct, load]);
+  }, [items, loading, setStock, adjustStock, addProduct, updateProduct, removeProduct, load]);
 
   return <InventoryCtx.Provider value={value}>{children}</InventoryCtx.Provider>;
 }
