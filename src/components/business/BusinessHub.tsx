@@ -1019,7 +1019,7 @@ function ChannelsArea(p: Props, s: Signals) {
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "WhatsApp", sub: s.hasWA ? (profile?.phone ?? "") : "Configurar", onClick: p.onInfo },
+          { label: "WhatsApp", sub: s.hasWA ? (s.phone ?? "Activo") : "Configurar", onClick: p.onInfo },
           { label: "Perfil público", sub: ready === 4 ? "Completo" : `${ready}/4 datos`, onClick: p.onInfo },
           { label: "Catálogo", sub: "Compartir productos", soon: true },
           { label: "Canales venta", sub: "Delivery, redes", soon: true },
