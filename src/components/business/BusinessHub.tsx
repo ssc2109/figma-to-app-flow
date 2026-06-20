@@ -131,6 +131,7 @@ function useBusinessSignals(): Signals {
       hasHours: has(profile?.open_time) && has(profile?.close_time),
       hasWA: has(profile?.phone),
       hasLogo: has(profile?.avatar_url),
+      phone: profile?.phone ?? null,
       productCount,
       productsNoCost: noCost,
       lowStockCount: low,
