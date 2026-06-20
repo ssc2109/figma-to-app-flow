@@ -245,16 +245,6 @@ function HQPanel({ steps }: { steps: StepLite[] }) {
         </div>
 
         {next && (
-          <div className="mt-[16px] rounded-[18px] px-[14px] py-[11px] flex gap-[10px]"
-            style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.10)" }}>
-            <Sparkles className="h-[14px] w-[14px] text-white/80 shrink-0 mt-[2px]" strokeWidth={1.8} />
-            <p className="font-['Geist'] text-[12px] text-white/70 leading-[1.45]">
-              <span className="text-white/95">socIA · </span>{next.why}
-            </p>
-          </div>
-        )}
-
-        {next && (
           <button
             onClick={next.go}
             className="mt-[14px] w-full h-[52px] rounded-[20px] bg-white text-black font-['Geist'] text-[15px] font-bold active:scale-[0.985] transition-transform inline-flex items-center justify-center gap-[8px]"
