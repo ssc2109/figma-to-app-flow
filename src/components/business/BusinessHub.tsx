@@ -724,13 +724,14 @@ function ClientsArea(p: Props) {
         ]}
       />
 
-      <ShortcutsRow title="Ir a"
+      <ShortcutsRow title="Módulos"
         items={[
-          { label: "Directorio", onClick: p.onClients },
-          { label: "Frecuentes", soon: true },
-          { label: "Seguimientos", soon: true },
-          { label: "Historial", soon: true },
+          { label: "Directorio", sub: count > 0 ? "Ver clientes" : "Agregar primero", onClick: p.onClients },
+          { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
+          { label: "Seguimientos", sub: "Recordar contactar", soon: true },
+          { label: "Historial", sub: "Compras por cliente", soon: true },
         ]} />
+
 
       {count === 0 ? (
         <SociaTip title="Registra a tus clientes frecuentes"
