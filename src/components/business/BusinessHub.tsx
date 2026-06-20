@@ -728,11 +728,8 @@ function ChannelsArea(p: Props) {
       <SectionTitle>Cómo te encuentran</SectionTitle>
 
       <DashboardCard
-        eyebrow="Presencia básica"
-        title={ready === 4 ? "Tu perfil está completo" : "Completa tu presencia"}
-        headline={`${ready}/4`}
-        tone={ready === 4 ? "green" : ready >= 2 ? "yellow" : "muted"}
         visual={<PresenceDots items={items} />}
+
         metrics={[
           { label: "Canales activos", value: String(ready), sub: "de 4", tone: ready > 0 ? "default" : "muted" },
           { label: "Perfil público", value: ready === 4 ? "Listo" : "Parcial", sub: `${ready}/4 datos`, tone: ready === 4 ? "green" : "yellow" },
