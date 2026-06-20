@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
-import { ChevronRight, ArrowRight, Settings2 } from "lucide-react";
+import { ArrowRight, Settings2, ChevronRight, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
 import { useFinance } from "@/data/finance";
 import { supabase } from "@/integrations/supabase/client";
 
 /* ============================================================
-   Trax · Business HQ — calm operating view
-   Fórmula: visual grande + módulos. Sin capas extra.
+   Trax · Business HQ — vivo, condicional, basado en data real
+   Fórmula: visual grande + módulos. Insights priorizados.
    ============================================================ */
 
 type Props = {
@@ -27,6 +27,9 @@ type Props = {
 type Area = "operacion" | "caja" | "clientes" | "canales";
 
 /* ---------- helpers ---------- */
+const has = (v: unknown) => typeof v === "string" && v.trim().length > 0;
+const money = (n: number) =>
+  `S/ ${Math.abs(n).toLocaleString("es-PE", { maximumFractionDigits: Math.abs(n) >= 100 ? 0 : 2 })}`;
 function fmtTime(t: string | null | undefined) {
   if (!t) return null;
   const [h, m] = t.split(":");
@@ -47,10 +50,213 @@ function isOpenNow(open: string | null, close: string | null) {
   if (c > o) return cur >= o && cur < c;
   return cur >= o || cur < c;
 }
-const money = (n: number) =>
-  `S/ ${Math.abs(n).toLocaleString("es-PE", { maximumFractionDigits: n >= 100 ? 0 : 2 })}`;
 
-/* ---------- ambient silencioso ---------- */
+/* ============================================================
+   Señales del negocio (single source of truth)
+   ============================================================ */
+type Signals = {
+  // perfil
+  hasIdentity: boolean;   // nombre + rubro
+  hasAddress: boolean;
+  hasHours: boolean;
+  hasWA: boolean;
+  hasLogo: boolean;
+  phone: string | null;
+  // operación
+  productCount: number;
+  productsNoCost: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  healthyStockCount: number;
+  totalInventoryValue: number;
+  // caja
+  salesCount: number;
+  expenseCount: number;
+  todayIncome: number;
+  todayExpense: number;
+  monthIncome: number;
+  monthExpense: number;
+  monthNet: number;
+  weekIncome: number;
+  weekExpense: number;
+  weekNet: number;
+  weekHasMovement: boolean;
+  margin: number | null;
+  // clientes / deudas
+  clientCount: number;
+  debtorsCount: number;
+  debtAmount: number;
+};
+
+function useBusinessSignals(): Signals {
+  const { profile, user } = useAuth();
+  const { items, productCount, totalValue, lowStock } = useInventory();
+  const {
+    todayIncome, todayExpense, monthIncome, monthExpense, monthNet,
+    last7Days, tx, fiados,
+  } = useFinance();
+
+  const [clientCount, setClientCount] = useState(0);
+  useEffect(() => {
+    if (!user) { setClientCount(0); return; }
+    let active = true;
+    (async () => {
+      const { count } = await supabase
+        .from("customers").select("id", { count: "exact", head: true }).eq("user_id", user.id);
+      if (active) setClientCount(count ?? 0);
+    })();
+    return () => { active = false; };
+  }, [user]);
+
+  return useMemo<Signals>(() => {
+    const out = items.filter((i) => i.stock === 0).length;
+    const low = lowStock.filter((i) => i.stock > 0).length;
+    const healthy = Math.max(0, productCount - low - out);
+    const noCost = items.filter((i) => !i.cost || i.cost <= 0).length;
+
+    const salesCount = tx.filter((t) => t.kind === "ingreso").length;
+    const expenseCount = tx.filter((t) => t.kind === "egreso").length;
+    const weekIncome = last7Days.reduce((sum, d) => sum + d.income, 0);
+    const weekExpense = last7Days.reduce((sum, d) => sum + d.expense, 0);
+    const weekNet = weekIncome - weekExpense;
+    const weekHasMovement = weekIncome > 0 || weekExpense > 0;
+
+    const pending = fiados.filter((f) => !f.settled);
+    const debtors = new Set(pending.map((f) => f.client.trim().toLowerCase())).size;
+    const debtAmount = pending.reduce((s, f) => s + f.amount, 0);
+
+    return {
+      hasIdentity: has(profile?.business_name) && has(profile?.business_type),
+      hasAddress: has(profile?.address),
+      hasHours: has(profile?.open_time) && has(profile?.close_time),
+      hasWA: has(profile?.phone),
+      hasLogo: has(profile?.avatar_url),
+      phone: profile?.phone ?? null,
+      productCount,
+      productsNoCost: noCost,
+      lowStockCount: low,
+      outOfStockCount: out,
+      healthyStockCount: healthy,
+      totalInventoryValue: totalValue,
+      salesCount,
+      expenseCount,
+      todayIncome,
+      todayExpense,
+      monthIncome,
+      monthExpense,
+      monthNet,
+      weekIncome,
+      weekExpense,
+      weekNet,
+      weekHasMovement,
+      margin: monthIncome > 0 ? Math.round((monthNet / monthIncome) * 100) : null,
+      clientCount,
+      debtorsCount: debtors,
+      debtAmount,
+    };
+  }, [profile, items, productCount, totalValue, lowStock, todayIncome, todayExpense,
+      monthIncome, monthExpense, monthNet, last7Days, tx, fiados, clientCount]);
+}
+
+/* ============================================================
+   Motor de insights (prioridad lógica)
+   ============================================================ */
+type Insight = {
+  id: string;
+  priority: number; // menor = más urgente
+  text: string;
+  cta: string;
+  go: () => void;
+  area?: Area;
+};
+
+function buildInsights(s: Signals, p: Props): Insight[] {
+  const list: Insight[] = [];
+
+  // 1. Onboarding — datos del negocio
+  if (!s.hasIdentity) list.push({
+    id: "identity", priority: 1,
+    text: "Completa los datos básicos para que socIA entienda tu negocio.",
+    cta: "Completar negocio", go: p.onInfo,
+  });
+
+  // 2. Catálogo
+  if (s.productCount === 0) list.push({
+    id: "first-product", priority: 2,
+    text: "Agrega tu primer producto para empezar a controlar inventario y ventas.",
+    cta: "Agregar producto", go: p.onInventory, area: "operacion",
+  });
+
+  // 3. Costos
+  if (s.productCount > 0 && s.productsNoCost > 0) list.push({
+    id: "costs", priority: 3,
+    text: `Tienes ${s.productsNoCost} producto${s.productsNoCost === 1 ? "" : "s"} sin costo. Sin costo no se puede calcular tu margen real.`,
+    cta: "Completar costos", go: p.onInventory, area: "operacion",
+  });
+
+  // 4. Primera venta
+  if (s.productCount > 0 && s.salesCount === 0) list.push({
+    id: "first-sale", priority: 4,
+    text: "Ya tienes productos. Registra tu primera venta para empezar a medir tu negocio.",
+    cta: "Registrar venta", go: p.onPayments, area: "caja",
+  });
+
+  // 5. Gastos
+  if (s.salesCount > 0 && s.expenseCount === 0) list.push({
+    id: "first-expense", priority: 5,
+    text: "Registras ventas pero no gastos. Sin gastos no sabes tu ganancia real.",
+    cta: "Registrar gasto", go: p.onPayments, area: "caja",
+  });
+
+  // 6. WhatsApp / pagos digitales
+  if (!s.hasWA) list.push({
+    id: "wa", priority: 6,
+    text: "Configura WhatsApp para que tus clientes te contacten directo.",
+    cta: "Configurar WhatsApp", go: p.onInfo, area: "canales",
+  });
+
+  // 7. Stock crítico
+  const critical = s.outOfStockCount + s.lowStockCount;
+  if (critical > 0) list.push({
+    id: "stock", priority: 7,
+    text: `${critical} producto${critical === 1 ? "" : "s"} con stock bajo o agotado. Revisa reposición antes de perder ventas.`,
+    cta: "Ver inventario", go: p.onInventory, area: "operacion",
+  });
+
+  // 8. Deudas por cobrar
+  if (s.debtAmount > 0) list.push({
+    id: "receivables", priority: 8,
+    text: `${money(s.debtAmount)} por cobrar a ${s.debtorsCount} cliente${s.debtorsCount === 1 ? "" : "s"}.`,
+    cta: "Ver deudas", go: p.onReceivables, area: "clientes",
+  });
+
+  // 9. Clientes
+  if (s.salesCount > 0 && s.clientCount === 0) list.push({
+    id: "clients", priority: 9,
+    text: "Registra a tus clientes frecuentes para entender quién vuelve a comprarte.",
+    cta: "Agregar cliente", go: p.onClients, area: "clientes",
+  });
+
+  // 10. Canales (dirección / horario / logo)
+  if (s.hasIdentity && (!s.hasAddress || !s.hasHours || !s.hasLogo)) {
+    const missing = [
+      !s.hasAddress && "dirección",
+      !s.hasHours && "horario",
+      !s.hasLogo && "logo",
+    ].filter(Boolean).join(", ");
+    list.push({
+      id: "channels", priority: 10,
+      text: `Completa tu presencia: te falta ${missing}.`,
+      cta: "Completar canales", go: p.onInfo, area: "canales",
+    });
+  }
+
+  return list.sort((a, b) => a.priority - b.priority);
+}
+
+/* ============================================================
+   Ambient
+   ============================================================ */
 function Ambient() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -63,7 +269,7 @@ function Ambient() {
 }
 
 /* ============================================================
-   1) Header grande del negocio
+   Header del negocio
    ============================================================ */
 function BizHeader() {
   const { profile } = useAuth();
@@ -123,95 +329,54 @@ function BizHeader() {
 }
 
 /* ============================================================
-   2) HQ Panel (terminal grande)
+   Panel HQ — Next Best Action (insight #1)
+   Si no hay nada urgente, muestra resumen calmado.
    ============================================================ */
-type StepLite = { id: string; label: string; done: boolean; weight: number; go?: () => void; why: string };
+function HQPanel({ insights, signals }: { insights: Insight[]; signals: Signals }) {
+  const next = insights[0];
 
-function useSteps(p: Props): StepLite[] {
-  const { profile } = useAuth();
-  const { productCount } = useInventory();
-  return useMemo(() => {
-    const has = (v: unknown) => typeof v === "string" && v.trim().length > 0;
-    return [
-      { id: "identity", label: "Identidad del negocio", weight: 1,
-        done: has(profile?.business_name) && has(profile?.business_type), go: p.onInfo,
-        why: "Define cómo se llama y a qué se dedica tu negocio." },
-      { id: "address", label: "Agrega tu dirección", weight: 1,
-        done: has(profile?.address), go: p.onInfo,
-        why: "Tus clientes podrán encontrarte y socIA entenderá mejor tu operación." },
-      { id: "schedule", label: "Configura tu horario", weight: 1,
-        done: has(profile?.open_time) && has(profile?.close_time), go: p.onInfo,
-        why: "Ordena tu día y mejora la precisión de tus reportes." },
-      { id: "phone", label: "WhatsApp del negocio", weight: 1,
-        done: has(profile?.phone), go: p.onInfo,
-        why: "Tus clientes podrán contactarte rápido para pedidos." },
-      { id: "catalog", label: "Agrega tu catálogo", weight: 1.4,
-        done: productCount >= 3, go: p.onInventory,
-        why: "Con tus productos cargados podrás vender y medir stock real." },
-      { id: "payments", label: "Activa métodos de pago", weight: 1.2,
-        done: false, go: p.onPayments,
-        why: "Acepta más formas de cobro para no perder ninguna venta." },
-      { id: "logo", label: "Sube tu logo o foto", weight: 0.8,
-        done: has(profile?.avatar_url), go: p.onInfo,
-        why: "Una marca visible genera más confianza." },
-    ];
-  }, [profile, productCount, p]);
-}
-
-function HQPanel({ steps }: { steps: StepLite[] }) {
-  const totalW = steps.reduce((s, x) => s + x.weight, 0);
-  const doneW = steps.filter((x) => x.done).reduce((s, x) => s + x.weight, 0);
-  const pct = Math.round((doneW / totalW) * 100);
-  const next = steps.find((s) => !s.done);
-  const headline =
-    pct === 100 ? "Tu negocio está bajo control"
-      : pct >= 70 ? "Casi listo, faltan detalles"
-        : pct >= 35 ? "Vas avanzando, sigue construyendo"
-          : "Empecemos a ordenar tu negocio";
+  // Headline calmado cuando no hay insight urgente
+  const calmHeadline = signals.weekHasMovement
+    ? "Tu negocio está operando"
+    : "Todo configurado. Sin movimientos esta semana.";
+  const calmSub = signals.weekHasMovement
+    ? `Neto últimos 7 días · ${signals.weekNet < 0 ? "-" : ""}${money(signals.weekNet)}`
+    : "Registra una venta o gasto para empezar la semana.";
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="relative mx-[22px] rounded-[28px] overflow-hidden"
-      style={{
-        background: "rgba(255,255,255,0.055)",
-        border: "1px solid rgba(255,255,255,0.08)",
-      }}
+      style={{ background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.08)" }}
     >
       <div className="relative px-[20px] pt-[18px] pb-[18px]">
-        <div className="flex items-start justify-between gap-[16px]">
-          <div className="min-w-0">
-            <div className="font-['Geist'] text-[10.5px] uppercase tracking-[2.4px] text-white/45">Estado operativo</div>
-            <h2 className="mt-[10px] font-['Bai_Jamjuree'] text-[21px] font-semibold text-white leading-[1.1] tracking-[-0.3px]">
-              {headline}
-            </h2>
-            <p className="mt-[7px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4]">
-              {next ? `Siguiente: ${next.label.toLowerCase()}` : "Todo configurado. Mantén tus datos al día."}
-            </p>
-          </div>
-          <span className="font-['Bai_Jamjuree'] text-[36px] font-bold text-white tracking-[-1px] tabular-nums leading-none">
-            {pct}<span className="text-[13px] text-white/45 align-top ml-[1px]">%</span>
-          </span>
+        <div className="font-['Geist'] text-[10.5px] uppercase tracking-[2.4px] text-white/45">
+          {next ? "Siguiente paso" : "Estado operativo"}
         </div>
 
-        <div className="mt-[18px] h-[6px] overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="h-full rounded-full bg-white"
-          />
-        </div>
+        <h2 className="mt-[10px] font-['Bai_Jamjuree'] text-[21px] font-semibold text-white leading-[1.2] tracking-[-0.3px]">
+          {next ? next.text : calmHeadline}
+        </h2>
 
-        {next && (
+        {!next && (
+          <p className="mt-[8px] font-['Geist'] text-[13px] text-white/55 leading-[1.4]">{calmSub}</p>
+        )}
+
+        {next ? (
           <button
             onClick={next.go}
             className="mt-[16px] w-full h-[50px] rounded-[20px] bg-white text-black font-['Geist'] text-[15px] font-bold active:scale-[0.985] transition-transform inline-flex items-center justify-center gap-[8px]"
           >
-            Continuar configuración
+            {next.cta}
             <ArrowRight className="h-[15px] w-[15px]" strokeWidth={2.4} />
           </button>
+        ) : null}
+
+        {insights.length > 1 && (
+          <div className="mt-[14px] flex items-center gap-[6px] font-['Geist'] text-[11px] text-white/45">
+            <span>+{insights.length - 1} otra{insights.length - 1 === 1 ? "" : "s"} recomendación{insights.length - 1 === 1 ? "" : "es"}</span>
+          </div>
         )}
       </div>
     </motion.div>
@@ -219,7 +384,7 @@ function HQPanel({ steps }: { steps: StepLite[] }) {
 }
 
 /* ============================================================
-   3) Tabs chunky
+   Tabs
    ============================================================ */
 const AREAS: { id: Area; label: string }[] = [
   { id: "operacion", label: "Operación" },
@@ -255,7 +420,7 @@ function AreaTabs({ area, onChange }: { area: Area; onChange: (a: Area) => void 
 }
 
 /* ============================================================
-   Shared building blocks
+   Building blocks
    ============================================================ */
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -291,23 +456,22 @@ function InnerMetric({ m }: { m: MetricItem }) {
 }
 
 /* ============================================================
-   BIG PANEL — una sola superficie: visual grande + carrusel interno
+   BIG PANEL — visual grande con carrusel cuando hay data
    ============================================================ */
 function BigPanel({
-  title, headlineLabel, headline, headlineTone, visual, chips, socia,
+  title, headlineLabel, headline, headlineTone, visual, chips,
 }: {
   title: string;
   headlineLabel: string;
   headline: string;
   headlineTone?: ToneKey;
   visual: React.ReactNode;
-  chips: MetricItem[];
-  socia?: string;
+  chips?: MetricItem[];
 }) {
   const pages = useMemo(
     () => [
       { id: "visual", node: visual },
-      ...(chips.length
+      ...(chips && chips.length
         ? [{
           id: "metrics",
           node: (
@@ -317,24 +481,14 @@ function BigPanel({
           ),
         }]
         : []),
-      ...(socia
-        ? [{
-          id: "next",
-          node: (
-            <div className="min-h-[118px] flex items-center">
-              <p className="font-['Geist'] text-[17px] text-white/82 leading-[1.35] max-w-[260px]">{socia}</p>
-            </div>
-          ),
-        }]
-        : []),
     ],
-    [chips, socia, visual],
+    [chips, visual],
   );
   const [page, setPage] = useState(0);
 
   useEffect(() => {
     if (pages.length <= 1) return;
-    const id = window.setInterval(() => setPage((current) => (current + 1) % pages.length), 4200);
+    const id = window.setInterval(() => setPage((c) => (c + 1) % pages.length), 4600);
     return () => window.clearInterval(id);
   }, [pages.length]);
 
@@ -343,32 +497,28 @@ function BigPanel({
   return (
     <div
       className="mx-[22px] relative rounded-[28px] overflow-hidden"
-      style={{
-        background: "rgba(255,255,255,0.055)",
-        border: "1px solid rgba(255,255,255,0.08)",
-      }}
+      style={{ background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.08)" }}
     >
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[170px] opacity-80"
-        style={{
-          background: "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.10), transparent 68%)",
-        }}
+        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.10), transparent 68%)" }}
       />
-
       <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[18px]">
         <div className="flex items-center justify-between gap-[12px]">
           <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
-          <div className="flex items-center gap-[5px]">
-            {pages.map((p, i) => (
-              <button
-                key={p.id}
-                aria-label={`Ver ${i + 1}`}
-                onClick={() => setPage(i)}
-                className="h-[6px] rounded-full transition-all"
-                style={{ width: i === page ? 18 : 6, background: i === page ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)" }}
-              />
-            ))}
-          </div>
+          {pages.length > 1 && (
+            <div className="flex items-center gap-[5px]">
+              {pages.map((pg, i) => (
+                <button
+                  key={pg.id}
+                  aria-label={`Ver ${i + 1}`}
+                  onClick={() => setPage(i)}
+                  className="h-[6px] rounded-full transition-all"
+                  style={{ width: i === page ? 18 : 6, background: i === page ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)" }}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-[4px]">
@@ -399,6 +549,46 @@ function BigPanel({
   );
 }
 
+/* ============================================================
+   EMPTY PANEL — estado vacío útil
+   ============================================================ */
+function EmptyPanel({
+  title, headline, body, cta, onCta,
+}: {
+  title: string;
+  headline: string;
+  body: string;
+  cta: string;
+  onCta: () => void;
+}) {
+  return (
+    <div
+      className="mx-[22px] relative rounded-[28px] overflow-hidden"
+      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.075)" }}
+    >
+      <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[16px]">
+        <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
+        <div className="flex flex-col gap-[8px]">
+          <div className="font-['Bai_Jamjuree'] text-[28px] font-semibold text-white tracking-[-0.7px] leading-[1.1]">
+            {headline}
+          </div>
+          <p className="font-['Geist'] text-[13px] text-white/55 leading-[1.45] max-w-[300px]">{body}</p>
+        </div>
+        <button
+          onClick={onCta}
+          className="self-start h-[44px] px-[18px] rounded-[16px] bg-white text-black font-['Geist'] text-[13.5px] font-bold active:scale-[0.985] transition-transform inline-flex items-center gap-[8px]"
+        >
+          <Plus className="h-[14px] w-[14px]" strokeWidth={2.6} />
+          {cta}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   Shortcuts
+   ============================================================ */
 type Shortcut = { label: string; sub: string; onClick?: () => void; soon?: boolean };
 
 function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
@@ -436,34 +626,33 @@ function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
 }
 
 /* ============================================================
-   Visuales simples
+   Visuales reales
    ============================================================ */
-function CashLineChart() {
-  const { last7Days } = useFinance();
-  const income = last7Days.reduce((s, d) => s + d.income, 0);
-  const expense = last7Days.reduce((s, d) => s + d.expense, 0);
+function CashBar({ income, expense }: { income: number; expense: number }) {
   const total = Math.max(1, income + expense);
-  const incomePct = Math.max(6, (income / total) * 100);
-  const expensePct = Math.max(6, (expense / total) * 100);
+  const incomePct = (income / total) * 100;
+  const expensePct = (expense / total) * 100;
   return (
     <div className="py-[10px]">
       <div className="flex h-[18px] overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.07)" }}>
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${incomePct}%` }}
-          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: "#4ADE80" }}
-        />
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${expensePct}%` }}
-          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
-          style={{ background: "#F87171" }}
-        />
+        {income > 0 && (
+          <motion.div
+            initial={{ width: 0 }} animate={{ width: `${incomePct}%` }}
+            transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+            style={{ background: "#4ADE80" }}
+          />
+        )}
+        {expense > 0 && (
+          <motion.div
+            initial={{ width: 0 }} animate={{ width: `${expensePct}%` }}
+            transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+            style={{ background: "#F87171" }}
+          />
+        )}
       </div>
       <div className="mt-[18px] grid grid-cols-2 gap-[18px]">
-        <InnerMetric m={{ label: "Ingresos", value: money(income), tone: income > 0 ? "green" : "muted" }} />
-        <InnerMetric m={{ label: "Egresos", value: money(expense), tone: expense > 0 ? "red" : "muted" }} />
+        <InnerMetric m={{ label: "Ingresos 7d", value: money(income), tone: income > 0 ? "green" : "muted" }} />
+        <InnerMetric m={{ label: "Egresos 7d", value: money(expense), tone: expense > 0 ? "red" : "muted" }} />
       </div>
     </div>
   );
@@ -478,24 +667,20 @@ function StockHealth({ healthy, low, out }: { healthy: number; low: number; out:
   ];
   return (
     <div>
-      {total === 0 ? (
-        <div className="h-[12px] rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
-      ) : (
-        <div className="h-[12px] rounded-full overflow-hidden flex" style={{ background: "rgba(255,255,255,0.05)" }}>
-          {segs.map(
-            (s, i) =>
-              s.v > 0 && (
-                <motion.div
-                  key={i}
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(s.v / total) * 100}%` }}
-                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ background: s.c }}
-                />
-              ),
-          )}
-        </div>
-      )}
+      <div className="h-[12px] rounded-full overflow-hidden flex" style={{ background: "rgba(255,255,255,0.05)" }}>
+        {total > 0 && segs.map(
+          (s, i) =>
+            s.v > 0 && (
+              <motion.div
+                key={i}
+                initial={{ width: 0 }}
+                animate={{ width: `${(s.v / total) * 100}%` }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                style={{ background: s.c }}
+              />
+            ),
+        )}
+      </div>
       <div className="mt-[14px] grid grid-cols-3 gap-[10px] font-['Geist'] text-[11px] text-white/55">
         {segs.map((s) => (
           <span key={s.label} className="flex items-center gap-[5px] min-w-0">
@@ -512,10 +697,7 @@ function PresenceDots({ items }: { items: { label: string; ok: boolean }[] }) {
   return (
     <div className="flex flex-col gap-[10px]">
       {items.map((it) => (
-        <div
-          key={it.label}
-          className="flex items-center gap-[10px]"
-        >
+        <div key={it.label} className="flex items-center gap-[10px]">
           <span
             className="h-[8px] w-[8px] rounded-full shrink-0"
             style={{ background: it.ok ? "#4ADE80" : "rgba(255,255,255,0.22)" }}
@@ -532,33 +714,21 @@ function PresenceDots({ items }: { items: { label: string; ok: boolean }[] }) {
   );
 }
 
-function ClientsDistribution({
-  registered,
-  withDebt,
-  newOnes,
-}: {
-  registered: number;
-  withDebt: number;
-  newOnes: number;
-}) {
+function ClientsBreakdown({ registered, withDebt }: { registered: number; withDebt: number }) {
   const cells = [
-    { label: "Activos", value: registered, color: "#ffffff" },
-    { label: "Con fiado", value: withDebt, color: "rgba(255,255,255,0.70)" },
-    { label: "Nuevos", value: newOnes, color: "rgba(255,255,255,0.45)" },
+    { label: "Registrados", value: registered, color: "#ffffff" },
+    { label: "Con fiado", value: withDebt, color: withDebt > 0 ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.45)" },
   ];
   return (
-    <div className="grid grid-cols-3 gap-[14px]">
+    <div className="grid grid-cols-2 gap-[14px]">
       {cells.map((c) => (
-        <div
-          key={c.label}
-          className="min-w-0"
-        >
+        <div key={c.label} className="min-w-0">
           <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">{c.label}</div>
           <div
             className="mt-[6px] font-['Bai_Jamjuree'] text-[28px] font-bold tabular-nums leading-[1]"
             style={{ color: c.color }}
           >
-            {c.value === 0 && c.label === "Nuevos" ? "—" : c.value}
+            {c.value}
           </div>
         </div>
       ))}
@@ -569,53 +739,67 @@ function ClientsDistribution({
 /* ============================================================
    AREA: Operación
    ============================================================ */
-function OperationArea(p: Props) {
-  const { items, productCount, totalValue, lowStock } = useInventory();
-  const out = items.filter((i) => i.stock === 0).length;
-  const low = lowStock.filter((i) => i.stock > 0).length;
-  const healthy = Math.max(0, productCount - low - out);
-  const alertCount = low + out;
+function OperationArea(p: Props, s: Signals) {
+  if (s.productCount === 0) {
+    return (
+      <div className="flex flex-col gap-[14px]">
+        <SectionTitle>Operación del negocio</SectionTitle>
+        <EmptyPanel
+          title="Inventario"
+          headline="Aún no tienes productos"
+          body="Agrega tu primer producto para empezar a controlar stock, costos y ventas."
+          cta="Agregar producto"
+          onCta={p.onInventory}
+        />
+        <ShortcutsRow
+          title="Módulos"
+          items={[
+            { label: "Catálogo", sub: "Crear primero", onClick: p.onInventory },
+            { label: "Inventario", sub: "Ajustar stock", onClick: p.onInventory },
+            { label: "Compras", sub: "Reposiciones", soon: true },
+            { label: "Proveedores", sub: "A quién compras", soon: true },
+          ]}
+        />
+      </div>
+    );
+  }
 
-  const socia =
-    productCount < 3
-      ? "Agrega al menos 3 productos para medir stock real y ganancias."
-      : alertCount > 0
-        ? `Tienes ${alertCount} producto${alertCount === 1 ? "" : "s"} en alerta de stock.`
-        : "Completa costos de compra para calcular margen real.";
+  const alertCount = s.lowStockCount + s.outOfStockCount;
+  const chips: MetricItem[] = [
+    {
+      label: "Stock crítico", value: String(alertCount),
+      sub: s.outOfStockCount > 0 ? `${s.outOfStockCount} agotados` : "bajo umbral",
+      tone: alertCount > 0 ? "yellow" : "green",
+    },
+    {
+      label: "Valor inventario",
+      value: s.totalInventoryValue > 0 ? money(s.totalInventoryValue) : "—",
+      sub: "al costo",
+      tone: s.totalInventoryValue > 0 ? "blue" : "muted",
+    },
+    {
+      label: "Sin costo", value: String(s.productsNoCost),
+      sub: s.productsNoCost > 0 ? "completar" : "todo OK",
+      tone: s.productsNoCost > 0 ? "yellow" : "green",
+    },
+    { label: "Saludables", value: String(s.healthyStockCount), sub: "con stock OK", tone: "blue" },
+  ];
 
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Operación del negocio</SectionTitle>
-
       <BigPanel
         title="Salud del inventario"
         headlineLabel="Productos activos"
-        headline={String(productCount)}
-        headlineTone={productCount > 0 ? "default" : "muted"}
-        visual={<StockHealth healthy={healthy} low={low} out={out} />}
-        chips={[
-          {
-            label: "Stock crítico",
-            value: String(alertCount),
-            sub: out > 0 ? `${out} agotados` : "bajo umbral",
-            tone: alertCount > 0 ? "yellow" : "green",
-          },
-          {
-            label: "Valor inventario",
-            value: productCount > 0 ? money(totalValue) : "—",
-            sub: "al costo",
-            tone: productCount > 0 ? "blue" : "muted",
-          },
-          { label: "Última compra", value: "—", sub: "próximamente", tone: "muted" },
-        ]}
-        socia={socia}
+        headline={String(s.productCount)}
+        visual={<StockHealth healthy={s.healthyStockCount} low={s.lowStockCount} out={s.outOfStockCount} />}
+        chips={chips}
       />
-
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "Catálogo", sub: productCount > 0 ? "Ver productos" : "Crear primero", onClick: p.onInventory },
-          { label: "Inventario", sub: "Ajustar stock", onClick: p.onInventory },
+          { label: "Catálogo", sub: `${s.productCount} producto${s.productCount === 1 ? "" : "s"}`, onClick: p.onInventory },
+          { label: "Inventario", sub: alertCount > 0 ? `${alertCount} en alerta` : "Todo en orden", onClick: p.onInventory },
           { label: "Compras", sub: "Reposiciones", soon: true },
           { label: "Proveedores", sub: "A quién compras", soon: true },
         ]}
@@ -627,63 +811,75 @@ function OperationArea(p: Props) {
 /* ============================================================
    AREA: Caja
    ============================================================ */
-function CashArea(p: Props) {
-  const { todayIncome, todayExpense, monthIncome, monthExpense, monthNet, fiadosPending, last7Days } = useFinance();
-  const weekNet = last7Days.reduce((s, d) => s + (d.income - d.expense), 0);
-  const margin = monthIncome > 0 ? Math.round((monthNet / monthIncome) * 100) : 0;
+function CashArea(p: Props, s: Signals) {
+  if (s.salesCount === 0 && s.expenseCount === 0) {
+    return (
+      <div className="flex flex-col gap-[14px]">
+        <SectionTitle>Caja del negocio</SectionTitle>
+        <EmptyPanel
+          title="Movimientos"
+          headline="Aún no registras movimientos"
+          body="Registra tu primera venta o gasto para empezar a medir caja, margen y ganancia real."
+          cta="Registrar movimiento"
+          onCta={p.onPayments}
+        />
+        <ShortcutsRow
+          title="Módulos"
+          items={[
+            { label: "Ventas", sub: "Registrar primera", onClick: p.onPayments },
+            { label: "Gastos", sub: "Registrar primero", onClick: p.onPayments },
+            { label: "Deudas", sub: "Por cobrar / pagar", onClick: p.onReceivables },
+            { label: "Reportes", sub: "Analizar", soon: true },
+          ]}
+        />
+      </div>
+    );
+  }
 
-  const socia =
-    monthIncome === 0 && monthExpense === 0
-      ? "Empieza a registrar ingresos y gastos para ver tu margen real."
-      : fiadosPending > 0
-        ? `Tienes ${money(fiadosPending)} por cobrar. Revisa tus fiados.`
-        : "Registra todos los gastos del mes para calcular ganancia real.";
+  const chips: MetricItem[] = [
+    {
+      label: "Caja hoy",
+      value: money(s.todayIncome - s.todayExpense),
+      sub: "ingresos - gastos",
+      tone: (s.todayIncome - s.todayExpense) >= 0 ? "green" : "red",
+    },
+    {
+      label: "Gastos hoy",
+      value: money(s.todayExpense),
+      sub: s.todayExpense > 0 ? "registrados" : "sin gastos",
+      tone: s.todayExpense > 0 ? "red" : "muted",
+    },
+    {
+      label: "Margen mes",
+      value: s.margin !== null ? `${s.margin}%` : "—",
+      sub: s.expenseCount === 0 ? "faltan gastos" : "vs ingresos",
+      tone: s.margin !== null ? (s.margin >= 0 ? "green" : "red") : "muted",
+    },
+    {
+      label: "Por cobrar",
+      value: s.debtAmount > 0 ? money(s.debtAmount) : "S/ 0",
+      sub: s.debtorsCount > 0 ? `${s.debtorsCount} cliente${s.debtorsCount === 1 ? "" : "s"}` : "sin deudas",
+      tone: s.debtAmount > 0 ? "yellow" : "muted",
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Caja del negocio</SectionTitle>
-
       <BigPanel
-        title="Ingresos vs gastos · últimos 7 días"
-        headlineLabel="Neto de la semana"
-        headline={`${weekNet < 0 ? "-" : ""}${money(weekNet)}`}
-        headlineTone={weekNet >= 0 ? "green" : "red"}
-        visual={<CashLineChart />}
-        chips={[
-          {
-            label: "Caja hoy",
-            value: money(todayIncome - todayExpense),
-            sub: "efectivo + digital",
-            tone: todayIncome - todayExpense >= 0 ? "green" : "red",
-          },
-          {
-            label: "Gastos hoy",
-            value: money(todayExpense),
-            sub: "registrados",
-            tone: todayExpense > 0 ? "red" : "muted",
-          },
-          {
-            label: "Margen mes",
-            value: monthIncome > 0 ? `${margin}%` : "—",
-            sub: "vs ingresos",
-            tone: monthIncome > 0 ? "blue" : "muted",
-          },
-          {
-            label: "Por cobrar",
-            value: fiadosPending > 0 ? money(fiadosPending) : "S/ 0",
-            sub: "fiados abiertos",
-            tone: fiadosPending > 0 ? "yellow" : "muted",
-          },
-        ]}
-        socia={socia}
+        title="Ingresos vs egresos · últimos 7 días"
+        headlineLabel={s.expenseCount === 0 ? "Ingresos de la semana" : "Neto de la semana"}
+        headline={`${s.weekNet < 0 ? "-" : ""}${money(s.weekNet)}`}
+        headlineTone={s.expenseCount === 0 ? "green" : (s.weekNet >= 0 ? "green" : "red")}
+        visual={<CashBar income={s.weekIncome} expense={s.weekExpense} />}
+        chips={chips}
       />
-
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "Ventas", sub: "Registrar", onClick: p.onPayments },
-          { label: "Gastos", sub: "Agregar", onClick: p.onPayments },
-          { label: "Deudas", sub: "Por cobrar / pagar", onClick: p.onReceivables },
+          { label: "Ventas", sub: `${s.salesCount} registrada${s.salesCount === 1 ? "" : "s"}`, onClick: p.onPayments },
+          { label: "Gastos", sub: s.expenseCount > 0 ? `${s.expenseCount} registrados` : "Agregar", onClick: p.onPayments },
+          { label: "Deudas", sub: s.debtAmount > 0 ? money(s.debtAmount) : "Por cobrar / pagar", onClick: p.onReceivables },
           { label: "Reportes", sub: "Analizar", soon: true },
         ]}
       />
@@ -694,73 +890,61 @@ function CashArea(p: Props) {
 /* ============================================================
    AREA: Clientes
    ============================================================ */
-function ClientsArea(p: Props) {
-  const { user } = useAuth();
-  const { fiados } = useFinance();
-  const [count, setCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+function ClientsArea(p: Props, s: Signals) {
+  if (s.clientCount === 0 && s.debtorsCount === 0) {
+    return (
+      <div className="flex flex-col gap-[14px]">
+        <SectionTitle>Relación con clientes</SectionTitle>
+        <EmptyPanel
+          title="Clientes"
+          headline="Aún no tienes clientes"
+          body="Registra a tus clientes frecuentes para hacer seguimiento, fiados y entender quién vuelve a comprarte."
+          cta="Agregar cliente"
+          onCta={p.onClients}
+        />
+        <ShortcutsRow
+          title="Módulos"
+          items={[
+            { label: "Directorio", sub: "Agregar primero", onClick: p.onClients },
+            { label: "Deudas", sub: "Por cobrar", onClick: p.onReceivables },
+            { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
+            { label: "Historial", sub: "Compras por cliente", soon: true },
+          ]}
+        />
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-      const { count: c } = await supabase
-        .from("customers")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", user.id);
-      if (active) {
-        setCount(c ?? 0);
-        setLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [user]);
-
-  const pending = fiados.filter((f) => !f.settled);
-  const debtors = new Set(pending.map((f) => f.client.trim().toLowerCase())).size;
-  const debtAmount = pending.reduce((s, f) => s + f.amount, 0);
-
-  const socia =
-    count === 0
-      ? "Registra a tus clientes frecuentes para hacer seguimiento."
-      : debtors > 0
-        ? `${debtors} cliente${debtors === 1 ? "" : "s"} con fiado abierto.`
-        : "Identifica a tus clientes frecuentes para fidelizar.";
+  const chips: MetricItem[] = [
+    {
+      label: "Con fiado", value: String(s.debtorsCount),
+      sub: s.debtAmount > 0 ? money(s.debtAmount) : "sin deudas",
+      tone: s.debtorsCount > 0 ? "yellow" : "muted",
+    },
+    {
+      label: "Por cobrar",
+      value: s.debtAmount > 0 ? money(s.debtAmount) : "S/ 0",
+      sub: "fiados abiertos",
+      tone: s.debtAmount > 0 ? "yellow" : "muted",
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Relación con clientes</SectionTitle>
-
       <BigPanel
         title="Cartera de clientes"
         headlineLabel="Clientes registrados"
-        headline={loading ? "…" : String(count)}
-        headlineTone={count > 0 ? "default" : "muted"}
-        visual={<ClientsDistribution registered={count} withDebt={debtors} newOnes={0} />}
-        chips={[
-          {
-            label: "Con fiado",
-            value: String(debtors),
-            sub: debtors > 0 ? money(debtAmount) : "sin deudas",
-            tone: debtors > 0 ? "yellow" : "muted",
-          },
-          { label: "Frecuentes", value: "—", sub: "pronto", tone: "muted" },
-          { label: "Seguimientos", value: "0", sub: "pendientes", tone: "muted" },
-        ]}
-        socia={socia}
+        headline={String(s.clientCount)}
+        visual={<ClientsBreakdown registered={s.clientCount} withDebt={s.debtorsCount} />}
+        chips={chips}
       />
-
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "Directorio", sub: count > 0 ? "Ver clientes" : "Agregar primero", onClick: p.onClients },
+          { label: "Directorio", sub: `${s.clientCount} cliente${s.clientCount === 1 ? "" : "s"}`, onClick: p.onClients },
+          { label: "Deudas", sub: s.debtAmount > 0 ? money(s.debtAmount) : "Por cobrar", onClick: p.onReceivables },
           { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
-          { label: "Seguimientos", sub: "Recordar contactar", soon: true },
           { label: "Historial", sub: "Compras por cliente", soon: true },
         ]}
       />
@@ -771,60 +955,72 @@ function ClientsArea(p: Props) {
 /* ============================================================
    AREA: Canales
    ============================================================ */
-function ChannelsArea(p: Props) {
-  const { profile } = useAuth();
-  const has = (v: unknown) => typeof v === "string" && (v as string).trim().length > 0;
-  const hasWA = has(profile?.phone);
-  const hasAddr = has(profile?.address);
-  const hasHours = has(profile?.open_time) && has(profile?.close_time);
-  const hasLogo = has(profile?.avatar_url);
+function ChannelsArea(p: Props, s: Signals) {
   const items = [
-    { label: "WhatsApp", ok: hasWA },
-    { label: "Dirección", ok: hasAddr },
-    { label: "Horario", ok: hasHours },
-    { label: "Logo / foto", ok: hasLogo },
+    { label: "WhatsApp", ok: s.hasWA },
+    { label: "Dirección", ok: s.hasAddress },
+    { label: "Horario", ok: s.hasHours },
+    { label: "Logo / foto", ok: s.hasLogo },
   ];
   const ready = items.filter((i) => i.ok).length;
 
-  const socia =
-    ready < 4
-      ? !hasWA
-        ? "Activa WhatsApp para que tus clientes te escriban directo."
-        : !hasAddr
-          ? "Sin dirección será difícil que lleguen a tu local."
-          : !hasHours
-            ? "Define tu horario para que sepan cuándo atiendes."
-            : "Sube tu logo o foto para que te reconozcan."
-      : "Habilita catálogo compartible para vender por WhatsApp sin repetir.";
+
+
+  if (ready === 0) {
+    return (
+      <div className="flex flex-col gap-[14px]">
+        <SectionTitle>Cómo te encuentran</SectionTitle>
+        <EmptyPanel
+          title="Presencia"
+          headline="Tu negocio aún no es visible"
+          body="Completa WhatsApp, dirección y horario para que tus clientes puedan encontrarte y contactarte."
+          cta="Configurar presencia"
+          onCta={p.onInfo}
+        />
+        <ShortcutsRow
+          title="Módulos"
+          items={[
+            { label: "WhatsApp", sub: "Configurar", onClick: p.onInfo },
+            { label: "Perfil público", sub: "Dirección y horario", onClick: p.onInfo },
+            { label: "Catálogo", sub: "Compartir productos", soon: true },
+            { label: "Canales venta", sub: "Delivery, redes", soon: true },
+          ]}
+        />
+      </div>
+    );
+  }
+
+  const chips: MetricItem[] = [
+    {
+      label: "Perfil público",
+      value: ready === 4 ? "Listo" : "Parcial",
+      sub: `${ready}/4 datos`,
+      tone: ready === 4 ? "green" : "yellow",
+    },
+    {
+      label: "Contacto",
+      value: s.hasWA ? "WhatsApp" : "—",
+      sub: s.hasWA ? "activo" : "sin número",
+      tone: s.hasWA ? "green" : "muted",
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Cómo te encuentran</SectionTitle>
-
       <BigPanel
         title="Presencia del negocio"
         headlineLabel="Canales activos"
         headline={`${ready}/4`}
-        headlineTone={ready === 4 ? "green" : ready > 0 ? "default" : "muted"}
+        headlineTone={ready === 4 ? "green" : "default"}
         visual={<PresenceDots items={items} />}
-        chips={[
-          {
-            label: "Perfil público",
-            value: ready === 4 ? "Listo" : "Parcial",
-            sub: `${ready}/4 datos`,
-            tone: ready === 4 ? "green" : "yellow",
-          },
-          { label: "Catálogo", value: "—", sub: "compartible · pronto", tone: "muted" },
-          { label: "Contacto", value: hasWA ? "WhatsApp" : "—", sub: hasWA ? "activo" : "sin número", tone: hasWA ? "green" : "muted" },
-        ]}
-        socia={socia}
+        chips={chips}
       />
-
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "WhatsApp", sub: hasWA ? (profile?.phone ?? "") : "Configurar", onClick: p.onInfo },
-          { label: "Perfil público", sub: "Dirección y horario", onClick: p.onInfo },
+          { label: "WhatsApp", sub: s.hasWA ? (s.phone ?? "Activo") : "Configurar", onClick: p.onInfo },
+          { label: "Perfil público", sub: ready === 4 ? "Completo" : `${ready}/4 datos`, onClick: p.onInfo },
           { label: "Catálogo", sub: "Compartir productos", soon: true },
           { label: "Canales venta", sub: "Delivery, redes", soon: true },
         ]}
@@ -832,7 +1028,6 @@ function ChannelsArea(p: Props) {
     </div>
   );
 }
-
 
 /* ============================================================
    Advanced configuration row
@@ -858,14 +1053,15 @@ function AdvancedConfigRow(p: Props) {
    ============================================================ */
 export default function BusinessHub(p: Props) {
   const [area, setArea] = useState<Area>("operacion");
-  const steps = useSteps(p);
+  const signals = useBusinessSignals();
+  const insights = useMemo(() => buildInsights(signals, p), [signals, p]);
 
   return (
     <div className="relative w-full">
       <Ambient />
       <div className="relative flex flex-col gap-[18px] pb-[200px]">
         <BizHeader />
-        <HQPanel steps={steps} />
+        <HQPanel insights={insights} signals={signals} />
 
         <div className="flex flex-col gap-[14px]">
           <AreaTabs area={area} onChange={setArea} />
@@ -877,10 +1073,10 @@ export default function BusinessHub(p: Props) {
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
               className="flex flex-col gap-[14px]">
-              {area === "operacion" && <OperationArea {...p} />}
-              {area === "caja" && <CashArea {...p} />}
-              {area === "clientes" && <ClientsArea {...p} />}
-              {area === "canales" && <ChannelsArea {...p} />}
+              {area === "operacion" && OperationArea(p, signals)}
+              {area === "caja" && CashArea(p, signals)}
+              {area === "clientes" && ClientsArea(p, signals)}
+              {area === "canales" && ChannelsArea(p, signals)}
             </motion.div>
           </AnimatePresence>
         </div>
