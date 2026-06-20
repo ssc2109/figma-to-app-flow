@@ -963,7 +963,8 @@ function ChannelsArea(p: Props, s: Signals) {
     { label: "Logo / foto", ok: s.hasLogo },
   ];
   const ready = items.filter((i) => i.ok).length;
-  const { profile } = useAuth();
+
+
 
   if (ready === 0) {
     return (
