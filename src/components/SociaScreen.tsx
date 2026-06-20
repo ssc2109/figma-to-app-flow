@@ -1549,6 +1549,9 @@ const SOCIA_CSS = `
   font-size:clamp(32px, 8.4vw, 40px); font-weight:600; letter-spacing:-0.6px;
   line-height:1.12;
   white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
   background:linear-gradient(180deg, #ffffff 58%, rgba(255,255,255,.72) 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
   -webkit-user-select:text; user-select:text;
@@ -1641,7 +1644,7 @@ const SOCIA_CSS = `
 /* CARDS — alineadas con la chatbar */
 .socia-screen .cards-head{
   display:flex; align-items:center; gap:8px;
-  padding:20px 22px 0;
+  padding:20px 28px 0;
 }
 .socia-screen .cards-head .lbl{
   font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
@@ -1654,7 +1657,7 @@ const SOCIA_CSS = `
 }
 .socia-screen .cards{
   display:flex; gap:13px; margin-top:12px;
-  padding:4px 22px 4px;
+  padding:4px 28px 4px 28px;
   overflow-x:auto; scrollbar-width:none;
   scroll-snap-type:x mandatory;
 }
