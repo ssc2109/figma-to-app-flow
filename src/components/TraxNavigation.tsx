@@ -29,7 +29,7 @@ function NavShell() {
   const [salesOpen, setSalesOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "finanzas">("hub");
+  const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "debts">("hub");
   const [sociaPrompt, setSociaPrompt] = useState<string | undefined>(undefined);
   const { setHandler } = useQuickActions();
 
@@ -141,7 +141,7 @@ function NavShell() {
                       setCurrentScreen("negocio");
                     } else if (intent.kind === "screen") {
                       if (intent.screen === "negocio" && intent.subview === "finanzas") {
-                        setNegocioInitialView("finanzas");
+                        setNegocioInitialView("debts");
                       }
                       setCurrentScreen(intent.screen);
                     }
