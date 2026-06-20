@@ -143,6 +143,8 @@ function useBusinessSignals(): Signals {
       monthIncome,
       monthExpense,
       monthNet,
+      weekIncome,
+      weekExpense,
       weekNet,
       weekHasMovement,
       margin: monthIncome > 0 ? Math.round((monthNet / monthIncome) * 100) : null,
