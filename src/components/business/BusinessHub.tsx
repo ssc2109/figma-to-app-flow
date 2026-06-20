@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
-import { ChevronRight, Sparkles, ArrowRight, Settings2 } from "lucide-react";
+import { ChevronRight, ArrowRight, Settings2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
 import { useFinance } from "@/data/finance";
 import { supabase } from "@/integrations/supabase/client";
 
 /* ============================================================
-   Trax · Business HQ (v5 — Command Center, mockup-aligned)
-   Header grande · Panel HQ · Tabs chunky · Hero chart · 2x2 acciones
+   Trax · Business HQ — calm operating view
+   Fórmula: visual grande + módulos. Sin capas extra.
    ============================================================ */
 
 type Props = {
@@ -50,14 +50,14 @@ function isOpenNow(open: string | null, close: string | null) {
 const money = (n: number) =>
   `S/ ${Math.abs(n).toLocaleString("es-PE", { maximumFractionDigits: n >= 100 ? 0 : 2 })}`;
 
-/* ---------- ambient (verde sutil, mockup vibe) ---------- */
+/* ---------- ambient silencioso ---------- */
 function Ambient() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -top-[60px] left-[10%] h-[360px] w-[360px] rounded-full opacity-[0.55]"
-        style={{ background: "radial-gradient(closest-side, rgba(102,240,156,0.13), transparent 70%)", filter: "blur(50px)" }} />
-      <div className="absolute top-[420px] -right-[140px] h-[360px] w-[360px] rounded-full opacity-[0.35]"
-        style={{ background: "radial-gradient(closest-side, rgba(102,240,156,0.10), transparent 70%)", filter: "blur(60px)" }} />
+      <div
+        className="absolute -top-[90px] left-1/2 h-[320px] w-[320px] -translate-x-1/2 rounded-full opacity-[0.35]"
+        style={{ background: "radial-gradient(closest-side, rgba(255,255,255,0.10), transparent 72%)", filter: "blur(56px)" }}
+      />
     </div>
   );
 }
@@ -109,8 +109,8 @@ function BizHeader() {
                   transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
                   className="h-[5px] w-[5px] rounded-full"
                   style={{
-                    background: open ? "#66F09C" : "#FF7C6D",
-                    boxShadow: open ? "0 0 8px rgba(102,240,156,0.7)" : "0 0 8px rgba(255,124,109,0.5)",
+                    background: open ? "#4ADE80" : "#F87171",
+                    boxShadow: open ? "0 0 8px rgba(74,222,128,0.45)" : "0 0 8px rgba(248,113,113,0.35)",
                   }} />
               )}
               {status}
@@ -163,9 +163,6 @@ function HQPanel({ steps }: { steps: StepLite[] }) {
   const doneW = steps.filter((x) => x.done).reduce((s, x) => s + x.weight, 0);
   const pct = Math.round((doneW / totalW) * 100);
   const next = steps.find((s) => !s.done);
-  const R = 36;
-  const C = 2 * Math.PI * R;
-  const offset = C - (C * pct) / 100;
   const headline =
     pct === 100 ? "Tu negocio está bajo control"
       : pct >= 70 ? "Casi listo, faltan detalles"
@@ -178,86 +175,39 @@ function HQPanel({ steps }: { steps: StepLite[] }) {
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="relative mx-[22px] rounded-[28px] overflow-hidden"
       style={{
-        background: "linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.012))",
-        border: "1px solid rgba(255,255,255,0.10)",
-        boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05), 0 0 45px rgba(102,240,156,0.08)",
+        background: "rgba(255,255,255,0.055)",
+        border: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      {/* terminal grid */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.55]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
-          backgroundSize: "46px 46px",
-        }} />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.6]"
-        style={{
-          background:
-            "radial-gradient(80% 60% at 10% 0%, rgba(102,240,156,0.10), transparent 60%), radial-gradient(60% 50% at 100% 100%, rgba(120,180,255,0.07), transparent 70%)",
-        }} />
-
       <div className="relative px-[20px] pt-[18px] pb-[18px]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-[8px]">
-            <span className="h-[7px] w-[7px] rounded-full bg-[#66F09C]" style={{ boxShadow: "0 0 10px rgba(102,240,156,0.7)" }} />
-            <span className="font-['Geist'] text-[10.5px] uppercase tracking-[2.4px] text-white/55">Estado operativo</span>
+        <div className="flex items-start justify-between gap-[16px]">
+          <div className="min-w-0">
+            <div className="font-['Geist'] text-[10.5px] uppercase tracking-[2.4px] text-white/45">Estado operativo</div>
+            <h2 className="mt-[10px] font-['Bai_Jamjuree'] text-[21px] font-semibold text-white leading-[1.1] tracking-[-0.3px]">
+              {headline}
+            </h2>
+            <p className="mt-[7px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4]">
+              {next ? `Siguiente: ${next.label.toLowerCase()}` : "Todo configurado. Mantén tus datos al día."}
+            </p>
           </div>
-          <span className="font-['Geist'] text-[10px] uppercase tracking-[2px] text-white/35 tabular-nums">
-            HQ · v2
+          <span className="font-['Bai_Jamjuree'] text-[36px] font-bold text-white tracking-[-1px] tabular-nums leading-none">
+            {pct}<span className="text-[13px] text-white/45 align-top ml-[1px]">%</span>
           </span>
         </div>
 
-        <div className="mt-[18px] flex items-center gap-[18px]">
-          <div className="relative h-[92px] w-[92px] shrink-0">
-            <svg viewBox="0 0 92 92" className="h-full w-full -rotate-90">
-              <defs>
-                <linearGradient id="hqGrad" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#ffffff" />
-                  <stop offset="100%" stopColor="#66F09C" />
-                </linearGradient>
-              </defs>
-              <circle cx="46" cy="46" r={R} stroke="rgba(255,255,255,0.08)" strokeWidth={6} fill="none" />
-              <motion.circle cx="46" cy="46" r={R} stroke="url(#hqGrad)" strokeWidth={6}
-                strokeLinecap="round" fill="none" strokeDasharray={C}
-                initial={{ strokeDashoffset: C }}
-                animate={{ strokeDashoffset: offset }}
-                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-['Bai_Jamjuree'] text-[26px] font-bold text-white tracking-[-1px] tabular-nums">
-                {pct}<span className="text-[12px] text-white/45 align-top ml-[1px]">%</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <h2 className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.1] tracking-[-0.5px]">
-              {headline}
-            </h2>
-            {next ? (
-              <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4]">
-                Siguiente acción: <span className="text-white/85">{next.label.toLowerCase()}</span>
-              </p>
-            ) : (
-              <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/55">Todo configurado. Mantén tus datos al día.</p>
-            )}
-          </div>
+        <div className="mt-[18px] h-[6px] overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full rounded-full bg-white"
+          />
         </div>
-
-        {next && (
-          <div className="mt-[16px] rounded-[18px] px-[14px] py-[11px] flex gap-[10px]"
-            style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.10)" }}>
-            <Sparkles className="h-[14px] w-[14px] text-white/80 shrink-0 mt-[2px]" strokeWidth={1.8} />
-            <p className="font-['Geist'] text-[12px] text-white/70 leading-[1.45]">
-              <span className="text-white/95">socIA · </span>{next.why}
-            </p>
-          </div>
-        )}
 
         {next && (
           <button
             onClick={next.go}
-            className="mt-[14px] w-full h-[52px] rounded-[20px] bg-white text-black font-['Geist'] text-[15px] font-bold active:scale-[0.985] transition-transform inline-flex items-center justify-center gap-[8px]"
+            className="mt-[16px] w-full h-[50px] rounded-[20px] bg-white text-black font-['Geist'] text-[15px] font-bold active:scale-[0.985] transition-transform inline-flex items-center justify-center gap-[8px]"
           >
             Continuar configuración
             <ArrowRight className="h-[15px] w-[15px]" strokeWidth={2.4} />
@@ -318,10 +268,10 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 type ToneKey = "default" | "green" | "red" | "blue" | "yellow" | "muted";
 const TONE_COLOR: Record<ToneKey, string> = {
   default: "#ffffff",
-  green: "#66F09C",
-  red: "#FF7C6D",
-  blue: "#76BEFF",
-  yellow: "#FFD76F",
+  green: "#4ADE80",
+  red: "#F87171",
+  blue: "rgba(255,255,255,0.82)",
+  yellow: "rgba(255,255,255,0.70)",
   muted: "rgba(255,255,255,0.45)",
 };
 
@@ -341,8 +291,7 @@ function InnerMetric({ m }: { m: MetricItem }) {
 }
 
 /* ============================================================
-   BIG PANEL — visual grande protagonista por tab
-   Contiene: eyebrow, headline grande, visual, chips integradas, socIA inline
+   BIG PANEL — una sola superficie: visual grande + carrusel interno
    ============================================================ */
 function BigPanel({
   title, headlineLabel, headline, headlineTone, visual, chips, socia,
@@ -355,95 +304,96 @@ function BigPanel({
   chips: MetricItem[];
   socia?: string;
 }) {
-  const cols = Math.min(chips.length, 4);
-  const gridCls =
-    cols === 4 ? "grid-cols-4" : cols === 3 ? "grid-cols-3" : cols === 2 ? "grid-cols-2" : "grid-cols-1";
+  const pages = useMemo(
+    () => [
+      { id: "visual", node: visual },
+      ...(chips.length
+        ? [{
+          id: "metrics",
+          node: (
+            <div className="grid grid-cols-2 gap-x-[18px] gap-y-[18px]">
+              {chips.slice(0, 4).map((m) => <InnerMetric key={m.label} m={m} />)}
+            </div>
+          ),
+        }]
+        : []),
+      ...(socia
+        ? [{
+          id: "next",
+          node: (
+            <div className="min-h-[118px] flex items-center">
+              <p className="font-['Geist'] text-[17px] text-white/82 leading-[1.35] max-w-[260px]">{socia}</p>
+            </div>
+          ),
+        }]
+        : []),
+    ],
+    [chips, socia, visual],
+  );
+  const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    if (pages.length <= 1) return;
+    const id = window.setInterval(() => setPage((current) => (current + 1) % pages.length), 4200);
+    return () => window.clearInterval(id);
+  }, [pages.length]);
+
+  useEffect(() => setPage(0), [title]);
 
   return (
     <div
       className="mx-[22px] relative rounded-[28px] overflow-hidden"
       style={{
-        background: "linear-gradient(150deg, rgba(255,255,255,0.07), rgba(255,255,255,0.012))",
-        border: "1px solid rgba(255,255,255,0.10)",
-        boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05), 0 0 50px rgba(102,240,156,0.07)",
+        background: "rgba(255,255,255,0.055)",
+        border: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      {/* terminal grid */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.5]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[170px] opacity-80"
         style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px)",
-          backgroundSize: "44px 44px",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(70% 50% at 0% 0%, rgba(102,240,156,0.10), transparent 60%), radial-gradient(60% 55% at 100% 100%, rgba(120,180,255,0.07), transparent 70%)",
+          background: "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.10), transparent 68%)",
         }}
       />
 
-      <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[16px]">
-        {/* eyebrow */}
-        <div className="flex items-center justify-between">
+      <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[18px]">
+        <div className="flex items-center justify-between gap-[12px]">
           <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
-          <motion.span
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            className="h-[6px] w-[6px] rounded-full bg-[#66F09C]"
-            style={{ boxShadow: "0 0 8px rgba(102,240,156,0.65)" }}
-          />
+          <div className="flex items-center gap-[5px]">
+            {pages.map((p, i) => (
+              <button
+                key={p.id}
+                aria-label={`Ver ${i + 1}`}
+                onClick={() => setPage(i)}
+                className="h-[6px] rounded-full transition-all"
+                style={{ width: i === page ? 18 : 6, background: i === page ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)" }}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* headline */}
         <div className="flex flex-col gap-[4px]">
           <div className="font-['Geist'] text-[11px] text-white/50">{headlineLabel}</div>
           <div
-            className="font-['Bai_Jamjuree'] text-[34px] font-bold tracking-[-1.2px] tabular-nums leading-[1]"
+            className="font-['Bai_Jamjuree'] text-[40px] font-bold tracking-[-1.2px] tabular-nums leading-[1]"
             style={{ color: TONE_COLOR[headlineTone ?? "default"] }}
           >
             {headline}
           </div>
         </div>
 
-        {/* visual */}
-        <div>{visual}</div>
-
-        {/* hairline */}
-        <div className="h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-
-        {/* chips inline */}
-        <div className={`grid ${gridCls} gap-[12px]`}>
-          {chips.slice(0, 4).map((m, i) => (
-            <div key={i} className="flex flex-col gap-[3px] min-w-0">
-              <div className="font-['Geist'] text-[9.5px] uppercase tracking-[1.2px] text-white/40 truncate">
-                {m.label}
-              </div>
-              <div
-                className="font-['Bai_Jamjuree'] text-[16px] font-bold tabular-nums leading-[1.05] truncate"
-                style={{ color: TONE_COLOR[m.tone ?? "default"] }}
-              >
-                {m.value}
-              </div>
-              {m.sub && (
-                <div className="font-['Geist'] text-[10px] text-white/35 leading-[1.2] truncate">{m.sub}</div>
-              )}
-            </div>
-          ))}
+        <div className="min-h-[128px] flex flex-col justify-center">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={`${title}-${pages[page]?.id}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {pages[page]?.node}
+            </motion.div>
+          </AnimatePresence>
         </div>
-
-        {/* socIA inline */}
-        {socia && (
-          <div className="flex items-start gap-[8px] pt-[2px]">
-            <Sparkles className="h-[11px] w-[11px] text-white/60 shrink-0 mt-[2px]" strokeWidth={1.8} />
-            <p className="font-['Geist'] text-[11.5px] text-white/55 leading-[1.4]">
-              <span className="text-white/80">socIA · </span>
-              {socia}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -453,16 +403,18 @@ type Shortcut = { label: string; sub: string; onClick?: () => void; soon?: boole
 
 function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
   return (
-    <div className="flex flex-col gap-[10px]">
-      <div className="px-[22px] font-['Geist'] text-[11px] uppercase tracking-[3.5px] text-white/45">{title}</div>
-      <div className="px-[22px] grid grid-cols-2 gap-[10px]">
+    <div className="flex flex-col gap-[10px] px-[22px]">
+      <div className="font-['Geist'] text-[11px] uppercase tracking-[3.5px] text-white/45">{title}</div>
+      <div
+        className="grid grid-cols-2 overflow-hidden rounded-[24px]"
+        style={{ background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.075)" }}
+      >
         {items.map((s) => (
           <button
             key={s.label}
             onClick={s.onClick}
             disabled={!s.onClick}
-            className="relative text-left rounded-[20px] p-[16px] active:scale-[0.985] transition-transform disabled:active:scale-100 min-h-[82px] flex flex-col justify-between"
-            style={{ background: "rgba(13,15,15,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}
+            className="relative min-h-[78px] text-left p-[16px] active:bg-white/[0.035] transition-colors disabled:active:bg-transparent flex flex-col justify-between border-white/[0.06] odd:border-r [&:nth-child(-n+2)]:border-b"
           >
             <div className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white tracking-[-0.4px] leading-[1.1]">
               {s.label}
@@ -484,48 +436,34 @@ function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
 }
 
 /* ============================================================
-   Charts / Visuals
+   Visuales simples
    ============================================================ */
-function buildLinePath(values: number[], w: number, h: number, padY = 8) {
-  if (values.length === 0) return "";
-  const max = Math.max(1, ...values);
-  const step = w / Math.max(1, values.length - 1);
-  const pts = values.map((v, i) => {
-    const x = i * step;
-    const y = h - padY - (v / max) * (h - padY * 2);
-    return [x, y] as [number, number];
-  });
-  const d: string[] = [`M ${pts[0][0]} ${pts[0][1]}`];
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x1, y1] = pts[i];
-    const [x2, y2] = pts[i + 1];
-    const cx = (x1 + x2) / 2;
-    d.push(`C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`);
-  }
-  return d.join(" ");
-}
-
 function CashLineChart() {
   const { last7Days } = useFinance();
-  const W = 320,
-    H = 110;
-  const incomePath = buildLinePath(last7Days.map((d) => d.income), W, H);
-  const expensePath = buildLinePath(last7Days.map((d) => d.expense), W, H);
+  const income = last7Days.reduce((s, d) => s + d.income, 0);
+  const expense = last7Days.reduce((s, d) => s + d.expense, 0);
+  const total = Math.max(1, income + expense);
+  const incomePct = Math.max(6, (income / total) * 100);
+  const expensePct = Math.max(6, (expense / total) * 100);
   return (
-    <div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[110px]">
-        <path d={incomePath} fill="none" stroke="#66F09C" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
-        <path d={expensePath} fill="none" stroke="#FF7C6D" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <div className="mt-[6px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
-        <span className="flex items-center gap-[5px]">
-          <span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />
-          Ingresos
-        </span>
-        <span className="flex items-center gap-[5px]">
-          <span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />
-          Egresos
-        </span>
+    <div className="py-[10px]">
+      <div className="flex h-[18px] overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.07)" }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${incomePct}%` }}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+          style={{ background: "#4ADE80" }}
+        />
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${expensePct}%` }}
+          transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.08 }}
+          style={{ background: "#F87171" }}
+        />
+      </div>
+      <div className="mt-[18px] grid grid-cols-2 gap-[18px]">
+        <InnerMetric m={{ label: "Ingresos", value: money(income), tone: income > 0 ? "green" : "muted" }} />
+        <InnerMetric m={{ label: "Egresos", value: money(expense), tone: expense > 0 ? "red" : "muted" }} />
       </div>
     </div>
   );
@@ -534,9 +472,9 @@ function CashLineChart() {
 function StockHealth({ healthy, low, out }: { healthy: number; low: number; out: number }) {
   const total = healthy + low + out;
   const segs = [
-    { v: healthy, c: "#66F09C", label: "OK" },
-    { v: low, c: "#FFD76F", label: "Bajo" },
-    { v: out, c: "#FF7C6D", label: "Agotado" },
+    { v: healthy, c: "#4ADE80", label: "OK" },
+    { v: low, c: "rgba(255,255,255,0.46)", label: "Bajo" },
+    { v: out, c: "#F87171", label: "Agotado" },
   ];
   return (
     <div>
@@ -558,11 +496,11 @@ function StockHealth({ healthy, low, out }: { healthy: number; low: number; out:
           )}
         </div>
       )}
-      <div className="mt-[10px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
+      <div className="mt-[14px] grid grid-cols-3 gap-[10px] font-['Geist'] text-[11px] text-white/55">
         {segs.map((s) => (
-          <span key={s.label} className="flex items-center gap-[5px]">
+          <span key={s.label} className="flex items-center gap-[5px] min-w-0">
             <span className="h-[6px] w-[6px] rounded-full" style={{ background: s.c }} />
-            {s.label} {s.v}
+            <span className="truncate">{s.label} {s.v}</span>
           </span>
         ))}
       </div>
@@ -572,22 +510,18 @@ function StockHealth({ healthy, low, out }: { healthy: number; low: number; out:
 
 function PresenceDots({ items }: { items: { label: string; ok: boolean }[] }) {
   return (
-    <div className="grid grid-cols-2 gap-[8px]">
+    <div className="flex flex-col gap-[10px]">
       {items.map((it) => (
         <div
           key={it.label}
-          className="flex items-center gap-[8px] px-[10px] py-[9px] rounded-[12px]"
-          style={{
-            background: it.ok ? "rgba(102,240,156,0.06)" : "rgba(255,255,255,0.02)",
-            border: `1px solid ${it.ok ? "rgba(102,240,156,0.20)" : "rgba(255,255,255,0.07)"}`,
-          }}
+          className="flex items-center gap-[10px]"
         >
           <span
-            className="h-[7px] w-[7px] rounded-full"
-            style={{ background: it.ok ? "#66F09C" : "rgba(255,255,255,0.25)" }}
+            className="h-[8px] w-[8px] rounded-full shrink-0"
+            style={{ background: it.ok ? "#4ADE80" : "rgba(255,255,255,0.22)" }}
           />
           <span
-            className="font-['Geist'] text-[12.5px]"
+            className="font-['Geist'] text-[14px]"
             style={{ color: it.ok ? "#ffffff" : "rgba(255,255,255,0.55)" }}
           >
             {it.label}
@@ -609,20 +543,19 @@ function ClientsDistribution({
 }) {
   const cells = [
     { label: "Activos", value: registered, color: "#ffffff" },
-    { label: "Con fiado", value: withDebt, color: "#FFD76F" },
+    { label: "Con fiado", value: withDebt, color: "rgba(255,255,255,0.70)" },
     { label: "Nuevos", value: newOnes, color: "rgba(255,255,255,0.45)" },
   ];
   return (
-    <div className="grid grid-cols-3 gap-[10px]">
+    <div className="grid grid-cols-3 gap-[14px]">
       {cells.map((c) => (
         <div
           key={c.label}
-          className="rounded-[14px] p-[12px]"
-          style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}
+          className="min-w-0"
         >
           <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">{c.label}</div>
           <div
-            className="mt-[4px] font-['Bai_Jamjuree'] text-[22px] font-bold tabular-nums leading-[1]"
+            className="mt-[6px] font-['Bai_Jamjuree'] text-[28px] font-bold tabular-nums leading-[1]"
             style={{ color: c.color }}
           >
             {c.value === 0 && c.label === "Nuevos" ? "—" : c.value}
