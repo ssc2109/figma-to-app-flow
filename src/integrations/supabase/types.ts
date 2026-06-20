@@ -73,6 +73,36 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           active: boolean
@@ -141,6 +171,7 @@ export type Database = {
           customer_phone: string | null
           due_date: string | null
           id: string
+          kind: string
           note: string | null
           paid: boolean
           paid_at: string | null
@@ -154,6 +185,7 @@ export type Database = {
           customer_phone?: string | null
           due_date?: string | null
           id?: string
+          kind?: string
           note?: string | null
           paid?: boolean
           paid_at?: string | null
@@ -167,6 +199,7 @@ export type Database = {
           customer_phone?: string | null
           due_date?: string | null
           id?: string
+          kind?: string
           note?: string | null
           paid?: boolean
           paid_at?: string | null
