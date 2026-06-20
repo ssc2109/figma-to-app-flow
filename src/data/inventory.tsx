@@ -157,7 +157,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     async (id, patch) => {
       const item = items.find((i) => i.id === id);
       if (!item) return;
-      const dbPatch: Record<string, unknown> = {};
+      const dbPatch: {
+        name?: string;
+        price?: number;
+        cost?: number;
+        stock?: number;
+        category?: string;
+        low_stock_threshold?: number;
+      } = {};
       if (patch.name !== undefined) dbPatch.name = patch.name;
       if (patch.price !== undefined) dbPatch.price = patch.price;
       if (patch.cost !== undefined) dbPatch.cost = patch.cost;
