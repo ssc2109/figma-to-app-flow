@@ -291,8 +291,7 @@ function InnerMetric({ m }: { m: MetricItem }) {
 }
 
 /* ============================================================
-   BIG PANEL — visual grande protagonista por tab
-   Contiene: eyebrow, headline grande, visual, chips integradas, socIA inline
+   BIG PANEL — una sola superficie: visual grande + carrusel interno
    ============================================================ */
 function BigPanel({
   title, headlineLabel, headline, headlineTone, visual, chips, socia,
@@ -305,95 +304,96 @@ function BigPanel({
   chips: MetricItem[];
   socia?: string;
 }) {
-  const cols = Math.min(chips.length, 4);
-  const gridCls =
-    cols === 4 ? "grid-cols-4" : cols === 3 ? "grid-cols-3" : cols === 2 ? "grid-cols-2" : "grid-cols-1";
+  const pages = useMemo(
+    () => [
+      { id: "visual", node: visual },
+      ...(chips.length
+        ? [{
+          id: "metrics",
+          node: (
+            <div className="grid grid-cols-2 gap-x-[18px] gap-y-[18px]">
+              {chips.slice(0, 4).map((m) => <InnerMetric key={m.label} m={m} />)}
+            </div>
+          ),
+        }]
+        : []),
+      ...(socia
+        ? [{
+          id: "next",
+          node: (
+            <div className="min-h-[118px] flex items-center">
+              <p className="font-['Geist'] text-[17px] text-white/82 leading-[1.35] max-w-[260px]">{socia}</p>
+            </div>
+          ),
+        }]
+        : []),
+    ],
+    [chips, socia, visual],
+  );
+  const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    if (pages.length <= 1) return;
+    const id = window.setInterval(() => setPage((current) => (current + 1) % pages.length), 4200);
+    return () => window.clearInterval(id);
+  }, [pages.length]);
+
+  useEffect(() => setPage(0), [title]);
 
   return (
     <div
       className="mx-[22px] relative rounded-[28px] overflow-hidden"
       style={{
-        background: "linear-gradient(150deg, rgba(255,255,255,0.07), rgba(255,255,255,0.012))",
-        border: "1px solid rgba(255,255,255,0.10)",
-        boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05), 0 0 50px rgba(102,240,156,0.07)",
+        background: "rgba(255,255,255,0.055)",
+        border: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      {/* terminal grid */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.5]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[170px] opacity-80"
         style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px)",
-          backgroundSize: "44px 44px",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(70% 50% at 0% 0%, rgba(102,240,156,0.10), transparent 60%), radial-gradient(60% 55% at 100% 100%, rgba(120,180,255,0.07), transparent 70%)",
+          background: "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.10), transparent 68%)",
         }}
       />
 
-      <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[16px]">
-        {/* eyebrow */}
-        <div className="flex items-center justify-between">
+      <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[18px]">
+        <div className="flex items-center justify-between gap-[12px]">
           <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
-          <motion.span
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            className="h-[6px] w-[6px] rounded-full bg-[#66F09C]"
-            style={{ boxShadow: "0 0 8px rgba(102,240,156,0.65)" }}
-          />
+          <div className="flex items-center gap-[5px]">
+            {pages.map((p, i) => (
+              <button
+                key={p.id}
+                aria-label={`Ver ${i + 1}`}
+                onClick={() => setPage(i)}
+                className="h-[6px] rounded-full transition-all"
+                style={{ width: i === page ? 18 : 6, background: i === page ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)" }}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* headline */}
         <div className="flex flex-col gap-[4px]">
           <div className="font-['Geist'] text-[11px] text-white/50">{headlineLabel}</div>
           <div
-            className="font-['Bai_Jamjuree'] text-[34px] font-bold tracking-[-1.2px] tabular-nums leading-[1]"
+            className="font-['Bai_Jamjuree'] text-[40px] font-bold tracking-[-1.2px] tabular-nums leading-[1]"
             style={{ color: TONE_COLOR[headlineTone ?? "default"] }}
           >
             {headline}
           </div>
         </div>
 
-        {/* visual */}
-        <div>{visual}</div>
-
-        {/* hairline */}
-        <div className="h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
-
-        {/* chips inline */}
-        <div className={`grid ${gridCls} gap-[12px]`}>
-          {chips.slice(0, 4).map((m, i) => (
-            <div key={i} className="flex flex-col gap-[3px] min-w-0">
-              <div className="font-['Geist'] text-[9.5px] uppercase tracking-[1.2px] text-white/40 truncate">
-                {m.label}
-              </div>
-              <div
-                className="font-['Bai_Jamjuree'] text-[16px] font-bold tabular-nums leading-[1.05] truncate"
-                style={{ color: TONE_COLOR[m.tone ?? "default"] }}
-              >
-                {m.value}
-              </div>
-              {m.sub && (
-                <div className="font-['Geist'] text-[10px] text-white/35 leading-[1.2] truncate">{m.sub}</div>
-              )}
-            </div>
-          ))}
+        <div className="min-h-[128px] flex flex-col justify-center">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={`${title}-${pages[page]?.id}`}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {pages[page]?.node}
+            </motion.div>
+          </AnimatePresence>
         </div>
-
-        {/* socIA inline */}
-        {socia && (
-          <div className="flex items-start gap-[8px] pt-[2px]">
-            <Sparkles className="h-[11px] w-[11px] text-white/60 shrink-0 mt-[2px]" strokeWidth={1.8} />
-            <p className="font-['Geist'] text-[11.5px] text-white/55 leading-[1.4]">
-              <span className="text-white/80">socIA · </span>
-              {socia}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
