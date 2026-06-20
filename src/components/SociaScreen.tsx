@@ -1644,7 +1644,7 @@ const SOCIA_CSS = `
 /* CARDS — alineadas con la chatbar */
 .socia-screen .cards-head{
   display:flex; align-items:center; gap:8px;
-  padding:20px 22px 0;
+  padding:20px 28px 0;
 }
 .socia-screen .cards-head .lbl{
   font-size:11px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase;
@@ -1657,7 +1657,7 @@ const SOCIA_CSS = `
 }
 .socia-screen .cards{
   display:flex; gap:13px; margin-top:12px;
-  padding:4px 22px 4px;
+  padding:4px 28px 4px 28px;
   overflow-x:auto; scrollbar-width:none;
   scroll-snap-type:x mandatory;
 }
