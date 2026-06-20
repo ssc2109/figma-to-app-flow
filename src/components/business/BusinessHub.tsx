@@ -340,35 +340,114 @@ function InnerMetric({ m }: { m: MetricItem }) {
   );
 }
 
-function DashboardCard({
-  eyebrow, visual, metrics,
+/* ============================================================
+   BIG PANEL — visual grande protagonista por tab
+   Contiene: eyebrow, headline grande, visual, chips integradas, socIA inline
+   ============================================================ */
+function BigPanel({
+  title, headlineLabel, headline, headlineTone, visual, chips, socia,
 }: {
-  eyebrow?: string;
-  visual?: React.ReactNode;
-  metrics: MetricItem[];
+  title: string;
+  headlineLabel: string;
+  headline: string;
+  headlineTone?: ToneKey;
+  visual: React.ReactNode;
+  chips: MetricItem[];
+  socia?: string;
 }) {
+  const cols = Math.min(chips.length, 4);
+  const gridCls =
+    cols === 4 ? "grid-cols-4" : cols === 3 ? "grid-cols-3" : cols === 2 ? "grid-cols-2" : "grid-cols-1";
+
   return (
-    <div className="mx-[22px] rounded-[26px] overflow-hidden"
+    <div
+      className="mx-[22px] relative rounded-[28px] overflow-hidden"
       style={{
-        background: "linear-gradient(150deg, rgba(255,255,255,0.06), rgba(255,255,255,0.012))",
+        background: "linear-gradient(150deg, rgba(255,255,255,0.07), rgba(255,255,255,0.012))",
         border: "1px solid rgba(255,255,255,0.10)",
-      }}>
-      {(eyebrow || visual) && (
-        <div className="px-[18px] pt-[16px] pb-[14px]">
-          {eyebrow && (
-            <div className="font-['Geist'] text-[10px] uppercase tracking-[1.8px] text-white/40 mb-[10px]">{eyebrow}</div>
-          )}
-          {visual}
+        boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05), 0 0 50px rgba(102,240,156,0.07)",
+      }}
+    >
+      {/* terminal grid */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.5]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.032) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.032) 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(70% 50% at 0% 0%, rgba(102,240,156,0.10), transparent 60%), radial-gradient(60% 55% at 100% 100%, rgba(120,180,255,0.07), transparent 70%)",
+        }}
+      />
+
+      <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[16px]">
+        {/* eyebrow */}
+        <div className="flex items-center justify-between">
+          <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
+          <motion.span
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            className="h-[6px] w-[6px] rounded-full bg-[#66F09C]"
+            style={{ boxShadow: "0 0 8px rgba(102,240,156,0.65)" }}
+          />
         </div>
-      )}
-      <div className="h-px mx-[18px]" style={{ background: "rgba(255,255,255,0.06)" }} />
-      <div className="px-[18px] py-[16px] grid grid-cols-2 gap-x-[18px] gap-y-[16px]">
-        {metrics.slice(0, 4).map((m, i) => <InnerMetric key={i} m={m} />)}
+
+        {/* headline */}
+        <div className="flex flex-col gap-[4px]">
+          <div className="font-['Geist'] text-[11px] text-white/50">{headlineLabel}</div>
+          <div
+            className="font-['Bai_Jamjuree'] text-[34px] font-bold tracking-[-1.2px] tabular-nums leading-[1]"
+            style={{ color: TONE_COLOR[headlineTone ?? "default"] }}
+          >
+            {headline}
+          </div>
+        </div>
+
+        {/* visual */}
+        <div>{visual}</div>
+
+        {/* hairline */}
+        <div className="h-px" style={{ background: "rgba(255,255,255,0.07)" }} />
+
+        {/* chips inline */}
+        <div className={`grid ${gridCls} gap-[12px]`}>
+          {chips.slice(0, 4).map((m, i) => (
+            <div key={i} className="flex flex-col gap-[3px] min-w-0">
+              <div className="font-['Geist'] text-[9.5px] uppercase tracking-[1.2px] text-white/40 truncate">
+                {m.label}
+              </div>
+              <div
+                className="font-['Bai_Jamjuree'] text-[16px] font-bold tabular-nums leading-[1.05] truncate"
+                style={{ color: TONE_COLOR[m.tone ?? "default"] }}
+              >
+                {m.value}
+              </div>
+              {m.sub && (
+                <div className="font-['Geist'] text-[10px] text-white/35 leading-[1.2] truncate">{m.sub}</div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* socIA inline */}
+        {socia && (
+          <div className="flex items-start gap-[8px] pt-[2px]">
+            <Sparkles className="h-[11px] w-[11px] text-white/60 shrink-0 mt-[2px]" strokeWidth={1.8} />
+            <p className="font-['Geist'] text-[11.5px] text-white/55 leading-[1.4]">
+              <span className="text-white/80">socIA · </span>
+              {socia}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
 
 type Shortcut = { label: string; sub: string; onClick?: () => void; soon?: boolean };
 
@@ -378,16 +457,22 @@ function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
       <div className="px-[22px] font-['Geist'] text-[11px] uppercase tracking-[3.5px] text-white/45">{title}</div>
       <div className="px-[22px] grid grid-cols-2 gap-[10px]">
         {items.map((s) => (
-          <button key={s.label} onClick={s.onClick} disabled={!s.onClick}
+          <button
+            key={s.label}
+            onClick={s.onClick}
+            disabled={!s.onClick}
             className="relative text-left rounded-[20px] p-[16px] active:scale-[0.985] transition-transform disabled:active:scale-100 min-h-[82px] flex flex-col justify-between"
-            style={{ background: "rgba(13,15,15,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            style={{ background: "rgba(13,15,15,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
             <div className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white tracking-[-0.4px] leading-[1.1]">
               {s.label}
             </div>
             <div className="font-['Geist'] text-[11.5px] text-white/45 leading-[1.3]">{s.sub}</div>
             {s.soon && (
-              <span className="absolute top-[12px] right-[12px] font-['Geist'] text-[9px] uppercase tracking-[1.2px] text-white/45 px-[6px] py-[2px] rounded-full"
-                style={{ border: "1px solid rgba(255,255,255,0.10)" }}>
+              <span
+                className="absolute top-[12px] right-[12px] font-['Geist'] text-[9px] uppercase tracking-[1.2px] text-white/45 px-[6px] py-[2px] rounded-full"
+                style={{ border: "1px solid rgba(255,255,255,0.10)" }}
+              >
                 Pronto
               </span>
             )}
@@ -395,39 +480,6 @@ function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
         ))}
       </div>
     </div>
-  );
-}
-
-
-function SociaTip({ title, body, cta, onClick }: { title: string; body: string; cta?: string; onClick?: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="mx-[22px] rounded-[18px] overflow-hidden relative"
-      style={{
-        background: "linear-gradient(135deg, rgba(120,180,255,0.07), rgba(255,255,255,0.02))",
-        border: "1px solid rgba(255,255,255,0.10)",
-      }}>
-      <div className="px-[14px] py-[12px] flex gap-[11px]">
-        <div className="h-[28px] w-[28px] rounded-full grid place-items-center shrink-0"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}>
-          <Sparkles className="h-[13px] w-[13px] text-white" strokeWidth={1.8} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-['Geist'] text-[10px] uppercase tracking-[1.4px] text-white/45">socIA recomienda</div>
-          <div className="mt-[2px] font-['Geist'] text-[13px] text-white font-medium leading-[1.3]">{title}</div>
-          <p className="mt-[3px] font-['Geist'] text-[11.5px] text-white/60 leading-[1.45]">{body}</p>
-          {cta && onClick && (
-            <button onClick={onClick}
-              className="mt-[8px] inline-flex items-center gap-[5px] font-['Geist'] text-[11.5px] text-white/90 px-[10px] py-[5px] rounded-full bg-white/[0.06] border border-white/[0.12] active:bg-white/[0.10] transition-colors">
-              {cta}
-              <ArrowRight className="h-[10px] w-[10px]" strokeWidth={2} />
-            </button>
-          )}
-        </div>
-      </div>
-    </motion.div>
   );
 }
 
@@ -443,7 +495,6 @@ function buildLinePath(values: number[], w: number, h: number, padY = 8) {
     const y = h - padY - (v / max) * (h - padY * 2);
     return [x, y] as [number, number];
   });
-  // smooth catmull-rom-ish
   const d: string[] = [`M ${pts[0][0]} ${pts[0][1]}`];
   for (let i = 0; i < pts.length - 1; i++) {
     const [x1, y1] = pts[i];
@@ -456,37 +507,65 @@ function buildLinePath(values: number[], w: number, h: number, padY = 8) {
 
 function CashLineChart() {
   const { last7Days } = useFinance();
-  const W = 320, H = 120;
+  const W = 320,
+    H = 110;
   const incomePath = buildLinePath(last7Days.map((d) => d.income), W, H);
   const expensePath = buildLinePath(last7Days.map((d) => d.expense), W, H);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[120px]">
-      <path d={incomePath} fill="none" stroke="#66F09C" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
-      <path d={expensePath} fill="none" stroke="#FF7C6D" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[110px]">
+        <path d={incomePath} fill="none" stroke="#66F09C" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round" />
+        <path d={expensePath} fill="none" stroke="#FF7C6D" strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <div className="mt-[6px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
+        <span className="flex items-center gap-[5px]">
+          <span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />
+          Ingresos
+        </span>
+        <span className="flex items-center gap-[5px]">
+          <span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />
+          Egresos
+        </span>
+      </div>
+    </div>
   );
 }
 
-function StockSparkBars({ healthy, low, out }: { healthy: number; low: number; out: number }) {
+function StockHealth({ healthy, low, out }: { healthy: number; low: number; out: number }) {
   const total = healthy + low + out;
-  if (total === 0) {
-    return (
-      <div className="h-[10px] rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
-    );
-  }
   const segs = [
-    { v: healthy, c: "#66F09C" },
-    { v: low, c: "#FFD76F" },
-    { v: out, c: "#FF7C6D" },
+    { v: healthy, c: "#66F09C", label: "OK" },
+    { v: low, c: "#FFD76F", label: "Bajo" },
+    { v: out, c: "#FF7C6D", label: "Agotado" },
   ];
   return (
-    <div className="h-[10px] rounded-full overflow-hidden flex" style={{ background: "rgba(255,255,255,0.05)" }}>
-      {segs.map((s, i) => s.v > 0 && (
-        <motion.div key={i}
-          initial={{ width: 0 }} animate={{ width: `${(s.v / total) * 100}%` }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          style={{ background: s.c }} />
-      ))}
+    <div>
+      {total === 0 ? (
+        <div className="h-[12px] rounded-full" style={{ background: "rgba(255,255,255,0.05)" }} />
+      ) : (
+        <div className="h-[12px] rounded-full overflow-hidden flex" style={{ background: "rgba(255,255,255,0.05)" }}>
+          {segs.map(
+            (s, i) =>
+              s.v > 0 && (
+                <motion.div
+                  key={i}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(s.v / total) * 100}%` }}
+                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                  style={{ background: s.c }}
+                />
+              ),
+          )}
+        </div>
+      )}
+      <div className="mt-[10px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
+        {segs.map((s) => (
+          <span key={s.label} className="flex items-center gap-[5px]">
+            <span className="h-[6px] w-[6px] rounded-full" style={{ background: s.c }} />
+            {s.label} {s.v}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -495,13 +574,59 @@ function PresenceDots({ items }: { items: { label: string; ok: boolean }[] }) {
   return (
     <div className="grid grid-cols-2 gap-[8px]">
       {items.map((it) => (
-        <div key={it.label} className="flex items-center gap-[8px] px-[10px] py-[9px] rounded-[12px]"
+        <div
+          key={it.label}
+          className="flex items-center gap-[8px] px-[10px] py-[9px] rounded-[12px]"
           style={{
             background: it.ok ? "rgba(102,240,156,0.06)" : "rgba(255,255,255,0.02)",
             border: `1px solid ${it.ok ? "rgba(102,240,156,0.20)" : "rgba(255,255,255,0.07)"}`,
-          }}>
-          <span className="h-[7px] w-[7px] rounded-full" style={{ background: it.ok ? "#66F09C" : "rgba(255,255,255,0.25)" }} />
-          <span className="font-['Geist'] text-[12.5px]" style={{ color: it.ok ? "#ffffff" : "rgba(255,255,255,0.55)" }}>{it.label}</span>
+          }}
+        >
+          <span
+            className="h-[7px] w-[7px] rounded-full"
+            style={{ background: it.ok ? "#66F09C" : "rgba(255,255,255,0.25)" }}
+          />
+          <span
+            className="font-['Geist'] text-[12.5px]"
+            style={{ color: it.ok ? "#ffffff" : "rgba(255,255,255,0.55)" }}
+          >
+            {it.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ClientsDistribution({
+  registered,
+  withDebt,
+  newOnes,
+}: {
+  registered: number;
+  withDebt: number;
+  newOnes: number;
+}) {
+  const cells = [
+    { label: "Activos", value: registered, color: "#ffffff" },
+    { label: "Con fiado", value: withDebt, color: "#FFD76F" },
+    { label: "Nuevos", value: newOnes, color: "rgba(255,255,255,0.45)" },
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-[10px]">
+      {cells.map((c) => (
+        <div
+          key={c.label}
+          className="rounded-[14px] p-[12px]"
+          style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">{c.label}</div>
+          <div
+            className="mt-[4px] font-['Bai_Jamjuree'] text-[22px] font-bold tabular-nums leading-[1]"
+            style={{ color: c.color }}
+          >
+            {c.value === 0 && c.label === "Nuevos" ? "—" : c.value}
+          </div>
         </div>
       ))}
     </div>
@@ -518,51 +643,50 @@ function OperationArea(p: Props) {
   const healthy = Math.max(0, productCount - low - out);
   const alertCount = low + out;
 
+  const socia =
+    productCount < 3
+      ? "Agrega al menos 3 productos para medir stock real y ganancias."
+      : alertCount > 0
+        ? `Tienes ${alertCount} producto${alertCount === 1 ? "" : "s"} en alerta de stock.`
+        : "Completa costos de compra para calcular margen real.";
+
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Operación del negocio</SectionTitle>
 
-      <DashboardCard
-        visual={
-          <>
-            <StockSparkBars healthy={healthy} low={low} out={out} />
-            <div className="mt-[10px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
-              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />OK {healthy}</span>
-              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FFD76F]" />Bajo {low}</span>
-              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />Agotado {out}</span>
-            </div>
-          </>
-        }
-        metrics={[
-          { label: "Productos", value: String(productCount), sub: "en catálogo", tone: productCount > 0 ? "default" : "muted" },
-          { label: "Stock crítico", value: String(alertCount), sub: out > 0 ? `${out} agotados` : "bajo umbral", tone: alertCount > 0 ? "yellow" : "green" },
-          { label: "Valor inventario", value: productCount > 0 ? money(totalValue) : "—", sub: "al costo", tone: productCount > 0 ? "blue" : "muted" },
+      <BigPanel
+        title="Salud del inventario"
+        headlineLabel="Productos activos"
+        headline={String(productCount)}
+        headlineTone={productCount > 0 ? "default" : "muted"}
+        visual={<StockHealth healthy={healthy} low={low} out={out} />}
+        chips={[
+          {
+            label: "Stock crítico",
+            value: String(alertCount),
+            sub: out > 0 ? `${out} agotados` : "bajo umbral",
+            tone: alertCount > 0 ? "yellow" : "green",
+          },
+          {
+            label: "Valor inventario",
+            value: productCount > 0 ? money(totalValue) : "—",
+            sub: "al costo",
+            tone: productCount > 0 ? "blue" : "muted",
+          },
           { label: "Última compra", value: "—", sub: "próximamente", tone: "muted" },
         ]}
+        socia={socia}
       />
 
-
-      <ShortcutsRow title="Módulos"
+      <ShortcutsRow
+        title="Módulos"
         items={[
           { label: "Catálogo", sub: productCount > 0 ? "Ver productos" : "Crear primero", onClick: p.onInventory },
           { label: "Inventario", sub: "Ajustar stock", onClick: p.onInventory },
           { label: "Compras", sub: "Reposiciones", soon: true },
           { label: "Proveedores", sub: "A quién compras", soon: true },
-        ]} />
-
-
-      {productCount < 3 ? (
-        <SociaTip title="Agrega tus productos más vendidos"
-          body="Con al menos 3 productos podrás medir stock crítico y ganancias reales."
-          cta="Ir al catálogo" onClick={p.onInventory} />
-      ) : alertCount > 0 ? (
-        <SociaTip title={`Tienes ${alertCount} producto${alertCount === 1 ? "" : "s"} en alerta`}
-          body="Revisa cuáles necesitan reposición para no perder ventas."
-          cta="Ver inventario" onClick={p.onInventory} />
-      ) : (
-        <SociaTip title="Completa costos de compra"
-          body="Con costos reales podrás calcular ganancia y margen por producto." />
-      )}
+        ]}
+      />
     </div>
   );
 }
@@ -571,55 +695,65 @@ function OperationArea(p: Props) {
    AREA: Caja
    ============================================================ */
 function CashArea(p: Props) {
-  const {
-    todayIncome, todayExpense, monthIncome, monthExpense, monthNet, fiadosPending, last7Days,
-  } = useFinance();
+  const { todayIncome, todayExpense, monthIncome, monthExpense, monthNet, fiadosPending, last7Days } = useFinance();
   const weekNet = last7Days.reduce((s, d) => s + (d.income - d.expense), 0);
   const margin = monthIncome > 0 ? Math.round((monthNet / monthIncome) * 100) : 0;
+
+  const socia =
+    monthIncome === 0 && monthExpense === 0
+      ? "Empieza a registrar ingresos y gastos para ver tu margen real."
+      : fiadosPending > 0
+        ? `Tienes ${money(fiadosPending)} por cobrar. Revisa tus fiados.`
+        : "Registra todos los gastos del mes para calcular ganancia real.";
 
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Caja del negocio</SectionTitle>
 
-      <DashboardCard
-        visual={
-
-          <>
-            <CashLineChart />
-            <div className="mt-[6px] flex items-center gap-[14px] font-['Geist'] text-[11px] text-white/55">
-              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#66F09C]" />Ingresos</span>
-              <span className="flex items-center gap-[5px]"><span className="h-[6px] w-[6px] rounded-full bg-[#FF7C6D]" />Egresos</span>
-            </div>
-          </>
-        }
-        metrics={[
-          { label: "Caja hoy", value: money(todayIncome - todayExpense), sub: "efectivo + digital", tone: "green" },
-          { label: "Gastos hoy", value: money(todayExpense), sub: "registrados", tone: todayExpense > 0 ? "red" : "muted" },
-          { label: "Margen del mes", value: monthIncome > 0 ? `${margin}%` : "—", sub: "ingresos vs gastos", tone: monthIncome > 0 ? "blue" : "muted" },
-          { label: "Por cobrar", value: fiadosPending > 0 ? money(fiadosPending) : "S/ 0", sub: "fiados abiertos", tone: fiadosPending > 0 ? "yellow" : "muted" },
+      <BigPanel
+        title="Ingresos vs gastos · últimos 7 días"
+        headlineLabel="Neto de la semana"
+        headline={`${weekNet < 0 ? "-" : ""}${money(weekNet)}`}
+        headlineTone={weekNet >= 0 ? "green" : "red"}
+        visual={<CashLineChart />}
+        chips={[
+          {
+            label: "Caja hoy",
+            value: money(todayIncome - todayExpense),
+            sub: "efectivo + digital",
+            tone: todayIncome - todayExpense >= 0 ? "green" : "red",
+          },
+          {
+            label: "Gastos hoy",
+            value: money(todayExpense),
+            sub: "registrados",
+            tone: todayExpense > 0 ? "red" : "muted",
+          },
+          {
+            label: "Margen mes",
+            value: monthIncome > 0 ? `${margin}%` : "—",
+            sub: "vs ingresos",
+            tone: monthIncome > 0 ? "blue" : "muted",
+          },
+          {
+            label: "Por cobrar",
+            value: fiadosPending > 0 ? money(fiadosPending) : "S/ 0",
+            sub: "fiados abiertos",
+            tone: fiadosPending > 0 ? "yellow" : "muted",
+          },
         ]}
+        socia={socia}
       />
 
-      <ShortcutsRow title="Módulos"
+      <ShortcutsRow
+        title="Módulos"
         items={[
           { label: "Ventas", sub: "Registrar", onClick: p.onPayments },
           { label: "Gastos", sub: "Agregar", onClick: p.onPayments },
           { label: "Deudas", sub: "Por cobrar / pagar", onClick: p.onReceivables },
           { label: "Reportes", sub: "Analizar", soon: true },
-        ]} />
-
-
-      {monthIncome === 0 && monthExpense === 0 ? (
-        <SociaTip title="Empieza a registrar tu caja"
-          body="Anota ingresos y gastos para ver tu margen real, no solo lo que llega a tu bolsillo." />
-      ) : fiadosPending > 0 ? (
-        <SociaTip title={`Tienes ${money(fiadosPending)} por cobrar`}
-          body="Revisa quién te debe para mantener tu flujo de caja."
-          cta="Ver deudas" onClick={p.onReceivables} />
-      ) : (
-        <SociaTip title="No confundas caja con ganancia"
-          body="Registra todos los gastos del mes para calcular tu margen real." />
-      )}
+        ]}
+      />
     </div>
   );
 }
@@ -636,71 +770,67 @@ function ClientsArea(p: Props) {
   useEffect(() => {
     let active = true;
     (async () => {
-      if (!user) { setLoading(false); return; }
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       const { count: c } = await supabase
         .from("customers")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id);
-      if (active) { setCount(c ?? 0); setLoading(false); }
+      if (active) {
+        setCount(c ?? 0);
+        setLoading(false);
+      }
     })();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [user]);
 
   const pending = fiados.filter((f) => !f.settled);
   const debtors = new Set(pending.map((f) => f.client.trim().toLowerCase())).size;
   const debtAmount = pending.reduce((s, f) => s + f.amount, 0);
 
+  const socia =
+    count === 0
+      ? "Registra a tus clientes frecuentes para hacer seguimiento."
+      : debtors > 0
+        ? `${debtors} cliente${debtors === 1 ? "" : "s"} con fiado abierto.`
+        : "Identifica a tus clientes frecuentes para fidelizar.";
+
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Relación con clientes</SectionTitle>
 
-      <DashboardCard
-        visual={
-
-          <div className="grid grid-cols-3 gap-[10px]">
-            <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Activos</div>
-              <div className="font-['Bai_Jamjuree'] text-[18px] font-bold text-white tabular-nums">{loading ? "…" : count}</div>
-            </div>
-            <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Con fiado</div>
-              <div className="font-['Bai_Jamjuree'] text-[18px] font-bold tabular-nums" style={{ color: debtors > 0 ? "#FFD76F" : "#ffffff" }}>{debtors}</div>
-            </div>
-            <div className="rounded-[14px] p-[10px]" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <div className="font-['Geist'] text-[10px] uppercase tracking-[1.2px] text-white/45">Nuevos</div>
-              <div className="font-['Bai_Jamjuree'] text-[18px] font-bold text-white/50 tabular-nums">—</div>
-            </div>
-          </div>
-        }
-        metrics={[
-          { label: "Registrados", value: loading ? "…" : String(count), sub: "en directorio", tone: count > 0 ? "default" : "muted" },
-          { label: "Con fiado", value: String(debtors), sub: debtors > 0 ? money(debtAmount) : "sin deudas", tone: debtors > 0 ? "yellow" : "muted" },
-          { label: "Frecuentes", value: "—", sub: "próximamente", tone: "muted" },
+      <BigPanel
+        title="Cartera de clientes"
+        headlineLabel="Clientes registrados"
+        headline={loading ? "…" : String(count)}
+        headlineTone={count > 0 ? "default" : "muted"}
+        visual={<ClientsDistribution registered={count} withDebt={debtors} newOnes={0} />}
+        chips={[
+          {
+            label: "Con fiado",
+            value: String(debtors),
+            sub: debtors > 0 ? money(debtAmount) : "sin deudas",
+            tone: debtors > 0 ? "yellow" : "muted",
+          },
+          { label: "Frecuentes", value: "—", sub: "pronto", tone: "muted" },
           { label: "Seguimientos", value: "0", sub: "pendientes", tone: "muted" },
         ]}
+        socia={socia}
       />
 
-      <ShortcutsRow title="Módulos"
+      <ShortcutsRow
+        title="Módulos"
         items={[
           { label: "Directorio", sub: count > 0 ? "Ver clientes" : "Agregar primero", onClick: p.onClients },
           { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
           { label: "Seguimientos", sub: "Recordar contactar", soon: true },
           { label: "Historial", sub: "Compras por cliente", soon: true },
-        ]} />
-
-
-      {count === 0 ? (
-        <SociaTip title="Registra a tus clientes frecuentes"
-          body="Con sus contactos podrás recordarles promociones, pedidos o cobros."
-          cta="Agregar cliente" onClick={p.onClients} />
-      ) : debtors > 0 ? (
-        <SociaTip title={`${debtors} cliente${debtors === 1 ? "" : "s"} con fiado abierto`}
-          body="Revisa quiénes te deben para hacer seguimiento sin perder la relación."
-          cta="Ver por cobrar" onClick={p.onReceivables} />
-      ) : (
-        <SociaTip title="Identifica a tus clientes frecuentes"
-          body="Saber quién te compra más te ayuda a fidelizar y vender más." />
-      )}
+        ]}
+      />
     </div>
   );
 }
@@ -723,41 +853,49 @@ function ChannelsArea(p: Props) {
   ];
   const ready = items.filter((i) => i.ok).length;
 
+  const socia =
+    ready < 4
+      ? !hasWA
+        ? "Activa WhatsApp para que tus clientes te escriban directo."
+        : !hasAddr
+          ? "Sin dirección será difícil que lleguen a tu local."
+          : !hasHours
+            ? "Define tu horario para que sepan cuándo atiendes."
+            : "Sube tu logo o foto para que te reconozcan."
+      : "Habilita catálogo compartible para vender por WhatsApp sin repetir.";
+
   return (
     <div className="flex flex-col gap-[14px]">
       <SectionTitle>Cómo te encuentran</SectionTitle>
 
-      <DashboardCard
+      <BigPanel
+        title="Presencia del negocio"
+        headlineLabel="Canales activos"
+        headline={`${ready}/4`}
+        headlineTone={ready === 4 ? "green" : ready > 0 ? "default" : "muted"}
         visual={<PresenceDots items={items} />}
-
-        metrics={[
-          { label: "Canales activos", value: String(ready), sub: "de 4", tone: ready > 0 ? "default" : "muted" },
-          { label: "Perfil público", value: ready === 4 ? "Listo" : "Parcial", sub: `${ready}/4 datos`, tone: ready === 4 ? "green" : "yellow" },
+        chips={[
+          {
+            label: "Perfil público",
+            value: ready === 4 ? "Listo" : "Parcial",
+            sub: `${ready}/4 datos`,
+            tone: ready === 4 ? "green" : "yellow",
+          },
           { label: "Catálogo", value: "—", sub: "compartible · pronto", tone: "muted" },
-          { label: "Contacto", value: hasWA ? "1" : "0", sub: "WhatsApp", tone: hasWA ? "green" : "muted" },
+          { label: "Contacto", value: hasWA ? "WhatsApp" : "—", sub: hasWA ? "activo" : "sin número", tone: hasWA ? "green" : "muted" },
         ]}
+        socia={socia}
       />
 
-      <ShortcutsRow title="Módulos"
+      <ShortcutsRow
+        title="Módulos"
         items={[
-          { label: "WhatsApp", sub: hasWA ? profile?.phone ?? "" : "Configurar", onClick: p.onInfo },
+          { label: "WhatsApp", sub: hasWA ? (profile?.phone ?? "") : "Configurar", onClick: p.onInfo },
           { label: "Perfil público", sub: "Dirección y horario", onClick: p.onInfo },
           { label: "Catálogo", sub: "Compartir productos", soon: true },
           { label: "Canales venta", sub: "Delivery, redes", soon: true },
-        ]} />
-
-
-      {ready < 4 ? (
-        <SociaTip title="Completa tu presencia básica"
-          body={!hasWA ? "Activa WhatsApp para que tus clientes te puedan escribir directo."
-            : !hasAddr ? "Sin dirección será difícil que lleguen a tu local."
-              : !hasHours ? "Define tu horario para que sepan cuándo atiendes."
-                : "Sube tu logo o foto para que te reconozcan."}
-          cta="Completar" onClick={p.onInfo} />
-      ) : (
-        <SociaTip title="Tu presencia básica está lista"
-          body="Cuando habilites catálogo compartible, podrás vender por WhatsApp sin repetir productos." />
-      )}
+        ]}
+      />
     </div>
   );
 }
