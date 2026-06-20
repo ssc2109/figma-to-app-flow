@@ -163,9 +163,6 @@ function HQPanel({ steps }: { steps: StepLite[] }) {
   const doneW = steps.filter((x) => x.done).reduce((s, x) => s + x.weight, 0);
   const pct = Math.round((doneW / totalW) * 100);
   const next = steps.find((s) => !s.done);
-  const R = 36;
-  const C = 2 * Math.PI * R;
-  const offset = C - (C * pct) / 100;
   const headline =
     pct === 100 ? "Tu negocio está bajo control"
       : pct >= 70 ? "Casi listo, faltan detalles"
@@ -178,76 +175,39 @@ function HQPanel({ steps }: { steps: StepLite[] }) {
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
       className="relative mx-[22px] rounded-[28px] overflow-hidden"
       style={{
-        background: "linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.012))",
-        border: "1px solid rgba(255,255,255,0.10)",
-        boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05), 0 0 45px rgba(102,240,156,0.08)",
+        background: "rgba(255,255,255,0.055)",
+        border: "1px solid rgba(255,255,255,0.08)",
       }}
     >
-      {/* terminal grid */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.55]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)",
-          backgroundSize: "46px 46px",
-        }} />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.6]"
-        style={{
-          background:
-            "radial-gradient(80% 60% at 10% 0%, rgba(102,240,156,0.10), transparent 60%), radial-gradient(60% 50% at 100% 100%, rgba(120,180,255,0.07), transparent 70%)",
-        }} />
-
       <div className="relative px-[20px] pt-[18px] pb-[18px]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-[8px]">
-            <span className="h-[7px] w-[7px] rounded-full bg-[#66F09C]" style={{ boxShadow: "0 0 10px rgba(102,240,156,0.7)" }} />
-            <span className="font-['Geist'] text-[10.5px] uppercase tracking-[2.4px] text-white/55">Estado operativo</span>
+        <div className="flex items-start justify-between gap-[16px]">
+          <div className="min-w-0">
+            <div className="font-['Geist'] text-[10.5px] uppercase tracking-[2.4px] text-white/45">Estado operativo</div>
+            <h2 className="mt-[10px] font-['Bai_Jamjuree'] text-[21px] font-semibold text-white leading-[1.1] tracking-[-0.3px]">
+              {headline}
+            </h2>
+            <p className="mt-[7px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4]">
+              {next ? `Siguiente: ${next.label.toLowerCase()}` : "Todo configurado. Mantén tus datos al día."}
+            </p>
           </div>
-          <span className="font-['Geist'] text-[10px] uppercase tracking-[2px] text-white/35 tabular-nums">
-            HQ · v2
+          <span className="font-['Bai_Jamjuree'] text-[36px] font-bold text-white tracking-[-1px] tabular-nums leading-none">
+            {pct}<span className="text-[13px] text-white/45 align-top ml-[1px]">%</span>
           </span>
         </div>
 
-        <div className="mt-[18px] flex items-center gap-[18px]">
-          <div className="relative h-[92px] w-[92px] shrink-0">
-            <svg viewBox="0 0 92 92" className="h-full w-full -rotate-90">
-              <defs>
-                <linearGradient id="hqGrad" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0%" stopColor="#ffffff" />
-                  <stop offset="100%" stopColor="#66F09C" />
-                </linearGradient>
-              </defs>
-              <circle cx="46" cy="46" r={R} stroke="rgba(255,255,255,0.08)" strokeWidth={6} fill="none" />
-              <motion.circle cx="46" cy="46" r={R} stroke="url(#hqGrad)" strokeWidth={6}
-                strokeLinecap="round" fill="none" strokeDasharray={C}
-                initial={{ strokeDashoffset: C }}
-                animate={{ strokeDashoffset: offset }}
-                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-['Bai_Jamjuree'] text-[26px] font-bold text-white tracking-[-1px] tabular-nums">
-                {pct}<span className="text-[12px] text-white/45 align-top ml-[1px]">%</span>
-              </span>
-            </div>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            <h2 className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.1] tracking-[-0.5px]">
-              {headline}
-            </h2>
-            {next ? (
-              <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4]">
-                Siguiente acción: <span className="text-white/85">{next.label.toLowerCase()}</span>
-              </p>
-            ) : (
-              <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/55">Todo configurado. Mantén tus datos al día.</p>
-            )}
-          </div>
+        <div className="mt-[18px] h-[6px] overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full rounded-full bg-white"
+          />
         </div>
 
         {next && (
           <button
             onClick={next.go}
-            className="mt-[14px] w-full h-[52px] rounded-[20px] bg-white text-black font-['Geist'] text-[15px] font-bold active:scale-[0.985] transition-transform inline-flex items-center justify-center gap-[8px]"
+            className="mt-[16px] w-full h-[50px] rounded-[20px] bg-white text-black font-['Geist'] text-[15px] font-bold active:scale-[0.985] transition-transform inline-flex items-center justify-center gap-[8px]"
           >
             Continuar configuración
             <ArrowRight className="h-[15px] w-[15px]" strokeWidth={2.4} />
