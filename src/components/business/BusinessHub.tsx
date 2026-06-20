@@ -436,27 +436,8 @@ function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
 }
 
 /* ============================================================
-   Charts / Visuals
+   Visuales simples
    ============================================================ */
-function buildLinePath(values: number[], w: number, h: number, padY = 8) {
-  if (values.length === 0) return "";
-  const max = Math.max(1, ...values);
-  const step = w / Math.max(1, values.length - 1);
-  const pts = values.map((v, i) => {
-    const x = i * step;
-    const y = h - padY - (v / max) * (h - padY * 2);
-    return [x, y] as [number, number];
-  });
-  const d: string[] = [`M ${pts[0][0]} ${pts[0][1]}`];
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x1, y1] = pts[i];
-    const [x2, y2] = pts[i + 1];
-    const cx = (x1 + x2) / 2;
-    d.push(`C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`);
-  }
-  return d.join(" ");
-}
-
 function CashLineChart() {
   const { last7Days } = useFinance();
   const income = last7Days.reduce((s, d) => s + d.income, 0);
