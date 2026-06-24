@@ -10,7 +10,6 @@ export default function AuthScreen() {
   const [mode, setMode] = useState<Mode>("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [businessName, setBusinessName] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +25,6 @@ export default function AuthScreen() {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
               owner_name: ownerName.trim() || email.split("@")[0],
-              business_name: businessName.trim() || "Mi negocio",
             },
           },
         });
@@ -75,8 +73,8 @@ export default function AuthScreen() {
           <div className="font-['Bai_Jamjuree'] text-[44px] font-medium text-white tracking-tight leading-none">
             Trax
           </div>
-          <p className="mt-[10px] text-white/55 text-[14px] font-['Geist']">
-            Tu negocio, ordenado en un solo lugar
+          <p className="mt-[10px] text-white/55 text-[14px] font-['Geist'] leading-[1.5]">
+            Conviértete en el CEO que<br />siempre pudiste ser
           </p>
         </div>
 
@@ -89,23 +87,15 @@ export default function AuthScreen() {
           }}
         >
           {mode === "signup" && (
-            <>
-              <Field
-                label="Nombre de tu negocio"
-                value={businessName}
-                onChange={setBusinessName}
-                placeholder="Ej. Ferretería Mendoza"
-              />
-              <Field
-                label="Tu nombre"
-                value={ownerName}
-                onChange={setOwnerName}
-                placeholder="Alberto"
-              />
-            </>
+            <Field
+              label="¿Cómo te llamas?"
+              value={ownerName}
+              onChange={setOwnerName}
+              placeholder="Ej. Rosa, Carlos…"
+            />
           )}
           <Field
-            label="Correo"
+            label="Correo electrónico"
             value={email}
             onChange={setEmail}
             placeholder="tu@correo.com"

@@ -33,24 +33,54 @@ const PRIO: Record<Todo["priority"], { color: string; label: string }> = {
   low: { color: "rgba(255,255,255,0.30)", label: "Baja" },
 };
 
-/* ---------- the one hero: streak ---------- */
-function StreakHero({ streak }: { streak: number }) {
+/* ---------- CEO level hero ---------- */
+function CeoHero({
+  level,
+  levelLabel,
+  xp,
+  xpToNext,
+  streak,
+}: {
+  level: number;
+  levelLabel: string;
+  xp: number;
+  xpToNext: number;
+  streak: number;
+}) {
+  const pct = Math.min(100, (xp / xpToNext) * 100);
   return (
     <div className="flex flex-col items-center text-center py-[10px]">
-      <span className="font-['Geist'] text-[11.5px] font-medium uppercase tracking-[1.8px] text-white/35">
-        Racha
+      <div
+        className="mb-[16px] px-[14px] py-[5px] rounded-full font-['Geist'] text-[11.5px] font-semibold tracking-[0.5px] text-black"
+        style={{ background: "rgba(255,255,255,0.92)" }}
+      >
+        Nivel {level}
+      </div>
+      <span className="font-['Bai_Jamjuree'] text-[32px] font-bold text-white tracking-[-1px] leading-none">
+        {levelLabel}
       </span>
-      <div className="mt-[12px] flex items-baseline gap-[10px]">
-        <span className="font-['Bai_Jamjuree'] text-[80px] font-bold text-white tracking-[-3px] tabular-nums leading-none">
+      <div className="mt-[20px] w-full max-w-[260px]">
+        <div className="flex justify-between mb-[6px] font-['Geist'] text-[11px] text-white/35 tabular-nums">
+          <span>{xp.toLocaleString()} XP</span>
+          <span>{xpToNext.toLocaleString()} XP</span>
+        </div>
+        <div className="h-[3px] w-full rounded-full bg-white/[0.07] overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="h-full rounded-full bg-white"
+          />
+        </div>
+      </div>
+      <div className="mt-[22px] flex items-baseline gap-[7px]">
+        <span className="font-['Bai_Jamjuree'] text-[52px] font-bold text-white tracking-[-2px] tabular-nums leading-none">
           {streak}
         </span>
-        <span className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white/45 tracking-[-0.5px]">
-          días
+        <span className="font-['Bai_Jamjuree'] text-[18px] font-medium text-white/45">
+          días de racha
         </span>
       </div>
-      <p className="mt-[14px] font-['Geist'] text-[13.5px] text-white/45 leading-[1.5] max-w-[280px]">
-        Sigue abriendo todos los días.
-      </p>
     </div>
   );
 }
@@ -336,7 +366,7 @@ function TodosView({ onBack }: { onBack: () => void }) {
 /* ---------- screen ---------- */
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [view, setView] = useState<View>("hub");
-  const { name, streak, todayDone, todayTotal, lessons, goals, routine } = useMe();
+  const { name, streak, level, levelLabel, xp, xpToNext, todayDone, todayTotal, lessons, goals, routine } = useMe();
   const back = () => setView("hub");
 
   const currentLesson = lessons.find((l) => l.status === "actual") ?? lessons[0];
@@ -369,7 +399,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             <PageHeader eyebrow="Tú" title={`Hola, ${name}`} />
 
             <div className="px-[20px] pt-[20px]">
-              <StreakHero streak={streak} />
+              <CeoHero level={level} levelLabel={levelLabel} xp={xp} xpToNext={xpToNext} streak={streak} />
             </div>
 
             <div className="mt-[40px] px-[20px]">
@@ -410,7 +440,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
               </ListGroup>
             </div>
 
-            <FooterMark>Tu negocio crece contigo</FooterMark>
+            <FooterMark>Cada día eres más CEO</FooterMark>
           </motion.div>
         )}
 
