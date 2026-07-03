@@ -750,6 +750,8 @@ function ChatBar({
   stopVoiceDictation,
   startVoiceDictation,
   onPlus,
+  blocked = false,
+  blockedHint,
 }: {
   taRef: React.RefObject<HTMLTextAreaElement | null>;
   input: string;
@@ -761,15 +763,23 @@ function ChatBar({
   stopVoiceDictation: () => void;
   startVoiceDictation: () => void;
   onPlus: () => void;
+  blocked?: boolean;
+  blockedHint?: string;
 }) {
   const hasText = input.trim().length > 0;
+  const placeholder = blocked
+    ? (blockedHint ?? "Acción pendiente")
+    : listening
+      ? "Escuchando…"
+      : "Pregúntame algo…";
   return (
-    <div className="chatbar">
+    <div className="chatbar" style={blocked ? { opacity: 0.55 } : undefined}>
       <button
         type="button"
         onClick={onPlus}
         className="plus-btn"
         aria-label="Adjuntar"
+        disabled={blocked}
       >
         <Plus className="h-[20px] w-[20px]" strokeWidth={1.8} />
       </button>
@@ -777,6 +787,7 @@ function ChatBar({
         ref={taRef}
         rows={1}
         value={input}
+        disabled={blocked}
         onChange={(e) => {
           setInput(e.target.value);
           const el = e.target as HTMLTextAreaElement;
@@ -786,18 +797,18 @@ function ChatBar({
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            send();
+            if (!blocked) send();
           }
         }}
-        placeholder={listening ? "Escuchando…" : "Pregúntame algo…"}
+        placeholder={placeholder}
         className="chatbar-ta"
       />
       {listening ? (
-        <button type="button" onClick={stopVoiceDictation} className="icon-btn" aria-label="Detener">
+        <button type="button" onClick={stopVoiceDictation} className="icon-btn" aria-label="Detener" disabled={blocked}>
           <Square className="h-[16px] w-[16px]" fill="currentColor" />
         </button>
       ) : (
-        <button type="button" onClick={startVoiceDictation} className="icon-btn" aria-label="Voz">
+        <button type="button" onClick={startVoiceDictation} className="icon-btn" aria-label="Voz" disabled={blocked}>
           <Mic className="h-[19px] w-[19px]" strokeWidth={1.7} />
         </button>
       )}
@@ -811,6 +822,7 @@ function ChatBar({
           onClick={() => send()}
           className="pill-btn send"
           aria-label="Enviar"
+          disabled={blocked}
         >
           <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.2} />
         </button>
@@ -820,9 +832,11 @@ function ChatBar({
           onClick={startVoiceDictation}
           className="pill-btn voice-mode"
           aria-label="Modo voz"
+          disabled={blocked}
         >
           <AudioLines className="h-[18px] w-[18px]" strokeWidth={2} />
         </button>
+
       )}
     </div>
   );
