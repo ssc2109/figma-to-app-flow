@@ -209,9 +209,10 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
   );
 
   const chatKey = activeThreadId ?? "new";
-  const { messages, sendMessage, status, stop, setMessages } = useChat({
+  const { messages, sendMessage, status, stop, setMessages, addToolResult } = useChat({
     id: chatKey,
     transport,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onError: (err) => {
       console.error(err);
       toast.error("La IA no pudo responder. Intenta de nuevo.");
@@ -220,6 +221,63 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
       qc.invalidateQueries({ queryKey: ["chat-threads"] });
     },
   });
+
+  const runActionFn = useServerFn(runSociaWriteAction);
+
+  // Detecta la tool call de escritura pendiente de confirmación (si existe)
+  const pendingWriteCall = useMemo(() => {
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return null;
+    for (const p of last.parts ?? []) {
+      const t = (p as { type?: string }).type;
+      if (!t || !t.startsWith("tool-")) continue;
+      const toolName = t.slice(5);
+      if (!WRITE_TOOL_NAMES.has(toolName)) continue;
+      const state = (p as { state?: string }).state;
+      if (state === "input-available") {
+        return {
+          toolName,
+          toolCallId: (p as { toolCallId: string }).toolCallId,
+        };
+      }
+    }
+    return null;
+  }, [messages]);
+
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+
+  const handleConfirmTool = async (toolName: string, toolCallId: string, input: unknown) => {
+    setConfirmingId(toolCallId);
+    try {
+      const result = await runActionFn({
+        data: { tool: toolName as WriteToolName, args: input as never },
+      });
+      addToolResult({
+        tool: toolName,
+        toolCallId,
+        output: result,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "No se pudo ejecutar la acción";
+      addToolResult({
+        tool: toolName,
+        toolCallId,
+        output: { ok: false, error: msg },
+      });
+      toast.error(msg);
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
+  const handleCancelTool = (toolName: string, toolCallId: string) => {
+    addToolResult({
+      tool: toolName,
+      toolCallId,
+      output: { cancelado: true, motivo: "el usuario rechazó la acción" },
+    });
+  };
+
 
   useEffect(() => {
     if (initialMessages.length) setMessages(initialMessages);
