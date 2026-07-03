@@ -100,23 +100,117 @@ function makeTools(supabase: SupabaseClient, userId: string) {
     }),
 
     registrarVenta: tool({
-      description: "Registra una venta rápida (sin items detallados). Usa cuando el usuario diga 'vendí X soles' o similar.",
+      description:
+        "Registra una venta. Si el usuario menciona productos concretos (ej. 'vendí 3 Inca Kolas y 2 panes'), pásalos en 'items' como [{nombre, cantidad}]: la herramienta buscará cada producto, creará los sale_items, calculará el total desde los precios y descontará el stock. Si solo dice un monto ('vendí 25 soles'), envía solo 'total' para una venta rápida sin detalle. El total explícito, si se envía junto con items, prevalece sobre el calculado.",
       inputSchema: z.object({
-        total: z.number().positive(),
+        total: z.number().positive().optional(),
         metodo: z.enum(["efectivo", "yape", "plin", "fiado", "tarjeta"]).optional(),
         nota: z.string().optional(),
         clienteNombre: z.string().optional(),
+        items: z
+          .array(z.object({ nombre: z.string(), cantidad: z.number().int().positive() }))
+          .optional()
+          .describe("Productos vendidos con su cantidad. Cada nombre puede ser parcial."),
       }),
-      execute: async ({ total, metodo, nota, clienteNombre }) => {
+      execute: async ({ total, metodo, nota, clienteNombre, items }) => {
+        const pago = metodo ?? "efectivo";
+        const isCredit = pago === "fiado";
+
+        // Camino con items: resolver productos, calcular total, insertar sale + sale_items, descontar stock.
+        if (items && items.length > 0) {
+          const resolved: Array<{ id: string; name: string; price: number; stock: number; qty: number }> = [];
+          for (const it of items) {
+            const { data: prods, error } = await supabase
+              .from("products")
+              .select("id,name,price,stock")
+              .eq("user_id", userId)
+              .ilike("name", `%${it.nombre}%`)
+              .limit(3);
+            if (error) throw new Error(error.message);
+            if (!prods || prods.length === 0) {
+              throw new Error(`No encontré "${it.nombre}" en tu stock`);
+            }
+            if (prods.length > 1) {
+              return {
+                ambiguo: true,
+                nombre_buscado: it.nombre,
+                opciones: prods.map((p) => p.name),
+              };
+            }
+            const p = prods[0];
+            resolved.push({
+              id: p.id,
+              name: p.name,
+              price: Number(p.price) || 0,
+              stock: Number(p.stock) || 0,
+              qty: it.cantidad,
+            });
+          }
+
+          const calculado = resolved.reduce((s, r) => s + r.price * r.qty, 0);
+          const totalFinal = total ?? Math.round(calculado * 100) / 100;
+
+          const { data: sale, error: sErr } = await supabase
+            .from("sales")
+            .insert({
+              user_id: userId,
+              total: totalFinal,
+              payment_method: pago,
+              customer_name: clienteNombre ?? null,
+              is_credit: isCredit,
+              paid: !isCredit,
+              note: nota ?? null,
+            })
+            .select("id,total,payment_method,created_at")
+            .single();
+          if (sErr || !sale) throw new Error(sErr?.message ?? "No se pudo registrar la venta");
+
+          const itemsPayload = resolved.map((r) => ({
+            sale_id: sale.id,
+            user_id: userId,
+            product_id: r.id,
+            name: r.name,
+            qty: r.qty,
+            unit_price: r.price,
+          }));
+          const { error: iErr } = await supabase.from("sale_items").insert(itemsPayload);
+          if (iErr) throw new Error(iErr.message);
+
+          await Promise.all(
+            resolved.map((r) =>
+              supabase
+                .from("products")
+                .update({ stock: Math.max(0, r.stock - r.qty) })
+                .eq("id", r.id),
+            ),
+          );
+
+          return {
+            ok: true,
+            venta: sale,
+            items: resolved.map((r) => ({
+              nombre: r.name,
+              cantidad: r.qty,
+              precio_unit: r.price,
+              subtotal: Math.round(r.price * r.qty * 100) / 100,
+            })),
+            total_calculado: Math.round(calculado * 100) / 100,
+          };
+        }
+
+        // Camino rápido: solo total.
+        if (total == null) {
+          throw new Error("Necesito un total o al menos un item para registrar la venta");
+        }
         const { data, error } = await supabase
           .from("sales")
           .insert({
             user_id: userId,
             total,
-            payment_method: metodo ?? "efectivo",
+            payment_method: pago,
             customer_name: clienteNombre ?? null,
-            is_credit: metodo === "fiado",
-            paid: metodo !== "fiado",
+            is_credit: isCredit,
+            paid: !isCredit,
             note: nota ?? null,
           })
           .select("id,total,payment_method,created_at")
