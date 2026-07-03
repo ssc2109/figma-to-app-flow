@@ -253,7 +253,7 @@ function makeTools(supabase: SupabaseClient, userId: string) {
         // Agregación por producto
         type Agg = { nombre: string; unidades: number; ingreso: number; costo: number };
         const byProduct = new Map<string, Agg>();
-        const items = (itemsQ.data ?? []) as Array<{
+        const items = (itemsQ.data ?? []) as unknown as Array<{
           product_id: string | null;
           name: string;
           qty: number;
