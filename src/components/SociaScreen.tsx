@@ -567,7 +567,10 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
                   stopVoiceDictation={stopVoiceDictation}
                   startVoiceDictation={startVoiceDictation}
                   onPlus={() => { photoMode.current = "foto"; fileInputRef.current?.click(); }}
+                  blocked={inputBlocked}
+                  blockedHint={blockedHint}
                 />
+
               </div>
 
               <div className="cards-head">
