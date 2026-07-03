@@ -1160,10 +1160,29 @@ function MessageBubble({
               );
             }
             if (typeof p.type === "string" && p.type.startsWith("tool-")) {
-              return <ToolPart key={i} part={p as ToolPartShape} />;
+              const toolName = p.type.slice(5);
+              const shape = p as ToolPartShape & { toolCallId?: string };
+              const isWrite = WRITE_TOOL_NAMES.has(toolName);
+              const pendingApproval = isWrite && shape.state === "input-available";
+              if (pendingApproval && shape.toolCallId) {
+                return (
+                  <WriteApprovalCard
+                    key={i}
+                    toolName={toolName}
+                    input={shape.input}
+                    isConfirming={confirmingToolCallId === shape.toolCallId}
+                    onConfirm={() =>
+                      onConfirmWriteTool?.(toolName, shape.toolCallId!, shape.input)
+                    }
+                    onCancel={() => onCancelWriteTool?.(toolName, shape.toolCallId!)}
+                  />
+                );
+              }
+              return <ToolPart key={i} part={shape} />;
             }
             return null;
           })}
+
           {!text && isStreaming && (
             <span className="inline-flex items-center gap-[6px] text-white/45 text-[13px]">
               <Loader2 className="h-[12px] w-[12px] animate-spin" />
