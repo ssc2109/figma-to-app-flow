@@ -71,33 +71,29 @@ function makeTools(supabase: SupabaseClient, userId: string) {
 
     actualizarStock: tool({
       description:
-        "Cambia el stock (unidades disponibles) de un producto existente. Usa esto cuando el usuario diga que repuso, recibió mercancía o quiere corregir el stock.",
+        "Cambia el stock (unidades disponibles) de un producto existente. Usa esto cuando el usuario diga que repuso, recibió mercancía o quiere corregir el stock. REQUIERE CONFIRMACIÓN HUMANA: la acción no se ejecuta hasta que el usuario confirme la tarjeta en el chat.",
       inputSchema: z.object({
         nombre: z.string().describe("Nombre del producto (puede ser parcial)"),
         nuevaCantidad: z.number().int().min(0).optional().describe("Stock final (absoluto)"),
         sumar: z.number().int().optional().describe("Unidades a sumar al stock actual (si reposición)"),
       }),
-      execute: async ({ nombre, nuevaCantidad, sumar }) => {
-        const { data: prods, error } = await supabase
-          .from("products")
-          .select("id,name,stock")
-          .eq("user_id", userId)
-          .ilike("name", `%${nombre}%`)
-          .limit(2);
-        if (error) throw new Error(error.message);
-        if (!prods || prods.length === 0) throw new Error(`No encontré "${nombre}" en tu stock`);
-        if (prods.length > 1)
-          return { ambiguo: true, opciones: prods.map((p) => p.name) };
-        const p = prods[0];
-        const final = nuevaCantidad ?? (p.stock ?? 0) + (sumar ?? 0);
-        const { error: uErr } = await supabase
-          .from("products")
-          .update({ stock: final })
-          .eq("id", p.id);
-        if (uErr) throw new Error(uErr.message);
-        return { ok: true, producto: p.name, stock_anterior: p.stock, stock_nuevo: final };
-      },
+      // Sin execute: la tool call llega al cliente y espera confirmación humana.
     }),
+
+    crearProducto: tool({
+      description:
+        "Crea un nuevo producto en el catálogo del negocio. Úsalo cuando el usuario quiera añadir algo al stock por primera vez (ej: 'agrega Inca Kola 500ml a S/3'). REQUIERE CONFIRMACIÓN HUMANA.",
+      inputSchema: z.object({
+        nombre: z.string().describe("Nombre del producto"),
+        precio: z.number().nonnegative().describe("Precio de venta en soles"),
+        costo: z.number().nonnegative().optional().describe("Costo unitario en soles"),
+        stock: z.number().int().min(0).optional().describe("Stock inicial"),
+        categoria: z.string().optional(),
+        low_stock_threshold: z.number().int().min(0).optional().describe("Umbral de stock crítico"),
+      }),
+      // Sin execute: requiere confirmación humana.
+    }),
+
 
     registrarVenta: tool({
       description:
