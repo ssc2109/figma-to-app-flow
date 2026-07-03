@@ -1216,13 +1216,179 @@ const TOOL_LABELS: Record<string, { label: string; icon: typeof Search }> = {
   "tool-registrarGasto": { label: "Registrando gasto", icon: TrendingUp },
   "tool-registrarFiado": { label: "Anotando fiado", icon: TrendingUp },
   "tool-marcarFiadoPagado": { label: "Marcando fiado pagado", icon: Check },
+  "tool-crearProducto": { label: "Creando producto", icon: Plus },
   "tool-analizarNegocio": { label: "Analizando tu negocio", icon: TrendingUp },
 };
+
+const WRITE_TOOL_TITLES: Record<WriteToolName, string> = {
+  registrarVenta: "Registrar venta",
+  registrarGasto: "Registrar gasto",
+  registrarFiado: "Registrar fiado",
+  marcarFiadoPagado: "Marcar fiado como pagado",
+  actualizarStock: "Actualizar stock",
+  crearProducto: "Crear producto",
+};
+
+const METODO_LABEL: Record<string, string> = {
+  efectivo: "Efectivo",
+  yape: "Yape",
+  plin: "Plin",
+  fiado: "Fiado",
+  tarjeta: "Tarjeta",
+};
+
+function fmtSoles(n: unknown): string {
+  const v = typeof n === "number" ? n : Number(n);
+  if (!Number.isFinite(v)) return String(n);
+  return `S/ ${v.toFixed(2)}`;
+}
+
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-[10px] py-[6px] border-b border-white/[0.05] last:border-b-0">
+      <span className="text-white/50 text-[12px] font-['Geist'] uppercase tracking-[.6px]">{label}</span>
+      <span className="text-white/90 text-[13px] font-['Geist'] text-right">{value}</span>
+    </div>
+  );
+}
+
+function WriteApprovalCard({
+  toolName,
+  input,
+  onConfirm,
+  onCancel,
+  isConfirming,
+}: {
+  toolName: string;
+  input: unknown;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isConfirming: boolean;
+}) {
+  const title = WRITE_TOOL_TITLES[toolName as WriteToolName] ?? toolName;
+  const a = (input ?? {}) as Record<string, unknown>;
+
+  const details: Array<{ label: string; value: React.ReactNode }> = [];
+
+  if (toolName === "registrarVenta") {
+    const items = (a.items as Array<{ nombre: string; cantidad: number }> | undefined) ?? [];
+    if (items.length > 0) {
+      details.push({
+        label: "Productos",
+        value: (
+          <div className="flex flex-col items-end gap-[2px]">
+            {items.map((it, i) => (
+              <span key={i}>
+                {it.cantidad}× {it.nombre}
+              </span>
+            ))}
+          </div>
+        ),
+      });
+    }
+    if (a.total != null) details.push({ label: "Total", value: fmtSoles(a.total) });
+    if (a.metodo) details.push({ label: "Método", value: METODO_LABEL[String(a.metodo)] ?? String(a.metodo) });
+    if (a.clienteNombre) details.push({ label: "Cliente", value: String(a.clienteNombre) });
+    if (a.nota) details.push({ label: "Nota", value: String(a.nota) });
+  } else if (toolName === "registrarGasto") {
+    details.push({ label: "Monto", value: fmtSoles(a.monto) });
+    if (a.categoria) details.push({ label: "Categoría", value: String(a.categoria) });
+    if (a.nota) details.push({ label: "Nota", value: String(a.nota) });
+  } else if (toolName === "registrarFiado") {
+    details.push({ label: "Cliente", value: String(a.clienteNombre ?? "—") });
+    details.push({ label: "Monto", value: fmtSoles(a.monto) });
+    if (a.telefono) details.push({ label: "Teléfono", value: String(a.telefono) });
+    if (a.nota) details.push({ label: "Nota", value: String(a.nota) });
+  } else if (toolName === "marcarFiadoPagado") {
+    details.push({ label: "Cliente", value: String(a.clienteNombre ?? "—") });
+  } else if (toolName === "actualizarStock") {
+    details.push({ label: "Producto", value: String(a.nombre ?? "—") });
+    if (a.nuevaCantidad != null) details.push({ label: "Stock final", value: `${a.nuevaCantidad} u` });
+    if (a.sumar != null) details.push({ label: "Sumar", value: `${a.sumar} u` });
+  } else if (toolName === "crearProducto") {
+    details.push({ label: "Nombre", value: String(a.nombre ?? "—") });
+    details.push({ label: "Precio", value: fmtSoles(a.precio) });
+    if (a.costo != null) details.push({ label: "Costo", value: fmtSoles(a.costo) });
+    if (a.stock != null) details.push({ label: "Stock inicial", value: `${a.stock} u` });
+    if (a.categoria) details.push({ label: "Categoría", value: String(a.categoria) });
+  }
+
+  return (
+    <div
+      className="rounded-[16px] p-[14px] font-['Geist']"
+      style={{
+        background: "rgba(125,196,255,0.06)",
+        border: "1px solid rgba(125,196,255,0.22)",
+        boxShadow: "0 6px 24px -14px rgba(28,124,255,.35)",
+      }}
+    >
+      <div className="flex items-center gap-[8px] mb-[10px]">
+        <span
+          className="h-[24px] w-[24px] rounded-[8px] grid place-items-center flex-none"
+          style={{ background: "rgba(125,196,255,.14)", color: "#7dc4ff" }}
+        >
+          <Check className="h-[13px] w-[13px]" strokeWidth={2.2} />
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="text-white text-[13.5px] font-semibold tracking-[-.2px]">{title}</div>
+          <div className="text-white/45 text-[11px] uppercase tracking-[.7px]">Necesito tu confirmación</div>
+        </div>
+      </div>
+
+      <div className="rounded-[12px] px-[10px] py-[2px] mb-[12px]"
+        style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.05)" }}>
+        {details.length > 0 ? (
+          details.map((d, i) => <DetailRow key={i} label={d.label} value={d.value} />)
+        ) : (
+          <pre className="text-[11px] text-white/60 whitespace-pre-wrap break-words py-[6px]">
+            {JSON.stringify(a, null, 2)}
+          </pre>
+        )}
+      </div>
+
+      <div className="flex items-center gap-[8px]">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isConfirming}
+          className="flex-1 h-[38px] rounded-[10px] text-[13px] font-medium text-white/80 hover:text-white transition-colors disabled:opacity-40"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={isConfirming}
+          className="flex-1 h-[38px] rounded-[10px] text-[13px] font-semibold text-white flex items-center justify-center gap-[6px] disabled:opacity-60"
+          style={{
+            background: "linear-gradient(135deg, #1849c7 0%, #1c7cff 100%)",
+            border: "1px solid rgba(120,190,255,.35)",
+            boxShadow: "0 6px 20px -10px rgba(28,124,255,.6)",
+          }}
+        >
+          {isConfirming ? (
+            <>
+              <Loader2 className="h-[13px] w-[13px] animate-spin" />
+              Ejecutando…
+            </>
+          ) : (
+            <>
+              <Check className="h-[13px] w-[13px]" strokeWidth={2.4} />
+              Confirmar
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function ToolPart({ part }: { part: ToolPartShape }) {
   const meta = TOOL_LABELS[part.type] ?? { label: part.type.replace("tool-", ""), icon: Loader2 };
   const Icon = meta.icon;
   const running = part.state === "input-streaming" || part.state === "input-available";
+
   const ok = part.state === "output-available";
   const err = part.state === "output-error";
   const [open, setOpen] = useState(false);
