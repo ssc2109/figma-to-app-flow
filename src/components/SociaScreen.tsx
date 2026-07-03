@@ -44,6 +44,8 @@ import {
   deleteThread,
   getThreadMessages,
 } from "@/lib/api/chat.functions";
+import { runSociaWriteAction } from "@/lib/api/socia-actions.functions";
+
 
 type FeatureKey = "foto" | "voz" | "analisis" | "mercado" | "escanear";
 
