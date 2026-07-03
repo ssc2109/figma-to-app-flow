@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from "ai";
+
 import { motion, AnimatePresence } from "motion/react";
 import {
   ArrowUp,
@@ -43,6 +44,8 @@ import {
   deleteThread,
   getThreadMessages,
 } from "@/lib/api/chat.functions";
+import { runSociaWriteAction } from "@/lib/api/socia-actions.functions";
+
 
 type FeatureKey = "foto" | "voz" | "analisis" | "mercado" | "escanear";
 
@@ -88,6 +91,24 @@ const FEATURES: Array<{
     subtitle: "Foto al producto y lo añado al stock",
   },
 ];
+
+type WriteToolName =
+  | "registrarVenta"
+  | "registrarGasto"
+  | "registrarFiado"
+  | "marcarFiadoPagado"
+  | "actualizarStock"
+  | "crearProducto";
+
+const WRITE_TOOL_NAMES: Set<string> = new Set<WriteToolName>([
+  "registrarVenta",
+  "registrarGasto",
+  "registrarFiado",
+  "marcarFiadoPagado",
+  "actualizarStock",
+  "crearProducto",
+]);
+
 
 type DbMessageRow = {
   id: string;
@@ -206,9 +227,10 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
   );
 
   const chatKey = activeThreadId ?? "new";
-  const { messages, sendMessage, status, stop, setMessages } = useChat({
+  const { messages, sendMessage, status, stop, setMessages, addToolResult } = useChat({
     id: chatKey,
     transport,
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onError: (err) => {
       console.error(err);
       toast.error("La IA no pudo responder. Intenta de nuevo.");
@@ -217,6 +239,63 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
       qc.invalidateQueries({ queryKey: ["chat-threads"] });
     },
   });
+
+  const runActionFn = useServerFn(runSociaWriteAction);
+
+  // Detecta la tool call de escritura pendiente de confirmación (si existe)
+  const pendingWriteCall = useMemo(() => {
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return null;
+    for (const p of last.parts ?? []) {
+      const t = (p as { type?: string }).type;
+      if (!t || !t.startsWith("tool-")) continue;
+      const toolName = t.slice(5);
+      if (!WRITE_TOOL_NAMES.has(toolName)) continue;
+      const state = (p as { state?: string }).state;
+      if (state === "input-available") {
+        return {
+          toolName,
+          toolCallId: (p as { toolCallId: string }).toolCallId,
+        };
+      }
+    }
+    return null;
+  }, [messages]);
+
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+
+  const handleConfirmTool = async (toolName: string, toolCallId: string, input: unknown) => {
+    setConfirmingId(toolCallId);
+    try {
+      const result = await runActionFn({
+        data: { tool: toolName as WriteToolName, args: input as never },
+      });
+      addToolResult({
+        tool: toolName,
+        toolCallId,
+        output: result,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "No se pudo ejecutar la acción";
+      addToolResult({
+        tool: toolName,
+        toolCallId,
+        output: { ok: false, error: msg },
+      });
+      toast.error(msg);
+    } finally {
+      setConfirmingId(null);
+    }
+  };
+
+  const handleCancelTool = (toolName: string, toolCallId: string) => {
+    addToolResult({
+      tool: toolName,
+      toolCallId,
+      output: { cancelado: true, motivo: "el usuario rechazó la acción" },
+    });
+  };
+
 
   useEffect(() => {
     if (initialMessages.length) setMessages(initialMessages);
@@ -278,6 +357,9 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
 
   const isLoading = status === "submitted" || status === "streaming";
   const empty = messages.length === 0;
+  const inputBlocked = !!pendingWriteCall;
+  const blockedHint = "Confirma o cancela la acción pendiente";
+
 
   const send = (text?: string) => {
     const t = (text ?? input).trim();
@@ -485,7 +567,10 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
                   stopVoiceDictation={stopVoiceDictation}
                   startVoiceDictation={startVoiceDictation}
                   onPlus={() => { photoMode.current = "foto"; fileInputRef.current?.click(); }}
+                  blocked={inputBlocked}
+                  blockedHint={blockedHint}
                 />
+
               </div>
 
               <div className="cards-head">
@@ -530,7 +615,11 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
                         ? () => send(uiMessageText(lastUser))
                         : undefined
                     }
+                    onConfirmWriteTool={handleConfirmTool}
+                    onCancelWriteTool={handleCancelTool}
+                    confirmingToolCallId={confirmingId}
                   />
+
                 );
               })}
               {isLoading && status === "submitted" && <TypingIndicator />}
@@ -549,7 +638,10 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
                   stopVoiceDictation={stopVoiceDictation}
                   startVoiceDictation={startVoiceDictation}
                   onPlus={() => { photoMode.current = "foto"; fileInputRef.current?.click(); }}
+                  blocked={inputBlocked}
+                  blockedHint={blockedHint}
                 />
+
               </div>
             </div>
           </>
@@ -658,6 +750,8 @@ function ChatBar({
   stopVoiceDictation,
   startVoiceDictation,
   onPlus,
+  blocked = false,
+  blockedHint,
 }: {
   taRef: React.RefObject<HTMLTextAreaElement | null>;
   input: string;
@@ -669,15 +763,23 @@ function ChatBar({
   stopVoiceDictation: () => void;
   startVoiceDictation: () => void;
   onPlus: () => void;
+  blocked?: boolean;
+  blockedHint?: string;
 }) {
   const hasText = input.trim().length > 0;
+  const placeholder = blocked
+    ? (blockedHint ?? "Acción pendiente")
+    : listening
+      ? "Escuchando…"
+      : "Pregúntame algo…";
   return (
-    <div className="chatbar">
+    <div className="chatbar" style={blocked ? { opacity: 0.55 } : undefined}>
       <button
         type="button"
         onClick={onPlus}
         className="plus-btn"
         aria-label="Adjuntar"
+        disabled={blocked}
       >
         <Plus className="h-[20px] w-[20px]" strokeWidth={1.8} />
       </button>
@@ -685,6 +787,7 @@ function ChatBar({
         ref={taRef}
         rows={1}
         value={input}
+        disabled={blocked}
         onChange={(e) => {
           setInput(e.target.value);
           const el = e.target as HTMLTextAreaElement;
@@ -694,18 +797,18 @@ function ChatBar({
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            send();
+            if (!blocked) send();
           }
         }}
-        placeholder={listening ? "Escuchando…" : "Pregúntame algo…"}
+        placeholder={placeholder}
         className="chatbar-ta"
       />
       {listening ? (
-        <button type="button" onClick={stopVoiceDictation} className="icon-btn" aria-label="Detener">
+        <button type="button" onClick={stopVoiceDictation} className="icon-btn" aria-label="Detener" disabled={blocked}>
           <Square className="h-[16px] w-[16px]" fill="currentColor" />
         </button>
       ) : (
-        <button type="button" onClick={startVoiceDictation} className="icon-btn" aria-label="Voz">
+        <button type="button" onClick={startVoiceDictation} className="icon-btn" aria-label="Voz" disabled={blocked}>
           <Mic className="h-[19px] w-[19px]" strokeWidth={1.7} />
         </button>
       )}
@@ -719,6 +822,7 @@ function ChatBar({
           onClick={() => send()}
           className="pill-btn send"
           aria-label="Enviar"
+          disabled={blocked}
         >
           <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.2} />
         </button>
@@ -728,9 +832,11 @@ function ChatBar({
           onClick={startVoiceDictation}
           className="pill-btn voice-mode"
           aria-label="Modo voz"
+          disabled={blocked}
         >
           <AudioLines className="h-[18px] w-[18px]" strokeWidth={2} />
         </button>
+
       )}
     </div>
   );
@@ -931,12 +1037,19 @@ function MessageBubble({
   msg,
   isStreaming = false,
   onRegenerate,
+  onConfirmWriteTool,
+  onCancelWriteTool,
+  confirmingToolCallId,
 }: {
   msg: UIMessage;
   isLast?: boolean;
   isStreaming?: boolean;
   onRegenerate?: () => void;
+  onConfirmWriteTool?: (toolName: string, toolCallId: string, input: unknown) => void;
+  onCancelWriteTool?: (toolName: string, toolCallId: string) => void;
+  confirmingToolCallId?: string | null;
 }) {
+
   const isUser = msg.role === "user";
   const text = uiMessageText(msg);
   const files = (msg.parts ?? []).filter(
@@ -1070,10 +1183,29 @@ function MessageBubble({
               );
             }
             if (typeof p.type === "string" && p.type.startsWith("tool-")) {
-              return <ToolPart key={i} part={p as ToolPartShape} />;
+              const toolName = p.type.slice(5);
+              const shape = p as ToolPartShape & { toolCallId?: string };
+              const isWrite = WRITE_TOOL_NAMES.has(toolName);
+              const pendingApproval = isWrite && shape.state === "input-available";
+              if (pendingApproval && shape.toolCallId) {
+                return (
+                  <WriteApprovalCard
+                    key={i}
+                    toolName={toolName}
+                    input={shape.input}
+                    isConfirming={confirmingToolCallId === shape.toolCallId}
+                    onConfirm={() =>
+                      onConfirmWriteTool?.(toolName, shape.toolCallId!, shape.input)
+                    }
+                    onCancel={() => onCancelWriteTool?.(toolName, shape.toolCallId!)}
+                  />
+                );
+              }
+              return <ToolPart key={i} part={shape} />;
             }
             return null;
           })}
+
           {!text && isStreaming && (
             <span className="inline-flex items-center gap-[6px] text-white/45 text-[13px]">
               <Loader2 className="h-[12px] w-[12px] animate-spin" />
@@ -1107,13 +1239,179 @@ const TOOL_LABELS: Record<string, { label: string; icon: typeof Search }> = {
   "tool-registrarGasto": { label: "Registrando gasto", icon: TrendingUp },
   "tool-registrarFiado": { label: "Anotando fiado", icon: TrendingUp },
   "tool-marcarFiadoPagado": { label: "Marcando fiado pagado", icon: Check },
+  "tool-crearProducto": { label: "Creando producto", icon: Plus },
   "tool-analizarNegocio": { label: "Analizando tu negocio", icon: TrendingUp },
 };
+
+const WRITE_TOOL_TITLES: Record<WriteToolName, string> = {
+  registrarVenta: "Registrar venta",
+  registrarGasto: "Registrar gasto",
+  registrarFiado: "Registrar fiado",
+  marcarFiadoPagado: "Marcar fiado como pagado",
+  actualizarStock: "Actualizar stock",
+  crearProducto: "Crear producto",
+};
+
+const METODO_LABEL: Record<string, string> = {
+  efectivo: "Efectivo",
+  yape: "Yape",
+  plin: "Plin",
+  fiado: "Fiado",
+  tarjeta: "Tarjeta",
+};
+
+function fmtSoles(n: unknown): string {
+  const v = typeof n === "number" ? n : Number(n);
+  if (!Number.isFinite(v)) return String(n);
+  return `S/ ${v.toFixed(2)}`;
+}
+
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-[10px] py-[6px] border-b border-white/[0.05] last:border-b-0">
+      <span className="text-white/50 text-[12px] font-['Geist'] uppercase tracking-[.6px]">{label}</span>
+      <span className="text-white/90 text-[13px] font-['Geist'] text-right">{value}</span>
+    </div>
+  );
+}
+
+function WriteApprovalCard({
+  toolName,
+  input,
+  onConfirm,
+  onCancel,
+  isConfirming,
+}: {
+  toolName: string;
+  input: unknown;
+  onConfirm: () => void;
+  onCancel: () => void;
+  isConfirming: boolean;
+}) {
+  const title = WRITE_TOOL_TITLES[toolName as WriteToolName] ?? toolName;
+  const a = (input ?? {}) as Record<string, unknown>;
+
+  const details: Array<{ label: string; value: React.ReactNode }> = [];
+
+  if (toolName === "registrarVenta") {
+    const items = (a.items as Array<{ nombre: string; cantidad: number }> | undefined) ?? [];
+    if (items.length > 0) {
+      details.push({
+        label: "Productos",
+        value: (
+          <div className="flex flex-col items-end gap-[2px]">
+            {items.map((it, i) => (
+              <span key={i}>
+                {it.cantidad}× {it.nombre}
+              </span>
+            ))}
+          </div>
+        ),
+      });
+    }
+    if (a.total != null) details.push({ label: "Total", value: fmtSoles(a.total) });
+    if (a.metodo) details.push({ label: "Método", value: METODO_LABEL[String(a.metodo)] ?? String(a.metodo) });
+    if (a.clienteNombre) details.push({ label: "Cliente", value: String(a.clienteNombre) });
+    if (a.nota) details.push({ label: "Nota", value: String(a.nota) });
+  } else if (toolName === "registrarGasto") {
+    details.push({ label: "Monto", value: fmtSoles(a.monto) });
+    if (a.categoria) details.push({ label: "Categoría", value: String(a.categoria) });
+    if (a.nota) details.push({ label: "Nota", value: String(a.nota) });
+  } else if (toolName === "registrarFiado") {
+    details.push({ label: "Cliente", value: String(a.clienteNombre ?? "—") });
+    details.push({ label: "Monto", value: fmtSoles(a.monto) });
+    if (a.telefono) details.push({ label: "Teléfono", value: String(a.telefono) });
+    if (a.nota) details.push({ label: "Nota", value: String(a.nota) });
+  } else if (toolName === "marcarFiadoPagado") {
+    details.push({ label: "Cliente", value: String(a.clienteNombre ?? "—") });
+  } else if (toolName === "actualizarStock") {
+    details.push({ label: "Producto", value: String(a.nombre ?? "—") });
+    if (a.nuevaCantidad != null) details.push({ label: "Stock final", value: `${a.nuevaCantidad} u` });
+    if (a.sumar != null) details.push({ label: "Sumar", value: `${a.sumar} u` });
+  } else if (toolName === "crearProducto") {
+    details.push({ label: "Nombre", value: String(a.nombre ?? "—") });
+    details.push({ label: "Precio", value: fmtSoles(a.precio) });
+    if (a.costo != null) details.push({ label: "Costo", value: fmtSoles(a.costo) });
+    if (a.stock != null) details.push({ label: "Stock inicial", value: `${a.stock} u` });
+    if (a.categoria) details.push({ label: "Categoría", value: String(a.categoria) });
+  }
+
+  return (
+    <div
+      className="rounded-[16px] p-[14px] font-['Geist']"
+      style={{
+        background: "rgba(125,196,255,0.06)",
+        border: "1px solid rgba(125,196,255,0.22)",
+        boxShadow: "0 6px 24px -14px rgba(28,124,255,.35)",
+      }}
+    >
+      <div className="flex items-center gap-[8px] mb-[10px]">
+        <span
+          className="h-[24px] w-[24px] rounded-[8px] grid place-items-center flex-none"
+          style={{ background: "rgba(125,196,255,.14)", color: "#7dc4ff" }}
+        >
+          <Check className="h-[13px] w-[13px]" strokeWidth={2.2} />
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="text-white text-[13.5px] font-semibold tracking-[-.2px]">{title}</div>
+          <div className="text-white/45 text-[11px] uppercase tracking-[.7px]">Necesito tu confirmación</div>
+        </div>
+      </div>
+
+      <div className="rounded-[12px] px-[10px] py-[2px] mb-[12px]"
+        style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.05)" }}>
+        {details.length > 0 ? (
+          details.map((d, i) => <DetailRow key={i} label={d.label} value={d.value} />)
+        ) : (
+          <pre className="text-[11px] text-white/60 whitespace-pre-wrap break-words py-[6px]">
+            {JSON.stringify(a, null, 2)}
+          </pre>
+        )}
+      </div>
+
+      <div className="flex items-center gap-[8px]">
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isConfirming}
+          className="flex-1 h-[38px] rounded-[10px] text-[13px] font-medium text-white/80 hover:text-white transition-colors disabled:opacity-40"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={isConfirming}
+          className="flex-1 h-[38px] rounded-[10px] text-[13px] font-semibold text-white flex items-center justify-center gap-[6px] disabled:opacity-60"
+          style={{
+            background: "linear-gradient(135deg, #1849c7 0%, #1c7cff 100%)",
+            border: "1px solid rgba(120,190,255,.35)",
+            boxShadow: "0 6px 20px -10px rgba(28,124,255,.6)",
+          }}
+        >
+          {isConfirming ? (
+            <>
+              <Loader2 className="h-[13px] w-[13px] animate-spin" />
+              Ejecutando…
+            </>
+          ) : (
+            <>
+              <Check className="h-[13px] w-[13px]" strokeWidth={2.4} />
+              Confirmar
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function ToolPart({ part }: { part: ToolPartShape }) {
   const meta = TOOL_LABELS[part.type] ?? { label: part.type.replace("tool-", ""), icon: Loader2 };
   const Icon = meta.icon;
   const running = part.state === "input-streaming" || part.state === "input-available";
+
   const ok = part.state === "output-available";
   const err = part.state === "output-error";
   const [open, setOpen] = useState(false);
