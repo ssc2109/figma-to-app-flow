@@ -1014,12 +1014,19 @@ function MessageBubble({
   msg,
   isStreaming = false,
   onRegenerate,
+  onConfirmWriteTool,
+  onCancelWriteTool,
+  confirmingToolCallId,
 }: {
   msg: UIMessage;
   isLast?: boolean;
   isStreaming?: boolean;
   onRegenerate?: () => void;
+  onConfirmWriteTool?: (toolName: string, toolCallId: string, input: unknown) => void;
+  onCancelWriteTool?: (toolName: string, toolCallId: string) => void;
+  confirmingToolCallId?: string | null;
 }) {
+
   const isUser = msg.role === "user";
   const text = uiMessageText(msg);
   const files = (msg.parts ?? []).filter(
