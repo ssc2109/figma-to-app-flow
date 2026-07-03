@@ -609,7 +609,11 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
                         ? () => send(uiMessageText(lastUser))
                         : undefined
                     }
+                    onConfirmWriteTool={handleConfirmTool}
+                    onCancelWriteTool={handleCancelTool}
+                    confirmingToolCallId={confirmingId}
                   />
+
                 );
               })}
               {isLoading && status === "submitted" && <TypingIndicator />}
