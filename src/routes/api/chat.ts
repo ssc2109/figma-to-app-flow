@@ -204,37 +204,168 @@ function makeTools(supabase: SupabaseClient, userId: string) {
 
     analizarNegocio: tool({
       description:
-        "Genera un análisis financiero compacto del rango pedido: ingresos, gastos, neto, top productos vendidos, alertas. Usa cuando el usuario pida 'cómo voy', 'resumen', 'análisis', 'cierre del día'.",
+        "Análisis financiero + análisis por producto del rango pedido (hoy/ayer/semana/mes). Devuelve totales (ventas, gastos, neto, fiados pendientes), top 5 productos por ingreso con margen %, producto estrella con estimación de potencial extra en soles si su margen igualara al margen promedio de la tienda, productos vendidos a pérdida (price < cost) y comparación con el período equivalente anterior (ventas y variación %). Todo calculado desde sale_items unidos a products, filtrado por el user_id autenticado. Nunca inventa datos: si no hay ventas en el rango, devuelve arrays vacíos y null. Usa cuando el usuario pida 'cómo voy', 'resumen', 'análisis', 'cierre del día', o cuando quiera saber qué producto le rinde más.",
       inputSchema: z.object({
         rango: z.enum(["hoy", "ayer", "semana", "mes"]).default("hoy"),
       }),
       execute: async ({ rango }) => {
         const now = new Date();
-        const start = new Date(now);
-        if (rango === "hoy") start.setHours(0, 0, 0, 0);
-        else if (rango === "ayer") {
+        let start = new Date(now);
+        let end = new Date(now);
+        if (rango === "hoy") {
+          start.setHours(0, 0, 0, 0);
+        } else if (rango === "ayer") {
           start.setDate(start.getDate() - 1);
           start.setHours(0, 0, 0, 0);
-        } else if (rango === "semana") start.setDate(start.getDate() - 7);
-        else start.setDate(start.getDate() - 30);
+          end = new Date(start);
+          end.setDate(end.getDate() + 1);
+        } else if (rango === "semana") {
+          start.setDate(start.getDate() - 7);
+        } else {
+          start.setDate(start.getDate() - 30);
+        }
+        const durationMs = end.getTime() - start.getTime();
+        const prevStart = new Date(start.getTime() - durationMs);
+        const prevEnd = new Date(start);
         const startIso = start.toISOString();
+        const endIso = end.toISOString();
+        const prevStartIso = prevStart.toISOString();
+        const prevEndIso = prevEnd.toISOString();
 
-        const [salesQ, expQ, fiadosQ] = await Promise.all([
-          supabase.from("sales").select("total,payment_method").eq("user_id", userId).gte("created_at", startIso),
-          supabase.from("expenses").select("amount,category").eq("user_id", userId).gte("created_at", startIso),
+        const [salesQ, expQ, fiadosQ, itemsQ, prevSalesQ, bajoCostoQ] = await Promise.all([
+          supabase.from("sales").select("total,payment_method").eq("user_id", userId).gte("created_at", startIso).lt("created_at", endIso),
+          supabase.from("expenses").select("amount,category").eq("user_id", userId).gte("created_at", startIso).lt("created_at", endIso),
           supabase.from("fiados").select("amount,paid").eq("user_id", userId).eq("paid", false),
+          supabase
+            .from("sale_items")
+            .select("product_id,name,qty,unit_price,products(name,price,cost)")
+            .eq("user_id", userId)
+            .gte("created_at", startIso)
+            .lt("created_at", endIso),
+          supabase.from("sales").select("total").eq("user_id", userId).gte("created_at", prevStartIso).lt("created_at", prevEndIso),
+          supabase.from("products").select("name,price,cost").eq("user_id", userId),
         ]);
+
         const ventas = (salesQ.data ?? []).reduce((s, r) => s + Number(r.total), 0);
         const gastos = (expQ.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
         const fiadosPendientes = (fiadosQ.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
+
+        // Agregación por producto
+        type Agg = { nombre: string; unidades: number; ingreso: number; costo: number };
+        const byProduct = new Map<string, Agg>();
+        const items = (itemsQ.data ?? []) as unknown as Array<{
+          product_id: string | null;
+          name: string;
+          qty: number;
+          unit_price: number | string;
+          products: { name: string; price: number | string; cost: number | string } | null;
+        }>;
+        for (const it of items) {
+          const key = it.product_id ?? `__${it.name}`;
+          const unit = Number(it.unit_price) || 0;
+          const cost = Number(it.products?.cost ?? 0) || 0;
+          const qty = Number(it.qty) || 0;
+          const ingreso = unit * qty;
+          const costoTotal = cost * qty;
+          const cur = byProduct.get(key);
+          if (cur) {
+            cur.unidades += qty;
+            cur.ingreso += ingreso;
+            cur.costo += costoTotal;
+          } else {
+            byProduct.set(key, {
+              nombre: it.products?.name ?? it.name,
+              unidades: qty,
+              ingreso,
+              costo: costoTotal,
+            });
+          }
+        }
+        const aggs = Array.from(byProduct.values());
+        const round2 = (n: number) => Math.round(n * 100) / 100;
+        const pct = (n: number) => Math.round(n * 10) / 10;
+
+        const topProductos = aggs
+          .slice()
+          .sort((a, b) => b.ingreso - a.ingreso)
+          .slice(0, 5)
+          .map((a) => ({
+            nombre: a.nombre,
+            unidades: a.unidades,
+            ingreso_total: round2(a.ingreso),
+            margen_pct: a.ingreso > 0 ? pct(((a.ingreso - a.costo) / a.ingreso) * 100) : null,
+          }));
+
+        // Margen promedio ponderado de la tienda en el rango
+        const totalIngreso = aggs.reduce((s, a) => s + a.ingreso, 0);
+        const totalCosto = aggs.reduce((s, a) => s + a.costo, 0);
+        const margenPromedio = totalIngreso > 0 ? ((totalIngreso - totalCosto) / totalIngreso) * 100 : null;
+
+        let productoEstrella:
+          | {
+              nombre: string;
+              unidades: number;
+              ingreso_total: number;
+              margen_pct: number | null;
+              margen_promedio_tienda_pct: number | null;
+              potencial_extra_soles: number;
+            }
+          | null = null;
+        if (aggs.length > 0) {
+          const star = aggs.reduce((a, b) => (b.ingreso > a.ingreso ? b : a));
+          const starMargen = star.ingreso > 0 ? ((star.ingreso - star.costo) / star.ingreso) * 100 : 0;
+          const potencial =
+            margenPromedio !== null && margenPromedio > starMargen
+              ? (star.ingreso * (margenPromedio - starMargen)) / 100
+              : 0;
+          productoEstrella = {
+            nombre: star.nombre,
+            unidades: star.unidades,
+            ingreso_total: round2(star.ingreso),
+            margen_pct: star.ingreso > 0 ? pct(starMargen) : null,
+            margen_promedio_tienda_pct: margenPromedio !== null ? pct(margenPromedio) : null,
+            potencial_extra_soles: round2(potencial),
+          };
+        }
+
+        const productosBajoCosto = (bajoCostoQ.data ?? [])
+          .map((p) => ({
+            nombre: p.name as string,
+            precio: Number(p.price) || 0,
+            costo: Number(p.cost) || 0,
+          }))
+          .filter((p) => p.costo > 0 && p.precio < p.costo)
+          .map((p) => ({
+            nombre: p.nombre,
+            precio: round2(p.precio),
+            costo: round2(p.costo),
+            perdida_por_unidad: round2(p.costo - p.precio),
+          }));
+
+        const prevVentas = (prevSalesQ.data ?? []).reduce((s, r) => s + Number(r.total), 0);
+        const variacionPct =
+          prevVentas > 0 ? pct(((ventas - prevVentas) / prevVentas) * 100) : ventas > 0 ? null : 0;
+
         return {
           rango,
-          ventas_total: Math.round(ventas * 100) / 100,
-          gastos_total: Math.round(gastos * 100) / 100,
-          neto: Math.round((ventas - gastos) * 100) / 100,
+          desde: startIso,
+          hasta: endIso,
+          ventas_total: round2(ventas),
+          gastos_total: round2(gastos),
+          neto: round2(ventas - gastos),
           n_ventas: salesQ.data?.length ?? 0,
           n_gastos: expQ.data?.length ?? 0,
-          fiados_pendientes_total: Math.round(fiadosPendientes * 100) / 100,
+          fiados_pendientes_total: round2(fiadosPendientes),
+          margen_promedio_tienda_pct: margenPromedio !== null ? pct(margenPromedio) : null,
+          top_productos: topProductos,
+          producto_estrella: productoEstrella,
+          productos_bajo_costo: productosBajoCosto,
+          comparacion_periodo_anterior: {
+            desde: prevStartIso,
+            hasta: prevEndIso,
+            ventas_total: round2(prevVentas),
+            variacion_pct: variacionPct,
+          },
         };
       },
     }),
