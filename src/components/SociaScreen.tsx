@@ -357,6 +357,9 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
 
   const isLoading = status === "submitted" || status === "streaming";
   const empty = messages.length === 0;
+  const inputBlocked = !!pendingWriteCall;
+  const blockedHint = "Confirma o cancela la acción pendiente";
+
 
   const send = (text?: string) => {
     const t = (text ?? input).trim();
