@@ -92,6 +92,24 @@ const FEATURES: Array<{
   },
 ];
 
+type WriteToolName =
+  | "registrarVenta"
+  | "registrarGasto"
+  | "registrarFiado"
+  | "marcarFiadoPagado"
+  | "actualizarStock"
+  | "crearProducto";
+
+const WRITE_TOOL_NAMES: Set<string> = new Set<WriteToolName>([
+  "registrarVenta",
+  "registrarGasto",
+  "registrarFiado",
+  "marcarFiadoPagado",
+  "actualizarStock",
+  "crearProducto",
+]);
+
+
 type DbMessageRow = {
   id: string;
   role: "user" | "assistant" | "system";
