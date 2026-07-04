@@ -826,16 +826,16 @@ function CashArea(p: Props, s: Signals) {
           title="Movimientos"
           headline="Aún no registras movimientos"
           body="Registra tu primera venta o gasto para empezar a medir caja, margen y ganancia real."
-          cta="Registrar movimiento"
-          onCta={p.onPayments}
+          cta="Registrar venta"
+          onCta={p.onNewSale}
         />
         <ShortcutsRow
           title="Módulos"
           items={[
-            { label: "Ventas", sub: "Registrar primera", onClick: p.onPayments },
-            { label: "Gastos", sub: "Registrar primero", onClick: p.onPayments },
+            { label: "Ventas", sub: "Registrar venta", onClick: p.onNewSale },
+            { label: "Gastos", sub: "Registrar gasto", onClick: p.onNewExpense },
             { label: "Deudas", sub: "Por cobrar / pagar", onClick: p.onReceivables },
-            { label: "Reportes", sub: "Analizar", soon: true },
+            { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
           ]}
         />
       </div>
