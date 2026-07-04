@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+
 import { motion, AnimatePresence } from "motion/react";
 import { Share2, Tag, Search, Package, X, Check } from "lucide-react";
 import { SubHeader, SubScreen } from "./shared";
