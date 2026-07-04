@@ -129,7 +129,7 @@ export default function CashActivityView({ onBack }: { onBack: () => void }) {
   const todayEvents = events.filter((e) => new Date(e.date).toDateString() === new Date().toDateString()).length;
   const totalIn = fin.tx.filter((t) => t.kind === "ingreso").reduce((s, t) => s + t.amount, 0);
   const totalOut = fin.tx.filter((t) => t.kind === "egreso").reduce((s, t) => s + t.amount, 0);
-  const isLoading = fin.loading || loadingDebts;
+  const isLoading = fin.loading && events.length === 0;
 
   return (
     <SubScreen>
@@ -169,42 +169,49 @@ export default function CashActivityView({ onBack }: { onBack: () => void }) {
             </p>
           </div>
         ) : (
-          <ListGroup>
-            {events.map((e, idx) => {
-              const color = e.tone === "in" ? "#4ADE80" : e.tone === "out" ? "#F87171" : "rgba(255,255,255,0.72)";
-              const bg = e.tone === "in" ? "rgba(74,222,128,0.13)" : e.tone === "out" ? "rgba(248,113,113,0.13)" : "rgba(255,255,255,0.06)";
-              const border = e.tone === "in" ? "rgba(74,222,128,0.30)" : e.tone === "out" ? "rgba(248,113,113,0.30)" : "rgba(255,255,255,0.10)";
-              const Icon = e.Icon;
-              return (
-                <div key={e.id}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(idx * 0.025, 0.18) }}
-                    className="flex items-center gap-[12px] px-[16px] py-[13px]"
-                  >
-                    <div
-                      className="h-[36px] w-[36px] rounded-full grid place-items-center flex-none"
-                      style={{ background: bg, border: `1px solid ${border}` }}
+          <>
+            <ListGroup>
+              {events.map((e, idx) => {
+                const color = e.tone === "in" ? "#4ADE80" : e.tone === "out" ? "#F87171" : "rgba(255,255,255,0.72)";
+                const bg = e.tone === "in" ? "rgba(74,222,128,0.13)" : e.tone === "out" ? "rgba(248,113,113,0.13)" : "rgba(255,255,255,0.06)";
+                const border = e.tone === "in" ? "rgba(74,222,128,0.30)" : e.tone === "out" ? "rgba(248,113,113,0.30)" : "rgba(255,255,255,0.10)";
+                const Icon = e.Icon;
+                return (
+                  <div key={e.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(idx * 0.025, 0.18) }}
+                      className="flex items-center gap-[12px] px-[16px] py-[13px]"
                     >
-                      <Icon className="h-[15px] w-[15px]" style={{ color }} strokeWidth={2.3} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-['Geist'] text-[14.5px] text-white truncate">{e.title}</div>
-                      <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45 truncate">{e.meta}</div>
-                    </div>
-                    <div
-                      className="font-['Bai_Jamjuree'] font-bold text-[15px] tracking-[-0.2px] whitespace-nowrap tabular-nums"
-                      style={{ color }}
-                    >
-                      {e.tone === "in" ? "+" : e.tone === "out" ? "−" : ""}S/ {fmt(e.amount)}
-                    </div>
-                  </motion.div>
-                  {idx < events.length - 1 && <div className="h-px bg-white/[0.05] mx-[16px]" />}
-                </div>
-              );
-            })}
-          </ListGroup>
+                      <div
+                        className="h-[36px] w-[36px] rounded-full grid place-items-center flex-none"
+                        style={{ background: bg, border: `1px solid ${border}` }}
+                      >
+                        <Icon className="h-[15px] w-[15px]" style={{ color }} strokeWidth={2.3} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-['Geist'] text-[14.5px] text-white truncate">{e.title}</div>
+                        <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45 truncate">{e.meta}</div>
+                      </div>
+                      <div
+                        className="font-['Bai_Jamjuree'] font-bold text-[15px] tracking-[-0.2px] whitespace-nowrap tabular-nums"
+                        style={{ color }}
+                      >
+                        {e.tone === "in" ? "+" : e.tone === "out" ? "−" : ""}S/ {fmt(e.amount)}
+                      </div>
+                    </motion.div>
+                    {idx < events.length - 1 && <div className="h-px bg-white/[0.05] mx-[16px]" />}
+                  </div>
+                );
+              })}
+            </ListGroup>
+            {loadingDebts && (
+              <div className="pt-[10px] text-center font-['Geist'] text-[11px] text-white/30">
+                Actualizando cobros y pagos…
+              </div>
+            )}
+          </>
         )}
 
         {events.length > 0 && (
