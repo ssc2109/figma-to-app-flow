@@ -452,12 +452,59 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
                   )}
 
                   {mode === "fiar" && (
-                    <input
-                      value={customer}
-                      onChange={(e) => setCustomer(e.target.value)}
-                      placeholder="Cliente (obligatorio)"
-                      className="w-full h-[46px] px-[14px] rounded-[14px] bg-white/[0.04] border border-white/[0.10] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30 mb-[12px] focus:border-white/30 transition"
-                    />
+                    <div className="mb-[12px] flex flex-col gap-[8px]">
+                      <input
+                        value={customer}
+                        onChange={(e) => {
+                          setCustomer(e.target.value);
+                          setCustomerId(null);
+                        }}
+                        placeholder="Cliente (obligatorio)"
+                        className="w-full h-[46px] px-[14px] rounded-[14px] bg-white/[0.04] border border-white/[0.10] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30 focus:border-white/30 transition"
+                      />
+                      {(() => {
+                        const q = customer.trim().toLowerCase();
+                        const suggestions = q
+                          ? customers.filter((c) => c.name.toLowerCase().includes(q) && c.id !== customerId).slice(0, 4)
+                          : customers.slice(0, 4);
+                        const exact = customers.find(
+                          (c) => c.name.trim().toLowerCase() === q,
+                        );
+                        return (
+                          <>
+                            {customerId && (
+                              <div className="font-['Geist'] text-[11.5px] text-[#4ADE80] flex items-center gap-[6px]">
+                                <Check className="h-[12px] w-[12px]" strokeWidth={2.4} />
+                                Cliente asociado
+                              </div>
+                            )}
+                            {!customerId && q.length > 0 && !exact && (
+                              <div className="font-['Geist'] text-[11px] text-white/40">
+                                Se creará el cliente “{customer.trim()}” al confirmar el fiado.
+                              </div>
+                            )}
+                            {suggestions.length > 0 && !customerId && (
+                              <div className="flex flex-wrap gap-[6px]">
+                                {suggestions.map((c) => (
+                                  <button
+                                    key={c.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setCustomer(c.name);
+                                      setCustomerId(c.id);
+                                    }}
+                                    className="h-[30px] px-[10px] rounded-full font-['Geist'] text-[12px] text-white/80 active:scale-95"
+                                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
+                                  >
+                                    {c.name}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
                   )}
 
                   <input
