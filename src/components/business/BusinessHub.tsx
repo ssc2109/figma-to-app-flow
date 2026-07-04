@@ -804,10 +804,10 @@ function OperationArea(p: Props, s: Signals) {
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "Catálogo", sub: `${s.productCount} producto${s.productCount === 1 ? "" : "s"}`, onClick: p.onInventory },
+          { label: "Catálogo", sub: `${s.productCount} producto${s.productCount === 1 ? "" : "s"}`, onClick: p.onCatalog },
           { label: "Inventario", sub: alertCount > 0 ? `${alertCount} en alerta` : "Todo en orden", onClick: p.onInventory },
-          { label: "Compras", sub: "Reposiciones", soon: true },
-          { label: "Proveedores", sub: "A quién compras", soon: true },
+          { label: "Compras", sub: "Reposiciones", onClick: p.onPurchases },
+          { label: "Proveedores", sub: "A quién compras", onClick: p.onSuppliers },
         ]}
       />
     </div>
