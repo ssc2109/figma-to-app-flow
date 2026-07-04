@@ -7,6 +7,8 @@ import GrowScreen from "@/components/GrowScreen";
 import MeScreen from "@/components/MeScreen";
 import SociaScreen from "@/components/SociaScreen";
 import SalesOverlay from "@/components/SalesOverlay";
+import ExpenseOverlay from "@/components/ExpenseOverlay";
+import ScanScreen from "@/components/ScanScreen";
 import QuickActionsScreen from "@/components/QuickActionsScreen";
 import AuthScreen from "@/components/AuthScreen";
 import OnboardingFlow from "@/components/OnboardingFlow";
@@ -27,12 +29,18 @@ function NavShell() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("inicio");
   const [booting, setBooting] = useState(true);
   const [salesOpen, setSalesOpen] = useState(false);
+  const [expenseOpen, setExpenseOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "receivables">("hub");
   const [sociaPrompt, setSociaPrompt] = useState<string | undefined>(undefined);
   const { setHandler } = useQuickActions();
 
+  const goToInventory = () => {
+    setNegocioInitialView("hub");
+    setCurrentScreen("negocio");
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setBooting(false), 700);
@@ -49,11 +57,13 @@ function NavShell() {
           setSalesOpen(true);
           break;
         case "escanear":
-          // placeholder — could open scanner; for now open sales
-          setSalesOpen(true);
+          setScanOpen(true);
           break;
         case "registrar_gasto":
+          setExpenseOpen(true);
+          break;
         case "cobrar_fiado":
+          setNegocioInitialView("receivables");
           setCurrentScreen("negocio");
           break;
         case "reponer_stock":
@@ -119,6 +129,8 @@ function NavShell() {
                 <BusinessScreen
                   key={negocioInitialView}
                   initialView={negocioInitialView}
+                  onNewSale={() => setSalesOpen(true)}
+                  onNewExpense={() => setExpenseOpen(true)}
                 />
               )}
               {currentScreen === "socia" && (
@@ -136,6 +148,8 @@ function NavShell() {
           currentScreen={currentScreen}
           onNavigate={(s) => {
             setSalesOpen(false);
+            setExpenseOpen(false);
+            setScanOpen(false);
             setQuickActionsOpen(false);
             window.scrollTo({ top: 0, behavior: "auto" });
             if (s === "negocio") setNegocioInitialView("hub");
@@ -146,6 +160,8 @@ function NavShell() {
       </div>
 
       <SalesOverlay open={salesOpen} onClose={() => setSalesOpen(false)} />
+      <ExpenseOverlay open={expenseOpen} onClose={() => setExpenseOpen(false)} />
+      <ScanScreen open={scanOpen} onClose={() => setScanOpen(false)} onOpenInventory={goToInventory} />
       <QuickActionsScreen open={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />
       <AnimatePresence>
         {settingsOpen && (
@@ -202,4 +218,3 @@ export default function TraxNavigation() {
     </AuthProvider>
   );
 }
-

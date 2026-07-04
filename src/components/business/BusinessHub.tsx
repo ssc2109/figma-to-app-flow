@@ -23,6 +23,11 @@ type Props = {
   onChannels: () => void;
   onDocuments: () => void;
   onTeam: () => void;
+  onCatalog: () => void;
+  onPurchases: () => void;
+  onCalendar: () => void;
+  onNewSale: () => void;
+  onNewExpense: () => void;
 };
 
 type Area = "operacion" | "caja" | "clientes" | "canales";
@@ -199,14 +204,14 @@ function buildInsights(s: Signals, p: Props): Insight[] {
   if (s.productCount > 0 && s.salesCount === 0) list.push({
     id: "first-sale", priority: 4,
     text: "Ya tienes productos. Registra tu primera venta para empezar a medir tu negocio.",
-    cta: "Registrar venta", go: p.onPayments, area: "caja",
+    cta: "Registrar venta", go: p.onNewSale, area: "caja",
   });
 
   // 5. Gastos
   if (s.salesCount > 0 && s.expenseCount === 0) list.push({
     id: "first-expense", priority: 5,
     text: "Registras ventas pero no gastos. Sin gastos no sabes tu ganancia real.",
-    cta: "Registrar gasto", go: p.onPayments, area: "caja",
+    cta: "Registrar gasto", go: p.onNewExpense, area: "caja",
   });
 
   // 6. WhatsApp / pagos digitales
@@ -755,10 +760,10 @@ function OperationArea(p: Props, s: Signals) {
         <ShortcutsRow
           title="Módulos"
           items={[
-            { label: "Catálogo", sub: "Crear primero", onClick: p.onInventory },
+            { label: "Catálogo", sub: "Vitrina pública", onClick: p.onCatalog },
             { label: "Inventario", sub: "Ajustar stock", onClick: p.onInventory },
-            { label: "Compras", sub: "Reposiciones", soon: true },
-            { label: "Proveedores", sub: "A quién compras", soon: true },
+            { label: "Compras", sub: "Reposiciones", onClick: p.onPurchases },
+            { label: "Proveedores", sub: "A quién compras", onClick: p.onSuppliers },
           ]}
         />
       </div>
@@ -799,10 +804,10 @@ function OperationArea(p: Props, s: Signals) {
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "Catálogo", sub: `${s.productCount} producto${s.productCount === 1 ? "" : "s"}`, onClick: p.onInventory },
+          { label: "Catálogo", sub: `${s.productCount} producto${s.productCount === 1 ? "" : "s"}`, onClick: p.onCatalog },
           { label: "Inventario", sub: alertCount > 0 ? `${alertCount} en alerta` : "Todo en orden", onClick: p.onInventory },
-          { label: "Compras", sub: "Reposiciones", soon: true },
-          { label: "Proveedores", sub: "A quién compras", soon: true },
+          { label: "Compras", sub: "Reposiciones", onClick: p.onPurchases },
+          { label: "Proveedores", sub: "A quién compras", onClick: p.onSuppliers },
         ]}
       />
     </div>
@@ -821,16 +826,16 @@ function CashArea(p: Props, s: Signals) {
           title="Movimientos"
           headline="Aún no registras movimientos"
           body="Registra tu primera venta o gasto para empezar a medir caja, margen y ganancia real."
-          cta="Registrar movimiento"
-          onCta={p.onPayments}
+          cta="Registrar venta"
+          onCta={p.onNewSale}
         />
         <ShortcutsRow
           title="Módulos"
           items={[
-            { label: "Ventas", sub: "Registrar primera", onClick: p.onPayments },
-            { label: "Gastos", sub: "Registrar primero", onClick: p.onPayments },
+            { label: "Ventas", sub: "Registrar venta", onClick: p.onNewSale },
+            { label: "Gastos", sub: "Registrar gasto", onClick: p.onNewExpense },
             { label: "Deudas", sub: "Por cobrar / pagar", onClick: p.onReceivables },
-            { label: "Reportes", sub: "Analizar", soon: true },
+            { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
           ]}
         />
       </div>
@@ -878,10 +883,10 @@ function CashArea(p: Props, s: Signals) {
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "Ventas", sub: `${s.salesCount} registrada${s.salesCount === 1 ? "" : "s"}`, onClick: p.onPayments },
-          { label: "Gastos", sub: s.expenseCount > 0 ? `${s.expenseCount} registrados` : "Agregar", onClick: p.onPayments },
+          { label: "Ventas", sub: `${s.salesCount} registrada${s.salesCount === 1 ? "" : "s"}`, onClick: p.onNewSale },
+          { label: "Gastos", sub: s.expenseCount > 0 ? `${s.expenseCount} registrados` : "Registrar", onClick: p.onNewExpense },
           { label: "Deudas", sub: s.debtAmount > 0 ? money(s.debtAmount) : "Por cobrar / pagar", onClick: p.onReceivables },
-          { label: "Reportes", sub: "Analizar", soon: true },
+          { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
         ]}
       />
     </div>
@@ -908,7 +913,7 @@ function ClientsArea(p: Props, s: Signals) {
           items={[
             { label: "Directorio", sub: "Agregar primero", onClick: p.onClients },
             { label: "Deudas", sub: "Por cobrar", onClick: p.onReceivables },
-            { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
+            { label: "Agenda", sub: "Calendario y recordatorios", onClick: p.onCalendar },
             { label: "Historial", sub: "Compras por cliente", soon: true },
           ]}
         />
@@ -945,7 +950,7 @@ function ClientsArea(p: Props, s: Signals) {
         items={[
           { label: "Directorio", sub: `${s.clientCount} cliente${s.clientCount === 1 ? "" : "s"}`, onClick: p.onClients },
           { label: "Deudas", sub: s.debtAmount > 0 ? money(s.debtAmount) : "Por cobrar", onClick: p.onReceivables },
-          { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
+          { label: "Agenda", sub: "Calendario y recordatorios", onClick: p.onCalendar },
           { label: "Historial", sub: "Compras por cliente", soon: true },
         ]}
       />
@@ -983,8 +988,8 @@ function ChannelsArea(p: Props, s: Signals) {
           items={[
             { label: "WhatsApp", sub: "Configurar", onClick: p.onInfo },
             { label: "Perfil público", sub: "Dirección y horario", onClick: p.onInfo },
-            { label: "Catálogo", sub: "Compartir productos", soon: true },
-            { label: "Canales venta", sub: "Delivery, redes", soon: true },
+            { label: "Catálogo", sub: "Compartir productos", onClick: p.onCatalog },
+            { label: "Canales venta", sub: "Delivery, redes", onClick: p.onChannels },
           ]}
         />
       </div>
@@ -1022,8 +1027,8 @@ function ChannelsArea(p: Props, s: Signals) {
         items={[
           { label: "WhatsApp", sub: s.hasWA ? (s.phone ?? "Activo") : "Configurar", onClick: p.onInfo },
           { label: "Perfil público", sub: ready === 4 ? "Completo" : `${ready}/4 datos`, onClick: p.onInfo },
-          { label: "Catálogo", sub: "Compartir productos", soon: true },
-          { label: "Canales venta", sub: "Delivery, redes", soon: true },
+          { label: "Catálogo", sub: "Compartir productos", onClick: p.onCatalog },
+          { label: "Canales venta", sub: "Delivery, redes", onClick: p.onChannels },
         ]}
       />
     </div>

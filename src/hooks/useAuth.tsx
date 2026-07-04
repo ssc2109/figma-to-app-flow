@@ -18,6 +18,11 @@ export type Profile = {
   close_time: string | null;
   daily_goal: number;
   notifications_enabled: boolean;
+  ruc: string | null;
+  razon_social: string | null;
+  regimen: string | null;
+  direccion_fiscal: string | null;
+  actividad_economica: string | null;
 };
 
 type Ctx = {
