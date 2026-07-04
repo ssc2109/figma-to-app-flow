@@ -143,10 +143,6 @@
     overflow-x: hidden;
   }
 
-  html:has(.socia-screen),
-  body:has(.socia-screen) {
-    overflow: hidden;
-  }
 }
 
 /* Alias the Figma-exported font family names so they resolve to real fonts with correct weights. */

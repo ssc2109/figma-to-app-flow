@@ -11,6 +11,7 @@ import BusinessHub from "./business/BusinessHub";
 import CatalogView from "./business/CatalogView";
 import PurchasesView from "./business/PurchasesView";
 import CalendarView from "./business/CalendarView";
+import CashActivityView from "./business/CashActivityView";
 
 type View =
   | "hub"
@@ -26,13 +27,14 @@ type View =
   | "team"
   | "catalog"
   | "purchases"
-  | "calendar";
+  | "calendar"
+  | "cashHistory";
 
 const COMING: Record<
   Exclude<
     View,
     | "hub" | "inventory" | "payments" | "info" | "clients" | "receivables" | "payables"
-    | "catalog" | "purchases" | "calendar"
+    | "catalog" | "purchases" | "calendar" | "cashHistory"
   >,
   { title: string; icon: any; description: string; bullets: string[] }
 > = {
@@ -102,6 +104,7 @@ export default function BusinessScreen({
               onCatalog={() => setView("catalog")}
               onPurchases={() => setView("purchases")}
               onCalendar={() => setView("calendar")}
+              onCashHistory={() => setView("cashHistory")}
               onNewSale={onNewSale}
               onNewExpense={onNewExpense}
             />
@@ -117,6 +120,7 @@ export default function BusinessScreen({
         {view === "catalog" && <CatalogView key="catalog" onBack={back} />}
         {view === "purchases" && <PurchasesView key="purchases" onBack={back} />}
         {view === "calendar" && <CalendarView key="calendar" onBack={back} />}
+        {view === "cashHistory" && <CashActivityView key="cashHistory" onBack={back} />}
 
         {(view === "suppliers" || view === "channels" || view === "documents" || view === "team") && (
           <ComingSoonView key={view} onBack={back} {...COMING[view]} />
