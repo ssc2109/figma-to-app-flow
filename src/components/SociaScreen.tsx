@@ -1871,7 +1871,13 @@ const SOCIA_CSS = `
 @keyframes socCaret{ 50%{opacity:0} }
 
 
-.socia-screen .midstack{ position:absolute; left:50%; right:auto; top:var(--stack-top); width:100%; max-width:430px; transform:translateX(-50%); z-index:5; padding-bottom:0; pointer-events:auto; }
+.socia-screen .empty-ui{ overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
+.socia-screen .midstack{ position:absolute; left:50%; right:auto; bottom:calc(140px + env(safe-area-inset-bottom, 0px)); top:auto; width:100%; max-width:430px; transform:translateX(-50%); z-index:5; padding-bottom:0; pointer-events:auto; }
+@media (max-height: 720px){
+  .socia-screen .midstack{ position:relative; left:auto; bottom:auto; transform:none; margin:auto auto 0; padding-bottom:24px; }
+  .socia-screen .empty-ui{ display:flex; flex-direction:column; }
+  .socia-screen .greet{ position:relative; top:auto; padding-top:24px; }
+}
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
