@@ -105,6 +105,18 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
     setSaving(true);
     try {
       const isCredit = mode === "fiar";
+
+      // Si es fiado y no hay customerId pero sí nombre nuevo, crea el cliente
+      let finalCustomerId = customerId;
+      if (isCredit && !finalCustomerId && customer.trim()) {
+        const { data: newC } = await supabase
+          .from("customers")
+          .insert({ user_id: user.id, name: customer.trim() })
+          .select("id")
+          .single();
+        finalCustomerId = newC?.id ?? null;
+      }
+
       const { data: sale, error: sErr } = await supabase
         .from("sales")
         .insert({
@@ -113,6 +125,7 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
           payment_method: isCredit ? "fiado" : method.toLowerCase(),
           note: note.trim() || null,
           customer_name: customer.trim() || null,
+          customer_id: finalCustomerId,
           is_credit: isCredit,
           paid: !isCredit,
         })
