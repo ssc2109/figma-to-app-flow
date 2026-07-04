@@ -35,7 +35,7 @@ export type QuickAction = {
 };
 
 export const ALL_ACTIONS: QuickAction[] = [
-  { id: "venta", label: "Venta", Icon: ShoppingBag, hint: "Abrir catálogo y armar pedido", accent: "rgba(255,255,255,0.22)" },
+  { id: "venta", label: "Venta", Icon: ShoppingBag, hint: "Registrar venta o cobro", accent: "rgba(255,255,255,0.22)" },
   { id: "cobrar", label: "Cobrar", Icon: Banknote, hint: "Registrar ingreso rápido" },
   { id: "fiar", label: "Fiar", Icon: HandCoins, hint: "Anotar deuda de un cliente" },
   { id: "escanear", label: "Escanear", Icon: ScanLine, hint: "Lector de código de barras" },

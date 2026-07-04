@@ -26,6 +26,7 @@ type Props = {
   onCatalog: () => void;
   onPurchases: () => void;
   onCalendar: () => void;
+  onCashHistory: () => void;
   onNewSale: () => void;
   onNewExpense: () => void;
 };
@@ -631,6 +632,30 @@ function ShortcutsRow({ title, items }: { title: string; items: Shortcut[] }) {
   );
 }
 
+function CashHistoryEntry({ onClick, count }: { onClick: () => void; count: number }) {
+  return (
+    <div className="px-[22px]">
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full flex items-center gap-[12px] px-[16px] py-[14px] rounded-[18px] text-left active:bg-white/[0.04] transition-colors"
+        style={{ background: "rgba(17,17,17,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        <div className="h-[34px] w-[34px] rounded-full grid place-items-center shrink-0" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <ArrowRight className="h-[14px] w-[14px] text-white/65" strokeWidth={1.8} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white tracking-[-0.3px]">Historial</div>
+          <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45 truncate">
+            {count > 0 ? `${count} movimiento${count === 1 ? "" : "s"} de caja` : "Actividad de caja"}
+          </div>
+        </div>
+        <ChevronRight className="h-[15px] w-[15px] text-white/30 shrink-0" strokeWidth={1.6} />
+      </button>
+    </div>
+  );
+}
+
 /* ============================================================
    Visuales reales
    ============================================================ */
@@ -838,6 +863,7 @@ function CashArea(p: Props, s: Signals) {
             { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
           ]}
         />
+        <CashHistoryEntry onClick={p.onCashHistory} count={0} />
       </div>
     );
   }
@@ -886,9 +912,10 @@ function CashArea(p: Props, s: Signals) {
           { label: "Ventas", sub: `${s.salesCount} registrada${s.salesCount === 1 ? "" : "s"}`, onClick: p.onNewSale },
           { label: "Gastos", sub: s.expenseCount > 0 ? `${s.expenseCount} registrados` : "Registrar", onClick: p.onNewExpense },
           { label: "Deudas", sub: s.debtAmount > 0 ? money(s.debtAmount) : "Por cobrar / pagar", onClick: p.onReceivables },
-          { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
+            { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
         ]}
       />
+        <CashHistoryEntry onClick={p.onCashHistory} count={s.salesCount + s.expenseCount} />
     </div>
   );
 }

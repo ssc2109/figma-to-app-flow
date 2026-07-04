@@ -193,7 +193,7 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
                     Nueva venta
                   </div>
                   <h2 className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.4px]">
-                    Catálogo
+                    Registrar venta
                   </h2>
                 </div>
                 <button

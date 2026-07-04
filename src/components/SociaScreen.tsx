@@ -481,7 +481,7 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
 
   return (
     <div
-      className="socia-screen relative w-full h-[100dvh] flex flex-col overflow-hidden bg-black"
+      className="socia-screen relative w-full min-h-[100dvh] flex flex-col overflow-x-hidden bg-black"
       style={orbStyle}
     >
       <style>{SOCIA_CSS}</style>
@@ -515,7 +515,7 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
       )}
 
       {/* UI */}
-      <div className="relative z-30 flex-1 flex flex-col min-h-0">
+      <div className="relative z-30 flex-1 flex flex-col min-h-[100dvh]">
         <div className="statusbar" />
 
         {/* TOP BAR */}
@@ -599,7 +599,7 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
           <>
             <div
               ref={scrollRef}
-              className="relative flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[260px] flex flex-col gap-[18px]"
+              className="relative flex-1 min-h-0 overflow-y-auto overscroll-contain px-[18px] pt-[18px] pb-[260px] flex flex-col gap-[18px]"
             >
               {messages.map((m, i) => {
                 const isLast = i === messages.length - 1;
@@ -1834,10 +1834,17 @@ const SOCIA_CSS = `
 }
 
 /* GREET */
-.socia-screen .empty-ui{ position:fixed; inset:0; z-index:4; pointer-events:none; }
+.socia-screen .empty-ui{
+  position:relative; z-index:4; pointer-events:none;
+  flex:1; min-height:max(calc(100dvh - 98px), 740px);
+  display:flex; flex-direction:column;
+  overflow:visible; overflow-x:hidden;
+  padding-bottom:calc(154px + env(safe-area-inset-bottom, 0px));
+}
 .socia-screen .greet{
-  position:absolute; left:0; right:0; top:var(--greet-top);
+  position:relative; left:0; right:0; top:auto;
   text-align:center; padding:0 24px;
+  margin-top:clamp(82px, 18dvh, 170px);
   pointer-events:auto;
   -webkit-user-select:text; user-select:text;
 }
@@ -1871,12 +1878,15 @@ const SOCIA_CSS = `
 @keyframes socCaret{ 50%{opacity:0} }
 
 
-.socia-screen .empty-ui{ overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
-.socia-screen .midstack{ position:absolute; left:50%; right:auto; bottom:calc(140px + env(safe-area-inset-bottom, 0px)); top:auto; width:100%; max-width:430px; transform:translateX(-50%); z-index:5; padding-bottom:0; pointer-events:auto; }
+.socia-screen .midstack{
+  position:relative; left:auto; right:auto; bottom:auto; top:auto;
+  width:100%; max-width:430px; margin:clamp(72px, 15dvh, 150px) auto 0;
+  transform:none; z-index:5; padding-bottom:0; pointer-events:auto;
+}
 @media (max-height: 720px){
-  .socia-screen .midstack{ position:relative; left:auto; bottom:auto; transform:none; margin:auto auto 0; padding-bottom:24px; }
-  .socia-screen .empty-ui{ display:flex; flex-direction:column; }
-  .socia-screen .greet{ position:relative; top:auto; padding-top:24px; }
+  .socia-screen .empty-ui{ min-height:auto; }
+  .socia-screen .greet{ margin-top:28px; }
+  .socia-screen .midstack{ margin-top:46px; padding-bottom:24px; }
 }
 
 /* COMPOSER */
