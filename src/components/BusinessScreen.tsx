@@ -8,6 +8,9 @@ import ClientsView from "./business/ClientsView";
 import DebtsView from "./business/DebtsView";
 import ComingSoonView from "./business/ComingSoonView";
 import BusinessHub from "./business/BusinessHub";
+import CatalogView from "./business/CatalogView";
+import PurchasesView from "./business/PurchasesView";
+import CalendarView from "./business/CalendarView";
 
 type View =
   | "hub"
@@ -20,10 +23,17 @@ type View =
   | "suppliers"
   | "channels"
   | "documents"
-  | "team";
+  | "team"
+  | "catalog"
+  | "purchases"
+  | "calendar";
 
 const COMING: Record<
-  Exclude<View, "hub" | "inventory" | "payments" | "info" | "clients" | "receivables" | "payables">,
+  Exclude<
+    View,
+    | "hub" | "inventory" | "payments" | "info" | "clients" | "receivables" | "payables"
+    | "catalog" | "purchases" | "calendar"
+  >,
   { title: string; icon: any; description: string; bullets: string[] }
 > = {
   suppliers: {
@@ -52,7 +62,17 @@ const COMING: Record<
   },
 };
 
-export default function BusinessScreen({ initialView = "hub" }: { initialView?: View } = {}) {
+type BusinessScreenProps = {
+  initialView?: View;
+  onNewSale: () => void;
+  onNewExpense: () => void;
+};
+
+export default function BusinessScreen({
+  initialView = "hub",
+  onNewSale,
+  onNewExpense,
+}: BusinessScreenProps) {
   const [view, setView] = useState<View>(initialView);
   const back = () => setView("hub");
 
@@ -79,6 +99,11 @@ export default function BusinessScreen({ initialView = "hub" }: { initialView?: 
               onChannels={() => setView("channels")}
               onDocuments={() => setView("documents")}
               onTeam={() => setView("team")}
+              onCatalog={() => setView("catalog")}
+              onPurchases={() => setView("purchases")}
+              onCalendar={() => setView("calendar")}
+              onNewSale={onNewSale}
+              onNewExpense={onNewExpense}
             />
           </motion.div>
         )}
@@ -89,6 +114,9 @@ export default function BusinessScreen({ initialView = "hub" }: { initialView?: 
         {view === "clients" && <ClientsView key="clients" onBack={back} />}
         {view === "receivables" && <DebtsView key="receivables" onBack={back} initialKind="cobrar" lockKind />}
         {view === "payables" && <DebtsView key="payables" onBack={back} initialKind="pagar" lockKind />}
+        {view === "catalog" && <CatalogView key="catalog" onBack={back} />}
+        {view === "purchases" && <PurchasesView key="purchases" onBack={back} />}
+        {view === "calendar" && <CalendarView key="calendar" onBack={back} />}
 
         {(view === "suppliers" || view === "channels" || view === "documents" || view === "team") && (
           <ComingSoonView key={view} onBack={back} {...COMING[view]} />
