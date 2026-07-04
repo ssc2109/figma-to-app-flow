@@ -1836,7 +1836,7 @@ const SOCIA_CSS = `
 /* GREET */
 .socia-screen .empty-ui{
   position:relative; z-index:4; pointer-events:none;
-  flex:1; min-height:calc(100dvh - 98px);
+  flex:1; min-height:max(calc(100dvh - 98px), 740px);
   display:flex; flex-direction:column;
   overflow:visible; overflow-x:hidden;
   padding-bottom:calc(154px + env(safe-area-inset-bottom, 0px));
