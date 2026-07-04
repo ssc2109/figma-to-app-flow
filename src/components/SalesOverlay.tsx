@@ -22,6 +22,8 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
   const [mode, setMode] = useState<Mode>("cobrar");
   const [method, setMethod] = useState<PayMethod>("Efectivo");
   const [customer, setCustomer] = useState("");
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [customers, setCustomers] = useState<Array<{ id: string; name: string; phone: string | null }>>([]);
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -33,9 +35,20 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
       setMode("cobrar");
       setMethod("Efectivo");
       setCustomer("");
+      setCustomerId(null);
       setNote("");
+      return;
     }
-  }, [open]);
+    if (!user) return;
+    // cargar clientes recientes para el picker de fiado
+    supabase
+      .from("customers")
+      .select("id,name,phone")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => setCustomers((data as any) ?? []));
+  }, [open, user]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
