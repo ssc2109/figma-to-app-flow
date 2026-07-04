@@ -129,7 +129,7 @@ export default function CashActivityView({ onBack }: { onBack: () => void }) {
   const todayEvents = events.filter((e) => new Date(e.date).toDateString() === new Date().toDateString()).length;
   const totalIn = fin.tx.filter((t) => t.kind === "ingreso").reduce((s, t) => s + t.amount, 0);
   const totalOut = fin.tx.filter((t) => t.kind === "egreso").reduce((s, t) => s + t.amount, 0);
-  const isLoading = fin.loading && events.length === 0;
+  const isLoading = fin.loading && fin.tx.length === 0 && events.length === 0;
 
   return (
     <SubScreen>
@@ -154,8 +154,8 @@ export default function CashActivityView({ onBack }: { onBack: () => void }) {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="text-center py-[60px] font-['Geist'] text-[13px] text-white/40">Cargando…</div>
+        {isLoading && events.length === 0 ? (
+          <div className="text-center py-[60px] font-['Geist'] text-[13px] text-white/40">Actualizando…</div>
         ) : events.length === 0 ? (
           <div className="flex flex-col items-center text-center py-[50px]">
             <div
