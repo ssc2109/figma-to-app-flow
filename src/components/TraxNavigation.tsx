@@ -87,60 +87,52 @@ function NavShell() {
           currentScreen === "socia" ? "pb-0" : "pb-[140px]"
         }`}
       >
-        <AnimatePresence mode="wait">
-          {booting ? (
-            <motion.div
-              key="boot"
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0, filter: "blur(6px)" }}
-              transition={{ duration: 0.3 }}
-            >
-              <AppSkeleton />
-            </motion.div>
-          ) : (
-            <ScreenTransition key={currentScreen} screenKey={currentScreen}>
-              {currentScreen === "inicio" && (
-                <Container
-                  onSeeAllActions={() => setQuickActionsOpen(true)}
-                  onSeeAllActivity={() => {
-                    setNegocioInitialView("receivables");
+        {booting ? (
+          <AppSkeleton />
+        ) : (
+          <ScreenTransition screenKey={currentScreen}>
+            {currentScreen === "inicio" && (
+              <Container
+                onSeeAllActions={() => setQuickActionsOpen(true)}
+                onSeeAllActivity={() => {
+                  setNegocioInitialView("receivables");
+                  setCurrentScreen("negocio");
+                }}
+                onOpenSettings={() => setSettingsOpen(true)}
+                onIntent={(intent) => {
+                  if (intent.kind === "chat") {
+                    setSociaPrompt(intent.prompt);
+                    setCurrentScreen("socia");
+                  } else if (intent.kind === "sales") {
+                    setSalesOpen(true);
+                  } else if (intent.kind === "reponer") {
                     setCurrentScreen("negocio");
-                  }}
-                  onOpenSettings={() => setSettingsOpen(true)}
-                  onIntent={(intent) => {
-                    if (intent.kind === "chat") {
-                      setSociaPrompt(intent.prompt);
-                      setCurrentScreen("socia");
-                    } else if (intent.kind === "sales") {
-                      setSalesOpen(true);
-                    } else if (intent.kind === "reponer") {
-                      setCurrentScreen("negocio");
-                    } else if (intent.kind === "screen") {
-                      if (intent.screen === "negocio" && intent.subview === "finanzas") {
-                        setNegocioInitialView("receivables");
-                      }
-                      setCurrentScreen(intent.screen);
+                  } else if (intent.kind === "screen") {
+                    if (intent.screen === "negocio" && intent.subview === "finanzas") {
+                      setNegocioInitialView("receivables");
                     }
-                  }}
-                />
-              )}
+                    setCurrentScreen(intent.screen);
+                  }
+                }}
+              />
+            )}
 
-              {currentScreen === "negocio" && (
-                <BusinessScreen
-                  key={negocioInitialView}
-                  initialView={negocioInitialView}
-                  onNewSale={() => setSalesOpen(true)}
-                  onNewExpense={() => setExpenseOpen(true)}
-                />
-              )}
-              {currentScreen === "socia" && (
-                <SociaScreen initialPrompt={sociaPrompt} />
-              )}
-              {currentScreen === "yo" && <MeScreen />}
-              {currentScreen === "crecer" && <GrowScreen />}
-            </ScreenTransition>
-          )}
-        </AnimatePresence>
+            {currentScreen === "negocio" && (
+              <BusinessScreen
+                key={negocioInitialView}
+                initialView={negocioInitialView}
+                onNewSale={() => setSalesOpen(true)}
+                onNewExpense={() => setExpenseOpen(true)}
+              />
+            )}
+            {currentScreen === "socia" && (
+              <SociaScreen initialPrompt={sociaPrompt} />
+            )}
+            {currentScreen === "yo" && <MeScreen />}
+            {currentScreen === "crecer" && <GrowScreen />}
+          </ScreenTransition>
+        )}
+
       </div>
 
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
