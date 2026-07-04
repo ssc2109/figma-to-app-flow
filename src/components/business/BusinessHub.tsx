@@ -913,7 +913,7 @@ function ClientsArea(p: Props, s: Signals) {
           items={[
             { label: "Directorio", sub: "Agregar primero", onClick: p.onClients },
             { label: "Deudas", sub: "Por cobrar", onClick: p.onReceivables },
-            { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
+            { label: "Agenda", sub: "Calendario y recordatorios", onClick: p.onCalendar },
             { label: "Historial", sub: "Compras por cliente", soon: true },
           ]}
         />
