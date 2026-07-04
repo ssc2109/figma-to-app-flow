@@ -23,6 +23,11 @@ type Props = {
   onChannels: () => void;
   onDocuments: () => void;
   onTeam: () => void;
+  onCatalog: () => void;
+  onPurchases: () => void;
+  onCalendar: () => void;
+  onNewSale: () => void;
+  onNewExpense: () => void;
 };
 
 type Area = "operacion" | "caja" | "clientes" | "canales";
