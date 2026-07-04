@@ -950,7 +950,7 @@ function ClientsArea(p: Props, s: Signals) {
         items={[
           { label: "Directorio", sub: `${s.clientCount} cliente${s.clientCount === 1 ? "" : "s"}`, onClick: p.onClients },
           { label: "Deudas", sub: s.debtAmount > 0 ? money(s.debtAmount) : "Por cobrar", onClick: p.onReceivables },
-          { label: "Frecuentes", sub: "Quiénes vuelven", soon: true },
+          { label: "Agenda", sub: "Calendario y recordatorios", onClick: p.onCalendar },
           { label: "Historial", sub: "Compras por cliente", soon: true },
         ]}
       />
