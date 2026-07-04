@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowDownLeft, ArrowUpRight, CheckCircle2, ClipboardList, Minus, Plus, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, ClipboardList, Minus, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinance, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/data/finance";
@@ -51,7 +51,7 @@ function relativeTime(iso: string) {
 
 function categoryLabel(catId: string, kind: "ingreso" | "egreso") {
   const list = kind === "ingreso" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-  return list.find((c) => c.id === catId)?.label ?? catId || "Movimiento";
+  return list.find((c) => c.id === catId)?.label ?? (catId || "Movimiento");
 }
 
 export default function CashActivityView({ onBack }: { onBack: () => void }) {
@@ -68,19 +68,19 @@ export default function CashActivityView({ onBack }: { onBack: () => void }) {
     }
     let active = true;
     setLoadingDebts(true);
-    supabase
-      .from("fiados")
-      .select("id, customer_name, amount, created_at, paid, kind")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(80)
-      .then(({ data, error }) => {
-        if (error) console.error("cash activity debts", error);
-        if (active) setDebts((data as DebtRow[]) ?? []);
-      })
-      .finally(() => {
-        if (active) setLoadingDebts(false);
-      });
+    (async () => {
+      const { data, error } = await supabase
+        .from("fiados")
+        .select("id, customer_name, amount, created_at, paid, kind")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(80);
+      if (error) console.error("cash activity debts", error);
+      if (active) {
+        setDebts((data as DebtRow[]) ?? []);
+        setLoadingDebts(false);
+      }
+    })();
     return () => {
       active = false;
     };
