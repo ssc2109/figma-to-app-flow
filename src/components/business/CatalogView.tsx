@@ -168,23 +168,22 @@ function PriceEditor({ onClose }: { onClose: () => void }) {
     }
   };
 
-  return (
+  return createPortal(
     <motion.div
-      className="fixed inset-0 z-[80] flex items-end justify-center"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-[16px]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => !saving && onClose()} />
       <motion.div
-        initial={{ y: 80 }}
-        animate={{ y: 0 }}
-        exit={{ y: 100 }}
+        initial={{ y: 20, scale: 0.98, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        exit={{ y: 20, scale: 0.98, opacity: 0 }}
         transition={{ type: "spring", stiffness: 340, damping: 32 }}
-        className="relative w-full max-w-[430px] rounded-t-[28px] pt-[14px] pb-[24px] px-[20px] max-h-[85vh] flex flex-col"
+        className="relative w-full max-w-[430px] rounded-[24px] pt-[18px] pb-[20px] px-[20px] max-h-[calc(100dvh-32px)] flex flex-col"
         style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
       >
-        <div className="mx-auto h-[4px] w-[40px] rounded-full bg-white/15 mb-[14px]" />
         <div className="flex items-center justify-between mb-[14px]">
           <h3 className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white">Editar precios</h3>
           <button
@@ -195,7 +194,7 @@ function PriceEditor({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto flex flex-col gap-[8px] pb-[8px]">
+        <div className="flex-1 overflow-y-auto flex flex-col gap-[8px] pb-[8px] -mx-[4px] px-[4px]">
           {inv.items.map((p) => (
             <div
               key={p.id}
@@ -228,6 +227,8 @@ function PriceEditor({ onClose }: { onClose: () => void }) {
           {saving ? "Guardando…" : "Guardar cambios"}
         </button>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
+
