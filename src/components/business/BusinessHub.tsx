@@ -883,10 +883,10 @@ function CashArea(p: Props, s: Signals) {
       <ShortcutsRow
         title="Módulos"
         items={[
-          { label: "Ventas", sub: `${s.salesCount} registrada${s.salesCount === 1 ? "" : "s"}`, onClick: p.onPayments },
-          { label: "Gastos", sub: s.expenseCount > 0 ? `${s.expenseCount} registrados` : "Agregar", onClick: p.onPayments },
+          { label: "Ventas", sub: `${s.salesCount} registrada${s.salesCount === 1 ? "" : "s"}`, onClick: p.onNewSale },
+          { label: "Gastos", sub: s.expenseCount > 0 ? `${s.expenseCount} registrados` : "Registrar", onClick: p.onNewExpense },
           { label: "Deudas", sub: s.debtAmount > 0 ? money(s.debtAmount) : "Por cobrar / pagar", onClick: p.onReceivables },
-          { label: "Reportes", sub: "Analizar", soon: true },
+          { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
         ]}
       />
     </div>
