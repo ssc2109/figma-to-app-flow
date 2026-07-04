@@ -204,14 +204,14 @@ function buildInsights(s: Signals, p: Props): Insight[] {
   if (s.productCount > 0 && s.salesCount === 0) list.push({
     id: "first-sale", priority: 4,
     text: "Ya tienes productos. Registra tu primera venta para empezar a medir tu negocio.",
-    cta: "Registrar venta", go: p.onPayments, area: "caja",
+    cta: "Registrar venta", go: p.onNewSale, area: "caja",
   });
 
   // 5. Gastos
   if (s.salesCount > 0 && s.expenseCount === 0) list.push({
     id: "first-expense", priority: 5,
     text: "Registras ventas pero no gastos. Sin gastos no sabes tu ganancia real.",
-    cta: "Registrar gasto", go: p.onPayments, area: "caja",
+    cta: "Registrar gasto", go: p.onNewExpense, area: "caja",
   });
 
   // 6. WhatsApp / pagos digitales
