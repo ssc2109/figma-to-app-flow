@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          created_at: string
+          done: boolean
+          event_date: string
+          id: string
+          kind: string
+          notes: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          event_date: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          event_date?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           created_at: string
@@ -269,6 +305,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          actividad_economica: string | null
           address: string | null
           avatar_url: string | null
           business_name: string
@@ -277,6 +314,7 @@ export type Database = {
           created_at: string
           currency: string
           daily_goal: number
+          direccion_fiscal: string | null
           id: string
           locale: string
           low_stock_threshold: number
@@ -285,9 +323,13 @@ export type Database = {
           open_time: string | null
           owner_name: string
           phone: string | null
+          razon_social: string | null
+          regimen: string | null
+          ruc: string | null
           updated_at: string
         }
         Insert: {
+          actividad_economica?: string | null
           address?: string | null
           avatar_url?: string | null
           business_name?: string
@@ -296,6 +338,7 @@ export type Database = {
           created_at?: string
           currency?: string
           daily_goal?: number
+          direccion_fiscal?: string | null
           id: string
           locale?: string
           low_stock_threshold?: number
@@ -304,9 +347,13 @@ export type Database = {
           open_time?: string | null
           owner_name?: string
           phone?: string | null
+          razon_social?: string | null
+          regimen?: string | null
+          ruc?: string | null
           updated_at?: string
         }
         Update: {
+          actividad_economica?: string | null
           address?: string | null
           avatar_url?: string | null
           business_name?: string
@@ -315,6 +362,7 @@ export type Database = {
           created_at?: string
           currency?: string
           daily_goal?: number
+          direccion_fiscal?: string | null
           id?: string
           locale?: string
           low_stock_threshold?: number
@@ -323,7 +371,88 @@ export type Database = {
           open_time?: string | null
           owner_name?: string
           phone?: string | null
+          razon_social?: string | null
+          regimen?: string | null
+          ruc?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      purchase_items: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          product_id: string | null
+          purchase_id: string
+          qty: number
+          unit_cost: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          product_id?: string | null
+          purchase_id: string
+          qty: number
+          unit_cost?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          product_id?: string | null
+          purchase_id?: string
+          qty?: number
+          unit_cost?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_items_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchases: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          supplier_name: string | null
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          supplier_name?: string | null
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          supplier_name?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -378,6 +507,7 @@ export type Database = {
       sales: {
         Row: {
           created_at: string
+          customer_id: string | null
           customer_name: string | null
           customer_phone: string | null
           id: string
@@ -391,6 +521,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_id?: string | null
           customer_name?: string | null
           customer_phone?: string | null
           id?: string
@@ -404,6 +535,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_id?: string | null
           customer_name?: string | null
           customer_phone?: string | null
           id?: string
@@ -415,7 +547,15 @@ export type Database = {
           total?: number
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sales_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
