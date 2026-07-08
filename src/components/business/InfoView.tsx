@@ -315,7 +315,7 @@ function AdvancedSheet({ onClose }: { onClose: () => void }) {
     toast.success("Datos exportados");
   };
 
-  return (
+  return createPortal(
     <motion.div
       className="fixed inset-0 z-[80] flex items-end justify-center"
       initial={{ opacity: 0 }}
