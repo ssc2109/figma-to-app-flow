@@ -31,6 +31,8 @@ import {
   GraduationCap,
   Lightbulb,
   Compass,
+  Calendar as CalendarIcon,
+  Clock,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
@@ -122,18 +124,18 @@ function Sheet({
     <div className="fixed inset-0 z-50 flex items-center justify-center px-[16px]" style={{ background: "rgba(0,0,0,0.55)" }} onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] max-h-[calc(100dvh-32px)] overflow-y-auto rounded-[22px]"
+        className="w-full max-w-[420px] max-h-[calc(100dvh-32px)] flex flex-col rounded-[22px] overflow-hidden"
         style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)" }}
       >
-        <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px]">
+        <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px] shrink-0">
           <span className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">{title}</span>
           <button type="button" onClick={onClose} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]">
             <X className="h-[15px] w-[15px] text-white/60" strokeWidth={1.6} />
           </button>
         </div>
-        <div className="px-[18px] pb-[14px] flex flex-col gap-[12px]">{children}</div>
+        <div className="px-[18px] pb-[14px] flex flex-col gap-[12px] overflow-y-auto flex-1 min-h-0" style={{ WebkitOverflowScrolling: "touch" }}>{children}</div>
         {footer && (
-          <div className="px-[18px] pb-[18px] pt-[8px] flex items-center justify-end gap-[10px]" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="px-[18px] pb-[18px] pt-[10px] flex items-center justify-end gap-[10px] shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
             {footer}
           </div>
         )}
@@ -171,6 +173,49 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   );
 }
 
+function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div
+      className="relative w-full h-[38px] rounded-[10px] bg-white/[0.04] flex items-center"
+      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <CalendarIcon className="ml-[10px] h-[15px] w-[15px] text-white/55 pointer-events-none" strokeWidth={1.8} />
+      <span className="ml-[8px] font-['Geist'] text-[14px] text-white tabular-nums pointer-events-none">
+        {value ? formatDueLabel(value) : "Elegir fecha"}
+      </span>
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        style={{ colorScheme: "dark" }}
+      />
+    </div>
+  );
+}
+
+function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div
+      className="relative w-full h-[38px] rounded-[10px] bg-white/[0.04] flex items-center"
+      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <Clock className="ml-[10px] h-[15px] w-[15px] text-white/55 pointer-events-none" strokeWidth={1.8} />
+      <span className={`ml-[8px] font-['Geist'] text-[14px] tabular-nums pointer-events-none ${value ? "text-white" : "text-white/30"}`}>
+        {value || "Elegir hora"}
+      </span>
+      <input
+        type="time"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        style={{ colorScheme: "dark" }}
+      />
+    </div>
+  );
+}
+
+
 function PrimaryButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
@@ -192,6 +237,29 @@ function GhostButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButto
       {children}
     </button>
   );
+}
+
+/* ============ DATE HELPERS ============ */
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function isISODate(v?: string) {
+  return !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
+}
+function formatDueLabel(v?: string) {
+  if (!v) return "";
+  if (!isISODate(v)) return v;
+  const [y, m, d] = v.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  if (date.getTime() === today.getTime()) return "Hoy";
+  if (date.getTime() === tomorrow.getTime()) return "Mañana";
+  return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
 }
 
 /* ============ PRIORIDADES ============ */
@@ -288,7 +356,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
                     </div>
                     {(t.due || t.time || t.tag) && (
                       <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/40 truncate">
-                        {[t.due, t.time, t.tag].filter(Boolean).join(" · ")}
+                        {[formatDueLabel(t.due), t.time, t.tag].filter(Boolean).join(" · ")}
                       </div>
                     )}
                   </button>
@@ -367,7 +435,7 @@ function TaskSheet({
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? "normal");
-  const [due, setDue] = useState(initial?.due ?? "Hoy");
+  const [due, setDue] = useState(isISODate(initial?.due) ? initial!.due! : todayISO());
   const [time, setTime] = useState(initial?.time ?? "");
   const [tag, setTag] = useState(initial?.tag ?? "");
   const [projectId, setProjectId] = useState(initial?.projectId ?? "");
@@ -378,7 +446,7 @@ function TaskSheet({
     setTitle(initial?.title ?? "");
     setDescription(initial?.description ?? "");
     setPriority(initial?.priority ?? "normal");
-    setDue(initial?.due ?? "Hoy");
+    setDue(isISODate(initial?.due) ? initial!.due! : todayISO());
     setTime(initial?.time ?? "");
     setTag(initial?.tag ?? "");
     setProjectId(initial?.projectId ?? "");
@@ -412,10 +480,10 @@ function TaskSheet({
       </Field>
       <div className="grid grid-cols-2 gap-[10px]">
         <Field label="Fecha">
-          <TextInput value={due} onChange={(e) => setDue(e.target.value)} placeholder="Hoy" />
+          <DateInput value={due} onChange={setDue} />
         </Field>
         <Field label="Hora">
-          <TextInput type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+          <TimeInput value={time} onChange={setTime} />
         </Field>
       </div>
       <Field label="Prioridad">
