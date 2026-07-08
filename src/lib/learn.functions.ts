@@ -117,16 +117,50 @@ export const generateLearnSession = createServerFn({ method: "POST" })
       return normalize(output, data);
     } catch (error) {
       if (NoObjectGeneratedError.isInstance(error)) {
-        try {
-          const parsed = JSON.parse(error.text ?? "{}");
-          const safe = SessionSchema.safeParse(parsed);
-          if (safe.success) return normalize(safe.data, data);
-        } catch { /* falls through */ }
+        const recovered = tryRecover(error.text);
+        if (recovered) return normalize(recovered, data);
       }
       const message = error instanceof Error ? error.message : "Error al generar la sesión.";
       throw new Error(message);
     }
   });
+
+function tryRecover(raw?: string): LearnSession | null {
+  if (!raw) return null;
+  const candidates: string[] = [];
+  const trimmed = raw.trim();
+  candidates.push(trimmed);
+  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) candidates.push(fence[1].trim());
+  const first = trimmed.indexOf("{");
+  const last = trimmed.lastIndexOf("}");
+  if (first !== -1 && last > first) candidates.push(trimmed.slice(first, last + 1));
+
+  for (const c of candidates) {
+    for (const attempt of [c, repairJson(c)]) {
+      try {
+        const parsed = JSON.parse(attempt);
+        const safe = SessionSchema.safeParse(parsed);
+        if (safe.success) return safe.data;
+      } catch { /* try next */ }
+    }
+  }
+  return null;
+}
+
+function repairJson(s: string): string {
+  let out = s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "").replace(/,\s*([}\]])/g, "$1");
+  let braces = 0, brackets = 0;
+  for (const ch of out) {
+    if (ch === "{") braces++;
+    else if (ch === "}") braces--;
+    else if (ch === "[") brackets++;
+    else if (ch === "]") brackets--;
+  }
+  while (brackets-- > 0) out += "]";
+  while (braces-- > 0) out += "}";
+  return out;
+}
 
 function normalize(session: LearnSession, input: z.infer<typeof InputSchema>): LearnSession {
   return {
