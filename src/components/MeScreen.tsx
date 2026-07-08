@@ -21,7 +21,19 @@ import {
   AlertTriangle,
   Info,
   Flame,
+  Loader2,
+  Newspaper,
+  TrendingUp,
+  Building2,
+  Star,
+  PlayCircle,
+  ArrowRight,
+  GraduationCap,
+  Lightbulb,
+  Compass,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
 import {
   useMe,
   type Todo,
