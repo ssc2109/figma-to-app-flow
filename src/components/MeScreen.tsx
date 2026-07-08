@@ -194,6 +194,29 @@ function GhostButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButto
   );
 }
 
+/* ============ DATE HELPERS ============ */
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function isISODate(v?: string) {
+  return !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
+}
+function formatDueLabel(v?: string) {
+  if (!v) return "";
+  if (!isISODate(v)) return v;
+  const [y, m, d] = v.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  if (date.getTime() === today.getTime()) return "Hoy";
+  if (date.getTime() === tomorrow.getTime()) return "Mañana";
+  return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+}
+
 /* ============ PRIORIDADES ============ */
 function PrioritiesView({ onBack }: { onBack: () => void }) {
   const { todos, toggleTodo, addTodo, updateTodo, removeTodo, duplicateTodo, projects, goals } = useMe();
