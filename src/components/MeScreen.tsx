@@ -390,7 +390,7 @@ function TaskSheet({
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? "normal");
-  const [due, setDue] = useState(initial?.due ?? "Hoy");
+  const [due, setDue] = useState(isISODate(initial?.due) ? initial!.due! : todayISO());
   const [time, setTime] = useState(initial?.time ?? "");
   const [tag, setTag] = useState(initial?.tag ?? "");
   const [projectId, setProjectId] = useState(initial?.projectId ?? "");
@@ -401,7 +401,7 @@ function TaskSheet({
     setTitle(initial?.title ?? "");
     setDescription(initial?.description ?? "");
     setPriority(initial?.priority ?? "normal");
-    setDue(initial?.due ?? "Hoy");
+    setDue(isISODate(initial?.due) ? initial!.due! : todayISO());
     setTime(initial?.time ?? "");
     setTag(initial?.tag ?? "");
     setProjectId(initial?.projectId ?? "");
@@ -435,10 +435,10 @@ function TaskSheet({
       </Field>
       <div className="grid grid-cols-2 gap-[10px]">
         <Field label="Fecha">
-          <TextInput value={due} onChange={(e) => setDue(e.target.value)} placeholder="Hoy" />
+          <DateInput value={due} onChange={setDue} />
         </Field>
         <Field label="Hora">
-          <TextInput type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+          <TimeInput value={time} onChange={setTime} />
         </Field>
       </div>
       <Field label="Prioridad">
