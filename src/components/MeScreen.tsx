@@ -288,7 +288,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
                     </div>
                     {(t.due || t.time || t.tag) && (
                       <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/40 truncate">
-                        {[t.due, t.time, t.tag].filter(Boolean).join(" · ")}
+                        {[formatDueLabel(t.due), t.time, t.tag].filter(Boolean).join(" · ")}
                       </div>
                     )}
                   </button>
