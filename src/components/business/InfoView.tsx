@@ -76,23 +76,22 @@ function EditSheet({
     onClose();
   };
 
-  return (
+  return createPortal(
     <motion.div
-      className="fixed inset-0 z-[80] flex items-end justify-center"
+      className="fixed inset-0 z-[80] flex items-center justify-center px-[16px]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => !saving && onClose()} />
       <motion.div
-        initial={{ y: 80 }}
-        animate={{ y: 0 }}
-        exit={{ y: 100 }}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 20, opacity: 0 }}
         transition={{ type: "spring", stiffness: 340, damping: 32 }}
-        className="relative w-full max-w-[430px] rounded-t-[28px] pt-[14px] pb-[28px] px-[20px]"
+        className="relative w-full max-w-[398px] rounded-[28px] pt-[18px] pb-[20px] px-[20px] flex flex-col max-h-[calc(100dvh-32px)] overflow-y-auto"
         style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
       >
-        <div className="mx-auto h-[4px] w-[40px] rounded-full bg-white/15 mb-[14px]" />
         <div className="flex items-center justify-between mb-[18px]">
           <h3 className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white">{LABELS[field]}</h3>
           <button onClick={onClose} className="h-[32px] w-[32px] rounded-full grid place-items-center active:bg-white/[0.05]">
@@ -125,6 +124,12 @@ function EditSheet({
           <input
             value={v}
             onChange={(e) => setV(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !saving) {
+                e.preventDefault();
+                submit();
+              }
+            }}
             type={isTime ? "time" : "text"}
             autoFocus
             inputMode={field === "ruc" ? "numeric" : undefined}
@@ -133,15 +138,27 @@ function EditSheet({
           />
         )}
 
-        <button
-          onClick={submit}
-          disabled={saving}
-          className="mt-[18px] w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40"
-        >
-          {saving ? "Guardando…" : "Guardar"}
-        </button>
+        <div className="mt-[18px] flex items-center gap-[10px]">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="h-[52px] flex-1 rounded-[16px] bg-white/[0.05] border border-white/[0.08] text-white font-['Geist'] text-[14.5px] font-medium active:scale-[0.98] disabled:opacity-40"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={saving}
+            className="h-[52px] flex-[1.4] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40"
+          >
+            {saving ? "Guardando…" : "Guardar cambios"}
+          </button>
+        </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
 
