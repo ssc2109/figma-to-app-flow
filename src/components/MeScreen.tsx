@@ -122,18 +122,18 @@ function Sheet({
     <div className="fixed inset-0 z-50 flex items-center justify-center px-[16px]" style={{ background: "rgba(0,0,0,0.55)" }} onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] max-h-[calc(100dvh-32px)] overflow-y-auto rounded-[22px]"
+        className="w-full max-w-[420px] max-h-[calc(100dvh-32px)] flex flex-col rounded-[22px] overflow-hidden"
         style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)" }}
       >
-        <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px]">
+        <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px] shrink-0">
           <span className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">{title}</span>
           <button type="button" onClick={onClose} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]">
             <X className="h-[15px] w-[15px] text-white/60" strokeWidth={1.6} />
           </button>
         </div>
-        <div className="px-[18px] pb-[14px] flex flex-col gap-[12px]">{children}</div>
+        <div className="px-[18px] pb-[14px] flex flex-col gap-[12px] overflow-y-auto flex-1 min-h-0" style={{ WebkitOverflowScrolling: "touch" }}>{children}</div>
         {footer && (
-          <div className="px-[18px] pb-[18px] pt-[8px] flex items-center justify-end gap-[10px]" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <div className="px-[18px] pb-[18px] pt-[10px] flex items-center justify-end gap-[10px] shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
             {footer}
           </div>
         )}
