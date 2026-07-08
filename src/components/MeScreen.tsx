@@ -362,7 +362,7 @@ function TaskSheet({
   const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
   // reset when initial changes
-  useMemo(() => {
+  useEffect(() => {
     setTitle(initial?.title ?? "");
     setDescription(initial?.description ?? "");
     setPriority(initial?.priority ?? "normal");
@@ -653,7 +653,7 @@ function EventSheet({
   const [place, setPlace] = useState("");
   const [description, setDescription] = useState("");
 
-  useMemo(() => {
+  useEffect(() => {
     setDate(defaultDate);
   }, [defaultDate]);
 
@@ -925,7 +925,7 @@ function ProjectSheet({
   const [progress, setProgress] = useState<number>(initial?.progress ?? 0);
   const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
-  useMemo(() => {
+  useEffect(() => {
     setName(initial?.name ?? "");
     setDescription(initial?.description ?? "");
     setOwner(initial?.owner ?? "");
@@ -1156,7 +1156,7 @@ function GoalSheet({
   const [category, setCategory] = useState<Goal["category"] | undefined>(initial?.category);
   const [due, setDue] = useState(initial?.due ?? "");
 
-  useMemo(() => {
+  useEffect(() => {
     setLabel(initial?.label ?? "");
     setDescription(initial?.description ?? "");
     setTarget(initial?.target ?? 100);
