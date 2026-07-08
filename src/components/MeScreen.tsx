@@ -173,6 +173,49 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   );
 }
 
+function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div
+      className="relative w-full h-[38px] rounded-[10px] bg-white/[0.04] flex items-center"
+      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <CalendarIcon className="ml-[10px] h-[15px] w-[15px] text-white/55 pointer-events-none" strokeWidth={1.8} />
+      <span className="ml-[8px] font-['Geist'] text-[14px] text-white tabular-nums pointer-events-none">
+        {value ? formatDueLabel(value) : "Elegir fecha"}
+      </span>
+      <input
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        style={{ colorScheme: "dark" }}
+      />
+    </div>
+  );
+}
+
+function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div
+      className="relative w-full h-[38px] rounded-[10px] bg-white/[0.04] flex items-center"
+      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+    >
+      <Clock className="ml-[10px] h-[15px] w-[15px] text-white/55 pointer-events-none" strokeWidth={1.8} />
+      <span className={`ml-[8px] font-['Geist'] text-[14px] tabular-nums pointer-events-none ${value ? "text-white" : "text-white/30"}`}>
+        {value || "Elegir hora"}
+      </span>
+      <input
+        type="time"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        style={{ colorScheme: "dark" }}
+      />
+    </div>
+  );
+}
+
+
 function PrimaryButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
