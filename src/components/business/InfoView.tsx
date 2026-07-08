@@ -344,7 +344,8 @@ function AdvancedSheet({ onClose }: { onClose: () => void }) {
           <AdvRow Icon={ExternalLink} label="Consultar SUNAT" desc="Próximamente · validación automática del RUC" disabled />
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
 
