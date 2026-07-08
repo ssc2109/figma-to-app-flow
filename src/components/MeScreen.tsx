@@ -31,6 +31,8 @@ import {
   GraduationCap,
   Lightbulb,
   Compass,
+  Calendar as CalendarIcon,
+  Clock,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
