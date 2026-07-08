@@ -119,6 +119,13 @@ function Sheet({
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const dragControls = useDragControls();
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!open) setExpanded(false);
+  }, [open]);
+
   return (
     <AnimatePresence>
       {open && (
@@ -137,22 +144,39 @@ function Sheet({
           <motion.div
             onClick={(e) => e.stopPropagation()}
             initial={{ y: "100%" }}
-            animate={{ y: 0 }}
+            animate={{ y: 0, height: expanded ? "100dvh" : "auto" }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 340, damping: 34 }}
             drag="y"
+            dragListener={false}
+            dragControls={dragControls}
             dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0.02, bottom: 0.4 }}
+            dragElastic={{ top: expanded ? 0 : 0.35, bottom: 0.4 }}
             onDragEnd={(_, info) => {
-              if (info.offset.y > 140 || info.velocity.y > 600) onClose();
+              if (info.offset.y > 120 || info.velocity.y > 500) {
+                if (expanded) setExpanded(false);
+                else onClose();
+              } else if (info.offset.y < -70 || info.velocity.y < -500) {
+                setExpanded(true);
+              }
             }}
-            className="relative w-full max-w-[430px] max-h-[92dvh] flex flex-col rounded-t-[24px] overflow-hidden"
+            className={`relative w-full max-w-[430px] flex flex-col rounded-t-[24px] overflow-hidden ${expanded ? "" : "max-h-[92dvh]"}`}
             style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" }}
           >
-            <div className="pt-[8px] pb-[4px] flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing">
+            <div
+              onPointerDown={(e) => dragControls.start(e)}
+              onDoubleClick={() => setExpanded((v) => !v)}
+              className="pt-[8px] pb-[4px] flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing touch-none"
+            >
               <div className="h-[4px] w-[40px] rounded-full bg-white/20" />
             </div>
-            <div className="flex items-center justify-between px-[18px] pt-[6px] pb-[10px] shrink-0">
+            <div
+              onPointerDown={(e) => {
+                if ((e.target as HTMLElement).closest("button")) return;
+                dragControls.start(e);
+              }}
+              className="flex items-center justify-between px-[18px] pt-[6px] pb-[10px] shrink-0 touch-none cursor-grab active:cursor-grabbing"
+            >
               <span className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">{title}</span>
               <button type="button" onClick={onClose} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]">
                 <X className="h-[15px] w-[15px] text-white/60" strokeWidth={1.6} />
@@ -161,7 +185,6 @@ function Sheet({
             <div
               className="px-[18px] pb-[14px] flex flex-col gap-[12px] overflow-y-auto flex-1 min-h-0 overscroll-contain"
               style={{ WebkitOverflowScrolling: "touch" }}
-              onPointerDownCapture={(e) => e.stopPropagation()}
             >
               {children}
             </div>
