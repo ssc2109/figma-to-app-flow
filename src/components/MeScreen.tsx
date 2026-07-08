@@ -1266,33 +1266,416 @@ function LessonNode({ l, onComplete, last }: { l: Lesson; onComplete: () => void
   );
 }
 
+/* ============ CENTRO DE APRENDIZAJE ============ */
+type LearnLevel = "Básico" | "Intermedio" | "Avanzado";
+type LearnCategory =
+  | "Productividad"
+  | "Ventas"
+  | "Marketing"
+  | "Finanzas"
+  | "Atención al Cliente"
+  | "Gestión Empresarial"
+  | "Inventario"
+  | "Liderazgo"
+  | "Tecnología"
+  | "Inteligencia Artificial";
+
+type LearnResource = {
+  id: string;
+  title: string;
+  description: string;
+  category: LearnCategory;
+  level: LearnLevel;
+  minutes: number;
+  format: "lectura" | "video";
+  date: string;   // ISO
+  author: string;
+  gradient: string;
+  popularity: number;
+  featured?: boolean;
+};
+
+const LEARN_CATEGORIES: LearnCategory[] = [
+  "Productividad", "Ventas", "Marketing", "Finanzas", "Atención al Cliente",
+  "Gestión Empresarial", "Inventario", "Liderazgo", "Tecnología", "Inteligencia Artificial",
+];
+
+const LEARN_RESOURCES: LearnResource[] = [
+  { id: "l1", title: "Cómo aumentar tus ventas sin invertir más dinero", description: "Estrategias sencillas para mejorar tus ingresos con atención al cliente y fidelización.", category: "Ventas", level: "Básico", minutes: 12, format: "lectura", date: "2026-06-28", author: "Equipo Trax", gradient: "linear-gradient(135deg,#1f2937,#0f766e)", popularity: 98, featured: true },
+  { id: "l2", title: "Domina el flujo de caja de tu negocio", description: "Aprende a controlar entradas y salidas para nunca quedarte sin liquidez.", category: "Finanzas", level: "Intermedio", minutes: 15, format: "lectura", date: "2026-06-20", author: "Trax Academy", gradient: "linear-gradient(135deg,#0f172a,#2563eb)", popularity: 92, featured: true },
+  { id: "l3", title: "Estrategias para conseguir más clientes", description: "Tácticas prácticas de marketing local que puedes aplicar esta semana.", category: "Marketing", level: "Básico", minutes: 10, format: "lectura", date: "2026-06-15", author: "Trax Academy", gradient: "linear-gradient(135deg,#3b0764,#9333ea)", popularity: 88, featured: true },
+  { id: "l4", title: "Cómo organizar mejor tu negocio", description: "Sistemas simples para ordenar tareas, personas y procesos diarios.", category: "Productividad", level: "Básico", minutes: 8, format: "lectura", date: "2026-06-10", author: "Equipo Trax", gradient: "linear-gradient(135deg,#111827,#f59e0b)", popularity: 84, featured: true },
+  { id: "l5", title: "Aprende a fijar precios correctamente", description: "Método paso a paso para calcular márgenes reales sin perder clientes.", category: "Finanzas", level: "Intermedio", minutes: 14, format: "video", date: "2026-06-05", author: "Trax Academy", gradient: "linear-gradient(135deg,#052e16,#16a34a)", popularity: 90 },
+  { id: "l6", title: "Marketing digital para pequeños negocios", description: "Guía introductoria a redes sociales, WhatsApp Business y campañas locales.", category: "Marketing", level: "Básico", minutes: 20, format: "video", date: "2026-05-30", author: "Trax Academy", gradient: "linear-gradient(135deg,#1e1b4b,#6366f1)", popularity: 95, featured: true },
+  { id: "l7", title: "Atención al cliente que fideliza", description: "Guiones y hábitos para convertir compradores ocasionales en clientes fieles.", category: "Atención al Cliente", level: "Básico", minutes: 9, format: "lectura", date: "2026-05-22", author: "Equipo Trax", gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", popularity: 80 },
+  { id: "l8", title: "Control de inventario sin dolores de cabeza", description: "Cómo evitar quiebres de stock y sobrestock con métodos simples.", category: "Inventario", level: "Intermedio", minutes: 11, format: "lectura", date: "2026-05-18", author: "Trax Academy", gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", popularity: 76 },
+  { id: "l9", title: "Liderazgo para dueños de negocio", description: "Comunica, delega y motiva sin perder autoridad ni cercanía.", category: "Liderazgo", level: "Avanzado", minutes: 18, format: "lectura", date: "2026-05-10", author: "Trax Academy", gradient: "linear-gradient(135deg,#4c1d95,#db2777)", popularity: 72 },
+  { id: "l10", title: "Tecnología útil para tu negocio hoy", description: "Herramientas gratis o baratas que ahorran horas cada semana.", category: "Tecnología", level: "Básico", minutes: 7, format: "lectura", date: "2026-05-02", author: "Equipo Trax", gradient: "linear-gradient(135deg,#0f172a,#0ea5e9)", popularity: 68 },
+  { id: "l11", title: "Introducción a la IA para tu negocio", description: "Casos reales de cómo la IA puede vender más, atender mejor y ahorrar tiempo.", category: "Inteligencia Artificial", level: "Intermedio", minutes: 16, format: "video", date: "2026-04-28", author: "Trax Academy", gradient: "linear-gradient(135deg,#000000,#7c3aed)", popularity: 99, featured: true },
+  { id: "l12", title: "Gestión empresarial básica", description: "Los indicadores clave que todo dueño de negocio debe revisar cada semana.", category: "Gestión Empresarial", level: "Intermedio", minutes: 13, format: "lectura", date: "2026-04-20", author: "Trax Academy", gradient: "linear-gradient(135deg,#1e293b,#0d9488)", popularity: 74 },
+];
+
+type LearnProgress = {
+  saved: string[];
+  completed: string[];
+  inProgress: Record<string, number>; // 0-100
+  lastViewed?: string;
+  minutesLearned: number;
+};
+
+const LEARN_STORAGE_KEY = "trax.learn.progress.v1";
+
+function useLearnProgress() {
+  const [state, setState] = useState<LearnProgress>(() => ({
+    saved: [], completed: [], inProgress: {}, minutesLearned: 0,
+  }));
+
+  useEffect(() => {
+    try {
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem(LEARN_STORAGE_KEY) : null;
+      if (raw) setState(JSON.parse(raw));
+    } catch { /* noop */ }
+  }, []);
+
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") window.localStorage.setItem(LEARN_STORAGE_KEY, JSON.stringify(state));
+    } catch { /* noop */ }
+  }, [state]);
+
+  const toggleSaved = (id: string) =>
+    setState((s) => ({ ...s, saved: s.saved.includes(id) ? s.saved.filter((x) => x !== id) : [...s.saved, id] }));
+
+  const openResource = (id: string) =>
+    setState((s) => {
+      const already = s.completed.includes(id);
+      const progress = already ? 100 : Math.min(100, (s.inProgress[id] ?? 0) + 25);
+      const nextInProgress = { ...s.inProgress };
+      if (progress >= 100) {
+        delete nextInProgress[id];
+        const resource = LEARN_RESOURCES.find((r) => r.id === id);
+        return {
+          ...s,
+          lastViewed: id,
+          inProgress: nextInProgress,
+          completed: already ? s.completed : [...s.completed, id],
+          minutesLearned: s.minutesLearned + (already ? 0 : resource?.minutes ?? 0),
+        };
+      }
+      nextInProgress[id] = progress;
+      return { ...s, lastViewed: id, inProgress: nextInProgress };
+    });
+
+  const markCompleted = (id: string) =>
+    setState((s) => {
+      if (s.completed.includes(id)) return s;
+      const nextInProgress = { ...s.inProgress };
+      delete nextInProgress[id];
+      const resource = LEARN_RESOURCES.find((r) => r.id === id);
+      return {
+        ...s,
+        completed: [...s.completed, id],
+        inProgress: nextInProgress,
+        lastViewed: id,
+        minutesLearned: s.minutesLearned + (resource?.minutes ?? 0),
+      };
+    });
+
+  return { state, toggleSaved, openResource, markCompleted };
+}
+
+function LearnCard({
+  r,
+  saved,
+  onToggleSaved,
+  onOpen,
+  onShare,
+}: {
+  r: LearnResource;
+  saved: boolean;
+  onToggleSaved: () => void;
+  onOpen: () => void;
+  onShare: () => void;
+}) {
+  const dateLabel = new Date(r.date).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" });
+  return (
+    <div className="rounded-[20px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="relative h-[128px]" style={{ background: r.gradient }}>
+        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)" }} />
+        <div className="absolute top-[10px] left-[10px] flex gap-[6px]">
+          <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] font-medium text-white/85" style={{ background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.14)" }}>
+            {r.category}
+          </span>
+          <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] font-medium text-white/85" style={{ background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.14)" }}>
+            {r.level}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={onToggleSaved}
+          className="absolute top-[10px] right-[10px] h-[30px] w-[30px] rounded-full flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.14)" }}
+          aria-label={saved ? "Quitar de favoritos" : "Guardar"}
+        >
+          <span className="text-[14px]" style={{ color: saved ? "#FACC15" : "rgba(255,255,255,0.75)" }}>{saved ? "★" : "☆"}</span>
+        </button>
+      </div>
+      <div className="p-[14px]">
+        <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white leading-[1.25]">{r.title}</div>
+        <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4] line-clamp-2">{r.description}</div>
+        <div className="mt-[10px] font-['Geist'] text-[11.5px] text-white/40">
+          {r.minutes} min de {r.format} · {dateLabel} · {r.author}
+        </div>
+        <div className="mt-[12px] flex items-center gap-[8px]">
+          <button type="button" onClick={onOpen} className="h-[32px] px-[16px] rounded-full bg-white text-black font-['Geist'] text-[12.5px] font-semibold active:scale-95">
+            Leer
+          </button>
+          <button type="button" onClick={onShare} className="h-[32px] px-[12px] rounded-full font-['Geist'] text-[12px] text-white/75 active:bg-white/[0.05]" style={{ border: "1px solid rgba(255,255,255,0.10)" }}>
+            Compartir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LearnView({ onBack }: { onBack: () => void }) {
-  const { lessons, completeLesson } = useMe();
-  const units = Array.from(new Set(lessons.map((l) => l.unit)));
+  const { state, toggleSaved, openResource, markCompleted } = useLearnProgress();
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<LearnCategory | "all">("all");
+  const [sort, setSort] = useState<"recent" | "popular">("recent");
+  const [showSaved, setShowSaved] = useState(false);
+  const [reading, setReading] = useState<LearnResource | null>(null);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let arr = LEARN_RESOURCES.filter((r) => (category === "all" ? true : r.category === category));
+    if (q) arr = arr.filter((r) => r.title.toLowerCase().includes(q) || r.description.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
+    if (showSaved) arr = arr.filter((r) => state.saved.includes(r.id));
+    arr = [...arr].sort((a, b) => sort === "recent" ? b.date.localeCompare(a.date) : b.popularity - a.popularity);
+    return arr;
+  }, [query, category, sort, showSaved, state.saved]);
+
+  const featured = useMemo(() => LEARN_RESOURCES.filter((r) => r.featured).slice(0, 5), []);
+  const inProgressList = useMemo(
+    () => Object.entries(state.inProgress).map(([id, pct]) => ({ r: LEARN_RESOURCES.find((x) => x.id === id)!, pct })).filter((x) => x.r),
+    [state.inProgress],
+  );
+  const lastResource = state.lastViewed ? LEARN_RESOURCES.find((r) => r.id === state.lastViewed) : undefined;
+  const topCategory = useMemo(() => {
+    const counts = new Map<LearnCategory, number>();
+    state.completed.forEach((id) => {
+      const r = LEARN_RESOURCES.find((x) => x.id === id);
+      if (r) counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
+    });
+    let top: LearnCategory | undefined; let max = 0;
+    counts.forEach((v, k) => { if (v > max) { top = k; max = v; } });
+    return top;
+  }, [state.completed]);
+
+  const share = (r: LearnResource) => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    const text = `${r.title} — Trax Aprender`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      navigator.share({ title: r.title, text, url }).catch(() => {});
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(`${text} ${url}`).catch(() => {});
+    }
+  };
+
   return (
     <SubScreen>
-      <SubHeader eyebrow="5 min al día" title="Aprender" onBack={onBack} />
-      <div className="px-[20px] pt-[8px] flex flex-col gap-[28px]">
-        {units.length === 0 ? (
-          <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40">
-            Los cursos aparecerán aquí muy pronto.
+      <SubHeader eyebrow="Centro de Aprendizaje" title="Aprender" onBack={onBack} />
+
+      <div className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
+        <p className="font-['Geist'] text-[13px] text-white/50 leading-[1.5] -mt-[4px]">
+          Aprende nuevas habilidades para hacer crecer tu negocio.
+        </p>
+
+        <div className="relative">
+          <Search className="absolute left-[12px] top-1/2 -translate-y-1/2 h-[14px] w-[14px] text-white/40" strokeWidth={1.8} />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar cursos, artículos o guías..."
+            className="w-full h-[40px] pl-[34px] pr-[12px] rounded-[12px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30"
+            style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+          />
+        </div>
+
+        {/* CATEGORIES */}
+        <div className="flex items-center gap-[6px] overflow-x-auto -mx-[4px] px-[4px]">
+          {(["all", ...LEARN_CATEGORIES] as const).map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCategory(c as LearnCategory | "all")}
+              className="shrink-0 h-[30px] px-[13px] rounded-full font-['Geist'] text-[11.5px] font-medium text-white"
+              style={{
+                background: category === c ? "rgba(255,255,255,0.10)" : "transparent",
+                border: `1px solid ${category === c ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+              }}
+            >
+              {c === "all" ? "Todas" : c}
+            </button>
+          ))}
+        </div>
+
+        {/* PROGRESS SUMMARY */}
+        <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Tu progreso</div>
+          <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
+            <Stat label="Completados" value={`${state.completed.length}`} />
+            <Stat label="En progreso" value={`${inProgressList.length}`} />
+            <Stat label="Minutos" value={`${state.minutesLearned}`} />
+            <Stat label="Categoría top" value={topCategory ?? "—"} />
           </div>
-        ) : (
-          units.map((u) => {
-            const arr = lessons.filter((l) => l.unit === u);
-            return (
-              <div key={u}>
-                <SectionLabel>{u}</SectionLabel>
-                <ListGroup>
-                  {arr.map((l, i) => (
-                    <LessonNode key={l.id} l={l} onComplete={() => completeLesson(l.id)} last={i === arr.length - 1} />
-                  ))}
-                </ListGroup>
-              </div>
-            );
-          })
+          {lastResource && (
+            <div className="mt-[12px] font-['Geist'] text-[11.5px] text-white/45">
+              Último visto: <span className="text-white/70">{lastResource.title}</span>
+            </div>
+          )}
+        </div>
+
+        {/* CONTINUAR APRENDIENDO */}
+        {inProgressList.length > 0 && (
+          <div>
+            <SectionLabel>Continuar aprendiendo</SectionLabel>
+            <div className="flex flex-col gap-[10px]">
+              {inProgressList.map(({ r, pct }) => (
+                <div key={r.id} className="rounded-[16px] overflow-hidden flex" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="w-[80px] shrink-0" style={{ background: r.gradient }} />
+                  <div className="flex-1 p-[12px] min-w-0">
+                    <div className="font-['Geist'] text-[13.5px] text-white truncate">{r.title}</div>
+                    <div className="mt-[8px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
+                      <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="mt-[6px] flex items-center justify-between">
+                      <span className="font-['Geist'] text-[11px] text-white/45 tabular-nums">{pct}% completado</span>
+                      <button type="button" onClick={() => { openResource(r.id); setReading(r); }} className="h-[26px] px-[12px] rounded-full bg-white text-black font-['Geist'] text-[11.5px] font-semibold active:scale-95">
+                        Continuar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
+
+        {/* RECOMENDADOS */}
+        {!showSaved && category === "all" && !query && (
+          <div>
+            <SectionLabel>Recomendados para ti</SectionLabel>
+            <div className="flex gap-[12px] overflow-x-auto -mx-[20px] px-[20px] pb-[4px]">
+              {featured.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => { openResource(r.id); setReading(r); }}
+                  className="shrink-0 w-[220px] rounded-[18px] overflow-hidden text-left"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+                >
+                  <div className="h-[92px]" style={{ background: r.gradient }} />
+                  <div className="p-[12px]">
+                    <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.2px] text-white/45">{r.category}</div>
+                    <div className="mt-[4px] font-['Bai_Jamjuree'] text-[14px] font-semibold text-white leading-[1.25] line-clamp-2">{r.title}</div>
+                    <div className="mt-[6px] font-['Geist'] text-[11px] text-white/45">{r.minutes} min · {r.level}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CONTROLS: sort / saved toggle */}
+        <div className="flex items-center gap-[8px]">
+          <button
+            type="button"
+            onClick={() => setSort(sort === "recent" ? "popular" : "recent")}
+            className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] text-white/75"
+            style={{ border: "1px solid rgba(255,255,255,0.10)" }}
+          >
+            Orden: {sort === "recent" ? "Más recientes" : "Más populares"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowSaved((v) => !v)}
+            className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px]"
+            style={{
+              border: `1px solid ${showSaved ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.10)"}`,
+              background: showSaved ? "rgba(255,255,255,0.10)" : "transparent",
+              color: showSaved ? "white" : "rgba(255,255,255,0.75)",
+            }}
+          >
+            {showSaved ? "★ Guardados" : "☆ Guardados"} {state.saved.length > 0 && `(${state.saved.length})`}
+          </button>
+        </div>
+
+        {/* LIST */}
+        <div>
+          <SectionLabel>{showSaved ? "Guardados" : "Recursos"}</SectionLabel>
+          {filtered.length === 0 ? (
+            <div className="py-[36px] text-center font-['Geist'] text-[13px] text-white/40">
+              {showSaved ? "Aún no tienes recursos guardados." : "Sin resultados para tu búsqueda."}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-[14px]">
+              {filtered.map((r) => (
+                <LearnCard
+                  key={r.id}
+                  r={r}
+                  saved={state.saved.includes(r.id)}
+                  onToggleSaved={() => toggleSaved(r.id)}
+                  onOpen={() => { openResource(r.id); setReading(r); }}
+                  onShare={() => share(r)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* READER SHEET */}
+      <Sheet
+        open={!!reading}
+        onClose={() => setReading(null)}
+        title={reading?.title ?? ""}
+        footer={
+          reading && (
+            <>
+              <GhostButton onClick={() => reading && share(reading)}>Compartir</GhostButton>
+              <PrimaryButton
+                onClick={() => {
+                  if (reading) markCompleted(reading.id);
+                  setReading(null);
+                }}
+              >
+                {reading && state.completed.includes(reading.id) ? "Cerrar" : "Marcar completado"}
+              </PrimaryButton>
+            </>
+          )
+        }
+      >
+        {reading && (
+          <>
+            <div className="h-[120px] rounded-[14px]" style={{ background: reading.gradient }} />
+            <div className="flex items-center gap-[6px] flex-wrap">
+              <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] text-white/80" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>{reading.category}</span>
+              <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] text-white/80" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>{reading.level}</span>
+              <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] text-white/80" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>{reading.minutes} min · {reading.format}</span>
+            </div>
+            <p className="font-['Geist'] text-[13.5px] text-white/70 leading-[1.55]">{reading.description}</p>
+            <p className="font-['Geist'] text-[13px] text-white/55 leading-[1.55]">
+              Este recurso te guía paso a paso con ejemplos prácticos que puedes aplicar en tu negocio desde hoy.
+              Toma notas, pruébalo esta semana y vuelve para marcarlo como completado.
+            </p>
+            <div className="font-['Geist'] text-[11.5px] text-white/40">
+              {new Date(reading.date).toLocaleDateString("es-PE", { day: "numeric", month: "long", year: "numeric" })} · {reading.author}
+            </div>
+          </>
+        )}
+      </Sheet>
     </SubScreen>
   );
 }
