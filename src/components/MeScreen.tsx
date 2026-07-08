@@ -21,7 +21,19 @@ import {
   AlertTriangle,
   Info,
   Flame,
+  Loader2,
+  Newspaper,
+  TrendingUp,
+  Building2,
+  Star,
+  PlayCircle,
+  ArrowRight,
+  GraduationCap,
+  Lightbulb,
+  Compass,
 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
 import {
   useMe,
   type Todo,
@@ -1266,74 +1278,68 @@ function LessonNode({ l, onComplete, last }: { l: Lesson; onComplete: () => void
   );
 }
 
-/* ============ CENTRO DE APRENDIZAJE ============ */
+/* ============ CENTRO INTELIGENTE DE APRENDIZAJE ============ */
 type LearnLevel = "Básico" | "Intermedio" | "Avanzado";
-type LearnCategory =
-  | "Productividad"
-  | "Ventas"
-  | "Marketing"
-  | "Finanzas"
-  | "Atención al Cliente"
-  | "Gestión Empresarial"
-  | "Inventario"
-  | "Liderazgo"
-  | "Tecnología"
-  | "Inteligencia Artificial";
+type LearnMinutes = 30 | 45 | 60;
 
-type LearnResource = {
+type LearningPath = {
   id: string;
-  title: string;
+  emoji: string;
+  name: string;
   description: string;
-  category: LearnCategory;
   level: LearnLevel;
-  minutes: number;
-  format: "lectura" | "video";
-  date: string;   // ISO
-  author: string;
+  totalMinutes: number;
+  topics: string[];
   gradient: string;
-  popularity: number;
-  featured?: boolean;
 };
 
-const LEARN_CATEGORIES: LearnCategory[] = [
-  "Productividad", "Ventas", "Marketing", "Finanzas", "Atención al Cliente",
-  "Gestión Empresarial", "Inventario", "Liderazgo", "Tecnología", "Inteligencia Artificial",
+const LEARNING_PATHS: LearningPath[] = [
+  { id: "ventas", emoji: "📈", name: "Cómo aumentar las ventas", description: "Estrategias probadas para vender más sin gastar más.", level: "Básico", totalMinutes: 180, gradient: "linear-gradient(135deg,#1f2937,#0f766e)", topics: ["Psicología del comprador", "Cross-selling y up-selling", "Fidelización de clientes recurrentes", "Precios que convierten", "Cierre de venta consultivo"] },
+  { id: "finanzas", emoji: "💰", name: "Finanzas para pequeños negocios", description: "Domina el flujo de caja, márgenes y decisiones de dinero.", level: "Básico", totalMinutes: 210, gradient: "linear-gradient(135deg,#0f172a,#2563eb)", topics: ["Flujo de caja diario", "Margen bruto vs. margen neto", "Punto de equilibrio", "Control de gastos operativos", "Cómo fijar precios correctamente"] },
+  { id: "marketing", emoji: "📢", name: "Marketing Digital", description: "Redes sociales, WhatsApp Business y publicidad rentable.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#3b0764,#9333ea)", topics: ["Marketing en redes sociales", "WhatsApp Business avanzado", "Publicidad pagada rentable", "Contenido que vende", "SEO local para pequeños negocios"] },
+  { id: "clientes", emoji: "🤝", name: "Atención al Cliente", description: "Convierte compradores ocasionales en fans del negocio.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", topics: ["Experiencia del cliente", "Manejo de quejas y reclamos", "Programas de fidelización", "Comunicación asertiva", "Post-venta que retiene"] },
+  { id: "inventario", emoji: "📦", name: "Gestión de Inventario", description: "Evita quiebres de stock y capital dormido en almacén.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", topics: ["Rotación de inventario", "Método ABC de productos", "Reabastecimiento óptimo", "Control de mermas y robos", "Proveedores estratégicos"] },
+  { id: "liderazgo", emoji: "👥", name: "Liderazgo", description: "Guía tu equipo con claridad, cercanía y resultados.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#4c1d95,#db2777)", topics: ["Liderazgo situacional", "Delegación efectiva", "Feedback que construye", "Motivación intrínseca del equipo", "Cultura de servicio"] },
+  { id: "productividad", emoji: "🧠", name: "Productividad", description: "Menos tiempo perdido, más avances reales cada día.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#111827,#f59e0b)", topics: ["Regla del 80/20 aplicada al negocio", "Bloques de tiempo profundo", "Gestión de energía, no solo tiempo", "Rutinas de dueños de negocio", "Delegar y automatizar"] },
+  { id: "ia", emoji: "🤖", name: "IA aplicada a negocios", description: "Casos reales de IA que ahorran horas y aumentan ingresos.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#000000,#7c3aed)", topics: ["IA para atención al cliente 24/7", "IA para marketing y contenido", "IA para análisis de ventas", "IA para inventario predictivo", "Automatización de tareas repetitivas"] },
+  { id: "administracion", emoji: "📊", name: "Administración", description: "Los procesos que sostienen a un negocio que crece.", level: "Intermedio", totalMinutes: 210, gradient: "linear-gradient(135deg,#1e293b,#0d9488)", topics: ["Indicadores clave (KPIs)", "Toma de decisiones con datos", "Planeación semanal y mensual", "Procesos y manuales operativos", "Gestión de proveedores"] },
 ];
 
-const LEARN_RESOURCES: LearnResource[] = [
-  { id: "l1", title: "Cómo aumentar tus ventas sin invertir más dinero", description: "Estrategias sencillas para mejorar tus ingresos con atención al cliente y fidelización.", category: "Ventas", level: "Básico", minutes: 12, format: "lectura", date: "2026-06-28", author: "Equipo Trax", gradient: "linear-gradient(135deg,#1f2937,#0f766e)", popularity: 98, featured: true },
-  { id: "l2", title: "Domina el flujo de caja de tu negocio", description: "Aprende a controlar entradas y salidas para nunca quedarte sin liquidez.", category: "Finanzas", level: "Intermedio", minutes: 15, format: "lectura", date: "2026-06-20", author: "Trax Academy", gradient: "linear-gradient(135deg,#0f172a,#2563eb)", popularity: 92, featured: true },
-  { id: "l3", title: "Estrategias para conseguir más clientes", description: "Tácticas prácticas de marketing local que puedes aplicar esta semana.", category: "Marketing", level: "Básico", minutes: 10, format: "lectura", date: "2026-06-15", author: "Trax Academy", gradient: "linear-gradient(135deg,#3b0764,#9333ea)", popularity: 88, featured: true },
-  { id: "l4", title: "Cómo organizar mejor tu negocio", description: "Sistemas simples para ordenar tareas, personas y procesos diarios.", category: "Productividad", level: "Básico", minutes: 8, format: "lectura", date: "2026-06-10", author: "Equipo Trax", gradient: "linear-gradient(135deg,#111827,#f59e0b)", popularity: 84, featured: true },
-  { id: "l5", title: "Aprende a fijar precios correctamente", description: "Método paso a paso para calcular márgenes reales sin perder clientes.", category: "Finanzas", level: "Intermedio", minutes: 14, format: "video", date: "2026-06-05", author: "Trax Academy", gradient: "linear-gradient(135deg,#052e16,#16a34a)", popularity: 90 },
-  { id: "l6", title: "Marketing digital para pequeños negocios", description: "Guía introductoria a redes sociales, WhatsApp Business y campañas locales.", category: "Marketing", level: "Básico", minutes: 20, format: "video", date: "2026-05-30", author: "Trax Academy", gradient: "linear-gradient(135deg,#1e1b4b,#6366f1)", popularity: 95, featured: true },
-  { id: "l7", title: "Atención al cliente que fideliza", description: "Guiones y hábitos para convertir compradores ocasionales en clientes fieles.", category: "Atención al Cliente", level: "Básico", minutes: 9, format: "lectura", date: "2026-05-22", author: "Equipo Trax", gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", popularity: 80 },
-  { id: "l8", title: "Control de inventario sin dolores de cabeza", description: "Cómo evitar quiebres de stock y sobrestock con métodos simples.", category: "Inventario", level: "Intermedio", minutes: 11, format: "lectura", date: "2026-05-18", author: "Trax Academy", gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", popularity: 76 },
-  { id: "l9", title: "Liderazgo para dueños de negocio", description: "Comunica, delega y motiva sin perder autoridad ni cercanía.", category: "Liderazgo", level: "Avanzado", minutes: 18, format: "lectura", date: "2026-05-10", author: "Trax Academy", gradient: "linear-gradient(135deg,#4c1d95,#db2777)", popularity: 72 },
-  { id: "l10", title: "Tecnología útil para tu negocio hoy", description: "Herramientas gratis o baratas que ahorran horas cada semana.", category: "Tecnología", level: "Básico", minutes: 7, format: "lectura", date: "2026-05-02", author: "Equipo Trax", gradient: "linear-gradient(135deg,#0f172a,#0ea5e9)", popularity: 68 },
-  { id: "l11", title: "Introducción a la IA para tu negocio", description: "Casos reales de cómo la IA puede vender más, atender mejor y ahorrar tiempo.", category: "Inteligencia Artificial", level: "Intermedio", minutes: 16, format: "video", date: "2026-04-28", author: "Trax Academy", gradient: "linear-gradient(135deg,#000000,#7c3aed)", popularity: 99, featured: true },
-  { id: "l12", title: "Gestión empresarial básica", description: "Los indicadores clave que todo dueño de negocio debe revisar cada semana.", category: "Gestión Empresarial", level: "Intermedio", minutes: 13, format: "lectura", date: "2026-04-20", author: "Trax Academy", gradient: "linear-gradient(135deg,#1e293b,#0d9488)", popularity: 74 },
-];
+const LEARN_STORAGE_KEY = "trax.learn.v2";
 
-type LearnProgress = {
-  saved: string[];
-  completed: string[];
-  inProgress: Record<string, number>; // 0-100
-  lastViewed?: string;
-  minutesLearned: number;
+type StoredSession = {
+  id: string;
+  createdAt: string;
+  pathId?: string;
+  topic: string;
+  level: LearnLevel;
+  minutes: LearnMinutes;
+  session: LearnSession;
+  quizScore?: number;
+  quizTotal?: number;
+  completed?: boolean;
 };
 
-const LEARN_STORAGE_KEY = "trax.learn.progress.v1";
+type FavoriteRef = { type: "book" | "case" | "news" | "trend"; sessionId: string; index: number };
 
-function useLearnProgress() {
-  const [state, setState] = useState<LearnProgress>(() => ({
-    saved: [], completed: [], inProgress: {}, minutesLearned: 0,
-  }));
+type LearnState = {
+  sessions: StoredSession[];
+  favorites: FavoriteRef[];
+  pathProgress: Record<string, string[]>; // pathId -> completed topics
+};
+
+const emptyLearnState: LearnState = { sessions: [], favorites: [], pathProgress: {} };
+
+function useLearnStore() {
+  const [state, setState] = useState<LearnState>(emptyLearnState);
 
   useEffect(() => {
     try {
       const raw = typeof window !== "undefined" ? window.localStorage.getItem(LEARN_STORAGE_KEY) : null;
-      if (raw) setState(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setState({ ...emptyLearnState, ...parsed });
+      }
     } catch { /* noop */ }
   }, []);
 
@@ -1343,340 +1349,874 @@ function useLearnProgress() {
     } catch { /* noop */ }
   }, [state]);
 
-  const toggleSaved = (id: string) =>
-    setState((s) => ({ ...s, saved: s.saved.includes(id) ? s.saved.filter((x) => x !== id) : [...s.saved, id] }));
+  const addSession = (s: StoredSession) => setState((prev) => ({ ...prev, sessions: [s, ...prev.sessions] }));
+  const updateSession = (id: string, patch: Partial<StoredSession>) =>
+    setState((prev) => ({ ...prev, sessions: prev.sessions.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
+  const removeSession = (id: string) =>
+    setState((prev) => ({ ...prev, sessions: prev.sessions.filter((x) => x.id !== id), favorites: prev.favorites.filter((f) => f.sessionId !== id) }));
 
-  const openResource = (id: string) =>
-    setState((s) => {
-      const already = s.completed.includes(id);
-      const progress = already ? 100 : Math.min(100, (s.inProgress[id] ?? 0) + 25);
-      const nextInProgress = { ...s.inProgress };
-      if (progress >= 100) {
-        delete nextInProgress[id];
-        const resource = LEARN_RESOURCES.find((r) => r.id === id);
-        return {
-          ...s,
-          lastViewed: id,
-          inProgress: nextInProgress,
-          completed: already ? s.completed : [...s.completed, id],
-          minutesLearned: s.minutesLearned + (already ? 0 : resource?.minutes ?? 0),
-        };
-      }
-      nextInProgress[id] = progress;
-      return { ...s, lastViewed: id, inProgress: nextInProgress };
-    });
-
-  const markCompleted = (id: string) =>
-    setState((s) => {
-      if (s.completed.includes(id)) return s;
-      const nextInProgress = { ...s.inProgress };
-      delete nextInProgress[id];
-      const resource = LEARN_RESOURCES.find((r) => r.id === id);
+  const toggleFavorite = (fav: FavoriteRef) =>
+    setState((prev) => {
+      const exists = prev.favorites.some((f) => f.type === fav.type && f.sessionId === fav.sessionId && f.index === fav.index);
       return {
-        ...s,
-        completed: [...s.completed, id],
-        inProgress: nextInProgress,
-        lastViewed: id,
-        minutesLearned: s.minutesLearned + (resource?.minutes ?? 0),
+        ...prev,
+        favorites: exists
+          ? prev.favorites.filter((f) => !(f.type === fav.type && f.sessionId === fav.sessionId && f.index === fav.index))
+          : [fav, ...prev.favorites],
       };
     });
 
-  return { state, toggleSaved, openResource, markCompleted };
+  const isFavorite = (fav: FavoriteRef) =>
+    state.favorites.some((f) => f.type === fav.type && f.sessionId === fav.sessionId && f.index === fav.index);
+
+  const markPathTopic = (pathId: string, topic: string) =>
+    setState((prev) => {
+      const done = new Set(prev.pathProgress[pathId] ?? []);
+      done.add(topic);
+      return { ...prev, pathProgress: { ...prev.pathProgress, [pathId]: [...done] } };
+    });
+
+  return { state, addSession, updateSession, removeSession, toggleFavorite, isFavorite, markPathTopic };
 }
 
-function LearnCard({
-  r,
-  saved,
-  onToggleSaved,
-  onOpen,
-  onShare,
-}: {
-  r: LearnResource;
-  saved: boolean;
-  onToggleSaved: () => void;
-  onOpen: () => void;
-  onShare: () => void;
-}) {
-  const dateLabel = new Date(r.date).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" });
+/* -------- helpers -------- */
+function LearnTag({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-[20px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-      <div className="relative h-[128px]" style={{ background: r.gradient }}>
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)" }} />
-        <div className="absolute top-[10px] left-[10px] flex gap-[6px]">
-          <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] font-medium text-white/85" style={{ background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.14)" }}>
-            {r.category}
-          </span>
-          <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] font-medium text-white/85" style={{ background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.14)" }}>
-            {r.level}
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={onToggleSaved}
-          className="absolute top-[10px] right-[10px] h-[30px] w-[30px] rounded-full flex items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.14)" }}
-          aria-label={saved ? "Quitar de favoritos" : "Guardar"}
-        >
-          <span className="text-[14px]" style={{ color: saved ? "#FACC15" : "rgba(255,255,255,0.75)" }}>{saved ? "★" : "☆"}</span>
-        </button>
-      </div>
-      <div className="p-[14px]">
-        <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white leading-[1.25]">{r.title}</div>
-        <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4] line-clamp-2">{r.description}</div>
-        <div className="mt-[10px] font-['Geist'] text-[11.5px] text-white/40">
-          {r.minutes} min de {r.format} · {dateLabel} · {r.author}
-        </div>
-        <div className="mt-[12px] flex items-center gap-[8px]">
-          <button type="button" onClick={onOpen} className="h-[32px] px-[16px] rounded-full bg-white text-black font-['Geist'] text-[12.5px] font-semibold active:scale-95">
-            Leer
-          </button>
-          <button type="button" onClick={onShare} className="h-[32px] px-[12px] rounded-full font-['Geist'] text-[12px] text-white/75 active:bg-white/[0.05]" style={{ border: "1px solid rgba(255,255,255,0.10)" }}>
-            Compartir
-          </button>
-        </div>
-      </div>
+    <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] font-medium text-white/80" style={{ background: "rgba(0,0,0,0.45)", border: "1px solid rgba(255,255,255,0.14)" }}>
+      {children}
+    </span>
+  );
+}
+
+function LearnCoverTag({ children }: { children: React.ReactNode }) {
+  return <LearnTag>{children}</LearnTag>;
+}
+
+function LibraryTagPill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] text-white/70" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>
+      {children}
+    </span>
+  );
+}
+
+function SessionCoverBg({ gradient, children }: { gradient: string; children?: React.ReactNode }) {
+  return (
+    <div className="relative h-[110px]" style={{ background: gradient }}>
+      <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)" }} />
+      {children}
     </div>
   );
 }
 
-function LearnView({ onBack }: { onBack: () => void }) {
-  const { state, toggleSaved, openResource, markCompleted } = useLearnProgress();
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<LearnCategory | "all">("all");
-  const [sort, setSort] = useState<"recent" | "popular">("recent");
-  const [showSaved, setShowSaved] = useState(false);
-  const [reading, setReading] = useState<LearnResource | null>(null);
+/* -------- Session Setup Sheet -------- */
+function SessionSetupSheet({
+  open, path, initialTopic, onClose, onGenerate, loading, error,
+}: {
+  open: boolean;
+  path?: LearningPath;
+  initialTopic?: string;
+  onClose: () => void;
+  onGenerate: (topic: string, level: LearnLevel, minutes: LearnMinutes) => void;
+  loading: boolean;
+  error?: string;
+}) {
+  const [topic, setTopic] = useState(initialTopic ?? path?.topics[0] ?? "");
+  const [level, setLevel] = useState<LearnLevel>(path?.level ?? "Básico");
+  const [minutes, setMinutes] = useState<LearnMinutes>(45);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    let arr = LEARN_RESOURCES.filter((r) => (category === "all" ? true : r.category === category));
-    if (q) arr = arr.filter((r) => r.title.toLowerCase().includes(q) || r.description.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
-    if (showSaved) arr = arr.filter((r) => state.saved.includes(r.id));
-    arr = [...arr].sort((a, b) => sort === "recent" ? b.date.localeCompare(a.date) : b.popularity - a.popularity);
-    return arr;
-  }, [query, category, sort, showSaved, state.saved]);
+  useEffect(() => {
+    setTopic(initialTopic ?? path?.topics[0] ?? "");
+    setLevel(path?.level ?? "Básico");
+    setMinutes(45);
+  }, [initialTopic, path, open]);
 
-  const featured = useMemo(() => LEARN_RESOURCES.filter((r) => r.featured).slice(0, 5), []);
-  const inProgressList = useMemo(
-    () => Object.entries(state.inProgress).map(([id, pct]) => ({ r: LEARN_RESOURCES.find((x) => x.id === id)!, pct })).filter((x) => x.r),
-    [state.inProgress],
+  return (
+    <Sheet
+      open={open}
+      onClose={loading ? () => {} : onClose}
+      title={path ? `Sesión · ${path.name}` : "Nueva sesión de aprendizaje"}
+      footer={
+        <>
+          <GhostButton onClick={onClose} disabled={loading}>Cancelar</GhostButton>
+          <PrimaryButton onClick={() => onGenerate(topic.trim(), level, minutes)} disabled={loading || !topic.trim()}>
+            {loading ? "Generando…" : "Generar sesión"}
+          </PrimaryButton>
+        </>
+      }
+    >
+      {path && (
+        <Field label="Tema del path">
+          <select
+            value={topic}
+            onChange={(e) => setTopic(e.target.value)}
+            className="w-full h-[38px] px-[10px] rounded-[10px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white"
+            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            {path.topics.map((t) => (
+              <option key={t} value={t} className="bg-black">{t}</option>
+            ))}
+          </select>
+        </Field>
+      )}
+      {!path && (
+        <Field label="Tema libre">
+          <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar con proveedores" />
+        </Field>
+      )}
+      <Field label="Nivel">
+        <div className="flex gap-[6px]">
+          {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((l) => (
+            <button key={l} type="button" onClick={() => setLevel(l)}
+              className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white"
+              style={{
+                background: level === l ? "rgba(255,255,255,0.10)" : "transparent",
+                border: `1px solid ${level === l ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+              }}
+            >{l}</button>
+          ))}
+        </div>
+      </Field>
+      <Field label="Duración">
+        <div className="flex gap-[6px]">
+          {([30, 45, 60] as LearnMinutes[]).map((m) => (
+            <button key={m} type="button" onClick={() => setMinutes(m)}
+              className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white tabular-nums"
+              style={{
+                background: minutes === m ? "rgba(255,255,255,0.10)" : "transparent",
+                border: `1px solid ${minutes === m ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+              }}
+            >{m} min</button>
+          ))}
+        </div>
+      </Field>
+      <div className="font-['Geist'] text-[12px] text-white/45 leading-[1.5]">
+        La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable.
+      </div>
+      {loading && (
+        <div className="flex items-center gap-[10px] rounded-[12px] p-[12px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <Loader2 className="h-[16px] w-[16px] text-white/70 animate-spin" strokeWidth={2} />
+          <span className="font-['Geist'] text-[12.5px] text-white/70">Investigando fuentes y armando tu sesión…</span>
+        </div>
+      )}
+      {error && !loading && (
+        <div className="rounded-[12px] p-[12px] font-['Geist'] text-[12.5px] text-[#F87171]" style={{ background: "rgba(248,113,113,0.10)", border: "1px solid rgba(248,113,113,0.25)" }}>
+          {error}
+        </div>
+      )}
+    </Sheet>
   );
-  const lastResource = state.lastViewed ? LEARN_RESOURCES.find((r) => r.id === state.lastViewed) : undefined;
-  const topCategory = useMemo(() => {
-    const counts = new Map<LearnCategory, number>();
-    state.completed.forEach((id) => {
-      const r = LEARN_RESOURCES.find((x) => x.id === id);
-      if (r) counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
-    });
-    let top: LearnCategory | undefined; let max = 0;
-    counts.forEach((v, k) => { if (v > max) { top = k; max = v; } });
-    return top;
-  }, [state.completed]);
+}
 
-  const share = (r: LearnResource) => {
-    const url = typeof window !== "undefined" ? window.location.href : "";
-    const text = `${r.title} — Trax Aprender`;
-    if (typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title: r.title, text, url }).catch(() => {});
-    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(`${text} ${url}`).catch(() => {});
-    }
+/* -------- Session Runner -------- */
+function SessionRunner({
+  stored, isFav, toggleFav, onClose, onComplete, onRemove,
+}: {
+  stored: StoredSession;
+  isFav: (f: FavoriteRef) => boolean;
+  toggleFav: (f: FavoriteRef) => void;
+  onClose: () => void;
+  onComplete: (score: number, total: number) => void;
+  onRemove: () => void;
+}) {
+  const { session } = stored;
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [submitted, setSubmitted] = useState(!!stored.completed);
+  const score = session.quiz.reduce((s, q, i) => s + (answers[i] === q.correctIndex ? 1 : 0), 0);
+  const total = session.quiz.length;
+
+  const submitQuiz = () => {
+    setSubmitted(true);
+    onComplete(score, total);
   };
+
+  const path = LEARNING_PATHS.find((p) => p.id === stored.pathId);
 
   return (
     <SubScreen>
-      <SubHeader eyebrow="Centro de Aprendizaje" title="Aprender" onBack={onBack} />
+      <SubHeader
+        eyebrow={path ? path.name : "Sesión de IA"}
+        title={session.title}
+        onBack={onClose}
+        action={
+          <button type="button" onClick={onRemove} className="h-[32px] w-[32px] rounded-full flex items-center justify-center active:bg-white/[0.06]" aria-label="Eliminar sesión">
+            <Trash2 className="h-[14px] w-[14px] text-white/45" strokeWidth={1.6} />
+          </button>
+        }
+      />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
-        <p className="font-['Geist'] text-[13px] text-white/50 leading-[1.5] -mt-[4px]">
-          Aprende nuevas habilidades para hacer crecer tu negocio.
-        </p>
-
-        <div className="relative">
-          <Search className="absolute left-[12px] top-1/2 -translate-y-1/2 h-[14px] w-[14px] text-white/40" strokeWidth={1.8} />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar cursos, artículos o guías..."
-            className="w-full h-[40px] pl-[34px] pr-[12px] rounded-[12px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30"
-            style={{ border: "1px solid rgba(255,255,255,0.06)" }}
-          />
+      <div className="px-[20px] pt-[6px] flex flex-col gap-[18px] pb-[40px]">
+        <div className="rounded-[18px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <SessionCoverBg gradient={path?.gradient ?? "linear-gradient(135deg,#0f172a,#3b0764)"}>
+            <div className="absolute top-[10px] left-[10px] flex gap-[6px]">
+              <LearnCoverTag>{stored.level}</LearnCoverTag>
+              <LearnCoverTag>{stored.minutes} min</LearnCoverTag>
+              {path && <LearnCoverTag>{path.emoji} {path.name}</LearnCoverTag>}
+            </div>
+          </SessionCoverBg>
+          <div className="p-[16px]">
+            <div className="font-['Geist'] text-[12px] uppercase tracking-[1.4px] text-white/45">1 · Introducción</div>
+            <p className="mt-[8px] font-['Geist'] text-[14px] text-white/85 leading-[1.6]">{session.intro}</p>
+          </div>
         </div>
 
-        {/* CATEGORIES */}
-        <div className="flex items-center gap-[6px] overflow-x-auto -mx-[4px] px-[4px]">
-          {(["all", ...LEARN_CATEGORIES] as const).map((c) => (
+        <SectionBlock icon={<Lightbulb className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="2 · Conceptos fundamentales">
+          <div className="flex flex-col gap-[10px]">
+            {session.concepts.map((c, i) => (
+              <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white">{c.title}</div>
+                <p className="mt-[6px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{c.description}</p>
+              </div>
+            ))}
+          </div>
+        </SectionBlock>
+
+        <SectionBlock icon={<BookOpen className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="3 · Ideas de libros">
+          <div className="flex flex-col gap-[10px]">
+            {session.books.map((b, i) => {
+              const fav: FavoriteRef = { type: "book", sessionId: stored.id, index: i };
+              return (
+                <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-start justify-between gap-[10px]">
+                    <div className="min-w-0">
+                      <div className="font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white">{b.title}</div>
+                      <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45">{b.author}</div>
+                    </div>
+                    <FavStar active={isFav(fav)} onClick={() => toggleFav(fav)} />
+                  </div>
+                  <p className="mt-[8px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{b.idea}</p>
+                </div>
+              );
+            })}
+          </div>
+        </SectionBlock>
+
+        <SectionBlock icon={<Building2 className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="4 · Casos reales">
+          <div className="flex flex-col gap-[10px]">
+            {session.cases.map((c, i) => {
+              const fav: FavoriteRef = { type: "case", sessionId: stored.id, index: i };
+              return (
+                <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-start justify-between gap-[10px]">
+                    <div className="font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white">{c.company}</div>
+                    <FavStar active={isFav(fav)} onClick={() => toggleFav(fav)} />
+                  </div>
+                  <p className="mt-[6px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{c.story}</p>
+                  <p className="mt-[8px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.5]"><span className="text-white/40">Moraleja: </span>{c.lesson}</p>
+                </div>
+              );
+            })}
+          </div>
+        </SectionBlock>
+
+        <SectionBlock icon={<Newspaper className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="5 · Noticias recientes">
+          <div className="flex flex-col gap-[10px]">
+            {session.news.map((n, i) => {
+              const fav: FavoriteRef = { type: "news", sessionId: stored.id, index: i };
+              return (
+                <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-start justify-between gap-[10px]">
+                    <div className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white leading-[1.3]">{n.headline}</div>
+                    <FavStar active={isFav(fav)} onClick={() => toggleFav(fav)} />
+                  </div>
+                  <p className="mt-[6px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{n.summary}</p>
+                  <div className="mt-[8px] flex items-center gap-[6px]">
+                    <LibraryTagPill>{n.source}</LibraryTagPill>
+                    <LibraryTagPill>{n.dateHint}</LibraryTagPill>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </SectionBlock>
+
+        <SectionBlock icon={<TrendingUp className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="6 · Tendencias">
+          <div className="flex flex-col gap-[10px]">
+            {session.trends.map((t, i) => {
+              const fav: FavoriteRef = { type: "trend", sessionId: stored.id, index: i };
+              return (
+                <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-start justify-between gap-[10px]">
+                    <div className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white">{t.title}</div>
+                    <FavStar active={isFav(fav)} onClick={() => toggleFav(fav)} />
+                  </div>
+                  <p className="mt-[6px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{t.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </SectionBlock>
+
+        <SectionBlock icon={<Sparkles className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="7 · Resumen">
+          <div className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <p className="font-['Geist'] text-[13.5px] text-white/80 leading-[1.6] whitespace-pre-line">{session.summary}</p>
+          </div>
+        </SectionBlock>
+
+        <SectionBlock icon={<Target className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="8 · Ejercicio práctico">
+          <div className="rounded-[14px] p-[14px]" style={{ background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.20)" }}>
+            <p className="font-['Geist'] text-[13.5px] text-white leading-[1.6] whitespace-pre-line">{session.exercise}</p>
+          </div>
+        </SectionBlock>
+
+        <SectionBlock icon={<GraduationCap className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow={`9 · Evaluación · ${total} preguntas`}>
+          <div className="flex flex-col gap-[10px]">
+            {session.quiz.map((q, qi) => {
+              const chosen = answers[qi];
+              const isCorrect = submitted && chosen === q.correctIndex;
+              return (
+                <div key={qi} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="font-['Geist'] text-[13.5px] text-white leading-[1.4]">{qi + 1}. {q.question}</div>
+                  <div className="mt-[8px] flex flex-col gap-[6px]">
+                    {q.options.map((opt, oi) => {
+                      const active = chosen === oi;
+                      const showCorrect = submitted && oi === q.correctIndex;
+                      const showWrong = submitted && active && oi !== q.correctIndex;
+                      return (
+                        <button
+                          key={oi}
+                          type="button"
+                          disabled={submitted}
+                          onClick={() => setAnswers((a) => ({ ...a, [qi]: oi }))}
+                          className="text-left rounded-[10px] px-[12px] py-[10px] font-['Geist'] text-[12.5px]"
+                          style={{
+                            background: showCorrect ? "rgba(74,222,128,0.12)" : showWrong ? "rgba(248,113,113,0.12)" : active ? "rgba(255,255,255,0.08)" : "transparent",
+                            border: `1px solid ${showCorrect ? "rgba(74,222,128,0.35)" : showWrong ? "rgba(248,113,113,0.35)" : active ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.08)"}`,
+                            color: showCorrect ? "#4ADE80" : showWrong ? "#F87171" : "white",
+                          }}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {submitted && !isCorrect && (
+                    <div className="mt-[8px] font-['Geist'] text-[12px] text-white/55 leading-[1.5]">
+                      <span className="text-white/40">Explicación: </span>{q.explanation}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {!submitted ? (
             <button
-              key={c}
               type="button"
-              onClick={() => setCategory(c as LearnCategory | "all")}
-              className="shrink-0 h-[30px] px-[13px] rounded-full font-['Geist'] text-[11.5px] font-medium text-white"
+              onClick={submitQuiz}
+              disabled={Object.keys(answers).length < total}
+              className="mt-[14px] h-[42px] w-full rounded-full bg-white text-black font-['Geist'] text-[13.5px] font-semibold disabled:opacity-40 active:scale-[0.98]"
+            >
+              Enviar respuestas
+            </button>
+          ) : (
+            <div className="mt-[14px] rounded-[14px] p-[14px] flex items-center justify-between" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div>
+                <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Puntuación</div>
+                <div className="font-['Bai_Jamjuree'] text-[26px] font-semibold text-white tabular-nums">{score} / {total}</div>
+              </div>
+              <div className="font-['Geist'] text-[12.5px] text-white/55 max-w-[55%] text-right leading-[1.5]">
+                {score === total ? "¡Perfecto! Aplica el ejercicio esta semana." : score >= Math.ceil(total * 0.7) ? "Muy bien. Repasa el resumen y practica lo aprendido." : "Repasa los conceptos y las ideas de libros antes de aplicar."}
+              </div>
+            </div>
+          )}
+        </SectionBlock>
+
+        {session.furtherReading.length > 0 && (
+          <SectionBlock icon={<BookOpen className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="Para profundizar">
+            <ul className="flex flex-col gap-[6px]">
+              {session.furtherReading.map((f, i) => (
+                <li key={i} className="font-['Geist'] text-[13px] text-white/70 leading-[1.5]">• {f}</li>
+              ))}
+            </ul>
+          </SectionBlock>
+        )}
+      </div>
+    </SubScreen>
+  );
+}
+
+function SectionBlock({ eyebrow, icon, children }: { eyebrow: string; icon?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center gap-[8px] px-[6px] pb-[10px]">
+        {icon}
+        <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.6px] text-white/45">{eyebrow}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function FavStar({ active, onClick }: { active: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="h-[26px] w-[26px] rounded-full flex items-center justify-center shrink-0" aria-label={active ? "Quitar de favoritos" : "Guardar en favoritos"}>
+      <Star className="h-[15px] w-[15px]" strokeWidth={1.8} style={{ color: active ? "#FACC15" : "rgba(255,255,255,0.55)", fill: active ? "#FACC15" : "transparent" }} />
+    </button>
+  );
+}
+
+/* -------- Path Detail -------- */
+function PathDetail({
+  path, completedTopics, onBack, onStartTopic,
+}: {
+  path: LearningPath;
+  completedTopics: string[];
+  onBack: () => void;
+  onStartTopic: (topic: string) => void;
+}) {
+  const done = new Set(completedTopics);
+  const progress = path.topics.length > 0 ? Math.round((done.size / path.topics.length) * 100) : 0;
+  return (
+    <SubScreen>
+      <SubHeader eyebrow="Ruta de aprendizaje" title={`${path.emoji} ${path.name}`} onBack={onBack} />
+      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+        <div className="rounded-[18px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="h-[110px]" style={{ background: path.gradient }} />
+          <div className="p-[16px]">
+            <p className="font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{path.description}</p>
+            <div className="mt-[10px] flex items-center gap-[6px] flex-wrap">
+              <LibraryTagPill>Nivel {path.level}</LibraryTagPill>
+              <LibraryTagPill>{path.topics.length} lecciones</LibraryTagPill>
+              <LibraryTagPill>~{path.totalMinutes} min</LibraryTagPill>
+            </div>
+            <div className="mt-[12px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
+              <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
+            </div>
+            <div className="mt-[6px] font-['Geist'] text-[11.5px] text-white/45 tabular-nums">{progress}% completado · {done.size} de {path.topics.length}</div>
+          </div>
+        </div>
+
+        <SectionLabel>Lecciones</SectionLabel>
+        <ListGroup>
+          {path.topics.map((t, i) => {
+            const isDone = done.has(t);
+            return (
+              <div key={t}>
+                <button type="button" onClick={() => onStartTopic(t)} className="w-full flex items-center gap-[14px] px-[16px] py-[14px] text-left active:bg-white/[0.03]">
+                  <div className="h-[28px] w-[28px] rounded-full flex items-center justify-center shrink-0" style={{ background: isDone ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.06)" }}>
+                    {isDone ? <CheckCircle2 className="h-[14px] w-[14px] text-[#4ADE80]" strokeWidth={2} /> : <PlayCircle className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-['Geist'] text-[14.5px] text-white leading-[1.3]">{t}</div>
+                    <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45">Sesión IA · 30-60 min</div>
+                  </div>
+                  <ArrowRight className="h-[15px] w-[15px] text-white/35" strokeWidth={1.6} />
+                </button>
+                {i < path.topics.length - 1 && <div className="h-px bg-white/[0.05] ml-[58px]" />}
+              </div>
+            );
+          })}
+        </ListGroup>
+      </div>
+    </SubScreen>
+  );
+}
+
+/* -------- Main LearnView -------- */
+type LearnTab = "rutas" | "biblioteca" | "historial" | "favoritos";
+type LibraryTab = "libros" | "casos" | "noticias" | "tendencias";
+
+function LearnView({ onBack }: { onBack: () => void }) {
+  const store = useLearnStore();
+  const generate = useServerFn(generateLearnSession);
+  const [tab, setTab] = useState<LearnTab>("rutas");
+  const [libTab, setLibTab] = useState<LibraryTab>("libros");
+  const [query, setQuery] = useState("");
+  const [pathOpen, setPathOpen] = useState<LearningPath | null>(null);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [setupPath, setSetupPath] = useState<LearningPath | undefined>(undefined);
+  const [setupTopic, setSetupTopic] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+  const [running, setRunning] = useState<StoredSession | null>(null);
+
+  const openSetup = (path?: LearningPath, topic?: string) => {
+    setSetupPath(path);
+    setSetupTopic(topic);
+    setError(undefined);
+    setSetupOpen(true);
+  };
+
+  const doGenerate = async (topic: string, level: LearnLevel, minutes: LearnMinutes) => {
+    setLoading(true);
+    setError(undefined);
+    try {
+      const previousTopics = store.state.sessions.slice(0, 6).map((s) => s.topic);
+      const session = await generate({ data: { topic, level, minutes, previousTopics } });
+      const stored: StoredSession = {
+        id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+        createdAt: new Date().toISOString(),
+        pathId: setupPath?.id,
+        topic,
+        level,
+        minutes,
+        session,
+      };
+      store.addSession(stored);
+      setSetupOpen(false);
+      setRunning(stored);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo generar la sesión. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const completeRunning = (score: number, total: number) => {
+    if (!running) return;
+    store.updateSession(running.id, { quizScore: score, quizTotal: total, completed: true });
+    if (running.pathId) store.markPathTopic(running.pathId, running.topic);
+    setRunning((r) => (r ? { ...r, quizScore: score, quizTotal: total, completed: true } : r));
+  };
+
+  const removeRunning = () => {
+    if (!running) return;
+    store.removeSession(running.id);
+    setRunning(null);
+  };
+
+  if (running) {
+    return (
+      <SessionRunner
+        stored={running}
+        isFav={store.isFavorite}
+        toggleFav={store.toggleFavorite}
+        onClose={() => setRunning(null)}
+        onComplete={completeRunning}
+        onRemove={removeRunning}
+      />
+    );
+  }
+
+  if (pathOpen) {
+    return (
+      <PathDetail
+        path={pathOpen}
+        completedTopics={store.state.pathProgress[pathOpen.id] ?? []}
+        onBack={() => setPathOpen(null)}
+        onStartTopic={(t) => openSetup(pathOpen, t)}
+      />
+    );
+  }
+
+  const totalMinutes = store.state.sessions.reduce((s, x) => s + (x.completed ? x.minutes : 0), 0);
+  const completedCount = store.state.sessions.filter((s) => s.completed).length;
+
+  return (
+    <SubScreen>
+      <SubHeader
+        eyebrow="Centro Inteligente de Aprendizaje"
+        title="Aprender"
+        onBack={onBack}
+        action={
+          <button
+            type="button"
+            onClick={() => openSetup(undefined, undefined)}
+            className="h-[36px] px-[13px] rounded-full bg-white text-black font-['Geist'] text-[12px] font-semibold flex items-center gap-[6px] active:scale-95"
+          >
+            <Sparkles className="h-[13px] w-[13px]" strokeWidth={2} />
+            Nueva sesión
+          </button>
+        }
+      />
+
+      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+        <p className="font-['Geist'] text-[13px] text-white/50 leading-[1.5] -mt-[4px]">
+          Aprende con sesiones de 30 a 60 minutos creadas por IA con base en libros, casos reales, noticias y tendencias verificadas.
+        </p>
+
+        <div className="rounded-[18px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="grid grid-cols-3 gap-[8px]">
+            <Stat label="Completadas" value={`${completedCount}`} />
+            <Stat label="Minutos" value={`${totalMinutes}`} />
+            <Stat label="Sesiones" value={`${store.state.sessions.length}`} />
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex items-center gap-[6px] overflow-x-auto -mx-[4px] px-[4px]">
+          {(
+            [
+              { id: "rutas", label: "Rutas", icon: Compass },
+              { id: "biblioteca", label: "Biblioteca", icon: BookOpen },
+              { id: "historial", label: "Historial", icon: PlayCircle },
+              { id: "favoritos", label: "Favoritos", icon: Star },
+            ] as { id: LearnTab; label: string; icon: typeof Compass }[]
+          ).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className="shrink-0 h-[32px] px-[13px] rounded-full font-['Geist'] text-[12px] font-medium flex items-center gap-[6px] text-white"
               style={{
-                background: category === c ? "rgba(255,255,255,0.10)" : "transparent",
-                border: `1px solid ${category === c ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+                background: tab === id ? "rgba(255,255,255,0.10)" : "transparent",
+                border: `1px solid ${tab === id ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
               }}
             >
-              {c === "all" ? "Todas" : c}
+              <Icon className="h-[13px] w-[13px]" strokeWidth={1.8} />
+              {label}
             </button>
           ))}
         </div>
 
-        {/* PROGRESS SUMMARY */}
-        <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Tu progreso</div>
-          <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
-            <Stat label="Completados" value={`${state.completed.length}`} />
-            <Stat label="En progreso" value={`${inProgressList.length}`} />
-            <Stat label="Minutos" value={`${state.minutesLearned}`} />
-            <Stat label="Categoría top" value={topCategory ?? "—"} />
-          </div>
-          {lastResource && (
-            <div className="mt-[12px] font-['Geist'] text-[11.5px] text-white/45">
-              Último visto: <span className="text-white/70">{lastResource.title}</span>
-            </div>
-          )}
-        </div>
-
-        {/* CONTINUAR APRENDIENDO */}
-        {inProgressList.length > 0 && (
-          <div>
-            <SectionLabel>Continuar aprendiendo</SectionLabel>
-            <div className="flex flex-col gap-[10px]">
-              {inProgressList.map(({ r, pct }) => (
-                <div key={r.id} className="rounded-[16px] overflow-hidden flex" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="w-[80px] shrink-0" style={{ background: r.gradient }} />
-                  <div className="flex-1 p-[12px] min-w-0">
-                    <div className="font-['Geist'] text-[13.5px] text-white truncate">{r.title}</div>
-                    <div className="mt-[8px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-                      <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
+        {tab === "rutas" && (
+          <div className="flex flex-col gap-[14px]">
+            <SectionLabel>Rutas de aprendizaje</SectionLabel>
+            <div className="grid grid-cols-1 gap-[12px]">
+              {LEARNING_PATHS.map((p) => {
+                const done = store.state.pathProgress[p.id]?.length ?? 0;
+                const pct = p.topics.length > 0 ? Math.round((done / p.topics.length) * 100) : 0;
+                return (
+                  <button key={p.id} type="button" onClick={() => setPathOpen(p)}
+                    className="rounded-[18px] overflow-hidden text-left active:scale-[0.99] transition-transform"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+                  >
+                    <div className="h-[86px] relative" style={{ background: p.gradient }}>
+                      <div className="absolute top-[10px] left-[12px] font-['Bai_Jamjuree'] text-[28px]">{p.emoji}</div>
+                      <div className="absolute top-[10px] right-[10px] flex gap-[6px]">
+                        <LearnCoverTag>{p.level}</LearnCoverTag>
+                      </div>
                     </div>
-                    <div className="mt-[6px] flex items-center justify-between">
-                      <span className="font-['Geist'] text-[11px] text-white/45 tabular-nums">{pct}% completado</span>
-                      <button type="button" onClick={() => { openResource(r.id); setReading(r); }} className="h-[26px] px-[12px] rounded-full bg-white text-black font-['Geist'] text-[11.5px] font-semibold active:scale-95">
-                        Continuar
-                      </button>
+                    <div className="p-[14px]">
+                      <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white leading-[1.25]">{p.name}</div>
+                      <div className="mt-[4px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4] line-clamp-2">{p.description}</div>
+                      <div className="mt-[10px] flex items-center justify-between">
+                        <div className="font-['Geist'] text-[11.5px] text-white/45">{p.topics.length} lecciones · ~{p.totalMinutes} min</div>
+                        <div className="font-['Geist'] text-[11.5px] text-white/60 tabular-nums">{pct}%</div>
+                      </div>
+                      <div className="mt-[6px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
+                        <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* RECOMENDADOS */}
-        {!showSaved && category === "all" && !query && (
-          <div>
-            <SectionLabel>Recomendados para ti</SectionLabel>
-            <div className="flex gap-[12px] overflow-x-auto -mx-[20px] px-[20px] pb-[4px]">
-              {featured.map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => { openResource(r.id); setReading(r); }}
-                  className="shrink-0 w-[220px] rounded-[18px] overflow-hidden text-left"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-                >
-                  <div className="h-[92px]" style={{ background: r.gradient }} />
-                  <div className="p-[12px]">
-                    <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.2px] text-white/45">{r.category}</div>
-                    <div className="mt-[4px] font-['Bai_Jamjuree'] text-[14px] font-semibold text-white leading-[1.25] line-clamp-2">{r.title}</div>
-                    <div className="mt-[6px] font-['Geist'] text-[11px] text-white/45">{r.minutes} min · {r.level}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+        {tab === "biblioteca" && (
+          <BibliotecaView store={store} libTab={libTab} setLibTab={setLibTab} query={query} setQuery={setQuery} onOpen={setRunning} />
         )}
 
-        {/* CONTROLS: sort / saved toggle */}
-        <div className="flex items-center gap-[8px]">
-          <button
-            type="button"
-            onClick={() => setSort(sort === "recent" ? "popular" : "recent")}
-            className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] text-white/75"
-            style={{ border: "1px solid rgba(255,255,255,0.10)" }}
-          >
-            Orden: {sort === "recent" ? "Más recientes" : "Más populares"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowSaved((v) => !v)}
-            className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px]"
-            style={{
-              border: `1px solid ${showSaved ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.10)"}`,
-              background: showSaved ? "rgba(255,255,255,0.10)" : "transparent",
-              color: showSaved ? "white" : "rgba(255,255,255,0.75)",
-            }}
-          >
-            {showSaved ? "★ Guardados" : "☆ Guardados"} {state.saved.length > 0 && `(${state.saved.length})`}
-          </button>
-        </div>
+        {tab === "historial" && (
+          <HistorialView sessions={store.state.sessions} onOpen={setRunning} onRemove={store.removeSession} />
+        )}
 
-        {/* LIST */}
-        <div>
-          <SectionLabel>{showSaved ? "Guardados" : "Recursos"}</SectionLabel>
-          {filtered.length === 0 ? (
-            <div className="py-[36px] text-center font-['Geist'] text-[13px] text-white/40">
-              {showSaved ? "Aún no tienes recursos guardados." : "Sin resultados para tu búsqueda."}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-[14px]">
-              {filtered.map((r) => (
-                <LearnCard
-                  key={r.id}
-                  r={r}
-                  saved={state.saved.includes(r.id)}
-                  onToggleSaved={() => toggleSaved(r.id)}
-                  onOpen={() => { openResource(r.id); setReading(r); }}
-                  onShare={() => share(r)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        {tab === "favoritos" && (
+          <FavoritosView store={store} onOpen={setRunning} />
+        )}
       </div>
 
-      {/* READER SHEET */}
-      <Sheet
-        open={!!reading}
-        onClose={() => setReading(null)}
-        title={reading?.title ?? ""}
-        footer={
-          reading && (
-            <>
-              <GhostButton onClick={() => reading && share(reading)}>Compartir</GhostButton>
-              <PrimaryButton
-                onClick={() => {
-                  if (reading) markCompleted(reading.id);
-                  setReading(null);
-                }}
-              >
-                {reading && state.completed.includes(reading.id) ? "Cerrar" : "Marcar completado"}
-              </PrimaryButton>
-            </>
-          )
-        }
-      >
-        {reading && (
-          <>
-            <div className="h-[120px] rounded-[14px]" style={{ background: reading.gradient }} />
-            <div className="flex items-center gap-[6px] flex-wrap">
-              <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] text-white/80" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>{reading.category}</span>
-              <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] text-white/80" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>{reading.level}</span>
-              <span className="h-[22px] px-[9px] rounded-full flex items-center font-['Geist'] text-[10.5px] text-white/80" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}>{reading.minutes} min · {reading.format}</span>
-            </div>
-            <p className="font-['Geist'] text-[13.5px] text-white/70 leading-[1.55]">{reading.description}</p>
-            <p className="font-['Geist'] text-[13px] text-white/55 leading-[1.55]">
-              Este recurso te guía paso a paso con ejemplos prácticos que puedes aplicar en tu negocio desde hoy.
-              Toma notas, pruébalo esta semana y vuelve para marcarlo como completado.
-            </p>
-            <div className="font-['Geist'] text-[11.5px] text-white/40">
-              {new Date(reading.date).toLocaleDateString("es-PE", { day: "numeric", month: "long", year: "numeric" })} · {reading.author}
-            </div>
-          </>
-        )}
-      </Sheet>
+      <SessionSetupSheet
+        open={setupOpen}
+        path={setupPath}
+        initialTopic={setupTopic}
+        onClose={() => { if (!loading) setSetupOpen(false); }}
+        onGenerate={doGenerate}
+        loading={loading}
+        error={error}
+      />
     </SubScreen>
+  );
+}
+
+function BibliotecaView({
+  store, libTab, setLibTab, query, setQuery, onOpen,
+}: {
+  store: ReturnType<typeof useLearnStore>;
+  libTab: LibraryTab;
+  setLibTab: (t: LibraryTab) => void;
+  query: string;
+  setQuery: (q: string) => void;
+  onOpen: (s: StoredSession) => void;
+}) {
+  const items = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const out: { key: string; title: string; subtitle: string; body: string; source?: string; sessionId: string; fav: FavoriteRef }[] = [];
+    for (const s of store.state.sessions) {
+      if (libTab === "libros") {
+        s.session.books.forEach((b, i) => out.push({
+          key: `${s.id}-b-${i}`, title: b.title, subtitle: b.author, body: b.idea, sessionId: s.id,
+          fav: { type: "book", sessionId: s.id, index: i },
+        }));
+      } else if (libTab === "casos") {
+        s.session.cases.forEach((c, i) => out.push({
+          key: `${s.id}-c-${i}`, title: c.company, subtitle: s.topic, body: `${c.story}\n\nMoraleja: ${c.lesson}`, sessionId: s.id,
+          fav: { type: "case", sessionId: s.id, index: i },
+        }));
+      } else if (libTab === "noticias") {
+        s.session.news.forEach((n, i) => out.push({
+          key: `${s.id}-n-${i}`, title: n.headline, subtitle: `${n.source} · ${n.dateHint}`, body: n.summary, source: n.source, sessionId: s.id,
+          fav: { type: "news", sessionId: s.id, index: i },
+        }));
+      } else if (libTab === "tendencias") {
+        s.session.trends.forEach((t, i) => out.push({
+          key: `${s.id}-t-${i}`, title: t.title, subtitle: s.topic, body: t.description, sessionId: s.id,
+          fav: { type: "trend", sessionId: s.id, index: i },
+        }));
+      }
+    }
+    return q
+      ? out.filter((it) => it.title.toLowerCase().includes(q) || it.body.toLowerCase().includes(q) || it.subtitle.toLowerCase().includes(q))
+      : out;
+  }, [store.state.sessions, libTab, query]);
+
+  return (
+    <div className="flex flex-col gap-[12px]">
+      <div className="relative">
+        <Search className="absolute left-[12px] top-1/2 -translate-y-1/2 h-[14px] w-[14px] text-white/40" strokeWidth={1.8} />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar en tu biblioteca…"
+          className="w-full h-[38px] pl-[34px] pr-[12px] rounded-[12px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30"
+          style={{ border: "1px solid rgba(255,255,255,0.06)" }}
+        />
+      </div>
+      <div className="flex items-center gap-[6px] overflow-x-auto -mx-[4px] px-[4px]">
+        {(
+          [
+            { id: "libros", label: "Libros" },
+            { id: "casos", label: "Casos" },
+            { id: "noticias", label: "Noticias" },
+            { id: "tendencias", label: "Tendencias" },
+          ] as { id: LibraryTab; label: string }[]
+        ).map(({ id, label }) => (
+          <button key={id} type="button" onClick={() => setLibTab(id)}
+            className="shrink-0 h-[28px] px-[12px] rounded-full font-['Geist'] text-[11.5px] text-white"
+            style={{
+              background: libTab === id ? "rgba(255,255,255,0.10)" : "transparent",
+              border: `1px solid ${libTab === id ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+            }}
+          >{label}</button>
+        ))}
+      </div>
+      {items.length === 0 ? (
+        <div className="py-[36px] text-center font-['Geist'] text-[13px] text-white/40 leading-[1.5]">
+          Aún no hay contenido aquí.<br/>Genera una sesión para poblar tu biblioteca con libros, casos y noticias.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-[10px]">
+          {items.map((it) => (
+            <div key={it.key} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="flex items-start justify-between gap-[10px]">
+                <div className="min-w-0 flex-1">
+                  <div className="font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white leading-[1.3]">{it.title}</div>
+                  <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45">{it.subtitle}</div>
+                </div>
+                <FavStar active={store.isFavorite(it.fav)} onClick={() => store.toggleFavorite(it.fav)} />
+              </div>
+              <p className="mt-[8px] font-['Geist'] text-[12.5px] text-white/70 leading-[1.5] whitespace-pre-line line-clamp-4">{it.body}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  const s = store.state.sessions.find((x) => x.id === it.sessionId);
+                  if (s) onOpen(s);
+                }}
+                className="mt-[10px] font-['Geist'] text-[12px] text-white/75 flex items-center gap-[4px]"
+              >
+                Abrir sesión completa <ArrowRight className="h-[12px] w-[12px]" strokeWidth={1.8} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HistorialView({
+  sessions, onOpen, onRemove,
+}: {
+  sessions: StoredSession[];
+  onOpen: (s: StoredSession) => void;
+  onRemove: (id: string) => void;
+}) {
+  if (sessions.length === 0) {
+    return (
+      <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40 leading-[1.5]">
+        Aún no has generado sesiones.<br/>Toca "Nueva sesión" o elige una ruta para empezar.
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-[10px]">
+      {sessions.map((s) => {
+        const path = LEARNING_PATHS.find((p) => p.id === s.pathId);
+        const date = new Date(s.createdAt).toLocaleDateString("es-PE", { day: "numeric", month: "short" });
+        return (
+          <div key={s.id} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="flex items-start justify-between gap-[10px]">
+              <button type="button" onClick={() => onOpen(s)} className="text-left flex-1 min-w-0">
+                <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white leading-[1.3]">{s.session.title}</div>
+                <div className="mt-[4px] flex items-center gap-[6px] flex-wrap">
+                  <LibraryTagPill>{s.level}</LibraryTagPill>
+                  <LibraryTagPill>{s.minutes} min</LibraryTagPill>
+                  {path && <LibraryTagPill>{path.emoji} {path.name}</LibraryTagPill>}
+                  <LibraryTagPill>{date}</LibraryTagPill>
+                </div>
+                {s.completed && typeof s.quizScore === "number" && (
+                  <div className="mt-[6px] font-['Geist'] text-[11.5px] text-[#4ADE80]">Completada · {s.quizScore}/{s.quizTotal}</div>
+                )}
+              </button>
+              <button type="button" onClick={() => onRemove(s.id)} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]" aria-label="Eliminar">
+                <Trash2 className="h-[14px] w-[14px] text-white/45" strokeWidth={1.6} />
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function FavoritosView({
+  store, onOpen,
+}: {
+  store: ReturnType<typeof useLearnStore>;
+  onOpen: (s: StoredSession) => void;
+}) {
+  const items = store.state.favorites.map((f) => {
+    const s = store.state.sessions.find((x) => x.id === f.sessionId);
+    if (!s) return null;
+    let title = ""; let subtitle = ""; let body = "";
+    if (f.type === "book") { const b = s.session.books[f.index]; if (!b) return null; title = b.title; subtitle = b.author; body = b.idea; }
+    if (f.type === "case") { const c = s.session.cases[f.index]; if (!c) return null; title = c.company; subtitle = s.topic; body = `${c.story}\n\nMoraleja: ${c.lesson}`; }
+    if (f.type === "news") { const n = s.session.news[f.index]; if (!n) return null; title = n.headline; subtitle = `${n.source} · ${n.dateHint}`; body = n.summary; }
+    if (f.type === "trend") { const t = s.session.trends[f.index]; if (!t) return null; title = t.title; subtitle = s.topic; body = t.description; }
+    return { fav: f, s, title, subtitle, body };
+  }).filter(Boolean) as { fav: FavoriteRef; s: StoredSession; title: string; subtitle: string; body: string }[];
+
+  if (items.length === 0) {
+    return (
+      <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40 leading-[1.5]">
+        Aún no tienes favoritos.<br/>Toca ⭐ en libros, casos, noticias o tendencias.
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-[10px]">
+      {items.map((it, i) => (
+        <div key={`${it.fav.sessionId}-${it.fav.type}-${it.fav.index}-${i}`} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="flex items-start justify-between gap-[10px]">
+            <div className="min-w-0 flex-1">
+              <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/40">
+                {it.fav.type === "book" ? "Libro" : it.fav.type === "case" ? "Caso" : it.fav.type === "news" ? "Noticia" : "Tendencia"}
+              </div>
+              <div className="mt-[2px] font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white leading-[1.3]">{it.title}</div>
+              <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45">{it.subtitle}</div>
+            </div>
+            <FavStar active onClick={() => store.toggleFavorite(it.fav)} />
+          </div>
+          <p className="mt-[8px] font-['Geist'] text-[12.5px] text-white/70 leading-[1.5] whitespace-pre-line line-clamp-4">{it.body}</p>
+          <button type="button" onClick={() => onOpen(it.s)} className="mt-[10px] font-['Geist'] text-[12px] text-white/75 flex items-center gap-[4px]">
+            Abrir sesión completa <ArrowRight className="h-[12px] w-[12px]" strokeWidth={1.8} />
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }
 
