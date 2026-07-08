@@ -119,28 +119,68 @@ function Sheet({
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
-  if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-[16px]" style={{ background: "rgba(0,0,0,0.55)" }} onClick={onClose}>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] max-h-[calc(100dvh-32px)] flex flex-col rounded-[22px] overflow-hidden"
-        style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)" }}
-      >
-        <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px] shrink-0">
-          <span className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">{title}</span>
-          <button type="button" onClick={onClose} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]">
-            <X className="h-[15px] w-[15px] text-white/60" strokeWidth={1.6} />
-          </button>
-        </div>
-        <div className="px-[18px] pb-[14px] flex flex-col gap-[12px] overflow-y-auto flex-1 min-h-0" style={{ WebkitOverflowScrolling: "touch" }}>{children}</div>
-        {footer && (
-          <div className="px-[18px] pb-[18px] pt-[10px] flex items-center justify-end gap-[10px] shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-            {footer}
-          </div>
-        )}
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div
+            className="absolute inset-0"
+            style={{ background: "rgba(0,0,0,0.55)" }}
+            onClick={onClose}
+          />
+          <motion.div
+            onClick={(e) => e.stopPropagation()}
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 340, damping: 34 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0.02, bottom: 0.4 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 140 || info.velocity.y > 600) onClose();
+            }}
+            className="relative w-full max-w-[430px] max-h-[92dvh] flex flex-col rounded-t-[24px] overflow-hidden"
+            style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" }}
+          >
+            <div className="pt-[8px] pb-[4px] flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing">
+              <div className="h-[4px] w-[40px] rounded-full bg-white/20" />
+            </div>
+            <div className="flex items-center justify-between px-[18px] pt-[6px] pb-[10px] shrink-0">
+              <span className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">{title}</span>
+              <button type="button" onClick={onClose} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]">
+                <X className="h-[15px] w-[15px] text-white/60" strokeWidth={1.6} />
+              </button>
+            </div>
+            <div
+              className="px-[18px] pb-[14px] flex flex-col gap-[12px] overflow-y-auto flex-1 min-h-0 overscroll-contain"
+              style={{ WebkitOverflowScrolling: "touch" }}
+              onPointerDownCapture={(e) => e.stopPropagation()}
+            >
+              {children}
+            </div>
+            {footer && (
+              <div
+                className="px-[18px] pt-[10px] flex items-center justify-end gap-[10px] shrink-0"
+                style={{
+                  borderTop: "1px solid rgba(255,255,255,0.05)",
+                  background: "#0d0d0d",
+                  paddingBottom: "max(18px, env(safe-area-inset-bottom))",
+                }}
+              >
+                {footer}
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
