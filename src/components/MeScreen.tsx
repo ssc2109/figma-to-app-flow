@@ -123,11 +123,12 @@ function Sheet({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center"
+          className="fixed left-0 right-0 top-0 z-50 flex items-end justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
+          style={{ bottom: "calc(104px + env(safe-area-inset-bottom))" }}
         >
           <div
             className="absolute inset-0"
@@ -140,12 +141,11 @@ function Sheet({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 340, damping: 34 }}
-            className="relative w-full max-w-[430px] flex flex-col rounded-t-[24px] overflow-hidden"
+            className="relative w-full max-w-[430px] flex flex-col rounded-[24px] overflow-hidden"
             style={{
               background: "#0d0d0d",
               border: "1px solid rgba(255,255,255,0.08)",
-              borderBottom: "none",
-              maxHeight: "calc(100dvh - 8px)",
+              maxHeight: "calc(100dvh - 8px - 104px - env(safe-area-inset-bottom))",
             }}
           >
             <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px] shrink-0">
@@ -164,11 +164,10 @@ function Sheet({
             </div>
             {footer && (
               <div
-                className="px-[18px] pt-[10px] grid grid-cols-2 gap-[10px] shrink-0"
+                className="px-[18px] pt-[10px] pb-[14px] grid grid-cols-2 gap-[10px] shrink-0"
                 style={{
                   borderTop: "1px solid rgba(255,255,255,0.05)",
                   background: "#0d0d0d",
-                  paddingBottom: "max(18px, env(safe-area-inset-bottom))",
                 }}
               >
                 {footer}
