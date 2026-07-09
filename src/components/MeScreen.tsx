@@ -1003,15 +1003,6 @@ function ProjectsView({ onBack }: { onBack: () => void }) {
                     </button>
                   </div>
                 </div>
-                <div className="mt-[12px]">
-                  <div className="flex items-center justify-between font-['Geist'] text-[11.5px] text-white/45 tabular-nums mb-[6px]">
-                    <span>Progreso</span>
-                    <span>{p.progress}%</span>
-                  </div>
-                  <div className="h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${p.progress}%`, background: isLate ? "#F87171" : "white" }} />
-                  </div>
-                </div>
                 {isLate && (
                   <div className="mt-[10px] flex items-center gap-[6px] font-['Geist'] text-[11.5px] text-[#F87171]">
                     <AlertTriangle className="h-[13px] w-[13px]" strokeWidth={1.8} />
