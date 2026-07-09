@@ -226,13 +226,13 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div
-      className="relative w-full min-h-[58px] rounded-[16px] bg-white/[0.075] flex items-center px-[12px] gap-[11px] transition-colors focus-within:bg-white/[0.095]"
-      style={{ border: "1px solid rgba(255,255,255,0.16)" }}
+      className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm"
+      style={{ border: "1px solid rgba(0,0,0,0.12)" }}
     >
-      <span className="h-[34px] w-[34px] rounded-[12px] bg-white/[0.08] flex items-center justify-center shrink-0 pointer-events-none">
-        <CalendarIcon className="h-[17px] w-[17px] text-white/80" strokeWidth={1.8} />
+      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
+        <CalendarIcon className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
       </span>
-      <span className={`font-['Bai_Jamjuree'] text-[16px] font-semibold tabular-nums pointer-events-none ${value ? "text-white" : "text-white/45"}`}>
+      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums pointer-events-none ${value ? "text-black" : "text-black/45"}`}>
         {value ? formatPickerDate(value) : "Elegir fecha"}
       </span>
       <input
@@ -241,7 +241,7 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
-        style={{ colorScheme: "dark" }}
+        style={{ colorScheme: "light" }}
       />
     </div>
   );
@@ -250,13 +250,13 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div
-      className="relative w-full min-h-[58px] rounded-[16px] bg-white/[0.075] flex items-center px-[12px] gap-[11px] transition-colors focus-within:bg-white/[0.095]"
-      style={{ border: "1px solid rgba(255,255,255,0.16)" }}
+      className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm"
+      style={{ border: "1px solid rgba(0,0,0,0.12)" }}
     >
-      <span className="h-[34px] w-[34px] rounded-[12px] bg-white/[0.08] flex items-center justify-center shrink-0 pointer-events-none">
-        <Clock className="h-[17px] w-[17px] text-white/80" strokeWidth={1.8} />
+      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
+        <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
       </span>
-      <span className={`font-['Bai_Jamjuree'] text-[16px] font-semibold tabular-nums pointer-events-none ${value ? "text-white" : "text-white/45"}`}>
+      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums pointer-events-none ${value ? "text-black" : "text-black/45"}`}>
         {value || "Elegir hora"}
       </span>
       <input
@@ -265,7 +265,7 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
-        style={{ colorScheme: "dark" }}
+        style={{ colorScheme: "light" }}
       />
     </div>
   );
