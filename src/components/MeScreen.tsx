@@ -219,11 +219,12 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
       {...props}
-      className="w-full min-h-[68px] px-[12px] py-[10px] rounded-[10px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30"
-      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+      className="w-full min-h-[68px] px-[12px] py-[10px] rounded-[10px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30 resize-none"
+      style={{ border: "1px solid rgba(255,255,255,0.08)", resize: "none" }}
     />
   );
 }
+
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
