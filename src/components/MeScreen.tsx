@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence, useDragControls } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   CheckCircle2,
   Circle,
