@@ -533,7 +533,7 @@ function TaskSheet({
         <>
           <GhostButton onClick={onClose}>Cancelar</GhostButton>
           <PrimaryButton onClick={submit} disabled={!title.trim()}>
-            Guardar
+            Confirmar
           </PrimaryButton>
         </>
       }
@@ -544,7 +544,7 @@ function TaskSheet({
       <Field label="Descripción">
         <TextArea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Opcional" />
       </Field>
-      <div className="grid grid-cols-2 gap-[10px]">
+      <div className="grid grid-cols-1 gap-[10px]">
         <Field label="Fecha">
           <DateInput value={due} onChange={setDue} />
         </Field>
@@ -822,7 +822,7 @@ function EventSheet({
         <>
           <GhostButton onClick={onClose}>Cancelar</GhostButton>
           <PrimaryButton onClick={submit} disabled={!title.trim()}>
-            Guardar
+            Confirmar
           </PrimaryButton>
         </>
       }
@@ -833,7 +833,7 @@ function EventSheet({
       <Field label="Fecha">
         <DateInput value={date} onChange={setDate} />
       </Field>
-      <div className="grid grid-cols-2 gap-[10px]">
+      <div className="grid grid-cols-1 gap-[10px]">
         <Field label="Inicio">
           <TimeInput value={start} onChange={setStart} />
         </Field>
@@ -906,9 +906,12 @@ function RoutineView({ onBack }: { onBack: () => void }) {
         {adding && (
           <div className="rounded-[16px] p-[14px] flex flex-col gap-[10px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <TextInput autoFocus placeholder="Ej. Revisar pedidos" value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} />
-            <div className="flex items-center gap-[8px]">
+            <div className="flex flex-col gap-[10px]">
               <TimeInput value={time} onChange={setTime} />
-              <PrimaryButton onClick={submit}>Guardar</PrimaryButton>
+              <div className="grid grid-cols-2 gap-[10px]">
+                <GhostButton onClick={() => setAdding(false)}>Cancelar</GhostButton>
+                <PrimaryButton onClick={submit}>Confirmar</PrimaryButton>
+              </div>
             </div>
           </div>
         )}
@@ -1105,7 +1108,7 @@ function ProjectSheet({
         <>
           <GhostButton onClick={onClose}>Cancelar</GhostButton>
           <PrimaryButton onClick={submit} disabled={!name.trim()}>
-            Guardar
+            Confirmar
           </PrimaryButton>
         </>
       }
@@ -1116,14 +1119,12 @@ function ProjectSheet({
       <Field label="Descripción">
         <TextArea value={description} onChange={(e) => setDescription(e.target.value)} />
       </Field>
-      <div className="grid grid-cols-2 gap-[10px]">
-        <Field label="Responsable">
-          <TextInput value={owner} onChange={(e) => setOwner(e.target.value)} />
-        </Field>
-        <Field label="Fecha límite">
-          <DateInput value={dueDate} onChange={setDueDate} />
-        </Field>
-      </div>
+      <Field label="Responsable">
+        <TextInput value={owner} onChange={(e) => setOwner(e.target.value)} />
+      </Field>
+      <Field label="Fecha límite">
+        <DateInput value={dueDate} onChange={setDueDate} />
+      </Field>
       <Field label="Estado">
         <div className="flex flex-wrap gap-[6px]">
           {(Object.keys(PROJECT_STATUS) as ProjectStatus[]).map((s) => (
@@ -1327,7 +1328,7 @@ function GoalSheet({
         <>
           <GhostButton onClick={onClose}>Cancelar</GhostButton>
           <PrimaryButton onClick={submit} disabled={!label.trim()}>
-            Guardar
+            Confirmar
           </PrimaryButton>
         </>
       }
