@@ -201,7 +201,7 @@
 
 /* Visible, real scrollbar for Productividad and bottom-sheet content */
 .trax-scroll {
-  overflow-y: auto;
+  overflow-y: scroll;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.38) rgba(255,255,255,0.055);
   scrollbar-gutter: stable;
