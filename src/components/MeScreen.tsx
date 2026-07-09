@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   CheckCircle2,
   Circle,
@@ -120,12 +119,6 @@ function Sheet({
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
-  const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    if (!open) setExpanded(false);
-  }, [open]);
-
   return (
     <AnimatePresence>
       {open && (
@@ -144,27 +137,20 @@ function Sheet({
           <motion.div
             onClick={(e) => e.stopPropagation()}
             initial={{ y: "100%" }}
-            animate={{ y: 0, height: expanded ? "100dvh" : "auto" }}
+            animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 340, damping: 34 }}
-            className={`relative w-full max-w-[430px] flex flex-col rounded-t-[24px] overflow-hidden ${expanded ? "" : "max-h-[92dvh]"}`}
-            style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" }}
+            className="relative w-full max-w-[430px] flex flex-col rounded-t-[24px] overflow-hidden"
+            style={{
+              background: "#0d0d0d",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderBottom: "none",
+              maxHeight: "calc(100dvh - 8px)",
+            }}
           >
             <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px] shrink-0">
               <span className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">{title}</span>
               <div className="flex items-center gap-[6px]">
-                <button
-                  type="button"
-                  onClick={() => setExpanded((v) => !v)}
-                  className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]"
-                  aria-label={expanded ? "Reducir" : "Expandir"}
-                >
-                  {expanded ? (
-                    <ChevronDown className="h-[15px] w-[15px] text-white/60" strokeWidth={1.8} />
-                  ) : (
-                    <ChevronUp className="h-[15px] w-[15px] text-white/60" strokeWidth={1.8} />
-                  )}
-                </button>
                 <button type="button" onClick={onClose} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]" aria-label="Cerrar">
                   <X className="h-[15px] w-[15px] text-white/60" strokeWidth={1.6} />
                 </button>
@@ -178,7 +164,7 @@ function Sheet({
             </div>
             {footer && (
               <div
-                className="px-[18px] pt-[10px] flex items-center justify-end gap-[10px] shrink-0"
+                className="px-[18px] pt-[10px] grid grid-cols-2 gap-[10px] shrink-0"
                 style={{
                   borderTop: "1px solid rgba(255,255,255,0.05)",
                   background: "#0d0d0d",
@@ -205,6 +191,17 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function ProductivityScroll({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div
+      className={`trax-scroll trax-productivity-scroll min-h-0 ${className}`}
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
@@ -219,7 +216,7 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
       {...props}
-      className="w-full min-h-[68px] px-[12px] py-[10px] rounded-[10px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30 resize-none"
+      className="trax-fixed-textarea w-full min-h-[96px] px-[12px] py-[10px] rounded-[12px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30 resize-none"
       style={{ border: "1px solid rgba(255,255,255,0.08)", resize: "none" }}
     />
   );
@@ -229,18 +226,21 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div
-      className="relative w-full h-[38px] rounded-[10px] bg-white/[0.04] flex items-center"
-      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+      className="relative w-full min-h-[58px] rounded-[16px] bg-white/[0.075] flex items-center px-[12px] gap-[11px] transition-colors focus-within:bg-white/[0.095]"
+      style={{ border: "1px solid rgba(255,255,255,0.16)" }}
     >
-      <CalendarIcon className="ml-[10px] h-[15px] w-[15px] text-white/55 pointer-events-none" strokeWidth={1.8} />
-      <span className="ml-[8px] font-['Geist'] text-[14px] text-white tabular-nums pointer-events-none">
-        {value ? formatDueLabel(value) : "Elegir fecha"}
+      <span className="h-[34px] w-[34px] rounded-[12px] bg-white/[0.08] flex items-center justify-center shrink-0 pointer-events-none">
+        <CalendarIcon className="h-[17px] w-[17px] text-white/80" strokeWidth={1.8} />
+      </span>
+      <span className={`font-['Bai_Jamjuree'] text-[16px] font-semibold tabular-nums pointer-events-none ${value ? "text-white" : "text-white/45"}`}>
+        {value ? formatPickerDate(value) : "Elegir fecha"}
       </span>
       <input
+        aria-label="Elegir fecha"
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
         style={{ colorScheme: "dark" }}
       />
     </div>
@@ -250,18 +250,21 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div
-      className="relative w-full h-[38px] rounded-[10px] bg-white/[0.04] flex items-center"
-      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+      className="relative w-full min-h-[58px] rounded-[16px] bg-white/[0.075] flex items-center px-[12px] gap-[11px] transition-colors focus-within:bg-white/[0.095]"
+      style={{ border: "1px solid rgba(255,255,255,0.16)" }}
     >
-      <Clock className="ml-[10px] h-[15px] w-[15px] text-white/55 pointer-events-none" strokeWidth={1.8} />
-      <span className={`ml-[8px] font-['Geist'] text-[14px] tabular-nums pointer-events-none ${value ? "text-white" : "text-white/30"}`}>
+      <span className="h-[34px] w-[34px] rounded-[12px] bg-white/[0.08] flex items-center justify-center shrink-0 pointer-events-none">
+        <Clock className="h-[17px] w-[17px] text-white/80" strokeWidth={1.8} />
+      </span>
+      <span className={`font-['Bai_Jamjuree'] text-[16px] font-semibold tabular-nums pointer-events-none ${value ? "text-white" : "text-white/45"}`}>
         {value || "Elegir hora"}
       </span>
       <input
+        aria-label="Elegir hora"
         type="time"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
         style={{ colorScheme: "dark" }}
       />
     </div>
@@ -273,7 +276,7 @@ function PrimaryButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLBut
   return (
     <button
       {...rest}
-      className="h-[36px] px-[16px] rounded-full bg-white text-black font-['Geist'] text-[13px] font-semibold active:scale-95 disabled:opacity-40"
+      className="w-full h-[44px] px-[16px] rounded-full bg-white text-black font-['Geist'] text-[13px] font-semibold active:scale-95 disabled:opacity-40"
     >
       {children}
     </button>
@@ -284,7 +287,7 @@ function GhostButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButto
   return (
     <button
       {...rest}
-      className="h-[36px] px-[14px] rounded-full font-['Geist'] text-[13px] text-white/75 active:bg-white/[0.05]"
+      className="w-full h-[44px] px-[14px] rounded-full font-['Geist'] text-[13px] text-white/75 active:bg-white/[0.05]"
       style={{ border: "1px solid rgba(255,255,255,0.10)" }}
     >
       {children}
@@ -313,6 +316,16 @@ function formatDueLabel(v?: string) {
   if (date.getTime() === today.getTime()) return "Hoy";
   if (date.getTime() === tomorrow.getTime()) return "Mañana";
   return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+}
+
+function formatPickerDate(v?: string) {
+  if (!v) return "";
+  if (!isISODate(v)) return v;
+  const [y, m, d] = v.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  const relative = formatDueLabel(v);
+  const full = date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
+  return relative === full ? full : `${relative} · ${full}`;
 }
 
 /* ============ PRIORIDADES ============ */
@@ -357,7 +370,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
         <div className="relative">
           <Search className="absolute left-[12px] top-1/2 -translate-y-1/2 h-[14px] w-[14px] text-white/40" strokeWidth={1.8} />
           <input
@@ -448,7 +461,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
             <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
           </div>
         </div>
-      </div>
+      </ProductivityScroll>
 
       <TaskSheet
         open={creating || !!editing}
@@ -520,7 +533,7 @@ function TaskSheet({
         <>
           <GhostButton onClick={onClose}>Cancelar</GhostButton>
           <PrimaryButton onClick={submit} disabled={!title.trim()}>
-            Guardar
+            Confirmar
           </PrimaryButton>
         </>
       }
@@ -531,7 +544,7 @@ function TaskSheet({
       <Field label="Descripción">
         <TextArea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Opcional" />
       </Field>
-      <div className="grid grid-cols-2 gap-[10px]">
+      <div className="grid grid-cols-1 gap-[10px]">
         <Field label="Fecha">
           <DateInput value={due} onChange={setDue} />
         </Field>
@@ -651,7 +664,7 @@ function CalendarView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
         <div className="rounded-[18px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="flex items-center justify-between mb-[10px]">
             <button
@@ -753,7 +766,7 @@ function CalendarView({ onBack }: { onBack: () => void }) {
             </ListGroup>
           </div>
         )}
-      </div>
+      </ProductivityScroll>
 
       <EventSheet
         open={creating}
@@ -809,7 +822,7 @@ function EventSheet({
         <>
           <GhostButton onClick={onClose}>Cancelar</GhostButton>
           <PrimaryButton onClick={submit} disabled={!title.trim()}>
-            Guardar
+            Confirmar
           </PrimaryButton>
         </>
       }
@@ -818,14 +831,14 @@ function EventSheet({
         <TextInput autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Reunión con proveedor" />
       </Field>
       <Field label="Fecha">
-        <TextInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <DateInput value={date} onChange={setDate} />
       </Field>
-      <div className="grid grid-cols-2 gap-[10px]">
+      <div className="grid grid-cols-1 gap-[10px]">
         <Field label="Inicio">
-          <TextInput type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+          <TimeInput value={start} onChange={setStart} />
         </Field>
         <Field label="Fin">
-          <TextInput type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+          <TimeInput value={end} onChange={setEnd} />
         </Field>
       </div>
       <Field label="Lugar">
@@ -874,7 +887,7 @@ function RoutineView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="flex items-baseline justify-between">
             <span className="font-['Bai_Jamjuree'] text-[32px] font-semibold text-white tabular-nums">{pct}%</span>
@@ -893,9 +906,12 @@ function RoutineView({ onBack }: { onBack: () => void }) {
         {adding && (
           <div className="rounded-[16px] p-[14px] flex flex-col gap-[10px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <TextInput autoFocus placeholder="Ej. Revisar pedidos" value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} />
-            <div className="flex items-center gap-[8px]">
-              <TextInput type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-              <PrimaryButton onClick={submit}>Guardar</PrimaryButton>
+            <div className="flex flex-col gap-[10px]">
+              <TimeInput value={time} onChange={setTime} />
+              <div className="grid grid-cols-2 gap-[10px]">
+                <GhostButton onClick={() => setAdding(false)}>Cancelar</GhostButton>
+                <PrimaryButton onClick={submit}>Confirmar</PrimaryButton>
+              </div>
             </div>
           </div>
         )}
@@ -929,7 +945,7 @@ function RoutineView({ onBack }: { onBack: () => void }) {
             ))}
           </ListGroup>
         )}
-      </div>
+      </ProductivityScroll>
     </SubScreen>
   );
 }
@@ -953,7 +969,7 @@ function ProjectsView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
         {projects.length === 0 ? (
           <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40">
             Sin proyectos. Pulsa + para crear el primero.
@@ -1010,7 +1026,7 @@ function ProjectsView({ onBack }: { onBack: () => void }) {
             );
           })
         )}
-      </div>
+      </ProductivityScroll>
 
       <ProjectSheet
         open={creating || !!editing}
@@ -1092,7 +1108,7 @@ function ProjectSheet({
         <>
           <GhostButton onClick={onClose}>Cancelar</GhostButton>
           <PrimaryButton onClick={submit} disabled={!name.trim()}>
-            Guardar
+            Confirmar
           </PrimaryButton>
         </>
       }
@@ -1103,14 +1119,12 @@ function ProjectSheet({
       <Field label="Descripción">
         <TextArea value={description} onChange={(e) => setDescription(e.target.value)} />
       </Field>
-      <div className="grid grid-cols-2 gap-[10px]">
-        <Field label="Responsable">
-          <TextInput value={owner} onChange={(e) => setOwner(e.target.value)} />
-        </Field>
-        <Field label="Fecha límite">
-          <TextInput type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-        </Field>
-      </div>
+      <Field label="Responsable">
+        <TextInput value={owner} onChange={(e) => setOwner(e.target.value)} />
+      </Field>
+      <Field label="Fecha límite">
+        <DateInput value={dueDate} onChange={setDueDate} />
+      </Field>
       <Field label="Estado">
         <div className="flex flex-wrap gap-[6px]">
           {(Object.keys(PROJECT_STATUS) as ProjectStatus[]).map((s) => (
@@ -1192,7 +1206,7 @@ function GoalsView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[10px] flex flex-col gap-[22px]">
+      <ProductivityScroll className="px-[20px] pt-[10px] flex flex-col gap-[22px]">
         {goals.length === 0 ? (
           <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40">
             Sin metas. Pulsa + para crear una.
@@ -1251,7 +1265,7 @@ function GoalsView({ onBack }: { onBack: () => void }) {
             );
           })
         )}
-      </div>
+      </ProductivityScroll>
 
       <GoalSheet
         open={creating || !!editing}
@@ -1314,7 +1328,7 @@ function GoalSheet({
         <>
           <GhostButton onClick={onClose}>Cancelar</GhostButton>
           <PrimaryButton onClick={submit} disabled={!label.trim()}>
-            Guardar
+            Confirmar
           </PrimaryButton>
         </>
       }
@@ -1362,7 +1376,7 @@ function GoalSheet({
         </div>
       </Field>
       <Field label="Fecha límite">
-        <TextInput type="date" value={due} onChange={(e) => setDue(e.target.value)} />
+        <DateInput value={due} onChange={setDue} />
       </Field>
     </Sheet>
   );
@@ -1666,7 +1680,7 @@ function SessionRunner({
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[18px] pb-[40px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
         <div className="rounded-[18px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <SessionCoverBg gradient={path?.gradient ?? "linear-gradient(135deg,#0f172a,#3b0764)"}>
             <div className="absolute top-[10px] left-[10px] flex gap-[6px]">
@@ -1852,7 +1866,7 @@ function SessionRunner({
             </ul>
           </SectionBlock>
         )}
-      </div>
+      </ProductivityScroll>
     </SubScreen>
   );
 }
@@ -1891,7 +1905,7 @@ function PathDetail({
   return (
     <SubScreen>
       <SubHeader eyebrow="Ruta de aprendizaje" title={`${path.emoji} ${path.name}`} onBack={onBack} />
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <div className="rounded-[18px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="h-[110px]" style={{ background: path.gradient }} />
           <div className="p-[16px]">
@@ -1929,7 +1943,7 @@ function PathDetail({
             );
           })}
         </ListGroup>
-      </div>
+      </ProductivityScroll>
     </SubScreen>
   );
 }
@@ -2042,7 +2056,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <p className="font-['Geist'] text-[13px] text-white/50 leading-[1.5] -mt-[4px]">
           Aprende con sesiones de 30 a 60 minutos creadas por IA con base en libros, casos reales, noticias y tendencias verificadas.
         </p>
@@ -2128,7 +2142,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
         {tab === "favoritos" && (
           <FavoritosView store={store} onOpen={setRunning} />
         )}
-      </div>
+      </ProductivityScroll>
 
       <SessionSetupSheet
         open={setupOpen}
@@ -2363,7 +2377,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
     <SubScreen>
       <SubHeader eyebrow="Trax IA" title="Recomendaciones" onBack={onBack} />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</div>
           <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
@@ -2410,7 +2424,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
             })}
           </div>
         )}
-      </div>
+      </ProductivityScroll>
     </SubScreen>
   );
 }
@@ -2478,7 +2492,8 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
 
             <PageHeader eyebrow="Productividad" title={`Hola, ${name}`} />
 
-            <div className="px-[20px] pt-[20px]">
+            <ProductivityScroll className="pt-[20px] flex flex-col">
+              <div className="px-[20px]">
               <StreakHero streak={streak} />
             </div>
 
@@ -2561,7 +2576,8 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
               {todayDone} de {todayTotal} tareas completadas hoy
             </div>
 
-            <FooterMark>Tu negocio crece contigo</FooterMark>
+              <FooterMark>Tu negocio crece contigo</FooterMark>
+            </ProductivityScroll>
           </motion.div>
         )}
 
