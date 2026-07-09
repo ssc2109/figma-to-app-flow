@@ -370,7 +370,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
         <div className="relative">
           <Search className="absolute left-[12px] top-1/2 -translate-y-1/2 h-[14px] w-[14px] text-white/40" strokeWidth={1.8} />
           <input
@@ -461,7 +461,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
             <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
           </div>
         </div>
-      </div>
+      </ProductivityScroll>
 
       <TaskSheet
         open={creating || !!editing}
@@ -664,7 +664,7 @@ function CalendarView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
         <div className="rounded-[18px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="flex items-center justify-between mb-[10px]">
             <button
@@ -766,7 +766,7 @@ function CalendarView({ onBack }: { onBack: () => void }) {
             </ListGroup>
           </div>
         )}
-      </div>
+      </ProductivityScroll>
 
       <EventSheet
         open={creating}
@@ -831,14 +831,14 @@ function EventSheet({
         <TextInput autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Reunión con proveedor" />
       </Field>
       <Field label="Fecha">
-        <TextInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <DateInput value={date} onChange={setDate} />
       </Field>
       <div className="grid grid-cols-2 gap-[10px]">
         <Field label="Inicio">
-          <TextInput type="time" value={start} onChange={(e) => setStart(e.target.value)} />
+          <TimeInput value={start} onChange={setStart} />
         </Field>
         <Field label="Fin">
-          <TextInput type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+          <TimeInput value={end} onChange={setEnd} />
         </Field>
       </div>
       <Field label="Lugar">
@@ -887,7 +887,7 @@ function RoutineView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="flex items-baseline justify-between">
             <span className="font-['Bai_Jamjuree'] text-[32px] font-semibold text-white tabular-nums">{pct}%</span>
@@ -907,7 +907,7 @@ function RoutineView({ onBack }: { onBack: () => void }) {
           <div className="rounded-[16px] p-[14px] flex flex-col gap-[10px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <TextInput autoFocus placeholder="Ej. Revisar pedidos" value={label} onChange={(e) => setLabel(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} />
             <div className="flex items-center gap-[8px]">
-              <TextInput type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+              <TimeInput value={time} onChange={setTime} />
               <PrimaryButton onClick={submit}>Guardar</PrimaryButton>
             </div>
           </div>
@@ -942,7 +942,7 @@ function RoutineView({ onBack }: { onBack: () => void }) {
             ))}
           </ListGroup>
         )}
-      </div>
+      </ProductivityScroll>
     </SubScreen>
   );
 }
@@ -966,7 +966,7 @@ function ProjectsView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[14px]">
         {projects.length === 0 ? (
           <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40">
             Sin proyectos. Pulsa + para crear el primero.
@@ -1023,7 +1023,7 @@ function ProjectsView({ onBack }: { onBack: () => void }) {
             );
           })
         )}
-      </div>
+      </ProductivityScroll>
 
       <ProjectSheet
         open={creating || !!editing}
@@ -1121,7 +1121,7 @@ function ProjectSheet({
           <TextInput value={owner} onChange={(e) => setOwner(e.target.value)} />
         </Field>
         <Field label="Fecha límite">
-          <TextInput type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+          <DateInput value={dueDate} onChange={setDueDate} />
         </Field>
       </div>
       <Field label="Estado">
@@ -1205,7 +1205,7 @@ function GoalsView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[10px] flex flex-col gap-[22px]">
+      <ProductivityScroll className="px-[20px] pt-[10px] flex flex-col gap-[22px]">
         {goals.length === 0 ? (
           <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40">
             Sin metas. Pulsa + para crear una.
@@ -1264,7 +1264,7 @@ function GoalsView({ onBack }: { onBack: () => void }) {
             );
           })
         )}
-      </div>
+      </ProductivityScroll>
 
       <GoalSheet
         open={creating || !!editing}
@@ -1375,7 +1375,7 @@ function GoalSheet({
         </div>
       </Field>
       <Field label="Fecha límite">
-        <TextInput type="date" value={due} onChange={(e) => setDue(e.target.value)} />
+        <DateInput value={due} onChange={setDue} />
       </Field>
     </Sheet>
   );
@@ -1904,7 +1904,7 @@ function PathDetail({
   return (
     <SubScreen>
       <SubHeader eyebrow="Ruta de aprendizaje" title={`${path.emoji} ${path.name}`} onBack={onBack} />
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <div className="rounded-[18px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="h-[110px]" style={{ background: path.gradient }} />
           <div className="p-[16px]">
@@ -1942,7 +1942,7 @@ function PathDetail({
             );
           })}
         </ListGroup>
-      </div>
+      </ProductivityScroll>
     </SubScreen>
   );
 }
@@ -2055,7 +2055,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <p className="font-['Geist'] text-[13px] text-white/50 leading-[1.5] -mt-[4px]">
           Aprende con sesiones de 30 a 60 minutos creadas por IA con base en libros, casos reales, noticias y tendencias verificadas.
         </p>
@@ -2141,7 +2141,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
         {tab === "favoritos" && (
           <FavoritosView store={store} onOpen={setRunning} />
         )}
-      </div>
+      </ProductivityScroll>
 
       <SessionSetupSheet
         open={setupOpen}
