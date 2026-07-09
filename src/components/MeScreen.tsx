@@ -1150,9 +1150,6 @@ function ProjectSheet({
           ))}
         </div>
       </Field>
-      <Field label={`Progreso: ${progress}%`}>
-        <input type="range" min={0} max={100} value={progress} onChange={(e) => setProgress(Number(e.target.value))} className="w-full accent-white" />
-      </Field>
       {goals.length > 0 && (
         <Field label="Meta relacionada">
           <select
