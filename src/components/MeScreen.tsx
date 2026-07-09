@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CheckCircle2,
@@ -223,51 +223,92 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 
-function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function PickerField({
+  icon,
+  type,
+  value,
+  placeholder,
+  display,
+  onChange,
+  ariaLabel,
+}: {
+  icon: React.ReactNode;
+  type: "date" | "time";
+  value: string;
+  placeholder: string;
+  display: string;
+  onChange: (v: string) => void;
+  ariaLabel: string;
+}) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const openPicker = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    // showPicker() is the reliable cross-browser trigger on iOS/Android/desktop
+    const anyEl = el as HTMLInputElement & { showPicker?: () => void };
+    if (typeof anyEl.showPicker === "function") {
+      try {
+        anyEl.showPicker();
+        return;
+      } catch {
+        /* fallback below */
+      }
+    }
+    el.focus();
+    el.click();
+  };
   return (
-    <div
-      className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm"
-      style={{ border: "1px solid rgba(0,0,0,0.12)" }}
+    <button
+      type="button"
+      onClick={openPicker}
+      className="relative w-full h-[38px] px-[12px] rounded-[10px] bg-white/[0.04] flex items-center gap-[10px] text-left active:bg-white/[0.06] transition-colors"
+      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
     >
-      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
-        <CalendarIcon className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
-      </span>
-      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums pointer-events-none ${value ? "text-black" : "text-black/45"}`}>
-        {value ? formatPickerDate(value) : "Elegir fecha"}
+      <span className="text-white/60 shrink-0 flex items-center justify-center">{icon}</span>
+      <span
+        className={`font-['Geist'] text-[14px] tabular-nums truncate ${value ? "text-white" : "text-white/30"}`}
+      >
+        {value ? display : placeholder}
       </span>
       <input
-        aria-label="Elegir fecha"
-        type="date"
+        ref={inputRef}
+        aria-label={ariaLabel}
+        type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
-        style={{ colorScheme: "light" }}
+        className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+        tabIndex={-1}
+        style={{ colorScheme: "dark" }}
       />
-    </div>
+    </button>
+  );
+}
+
+function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <PickerField
+      type="date"
+      value={value}
+      placeholder="Elegir fecha"
+      display={value ? formatPickerDate(value) : ""}
+      onChange={onChange}
+      ariaLabel="Elegir fecha"
+      icon={<CalendarIcon className="h-[15px] w-[15px]" strokeWidth={1.8} />}
+    />
   );
 }
 
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div
-      className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm"
-      style={{ border: "1px solid rgba(0,0,0,0.12)" }}
-    >
-      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
-        <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
-      </span>
-      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums pointer-events-none ${value ? "text-black" : "text-black/45"}`}>
-        {value || "Elegir hora"}
-      </span>
-      <input
-        aria-label="Elegir hora"
-        type="time"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
-        style={{ colorScheme: "light" }}
-      />
-    </div>
+    <PickerField
+      type="time"
+      value={value}
+      placeholder="Elegir hora"
+      display={value}
+      onChange={onChange}
+      ariaLabel="Elegir hora"
+      icon={<Clock className="h-[15px] w-[15px]" strokeWidth={1.8} />}
+    />
   );
 }
 
