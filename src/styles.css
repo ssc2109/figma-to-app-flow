@@ -199,12 +199,37 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Visible thin scrollbar for bottom-sheet content */
-.trax-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.25) transparent; }
-.trax-scroll::-webkit-scrollbar { width: 6px; }
-.trax-scroll::-webkit-scrollbar-track { background: transparent; }
-.trax-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 999px; }
-.trax-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.35); }
+/* Visible, real scrollbar for Productividad and bottom-sheet content */
+.trax-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.38) rgba(255,255,255,0.055);
+  scrollbar-gutter: stable;
+}
+.trax-scroll::-webkit-scrollbar { width: 8px; }
+.trax-scroll::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.055);
+  border-radius: 999px;
+}
+.trax-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.38);
+  border-radius: 999px;
+  border: 2px solid rgba(13,13,13,0.95);
+}
+.trax-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.52); }
+.trax-productivity-scroll {
+  max-height: calc(100dvh - 78px);
+  padding-bottom: max(170px, calc(150px + env(safe-area-inset-bottom)));
+}
+
+.trax-fixed-textarea,
+textarea.trax-fixed-textarea {
+  resize: none !important;
+}
+.trax-fixed-textarea::-webkit-resizer,
+textarea.trax-fixed-textarea::-webkit-resizer {
+  display: none;
+}
 
 /* ============================================================
    Trax motion utilities — premium micro-interactions
