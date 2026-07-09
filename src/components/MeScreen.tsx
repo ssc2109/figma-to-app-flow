@@ -145,7 +145,7 @@ function Sheet({
               background: "#0d0d0d",
               border: "1px solid rgba(255,255,255,0.08)",
               borderBottom: "none",
-              maxHeight: "calc(100dvh - 8px)",
+              height: "min(85dvh, 720px)",
             }}
           >
             <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px] shrink-0">
