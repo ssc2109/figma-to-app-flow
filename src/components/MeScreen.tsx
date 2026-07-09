@@ -1680,7 +1680,7 @@ function SessionRunner({
         }
       />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[18px] pb-[40px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
         <div className="rounded-[18px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <SessionCoverBg gradient={path?.gradient ?? "linear-gradient(135deg,#0f172a,#3b0764)"}>
             <div className="absolute top-[10px] left-[10px] flex gap-[6px]">
@@ -1866,7 +1866,7 @@ function SessionRunner({
             </ul>
           </SectionBlock>
         )}
-      </div>
+      </ProductivityScroll>
     </SubScreen>
   );
 }
@@ -2377,7 +2377,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
     <SubScreen>
       <SubHeader eyebrow="Trax IA" title="Recomendaciones" onBack={onBack} />
 
-      <div className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
+      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</div>
           <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
@@ -2424,7 +2424,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
             })}
           </div>
         )}
-      </div>
+      </ProductivityScroll>
     </SubScreen>
   );
 }
@@ -2492,7 +2492,8 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
 
             <PageHeader eyebrow="Productividad" title={`Hola, ${name}`} />
 
-            <div className="px-[20px] pt-[20px]">
+            <ProductivityScroll className="pt-[20px] flex flex-col">
+              <div className="px-[20px]">
               <StreakHero streak={streak} />
             </div>
 
@@ -2575,7 +2576,8 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
               {todayDone} de {todayTotal} tareas completadas hoy
             </div>
 
-            <FooterMark>Tu negocio crece contigo</FooterMark>
+              <FooterMark>Tu negocio crece contigo</FooterMark>
+            </ProductivityScroll>
           </motion.div>
         )}
 
