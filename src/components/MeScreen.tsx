@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence, useDragControls } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   CheckCircle2,
   Circle,
@@ -119,7 +120,6 @@ function Sheet({
   children: React.ReactNode;
   footer?: React.ReactNode;
 }) {
-  const dragControls = useDragControls();
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
@@ -147,43 +147,31 @@ function Sheet({
             animate={{ y: 0, height: expanded ? "100dvh" : "auto" }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 340, damping: 34 }}
-            drag="y"
-            dragListener={false}
-            dragControls={dragControls}
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: expanded ? 0 : 0.35, bottom: 0.4 }}
-            onDragEnd={(_, info) => {
-              if (info.offset.y > 120 || info.velocity.y > 500) {
-                if (expanded) setExpanded(false);
-                else onClose();
-              } else if (info.offset.y < -70 || info.velocity.y < -500) {
-                setExpanded(true);
-              }
-            }}
             className={`relative w-full max-w-[430px] flex flex-col rounded-t-[24px] overflow-hidden ${expanded ? "" : "max-h-[92dvh]"}`}
             style={{ background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" }}
           >
-            <div
-              onPointerDown={(e) => dragControls.start(e)}
-              onDoubleClick={() => setExpanded((v) => !v)}
-              className="pt-[8px] pb-[4px] flex items-center justify-center shrink-0 cursor-grab active:cursor-grabbing touch-none"
-            >
-              <div className="h-[4px] w-[40px] rounded-full bg-white/20" />
-            </div>
-            <div
-              onPointerDown={(e) => {
-                if ((e.target as HTMLElement).closest("button")) return;
-                dragControls.start(e);
-              }}
-              className="flex items-center justify-between px-[18px] pt-[6px] pb-[10px] shrink-0 touch-none cursor-grab active:cursor-grabbing"
-            >
+            <div className="flex items-center justify-between px-[18px] pt-[16px] pb-[10px] shrink-0">
               <span className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">{title}</span>
-              <button type="button" onClick={onClose} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]">
-                <X className="h-[15px] w-[15px] text-white/60" strokeWidth={1.6} />
-              </button>
+              <div className="flex items-center gap-[6px]">
+                <button
+                  type="button"
+                  onClick={() => setExpanded((v) => !v)}
+                  className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]"
+                  aria-label={expanded ? "Reducir" : "Expandir"}
+                >
+                  {expanded ? (
+                    <ChevronDown className="h-[15px] w-[15px] text-white/60" strokeWidth={1.8} />
+                  ) : (
+                    <ChevronUp className="h-[15px] w-[15px] text-white/60" strokeWidth={1.8} />
+                  )}
+                </button>
+                <button type="button" onClick={onClose} className="h-[30px] w-[30px] rounded-full flex items-center justify-center active:bg-white/[0.06]" aria-label="Cerrar">
+                  <X className="h-[15px] w-[15px] text-white/60" strokeWidth={1.6} />
+                </button>
+              </div>
             </div>
             <div
-              className="px-[18px] pb-[14px] flex flex-col gap-[12px] overflow-y-auto flex-1 min-h-0 overscroll-contain"
+              className="trax-scroll px-[18px] pb-[14px] flex flex-col gap-[12px] overflow-y-auto flex-1 min-h-0 overscroll-contain"
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               {children}
@@ -206,6 +194,7 @@ function Sheet({
     </AnimatePresence>
   );
 }
+
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -230,11 +219,12 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
       {...props}
-      className="w-full min-h-[68px] px-[12px] py-[10px] rounded-[10px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30"
-      style={{ border: "1px solid rgba(255,255,255,0.08)" }}
+      className="w-full min-h-[68px] px-[12px] py-[10px] rounded-[10px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30 resize-none"
+      style={{ border: "1px solid rgba(255,255,255,0.08)", resize: "none" }}
     />
   );
 }
+
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
