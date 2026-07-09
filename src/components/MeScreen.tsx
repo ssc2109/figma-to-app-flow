@@ -123,12 +123,12 @@ function Sheet({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-end justify-center"
+          className="fixed left-0 right-0 top-0 z-50 flex items-end justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          style={{ paddingBottom: "calc(104px + env(safe-area-inset-bottom))" }}
+          style={{ bottom: "calc(104px + env(safe-area-inset-bottom))" }}
         >
           <div
             className="absolute inset-0"
