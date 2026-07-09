@@ -164,11 +164,10 @@ function Sheet({
             </div>
             {footer && (
               <div
-                className="px-[18px] pt-[10px] grid grid-cols-2 gap-[10px] shrink-0"
+                className="px-[18px] pt-[10px] pb-[14px] grid grid-cols-2 gap-[10px] shrink-0"
                 style={{
                   borderTop: "1px solid rgba(255,255,255,0.05)",
                   background: "#0d0d0d",
-                  paddingBottom: "max(18px, env(safe-area-inset-bottom))",
                 }}
               >
                 {footer}
