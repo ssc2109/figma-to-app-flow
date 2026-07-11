@@ -164,6 +164,7 @@ Reglas obligatorias:
 - "quiz": cada pregunta tiene 4 opciones y solo una correcta (correctIndex 0-3). La "explanation" justifica la respuesta correcta.
 - "furtherReading": 3-6 títulos o recursos reales recomendados para profundizar.
 ${previousTopics && previousTopics.length > 0 ? `\nEl usuario ya estudió recientemente: ${previousTopics.join(", ")}. Evita repetir esos ángulos; profundiza o complementa.` : ""}
+${curatedSources && curatedSources.length > 0 ? `\nPara este tema, prioriza y apóyate en estas fuentes específicas y confiables cuando sean relevantes: ${curatedSources.join("; ")}. Puedes complementar con otras fuentes reconocidas si el tema lo requiere, pero nunca inventes datos o cifras.` : ""}
 
 Devuelve exclusivamente el objeto JSON solicitado, sin texto adicional.`;
 }
