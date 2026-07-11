@@ -1193,7 +1193,7 @@ function ProjectSheet({
     setDueDate(initial?.dueDate ?? "");
     setStatus(initial?.status ?? "planning");
     setPriority(initial?.priority ?? "normal");
-    setProgress(initial?.progress ?? 0);
+    
     setGoalId(initial?.goalId ?? "");
   }, [initial]);
 
