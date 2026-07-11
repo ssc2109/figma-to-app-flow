@@ -356,9 +356,7 @@ function formatPickerDate(v?: string) {
   if (!isISODate(v)) return v;
   const [y, m, d] = v.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  const relative = formatDueLabel(v);
-  const full = date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
-  return relative === full ? full : `${relative} · ${full}`;
+  return date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 /* ============ PRIORIDADES ============ */
