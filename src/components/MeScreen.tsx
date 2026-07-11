@@ -1183,7 +1183,7 @@ function ProjectSheet({
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? "");
   const [status, setStatus] = useState<ProjectStatus>(initial?.status ?? "planning");
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? "normal");
-  const [progress, setProgress] = useState<number>(initial?.progress ?? 0);
+  
   const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
   useEffect(() => {
