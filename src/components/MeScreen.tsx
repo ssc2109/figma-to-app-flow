@@ -2099,7 +2099,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
     setError(undefined);
     try {
       const previousTopics = store.state.sessions.slice(0, 6).map((s) => s.topic);
-      const session = await generate({ data: { topic, level, minutes, previousTopics } });
+      const session = await generate({ data: { topic, level, minutes, previousTopics, pathId: setupPath?.id } });
       const stored: StoredSession = {
         id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
         createdAt: new Date().toISOString(),
