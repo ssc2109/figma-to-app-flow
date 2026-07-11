@@ -1128,15 +1128,6 @@ function ProjectsView({ onBack }: { onBack: () => void }) {
                     </button>
                   </div>
                 </div>
-                <div className="mt-[12px]">
-                  <div className="flex items-center justify-between font-['Geist'] text-[11.5px] text-white/45 tabular-nums mb-[6px]">
-                    <span>Progreso</span>
-                    <span>{p.progress}%</span>
-                  </div>
-                  <div className="h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${p.progress}%`, background: isLate ? "#F87171" : "white" }} />
-                  </div>
-                </div>
                 {isLate && (
                   <div className="mt-[10px] flex items-center gap-[6px] font-['Geist'] text-[11.5px] text-[#F87171]">
                     <AlertTriangle className="h-[13px] w-[13px]" strokeWidth={1.8} />
@@ -1192,7 +1183,7 @@ function ProjectSheet({
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? "");
   const [status, setStatus] = useState<ProjectStatus>(initial?.status ?? "planning");
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? "normal");
-  const [progress, setProgress] = useState<number>(initial?.progress ?? 0);
+  
   const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
   useEffect(() => {
@@ -1202,7 +1193,7 @@ function ProjectSheet({
     setDueDate(initial?.dueDate ?? "");
     setStatus(initial?.status ?? "planning");
     setPriority(initial?.priority ?? "normal");
-    setProgress(initial?.progress ?? 0);
+    
     setGoalId(initial?.goalId ?? "");
   }, [initial]);
 
@@ -1215,7 +1206,7 @@ function ProjectSheet({
       dueDate: normalizeDate(dueDate) || undefined,
       status,
       priority,
-      progress: Math.max(0, Math.min(100, progress)),
+      progress: initial?.progress ?? 0,
       goalId: goalId || undefined,
     });
   };
@@ -1283,9 +1274,6 @@ function ProjectSheet({
             </button>
           ))}
         </div>
-      </Field>
-      <Field label={`Progreso: ${progress}%`}>
-        <input type="range" min={0} max={100} value={progress} onChange={(e) => setProgress(Number(e.target.value))} className="w-full accent-white" />
       </Field>
       {goals.length > 0 && (
         <Field label="Meta relacionada">
