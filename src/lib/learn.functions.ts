@@ -19,46 +19,47 @@ const InputSchema = z.object({
   previousTopics: z.array(z.string().max(120)).max(20).optional(),
 });
 
-/* Schema plano y libre de bounds — los límites van en el prompt. */
+/* Schema tolerante — todos los arrays y strings tienen default; se rellena en normalize(). */
+const strOpt = z.string().optional().default("");
 const SessionSchema = z.object({
-  title: z.string(),
-  category: z.string(),
-  level: z.string(),
-  minutes: z.number(),
-  intro: z.string(),
+  title: strOpt,
+  category: strOpt,
+  level: strOpt,
+  minutes: z.number().optional().default(30),
+  intro: strOpt,
   concepts: z.array(z.object({
-    title: z.string(),
-    description: z.string(),
-  })),
+    title: strOpt,
+    description: strOpt,
+  })).optional().default([]),
   books: z.array(z.object({
-    author: z.string(),
-    title: z.string(),
-    idea: z.string(),
-  })),
+    author: strOpt,
+    title: strOpt,
+    idea: strOpt,
+  })).optional().default([]),
   cases: z.array(z.object({
-    company: z.string(),
-    story: z.string(),
-    lesson: z.string(),
-  })),
+    company: strOpt,
+    story: strOpt,
+    lesson: strOpt,
+  })).optional().default([]),
   news: z.array(z.object({
-    headline: z.string(),
-    summary: z.string(),
-    source: z.string(),
-    dateHint: z.string(),
-  })),
+    headline: strOpt,
+    summary: strOpt,
+    source: strOpt,
+    dateHint: strOpt,
+  })).optional().default([]),
   trends: z.array(z.object({
-    title: z.string(),
-    description: z.string(),
-  })),
-  summary: z.string(),
-  exercise: z.string(),
+    title: strOpt,
+    description: strOpt,
+  })).optional().default([]),
+  summary: strOpt,
+  exercise: strOpt,
   quiz: z.array(z.object({
-    question: z.string(),
-    options: z.array(z.string()),
-    correctIndex: z.number(),
-    explanation: z.string(),
-  })),
-  furtherReading: z.array(z.string()),
+    question: strOpt,
+    options: z.array(z.string()).optional().default([]),
+    correctIndex: z.number().optional().default(0),
+    explanation: strOpt,
+  })).optional().default([]),
+  furtherReading: z.array(z.string()).optional().default([]),
 });
 
 export type LearnSession = z.infer<typeof SessionSchema>;
