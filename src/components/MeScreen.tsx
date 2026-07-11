@@ -620,7 +620,9 @@ function TaskSheet({
 
   const submit = () => {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), description, priority, due, time, tag, projectId: projectId || undefined, goalId: goalId || undefined });
+    const safeDue = normalizeDate(due);
+    const safeTime = normalizeTime(time);
+    onSave({ title: title.trim(), description, priority, due: safeDue || undefined, time: safeTime || undefined, tag, projectId: projectId || undefined, goalId: goalId || undefined });
   };
 
   return (
