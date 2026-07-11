@@ -254,7 +254,10 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
         ref={ref}
         type="date"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const v = normalizeDate(e.target.value);
+          if (v || e.target.value === "") onChange(v);
+        }}
         tabIndex={-1}
         aria-hidden="true"
         className="absolute left-[12px] bottom-0 h-0 w-0 opacity-0 pointer-events-none"
@@ -288,13 +291,16 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
         <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
       </span>
       <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-black" : "text-black/45"}`}>
-        {value || "Elegir hora"}
+        {value ? formatTimeLabel(value) : "Elegir hora"}
       </span>
       <input
         ref={ref}
         type="time"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const v = normalizeTime(e.target.value);
+          if (v || e.target.value === "") onChange(v);
+        }}
         tabIndex={-1}
         aria-hidden="true"
         className="absolute left-[12px] bottom-0 h-0 w-0 opacity-0 pointer-events-none"
@@ -328,37 +334,97 @@ function GhostButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButto
   );
 }
 
-/* ============ DATE HELPERS ============ */
-function todayISO() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+/* ============ DATE / TIME HELPERS (timezone-aware) ============ */
+// User timezone resuelto una sola vez desde el navegador (config del sistema).
+function userTZ(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Lima";
+  } catch {
+    return "America/Lima";
+  }
 }
-function isISODate(v?: string) {
-  return !!v && /^\d{4}-\d{2}-\d{2}$/.test(v);
+function userLocale(): string {
+  if (typeof navigator !== "undefined" && navigator.language) return navigator.language;
+  return "es-PE";
+}
+// Fecha "hoy" en la zona horaria del usuario, formato ISO YYYY-MM-DD.
+function todayISO() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: userTZ(),
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  return parts; // en-CA emite YYYY-MM-DD
+}
+function isISODate(v?: string): v is string {
+  if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const [y, m, d] = v.split("-").map(Number);
+  if (m < 1 || m > 12 || d < 1 || d > 31) return false;
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+}
+function isValidTime(v?: string): v is string {
+  return !!v && /^([01]\d|2[0-3]):[0-5]\d$/.test(v);
+}
+function normalizeTime(v?: string): string {
+  if (!v) return "";
+  // Acepta H:mm o HH:mm:ss y normaliza a HH:mm
+  const m = v.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!m) return "";
+  const h = Math.min(23, Math.max(0, Number(m[1])));
+  const mm = Math.min(59, Math.max(0, Number(m[2])));
+  return `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+function normalizeDate(v?: string): string {
+  if (!v) return "";
+  return isISODate(v) ? v : "";
 }
 function formatDueLabel(v?: string) {
   if (!v) return "";
   if (!isISODate(v)) return v;
+  const todayStr = todayISO();
+  if (v === todayStr) return "Hoy";
+  const [ty, tm, td] = todayStr.split("-").map(Number);
+  const tomorrow = new Date(ty, tm - 1, td + 1);
+  const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+  if (v === tomorrowStr) return "Mañana";
   const [y, m, d] = v.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
-  if (date.getTime() === today.getTime()) return "Hoy";
-  if (date.getTime() === tomorrow.getTime()) return "Mañana";
-  return date.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+  return new Date(y, m - 1, d).toLocaleDateString(userLocale(), {
+    day: "2-digit",
+    month: "short",
+    timeZone: userTZ(),
+  });
 }
-
 function formatPickerDate(v?: string) {
   if (!v) return "";
   if (!isISODate(v)) return v;
   const [y, m, d] = v.split("-").map(Number);
   const date = new Date(y, m - 1, d);
   const relative = formatDueLabel(v);
-  const full = date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
+  const full = date.toLocaleDateString(userLocale(), {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: userTZ(),
+  });
   return relative === full ? full : `${relative} · ${full}`;
+}
+function formatTimeLabel(v?: string) {
+  const t = normalizeTime(v);
+  if (!t) return "";
+  const [h, m] = t.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  try {
+    return new Intl.DateTimeFormat(userLocale(), {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: userTZ(),
+    }).format(d);
+  } catch {
+    return t;
+  }
 }
 
 /* ============ PRIORIDADES ============ */
@@ -554,7 +620,9 @@ function TaskSheet({
 
   const submit = () => {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), description, priority, due, time, tag, projectId: projectId || undefined, goalId: goalId || undefined });
+    const safeDue = normalizeDate(due);
+    const safeTime = normalizeTime(time);
+    onSave({ title: title.trim(), description, priority, due: safeDue || undefined, time: safeTime || undefined, tag, projectId: projectId || undefined, goalId: goalId || undefined });
   };
 
   return (
@@ -838,7 +906,10 @@ function EventSheet({
 
   const submit = () => {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), date, start: start || undefined, end: end || undefined, place: place || undefined, description });
+    const safeDate = normalizeDate(date) || todayISO();
+    const safeStart = normalizeTime(start);
+    const safeEnd = normalizeTime(end);
+    onSave({ title: title.trim(), date: safeDate, start: safeStart || undefined, end: safeEnd || undefined, place: place || undefined, description });
     setTitle("");
     setStart("");
     setEnd("");
@@ -1124,7 +1195,7 @@ function ProjectSheet({
       name: name.trim(),
       description,
       owner,
-      dueDate: dueDate || undefined,
+      dueDate: normalizeDate(dueDate) || undefined,
       status,
       priority,
       progress: Math.max(0, Math.min(100, progress)),
@@ -1349,7 +1420,7 @@ function GoalSheet({
 
   const submit = () => {
     if (!label.trim()) return;
-    onSave({ label: label.trim(), description, target, unit, category, due: due || undefined });
+    onSave({ label: label.trim(), description, target, unit, category, due: normalizeDate(due) || undefined });
   };
 
   return (
