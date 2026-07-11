@@ -1206,7 +1206,7 @@ function ProjectSheet({
       dueDate: normalizeDate(dueDate) || undefined,
       status,
       priority,
-      progress: Math.max(0, Math.min(100, progress)),
+      progress: initial?.progress ?? 0,
       goalId: goalId || undefined,
     });
   };
