@@ -906,7 +906,10 @@ function EventSheet({
 
   const submit = () => {
     if (!title.trim()) return;
-    onSave({ title: title.trim(), date, start: start || undefined, end: end || undefined, place: place || undefined, description });
+    const safeDate = normalizeDate(date) || todayISO();
+    const safeStart = normalizeTime(start);
+    const safeEnd = normalizeTime(end);
+    onSave({ title: title.trim(), date: safeDate, start: safeStart || undefined, end: safeEnd || undefined, place: place || undefined, description });
     setTitle("");
     setStart("");
     setEnd("");
