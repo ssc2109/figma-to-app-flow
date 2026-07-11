@@ -237,12 +237,38 @@ function EventSheet({ defaultDate, onClose, onSaved }: { defaultDate: Date; onCl
             placeholder="Título (ej. Pagar luz)"
             className="h-[48px] px-[14px] rounded-[14px] bg-white/[0.04] border border-white/[0.10] outline-none font-['Geist'] text-[15px] text-white placeholder:text-white/30 focus:border-white/30 transition"
           />
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="h-[46px] px-[14px] rounded-[14px] bg-white/[0.04] border border-white/[0.10] outline-none font-['Geist'] text-[14px] text-white focus:border-white/30 transition"
-          />
+          <Popover open={dateOpen} onOpenChange={setDateOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="h-[46px] px-[14px] rounded-[14px] bg-white/[0.04] border border-white/[0.10] outline-none font-['Geist'] text-[14px] text-white focus:border-white/30 active:border-white/30 transition flex items-center gap-[10px]"
+              >
+                <CalendarIcon className="h-[16px] w-[16px] text-white/60 shrink-0" strokeWidth={1.7} />
+                <span className={dateLabel ? "text-white" : "text-white/40"}>
+                  {dateLabel ?? "Elegir fecha"}
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              side="top"
+              align="start"
+              className="w-auto p-0 rounded-[18px] border-0"
+              style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <Calendar
+                mode="single"
+                selected={date ? new Date(date + "T00:00:00") : undefined}
+                onSelect={(d) => {
+                  if (d) {
+                    setDate(ymd(d));
+                    setDateOpen(false);
+                  }
+                }}
+                initialFocus
+                className="p-2 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
           <div className="grid grid-cols-3 gap-[6px]">
             {(Object.keys(KIND_META) as Kind[]).map((k) => {
               const active = kind === k;
