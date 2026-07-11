@@ -133,7 +133,8 @@ const SessionSchema = z.object({
 export type LearnSession = z.infer<typeof SessionSchema>;
 
 function buildPrompt(input: z.infer<typeof InputSchema>) {
-  const { topic, level, minutes, businessType, previousTopics } = input;
+  const { topic, level, minutes, businessType, previousTopics, pathId } = input;
+  const curatedSources = pathId ? SOURCE_LIBRARY[pathId] : undefined;
   const depth =
     minutes === 30
       ? "3 conceptos, 2 libros, 2 casos, 2 noticias, 2 tendencias, 5 preguntas de quiz"
