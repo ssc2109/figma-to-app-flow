@@ -2147,12 +2147,23 @@ function LearnView({ onBack }: { onBack: () => void }) {
 
   if (pathOpen) {
     return (
-      <PathDetail
-        path={pathOpen}
-        completedTopics={store.state.pathProgress[pathOpen.id] ?? []}
-        onBack={() => setPathOpen(null)}
-        onStartTopic={(t) => openSetup(pathOpen, t)}
-      />
+      <>
+        <PathDetail
+          path={pathOpen}
+          completedTopics={store.state.pathProgress[pathOpen.id] ?? []}
+          onBack={() => setPathOpen(null)}
+          onStartTopic={(t) => openSetup(pathOpen, t)}
+        />
+        <SessionSetupSheet
+          open={setupOpen}
+          path={setupPath}
+          initialTopic={setupTopic}
+          onClose={() => { if (!loading) setSetupOpen(false); }}
+          onGenerate={doGenerate}
+          loading={loading}
+          error={error}
+        />
+      </>
     );
   }
 
