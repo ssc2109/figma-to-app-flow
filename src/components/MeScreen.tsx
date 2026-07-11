@@ -291,13 +291,16 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
         <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
       </span>
       <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-black" : "text-black/45"}`}>
-        {value || "Elegir hora"}
+        {value ? formatTimeLabel(value) : "Elegir hora"}
       </span>
       <input
         ref={ref}
         type="time"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const v = normalizeTime(e.target.value);
+          if (v || e.target.value === "") onChange(v);
+        }}
         tabIndex={-1}
         aria-hidden="true"
         className="absolute left-[12px] bottom-0 h-0 w-0 opacity-0 pointer-events-none"
