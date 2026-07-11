@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CheckCircle2,
@@ -223,23 +223,42 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const openPicker = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    // showPicker is the modern API; fallback to focus+click
+    const anyEl = el as HTMLInputElement & { showPicker?: () => void };
+    if (typeof anyEl.showPicker === "function") {
+      try { anyEl.showPicker(); return; } catch { /* fall through */ }
+    }
+    el.focus();
+    el.click();
+  };
   return (
     <div
       className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm"
       style={{ border: "1px solid rgba(0,0,0,0.12)" }}
     >
-      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
-        <CalendarIcon className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
-      </span>
-      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums pointer-events-none ${value ? "text-black" : "text-black/45"}`}>
+      <button
+        type="button"
+        aria-label="Abrir calendario"
+        onClick={openPicker}
+        className="h-[36px] w-[36px] rounded-[10px] bg-black/[0.08] hover:bg-black/[0.14] active:scale-95 flex items-center justify-center shrink-0 transition"
+      >
+        <CalendarIcon className="h-[18px] w-[18px] text-black" strokeWidth={2} />
+      </button>
+      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums truncate ${value ? "text-black" : "text-black/45"}`}>
         {value ? formatPickerDate(value) : "Elegir fecha"}
       </span>
       <input
-        aria-label="Elegir fecha"
+        ref={inputRef}
+        aria-hidden="true"
+        tabIndex={-1}
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
+        className="absolute right-[12px] bottom-0 w-px h-px opacity-0 pointer-events-none"
         style={{ colorScheme: "light" }}
       />
     </div>
@@ -247,23 +266,41 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
 }
 
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const openPicker = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    const anyEl = el as HTMLInputElement & { showPicker?: () => void };
+    if (typeof anyEl.showPicker === "function") {
+      try { anyEl.showPicker(); return; } catch { /* fall through */ }
+    }
+    el.focus();
+    el.click();
+  };
   return (
     <div
       className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm"
       style={{ border: "1px solid rgba(0,0,0,0.12)" }}
     >
-      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
-        <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
-      </span>
-      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums pointer-events-none ${value ? "text-black" : "text-black/45"}`}>
+      <button
+        type="button"
+        aria-label="Abrir selector de hora"
+        onClick={openPicker}
+        className="h-[36px] w-[36px] rounded-[10px] bg-black/[0.08] hover:bg-black/[0.14] active:scale-95 flex items-center justify-center shrink-0 transition"
+      >
+        <Clock className="h-[18px] w-[18px] text-black" strokeWidth={2} />
+      </button>
+      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums truncate ${value ? "text-black" : "text-black/45"}`}>
         {value || "Elegir hora"}
       </span>
       <input
-        aria-label="Elegir hora"
+        ref={inputRef}
+        aria-hidden="true"
+        tabIndex={-1}
         type="time"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
+        className="absolute right-[12px] bottom-0 w-px h-px opacity-0 pointer-events-none"
         style={{ colorScheme: "light" }}
       />
     </div>
