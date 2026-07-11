@@ -98,7 +98,7 @@ export default function CalendarView({ onBack }: { onBack: () => void }) {
             onSelect={(d) => d && setSelected(d)}
             modifiers={{ hasEvent: daysWithEvents }}
             modifiersClassNames={{ hasEvent: "after:content-[''] after:absolute after:bottom-[3px] after:left-1/2 after:-translate-x-1/2 after:h-[4px] after:w-[4px] after:rounded-full after:bg-white/80 relative" }}
-            className="p-2 pointer-events-auto"
+            className="p-2 pointer-events-auto !bg-transparent text-white [--cell-size:2.4rem] [&_.rdp-day]:text-white/85 [&_button]:text-white/85"
           />
         </div>
 
