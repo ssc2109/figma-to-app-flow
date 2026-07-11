@@ -20,6 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 
 const BUSINESS_TYPES = [
@@ -40,6 +41,58 @@ const CURRENCIES = [
   { code: "ARS", label: "Peso argentino ($)" },
   { code: "EUR", label: "Euro (€)" },
 ];
+
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  return `${String(h).padStart(2, "0")}:${i % 2 === 0 ? "00" : "30"}`;
+});
+
+function formatTime(value: string) {
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) return "Elegir hora";
+  const [h, m] = value.split(":").map(Number);
+  return new Date(2000, 0, 1, h, m).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+}
+
+function TimeField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="w-full h-[34px] flex items-center justify-between gap-[10px] text-left font-['Bai_Jamjuree'] text-[14.5px] font-semibold tabular-nums text-white"
+        >
+          <span>{value ? formatTime(value) : "Elegir hora"}</span>
+          <Clock className="h-[15px] w-[15px] text-white/45" strokeWidth={1.7} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="end"
+        className="w-[180px] p-[6px] rounded-[18px] pointer-events-auto"
+        style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        <div className="max-h-[260px] overflow-y-auto trax-scroll flex flex-col gap-[4px]">
+          {TIME_OPTIONS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => {
+                onChange(t);
+                setOpen(false);
+              }}
+              className="h-[38px] rounded-[12px] px-[12px] text-left font-['Bai_Jamjuree'] text-[14px] font-semibold tabular-nums"
+              style={{ background: value === t ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.04)", color: value === t ? "#000" : "rgba(255,255,255,0.82)" }}
+            >
+              {formatTime(t)}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -430,22 +483,10 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
           <NumField value={form.daily_goal} onChange={(n) => update("daily_goal", n)} step={50} />
         </Row>
         <Row icon={Clock} label="Horario de apertura">
-          <input
-            type="time"
-            value={form.open_time}
-            onChange={(e) => update("open_time", e.target.value)}
-            className="w-full bg-transparent outline-none font-['Geist'] text-[14.5px] text-white"
-            style={{ colorScheme: "dark" }}
-          />
+          <TimeField value={form.open_time} onChange={(v) => update("open_time", v)} />
         </Row>
         <Row icon={Clock} label="Horario de cierre" last>
-          <input
-            type="time"
-            value={form.close_time}
-            onChange={(e) => update("close_time", e.target.value)}
-            className="w-full bg-transparent outline-none font-['Geist'] text-[14.5px] text-white"
-            style={{ colorScheme: "dark" }}
-          />
+          <TimeField value={form.close_time} onChange={(v) => update("close_time", v)} />
         </Row>
       </Section>
 

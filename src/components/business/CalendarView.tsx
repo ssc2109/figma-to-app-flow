@@ -265,7 +265,7 @@ function EventSheet({ defaultDate, onClose, onSaved }: { defaultDate: Date; onCl
                   }
                 }}
                 initialFocus
-                className="p-2 pointer-events-auto"
+                className="p-2 pointer-events-auto !bg-transparent text-white [&_.rdp-day]:text-white/85 [&_button]:text-white/85"
               />
             </PopoverContent>
           </Popover>
