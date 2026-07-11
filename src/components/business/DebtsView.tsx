@@ -72,6 +72,7 @@ function DateField({ value, onChange }: { value: string; onChange: (v: string) =
             }}
             initialFocus
             className="p-2 pointer-events-auto !bg-transparent text-white [&_.rdp-day]:text-white/85 [&_button]:text-white/85"
+            classNames={{ root: "!bg-transparent" }}
           />
         </PopoverContent>
       </Popover>
