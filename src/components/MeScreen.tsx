@@ -254,7 +254,10 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
         ref={ref}
         type="date"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const v = normalizeDate(e.target.value);
+          if (v || e.target.value === "") onChange(v);
+        }}
         tabIndex={-1}
         aria-hidden="true"
         className="absolute left-[12px] bottom-0 h-0 w-0 opacity-0 pointer-events-none"
