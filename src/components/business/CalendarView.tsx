@@ -179,6 +179,13 @@ function EventSheet({ defaultDate, onClose, onSaved }: { defaultDate: Date; onCl
   const [date, setDate] = useState<string>(ymd(defaultDate));
   const [kind, setKind] = useState<Kind>("recordatorio");
   const [saving, setSaving] = useState(false);
+  const [dateOpen, setDateOpen] = useState(false);
+
+  const dateLabel = (() => {
+    if (!date) return null;
+    const d = new Date(date + "T00:00:00");
+    return d.toLocaleDateString("es-PE", { day: "numeric", month: "short" });
+  })();
 
   const submit = async () => {
     if (!user) return;
