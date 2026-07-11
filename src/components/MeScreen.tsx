@@ -1420,7 +1420,7 @@ function GoalSheet({
 
   const submit = () => {
     if (!label.trim()) return;
-    onSave({ label: label.trim(), description, target, unit, category, due: due || undefined });
+    onSave({ label: label.trim(), description, target, unit, category, due: normalizeDate(due) || undefined });
   };
 
   return (
