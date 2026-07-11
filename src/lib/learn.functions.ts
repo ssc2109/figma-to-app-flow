@@ -17,7 +17,75 @@ const InputSchema = z.object({
   minutes: z.union([z.literal(30), z.literal(45), z.literal(60)]),
   businessType: z.string().max(120).optional(),
   previousTopics: z.array(z.string().max(120)).max(20).optional(),
+  pathId: z.string().max(40).optional(),
 });
+
+const SOURCE_LIBRARY: Record<string, string[]> = {
+  ventas: [
+    "Influence - Robert Cialdini",
+    "SPIN Selling - Neil Rackham",
+    "The Challenger Sale - Dixon & Adamson",
+    "To Sell Is Human - Daniel Pink",
+    "Pre-Suasion - Robert Cialdini",
+    "Harvard Business Review (hbr.org/topic/sales)",
+  ],
+  finanzas: [
+    "Profit First - Mike Michalowicz",
+    "Financial Intelligence - Berman & Knight",
+    "BID (iadb.org)",
+    "CEPAL (cepal.org)",
+    "Banco Mundial (worldbank.org)",
+    "Investopedia (investopedia.com)",
+  ],
+  marketing: [
+    "Permission Marketing - Seth Godin",
+    "Purple Cow - Seth Godin",
+    "Contagious - Jonah Berger",
+    "Positioning - Ries & Trout",
+    "Meta for Business (business.facebook.com)",
+    "Google Digital Garage (learndigital.withgoogle.com)",
+  ],
+  clientes: [
+    "Delivering Happiness - Tony Hsieh",
+    "The Effortless Experience - Matthew Dixon",
+    "Zendesk Blog (zendesk.com/blog)",
+    "Harvard Business Review (hbr.org/topic/customer-service)",
+  ],
+  inventario: [
+    "The Goal - Eliyahu Goldratt",
+    "ASCM/APICS (ascm.org)",
+    "Investopedia Inventory Management (investopedia.com/terms/i/inventory-management.asp)",
+  ],
+  liderazgo: [
+    "Good to Great - Jim Collins",
+    "Start With Why - Simon Sinek",
+    "Leaders Eat Last - Simon Sinek",
+    "The Five Dysfunctions of a Team - Patrick Lencioni",
+    "Multipliers - Liz Wiseman",
+    "MIT Sloan Management Review (sloanreview.mit.edu)",
+  ],
+  productividad: [
+    "Deep Work - Cal Newport",
+    "Atomic Habits - James Clear",
+    "The 7 Habits of Highly Effective People - Stephen Covey",
+    "Getting Things Done - David Allen",
+    "Essentialism - Greg McKeown",
+  ],
+  ia: [
+    "McKinsey Digital (mckinsey.com/capabilities/mckinsey-digital)",
+    "MIT Technology Review (technologyreview.com)",
+    "OpenAI Blog (openai.com/blog)",
+    "Google AI Blog (ai.googleblog.com)",
+  ],
+  administracion: [
+    "Competitive Strategy - Michael Porter",
+    "The Innovator's Dilemma - Clayton Christensen",
+    "Measure What Matters - John Doerr",
+    "Blue Ocean Strategy - Kim & Mauborgne",
+    "Management - Peter Drucker",
+    "OCDE (oecd.org)",
+  ],
+};
 
 /* Schema tolerante — todos los arrays y strings tienen default; se rellena en normalize(). */
 const strOpt = z.string().optional().default("");
