@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Plus, X, Check, Wallet, ArrowDownLeft, ArrowUpRight, Trash2 } from "lucide-react";
+import { Plus, X, Check, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type Kind = "cobrar" | "pagar";
 type Debt = {
@@ -26,6 +28,54 @@ function Field({
       <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} type={type}
         inputMode={type === "number" ? "decimal" : undefined}
         className="h-[46px] rounded-[12px] px-[14px] bg-white/[0.04] border border-white/[0.08] text-white text-[15px] font-['Geist'] placeholder:text-white/30 outline-none focus:border-white/30 transition" />
+    </label>
+  );
+}
+
+function ymd(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function DateField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const selected = value ? new Date(value + "T00:00:00") : undefined;
+  const label = selected
+    ? selected.toLocaleDateString("es-PE", { day: "numeric", month: "short" })
+    : "Elegir fecha";
+
+  return (
+    <label className="flex flex-col gap-[6px]">
+      <span className="text-[10.5px] font-['Geist'] uppercase tracking-[1.2px] text-white/40">Fecha límite (opcional)</span>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className="h-[46px] rounded-[12px] px-[14px] bg-white/[0.04] border border-white/[0.08] text-white text-[15px] font-['Geist'] outline-none focus:border-white/30 transition flex items-center gap-[10px] text-left"
+          >
+            <CalendarIcon className="h-[16px] w-[16px] text-white/55 shrink-0" strokeWidth={1.7} />
+            <span className={value ? "text-white" : "text-white/35"}>{label}</span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          side="top"
+          align="start"
+          className="w-auto p-0 rounded-[18px] pointer-events-auto"
+          style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <Calendar
+            mode="single"
+            selected={selected}
+            onSelect={(d) => {
+              if (!d) return;
+              onChange(ymd(d));
+              setOpen(false);
+            }}
+            initialFocus
+            className="p-2 pointer-events-auto !bg-transparent text-white [&_.rdp-day]:text-white/85 [&_button]:text-white/85"
+            classNames={{ root: "!bg-transparent" }}
+          />
+        </PopoverContent>
+      </Popover>
     </label>
   );
 }
@@ -79,7 +129,7 @@ function DebtSheet({
           <Field label={kind === "cobrar" ? "Cliente" : "Proveedor / Acreedor"} value={name} onChange={setName}
             placeholder={kind === "cobrar" ? "Nombre del cliente" : "A quién le debes"} />
           <Field label="Monto (S/)" value={amount} onChange={setAmount} placeholder="0.00" type="number" />
-          <Field label="Fecha límite (opcional)" value={due} onChange={setDue} placeholder="" type="date" />
+          <DateField value={due} onChange={setDue} />
         </div>
         <button onClick={submit} disabled={saving}
           className="mt-[18px] w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40">

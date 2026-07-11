@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CheckCircle2,
@@ -57,6 +57,8 @@ import {
   SubScreen,
   FooterMark,
 } from "./business/shared";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type View =
   | "hub"
@@ -222,91 +224,100 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 }
 
 
+const TIME_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+  const h = Math.floor(i / 2);
+  const m = i % 2 === 0 ? "00" : "30";
+  return `${String(h).padStart(2, "0")}:${m}`;
+});
+
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const ref = useRef<HTMLInputElement>(null);
-  const openPicker = () => {
-    const el = ref.current;
-    if (!el) return;
-    try {
-      // Modern browsers: opens native picker without needing visible input
-      (el as HTMLInputElement & { showPicker?: () => void }).showPicker?.();
-    } catch {
-      /* noop */
-    }
-    el.focus();
-  };
+  const [open, setOpen] = useState(false);
+  const selected = isISODate(value) ? new Date(value + "T00:00:00") : undefined;
+
   return (
-    <button
-      type="button"
-      onClick={openPicker}
-      className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm text-left cursor-pointer"
-      style={{ border: "1px solid rgba(0,0,0,0.12)" }}
-      aria-label="Elegir fecha"
-    >
-      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0">
-        <CalendarIcon className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
-      </span>
-      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-black" : "text-black/45"}`}>
-        {value ? formatPickerDate(value) : "Elegir fecha"}
-      </span>
-      {/* Hidden native input: sr-only-ish, no visible text, but focusable so showPicker() works */}
-      <input
-        ref={ref}
-        type="date"
-        value={value}
-        onChange={(e) => {
-          const v = normalizeDate(e.target.value);
-          if (v || e.target.value === "") onChange(v);
-        }}
-        tabIndex={-1}
-        aria-hidden="true"
-        className="absolute left-[12px] bottom-0 h-0 w-0 opacity-0 pointer-events-none"
-        style={{ colorScheme: "light" }}
-      />
-    </button>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm text-left cursor-pointer"
+          style={{ border: "1px solid rgba(0,0,0,0.12)" }}
+          aria-label="Elegir fecha"
+        >
+          <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0">
+            <CalendarIcon className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
+          </span>
+          <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-black" : "text-black/45"}`}>
+            {value ? formatPickerDate(value) : "Elegir fecha"}
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="start"
+        className="w-auto p-0 rounded-[18px] pointer-events-auto"
+        style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        <Calendar
+          mode="single"
+          selected={selected}
+          onSelect={(d) => {
+            if (!d) return;
+            onChange(normalizeDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`));
+            setOpen(false);
+          }}
+          initialFocus
+          className="p-2 pointer-events-auto !bg-transparent text-white [&_.rdp-day]:text-white/85 [&_button]:text-white/85"
+          classNames={{ root: "!bg-transparent" }}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }
 
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const ref = useRef<HTMLInputElement>(null);
-  const openPicker = () => {
-    const el = ref.current;
-    if (!el) return;
-    try {
-      (el as HTMLInputElement & { showPicker?: () => void }).showPicker?.();
-    } catch {
-      /* noop */
-    }
-    el.focus();
-  };
+  const [open, setOpen] = useState(false);
+
   return (
-    <button
-      type="button"
-      onClick={openPicker}
-      className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm text-left cursor-pointer"
-      style={{ border: "1px solid rgba(0,0,0,0.12)" }}
-      aria-label="Elegir hora"
-    >
-      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0">
-        <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
-      </span>
-      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-black" : "text-black/45"}`}>
-        {value ? formatTimeLabel(value) : "Elegir hora"}
-      </span>
-      <input
-        ref={ref}
-        type="time"
-        value={value}
-        onChange={(e) => {
-          const v = normalizeTime(e.target.value);
-          if (v || e.target.value === "") onChange(v);
-        }}
-        tabIndex={-1}
-        aria-hidden="true"
-        className="absolute left-[12px] bottom-0 h-0 w-0 opacity-0 pointer-events-none"
-        style={{ colorScheme: "light" }}
-      />
-    </button>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm text-left cursor-pointer"
+          style={{ border: "1px solid rgba(0,0,0,0.12)" }}
+          aria-label="Elegir hora"
+        >
+          <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0">
+            <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
+          </span>
+          <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-black" : "text-black/45"}`}>
+            {value ? formatTimeLabel(value) : "Elegir hora"}
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="start"
+        className="w-[180px] p-[6px] rounded-[18px] pointer-events-auto"
+        style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        <div className="max-h-[260px] overflow-y-auto trax-scroll flex flex-col gap-[4px]">
+          {TIME_OPTIONS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => {
+                onChange(normalizeTime(t));
+                setOpen(false);
+              }}
+              className="h-[38px] rounded-[12px] px-[12px] text-left font-['Bai_Jamjuree'] text-[14px] font-semibold tabular-nums"
+              style={{ background: value === t ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.04)", color: value === t ? "#000" : "rgba(255,255,255,0.82)" }}
+            >
+              {formatTimeLabel(t)}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
