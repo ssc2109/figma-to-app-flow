@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CheckCircle2,
@@ -223,23 +223,40 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const openPicker = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    if (typeof el.showPicker === "function") {
+      try { el.showPicker(); return; } catch { /* fall through */ }
+    }
+    el.focus();
+    el.click();
+  };
   return (
     <div
       className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm"
       style={{ border: "1px solid rgba(0,0,0,0.12)" }}
     >
-      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
-        <CalendarIcon className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
-      </span>
-      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums pointer-events-none ${value ? "text-black" : "text-black/45"}`}>
+      <button
+        type="button"
+        onClick={openPicker}
+        aria-label="Abrir selector de fecha"
+        className="h-[32px] w-[32px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 active:bg-black/[0.12] transition-colors"
+      >
+        <CalendarIcon className="h-[16px] w-[16px] text-black/80" strokeWidth={1.9} />
+      </button>
+      <span className={`flex-1 font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums ${value ? "text-black" : "text-black/45"}`}>
         {value ? formatPickerDate(value) : "Elegir fecha"}
       </span>
       <input
-        aria-label="Elegir fecha"
+        ref={inputRef}
+        aria-hidden="true"
+        tabIndex={-1}
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
+        className="sr-only pointer-events-none absolute inset-0 opacity-0"
         style={{ colorScheme: "light" }}
       />
     </div>
@@ -247,23 +264,40 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
 }
 
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const openPicker = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    if (typeof el.showPicker === "function") {
+      try { el.showPicker(); return; } catch { /* fall through */ }
+    }
+    el.focus();
+    el.click();
+  };
   return (
     <div
       className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm"
       style={{ border: "1px solid rgba(0,0,0,0.12)" }}
     >
-      <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 pointer-events-none">
-        <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
-      </span>
-      <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums pointer-events-none ${value ? "text-black" : "text-black/45"}`}>
+      <button
+        type="button"
+        onClick={openPicker}
+        aria-label="Abrir selector de hora"
+        className="h-[32px] w-[32px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0 active:bg-black/[0.12] transition-colors"
+      >
+        <Clock className="h-[16px] w-[16px] text-black/80" strokeWidth={1.9} />
+      </button>
+      <span className={`flex-1 font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums ${value ? "text-black" : "text-black/45"}`}>
         {value || "Elegir hora"}
       </span>
       <input
-        aria-label="Elegir hora"
+        ref={inputRef}
+        aria-hidden="true"
+        tabIndex={-1}
         type="time"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
+        className="sr-only pointer-events-none absolute inset-0 opacity-0"
         style={{ colorScheme: "light" }}
       />
     </div>
@@ -322,9 +356,7 @@ function formatPickerDate(v?: string) {
   if (!isISODate(v)) return v;
   const [y, m, d] = v.split("-").map(Number);
   const date = new Date(y, m - 1, d);
-  const relative = formatDueLabel(v);
-  const full = date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
-  return relative === full ? full : `${relative} · ${full}`;
+  return date.toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 /* ============ PRIORIDADES ============ */
