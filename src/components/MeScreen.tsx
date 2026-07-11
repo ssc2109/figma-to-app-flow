@@ -1195,7 +1195,7 @@ function ProjectSheet({
       name: name.trim(),
       description,
       owner,
-      dueDate: dueDate || undefined,
+      dueDate: normalizeDate(dueDate) || undefined,
       status,
       priority,
       progress: Math.max(0, Math.min(100, progress)),
