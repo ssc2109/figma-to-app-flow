@@ -2015,7 +2015,7 @@ function PathDetail({
     <SubScreen>
       <SubHeader eyebrow="Ruta de aprendizaje" title={`${path.emoji} ${path.name}`} onBack={onBack} />
       <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
-        <div className="rounded-[18px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="rounded-[18px] overflow-hidden shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="h-[110px]" style={{ background: path.gradient }} />
           <div className="p-[16px]">
             <p className="font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{path.description}</p>
@@ -2032,7 +2032,7 @@ function PathDetail({
         </div>
 
         <SectionLabel>Lecciones</SectionLabel>
-        <ListGroup>
+        <ListGroup className="shrink-0">
           {path.topics.map((t, i) => {
             const isDone = done.has(t);
             return (
