@@ -239,17 +239,18 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm text-left cursor-pointer"
-          style={{ border: "1px solid rgba(0,0,0,0.12)" }}
+          className="relative w-full min-h-[52px] rounded-[14px] flex items-center px-[12px] gap-[10px] text-left cursor-pointer"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
           aria-label="Elegir fecha"
         >
-          <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0">
-            <CalendarIcon className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
+          <span className="h-[30px] w-[30px] rounded-[10px] bg-white/[0.06] flex items-center justify-center shrink-0">
+            <CalendarIcon className="h-[16px] w-[16px] text-white/60" strokeWidth={1.8} />
           </span>
-          <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-black" : "text-black/45"}`}>
+          <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-white" : "text-white/40"}`}>
             {value ? formatPickerDate(value) : "Elegir fecha"}
           </span>
         </button>
+
       </PopoverTrigger>
       <PopoverContent
         side="top"
@@ -282,17 +283,18 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="relative w-full min-h-[52px] rounded-[14px] bg-white flex items-center px-[12px] gap-[10px] shadow-sm text-left cursor-pointer"
-          style={{ border: "1px solid rgba(0,0,0,0.12)" }}
+          className="relative w-full min-h-[52px] rounded-[14px] flex items-center px-[12px] gap-[10px] text-left cursor-pointer"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
           aria-label="Elegir hora"
         >
-          <span className="h-[30px] w-[30px] rounded-[10px] bg-black/[0.06] flex items-center justify-center shrink-0">
-            <Clock className="h-[16px] w-[16px] text-black/75" strokeWidth={1.8} />
+          <span className="h-[30px] w-[30px] rounded-[10px] bg-white/[0.06] flex items-center justify-center shrink-0">
+            <Clock className="h-[16px] w-[16px] text-white/60" strokeWidth={1.8} />
           </span>
-          <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-black" : "text-black/45"}`}>
+          <span className={`font-['Bai_Jamjuree'] text-[15px] font-semibold tabular-nums flex-1 ${value ? "text-white" : "text-white/40"}`}>
             {value ? formatTimeLabel(value) : "Elegir hora"}
           </span>
         </button>
+
       </PopoverTrigger>
       <PopoverContent
         side="top"
@@ -410,17 +412,21 @@ function formatDueLabel(v?: string) {
 function formatPickerDate(v?: string) {
   if (!v) return "";
   if (!isISODate(v)) return v;
+  const todayStr = todayISO();
+  if (v === todayStr) return "Hoy";
+  const [ty, tm, td] = todayStr.split("-").map(Number);
+  const tomorrow = new Date(ty, tm - 1, td + 1);
+  const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+  if (v === tomorrowStr) return "Mañana";
   const [y, m, d] = v.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  const relative = formatDueLabel(v);
-  const full = date.toLocaleDateString(userLocale(), {
+  return new Date(y, m - 1, d).toLocaleDateString(userLocale(), {
     day: "2-digit",
     month: "short",
     year: "numeric",
     timeZone: userTZ(),
   });
-  return relative === full ? full : `${relative} · ${full}`;
 }
+
 function formatTimeLabel(v?: string) {
   const t = normalizeTime(v);
   if (!t) return "";
