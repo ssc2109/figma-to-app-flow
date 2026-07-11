@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, X, CalendarDays, Trash2, Check, Bell, Wallet, Wrench } from "lucide-react";
+import { Plus, X, CalendarDays, Trash2, Check, Bell, Wallet, Wrench, CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
 import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 
 type Kind = "recordatorio" | "pago" | "servicio";
