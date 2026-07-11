@@ -223,7 +223,7 @@ function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 
 function DateInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const openPicker = () => {
     const el = inputRef.current;
     if (!el) return;
@@ -266,7 +266,7 @@ function DateInput({ value, onChange }: { value: string; onChange: (v: string) =
 }
 
 function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const openPicker = () => {
     const el = inputRef.current;
     if (!el) return;
