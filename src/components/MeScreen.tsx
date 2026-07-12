@@ -3072,90 +3072,103 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
 
             <ProductivityScroll className="pt-[20px] flex flex-col">
               <div className="px-[20px]">
-              <StreakHero streak={streak} />
-            </div>
+                <StreakHero streak={streak} />
+              </div>
 
-            <div className="mt-[40px] px-[20px]">
-              <SectionLabel>Hoy</SectionLabel>
-              <ListGroup>
-                <PlainRow
-                  Icon={ListChecks}
-                  label="Prioridades"
-                  meta={
-                    todayTotal === 0
-                      ? "Sin tareas todavía"
-                      : `${pendingTasks} pendientes${highPriorityToday > 0 ? ` · ${highPriorityToday} de alta prioridad` : ""}`
-                  }
-                  onClick={() => setView("priorities")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={CalendarDays}
-                  label="Calendario"
-                  meta={
-                    nextEvent
-                      ? `Próximo: ${nextEvent.title}${nextEvent.start ? ` · ${nextEvent.start}` : ""}`
-                      : "Sin eventos programados"
-                  }
-                  onClick={() => setView("calendar")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={Sun}
-                  label="Rutina diaria"
-                  meta={routine.length === 0 ? "Sin hábitos configurados" : `${routinePct}% completada`}
-                  onClick={() => setView("routine")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={FolderKanban}
-                  label="Proyectos"
-                  meta={
-                    projects.length === 0
-                      ? "Aún sin proyectos"
-                      : `${activeProjects} activos${lateProjects > 0 ? ` · ${lateProjects} retrasado${lateProjects > 1 ? "s" : ""}` : ""}`
-                  }
-                  onClick={() => setView("projects")}
-                />
-              </ListGroup>
-            </div>
+              <div className="mt-[28px] px-[20px]">
+                <div className="pb-[12px] flex items-center gap-[8px]">
+                  <div className="h-[4px] w-[4px] rounded-full bg-[#60A5FA]" />
+                  <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+                    Hoy
+                  </span>
+                </div>
+                <div className="flex flex-col gap-[10px]">
+                  <BlueRow
+                    Icon={ListChecks}
+                    label="Prioridades"
+                    meta={
+                      todayTotal === 0
+                        ? "Sin tareas todavía"
+                        : `${pendingTasks} pendientes${highPriorityToday > 0 ? ` · ${highPriorityToday} de alta prioridad` : ""}`
+                    }
+                    onClick={() => setView("priorities")}
+                    accent="#3B82F6"
+                  />
+                  <BlueRow
+                    Icon={CalendarDays}
+                    label="Calendario"
+                    meta={
+                      nextEvent
+                        ? `Próximo: ${nextEvent.title}${nextEvent.start ? ` · ${nextEvent.start}` : ""}`
+                        : "Sin eventos programados"
+                    }
+                    onClick={() => setView("calendar")}
+                    accent="#2563EB"
+                  />
+                  <BlueRow
+                    Icon={Sun}
+                    label="Rutina diaria"
+                    meta={routine.length === 0 ? "Sin hábitos configurados" : `${routinePct}% completada`}
+                    onClick={() => setView("routine")}
+                    accent="#60A5FA"
+                  />
+                  <BlueRow
+                    Icon={FolderKanban}
+                    label="Proyectos"
+                    meta={
+                      projects.length === 0
+                        ? "Aún sin proyectos"
+                        : `${activeProjects} activos${lateProjects > 0 ? ` · ${lateProjects} retrasado${lateProjects > 1 ? "s" : ""}` : ""}`
+                    }
+                    onClick={() => setView("projects")}
+                    accent="#1D4ED8"
+                  />
+                </div>
+              </div>
 
-            <div className="mt-[28px] px-[20px]">
-              <SectionLabel>Crece</SectionLabel>
-              <ListGroup>
-                <PlainRow
-                  Icon={Target}
-                  label="Metas"
-                  meta={goals.length === 0 ? "Define tu primera meta" : `${goals.length} activa${goals.length > 1 ? "s" : ""}`}
-                  onClick={() => setView("goals")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={BookOpen}
-                  label="Aprender"
-                  meta="Contenido para hacer crecer tu negocio"
-                  onClick={() => setView("learn")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={Sparkles}
-                  label="Recomendaciones IA"
-                  meta={
-                    recommendations.length === 0
-                      ? "Sin sugerencias por ahora"
-                      : `${recommendations.length} sugerencia${recommendations.length > 1 ? "s" : ""} para ti`
-                  }
-                  onClick={() => setView("recos")}
-                />
-              </ListGroup>
-            </div>
+              <div className="mt-[32px] px-[20px]">
+                <div className="pb-[12px] flex items-center gap-[8px]">
+                  <div className="h-[4px] w-[4px] rounded-full bg-[#60A5FA]" />
+                  <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+                    Crece
+                  </span>
+                </div>
+                <div className="flex flex-col gap-[10px]">
+                  <BlueRow
+                    Icon={Target}
+                    label="Metas"
+                    meta={goals.length === 0 ? "Define tu primera meta" : `${goals.length} activa${goals.length > 1 ? "s" : ""}`}
+                    onClick={() => setView("goals")}
+                    accent="#3B82F6"
+                  />
+                  <BlueRow
+                    Icon={BookOpen}
+                    label="Aprender"
+                    meta="Contenido para hacer crecer tu negocio"
+                    onClick={() => setView("learn")}
+                    accent="#2563EB"
+                  />
+                  <BlueRow
+                    Icon={Sparkles}
+                    label="Recomendaciones IA"
+                    meta={
+                      recommendations.length === 0
+                        ? "Sin sugerencias por ahora"
+                        : `${recommendations.length} sugerencia${recommendations.length > 1 ? "s" : ""} para ti`
+                    }
+                    onClick={() => setView("recos")}
+                    accent="#60A5FA"
+                  />
+                </div>
+              </div>
 
-            <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-white/40 text-center">
-              {todayDone} de {todayTotal} tareas completadas hoy
-            </div>
+              <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-[#93C5FD]/50 text-center">
+                {todayDone} de {todayTotal} tareas completadas hoy
+              </div>
 
               <FooterMark>Tu negocio crece contigo</FooterMark>
             </ProductivityScroll>
+
           </motion.div>
         )}
 
