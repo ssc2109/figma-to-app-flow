@@ -39,21 +39,18 @@ export const getSubscription = createServerFn({ method: "GET" })
       if (updated) sub = updated;
     }
 
-    // Usage del mes actual
-    const monthStart = new Date();
-    monthStart.setUTCDate(1);
-    monthStart.setUTCHours(0, 0, 0, 0);
-    const monthISO = monthStart.toISOString().slice(0, 10);
-
+    // Usage: tomamos la ventana activa (no vencida) de cada kind
+    const nowIso = new Date().toISOString();
     const { data: usage } = await supabase
       .from("usage_counters")
-      .select("kind,count")
+      .select("kind,count,period_end")
       .eq("user_id", userId)
-      .eq("period_month", monthISO);
+      .gt("period_end", nowIso);
 
     const usageMap: Record<string, number> = {};
     (usage ?? []).forEach((r: { kind: string; count: number }) => {
-      usageMap[r.kind] = r.count;
+      // Si hay múltiples ventanas activas por kind, nos quedamos con la mayor cuenta
+      usageMap[r.kind] = Math.max(usageMap[r.kind] ?? 0, r.count);
     });
 
     return { subscription: sub ?? null, usage: usageMap };
