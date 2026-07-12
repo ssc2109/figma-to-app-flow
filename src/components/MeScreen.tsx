@@ -2268,9 +2268,42 @@ function PathNodesTrail({
   const currentIdx = path.topics.findIndex((t) => !done.has(t));
   const allDone = currentIdx === -1;
   const total = path.topics.length;
-  // Node positions: alternate xPercent using a 4-phase zigzag for smoother curve
-  const phases = [22, 50, 78, 50];
-  const rowH = 118; // vertical distance between nodes
+  // Per-category zigzag pattern + graduation icon
+  const PATTERNS: Record<string, number[]> = {
+    ventas: [22, 50, 78, 50],
+    finanzas: [30, 70, 30, 70],
+    clientes: [50, 20, 50, 80],
+    productividad: [26, 74, 40, 60],
+    organizacion: [50, 28, 50, 72],
+    formalizacion: [24, 50, 76, 50],
+    marketing: [20, 80, 32, 68],
+    inventario: [50, 76, 50, 24],
+    administracion: [30, 60, 40, 70],
+    negociacion: [28, 72, 28, 72],
+    liderazgo: [50, 22, 78, 50],
+    ia: [22, 78, 22, 78],
+    expansion: [26, 46, 66, 86],
+    inversion: [50, 26, 74, 50],
+  };
+  const ICONS: Record<string, typeof GraduationCap> = {
+    ventas: Trophy,
+    finanzas: Landmark,
+    clientes: Handshake,
+    productividad: Rocket,
+    organizacion: ScrollText,
+    formalizacion: Award,
+    marketing: Megaphone,
+    inventario: Package,
+    administracion: BarChart3,
+    negociacion: HandCoins,
+    liderazgo: Crown,
+    ia: Cpu,
+    expansion: Rocket,
+    inversion: Gem,
+  };
+  const phases = PATTERNS[path.id] ?? [22, 50, 78, 50];
+  const FinalIcon = ICONS[path.id] ?? GraduationCap;
+  const rowH = 118;
   const topPad = 44;
   const items = [...path.topics, "__final__"];
   const positions = items.map((_, i) => ({
@@ -2278,9 +2311,8 @@ function PathNodesTrail({
     y: topPad + i * rowH,
   }));
   const height = topPad + (items.length - 1) * rowH + 72;
-  const width = 320; // logical viewBox width
+  const width = 320;
 
-  // Build connector path
   let d = "";
   positions.forEach((p, i) => {
     const x = (p.x / 100) * width;
