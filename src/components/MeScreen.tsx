@@ -2474,38 +2474,67 @@ function LearnView({ onBack }: { onBack: () => void }) {
         </div>
 
         {tab === "rutas" && (
-          <div className="flex flex-col gap-[14px]">
-            <SectionLabel>Rutas de aprendizaje</SectionLabel>
-            <div className="grid grid-cols-1 gap-[12px]">
-              {LEARNING_PATHS.map((p) => {
-                const done = store.state.pathProgress[p.id]?.length ?? 0;
-                const pct = p.topics.length > 0 ? Math.round((done / p.topics.length) * 100) : 0;
-                return (
-                  <button key={p.id} type="button" onClick={() => setPathOpen(p)}
-                    className="rounded-[18px] overflow-hidden text-left active:scale-[0.99] transition-transform"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-                  >
-                    <div className="h-[86px] relative" style={{ background: p.gradient }}>
-                      <div className="absolute top-[10px] left-[12px] font-['Bai_Jamjuree'] text-[28px]">{p.emoji}</div>
-                      <div className="absolute top-[10px] right-[10px] flex gap-[6px]">
-                        <LearnCoverTag>{p.level}</LearnCoverTag>
+          <div className="flex flex-col gap-[22px]">
+            {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((lvl) => {
+              const paths = LEARNING_PATHS.filter((p) => p.level === lvl);
+              if (paths.length === 0) return null;
+              const required = minPlanForLevel(lvl);
+              const unlocked = planMeetsRequirement(plan, required);
+              return (
+                <div key={lvl} className="flex flex-col gap-[10px]">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <div className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white tracking-[-0.2px]">{lvl}</div>
+                      <div className="font-['Geist'] text-[11.5px] text-white/45 mt-[2px] flex items-center gap-[6px]">
+                        {!unlocked && <Lock className="h-[10px] w-[10px]" strokeWidth={2} />}
+                        {planLabel(required)}
                       </div>
                     </div>
-                    <div className="p-[14px]">
-                      <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white leading-[1.25]">{p.name}</div>
-                      <div className="mt-[4px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4] line-clamp-2">{p.description}</div>
-                      <div className="mt-[10px] flex items-center justify-between">
-                        <div className="font-['Geist'] text-[11.5px] text-white/45">{p.topics.length} lecciones · ~{p.totalMinutes} min</div>
-                        <div className="font-['Geist'] text-[11.5px] text-white/60 tabular-nums">{pct}%</div>
-                      </div>
-                      <div className="mt-[6px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-                        <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
-                      </div>
+                    <div className="font-['Geist'] text-[11px] text-white/35 tabular-nums">{paths.length} rutas</div>
+                  </div>
+                  <div className="-mx-[20px] px-[20px] overflow-x-auto no-scrollbar">
+                    <div className="flex gap-[12px] pb-[4px]" style={{ scrollSnapType: "x mandatory" }}>
+                      {paths.map((p) => {
+                        const done = store.state.pathProgress[p.id]?.length ?? 0;
+                        const pct = p.topics.length > 0 ? Math.round((done / p.topics.length) * 100) : 0;
+                        const locked = !unlocked;
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => tryOpenPath(p)}
+                            className="shrink-0 w-[190px] rounded-[20px] overflow-hidden text-left active:scale-[0.98] transition-transform relative"
+                            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", scrollSnapAlign: "start" }}
+                          >
+                            <div className="h-[130px] relative" style={{ background: p.gradient }}>
+                              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)" }} />
+                              <div className="absolute top-[10px] left-[12px] text-[38px] leading-none drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)]">{p.emoji}</div>
+                              <div className="absolute bottom-[10px] right-[10px]">
+                                <ProgressRing pct={pct} size={44} />
+                              </div>
+                            </div>
+                            <div className="p-[12px]">
+                              <div className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white leading-[1.2] line-clamp-2 min-h-[34px]">{p.name}</div>
+                              <div className="mt-[6px] font-['Geist'] text-[11px] text-white/45 tabular-nums">{p.topics.length} lecciones · ~{p.totalMinutes}m</div>
+                            </div>
+                            {locked && (
+                              <div className="absolute inset-0 rounded-[20px] flex flex-col items-center justify-center gap-[8px] backdrop-blur-[2px]" style={{ background: "rgba(0,0,0,0.55)" }}>
+                                <div className="h-[36px] w-[36px] rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
+                                  <Lock className="h-[15px] w-[15px] text-white/85" strokeWidth={2} />
+                                </div>
+                                <div className="font-['Geist'] text-[11px] text-white/80 px-[10px] text-center leading-[1.3]">
+                                  Disponible en plan {required === "pro" ? "Pro" : "Avanzado"}
+                                </div>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
