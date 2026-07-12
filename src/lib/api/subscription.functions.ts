@@ -94,20 +94,21 @@ export const subscribeToPlan = createServerFn({ method: "POST" })
     const periodEnd = new Date(now);
     periodEnd.setMonth(periodEnd.getMonth() + 1);
 
+    const isPaid = plan === "pro" || plan === "avanzado";
     const { error } = await supabase
       .from("subscriptions")
       .update({
         plan,
         status: "active",
         current_period_start: now.toISOString(),
-        current_period_end: periodEnd.toISOString(),
-        payment_provider: "culqi",
-        provider_subscription_id: providerSubscriptionId,
+        current_period_end: isPaid ? periodEnd.toISOString() : null,
+        payment_provider: isPaid ? "culqi" : null,
+        provider_subscription_id: isPaid ? providerSubscriptionId : null,
       })
       .eq("user_id", userId);
 
     if (error) throw new Error(error.message);
-    return { ok: true, plan, price: PLAN_PRICES[plan as "pro" | "avanzado"] };
+    return { ok: true, plan, price: PLAN_PRICES[plan as "gratis" | "pro" | "avanzado"] };
   });
 
 const IncInput = z.object({
