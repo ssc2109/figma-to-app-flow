@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence, animate, useInView } from "motion/react";
 import {
   CheckCircle2,
   Circle,
@@ -91,25 +91,146 @@ const PROJECT_STATUS: Record<ProjectStatus, { label: string; color: string }> = 
 
 /* ============ HUB HERO ============ */
 function StreakHero({ streak }: { streak: number }) {
+  const target = Math.max(streak, 7);
+  const pct = Math.min(streak / target, 1);
+  const size = 168;
+  const stroke = 10;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
   return (
-    <div className="flex flex-col items-center text-center py-[10px]">
-      <span className="font-['Geist'] text-[11.5px] font-medium uppercase tracking-[1.8px] text-white/35">
-        Racha
-      </span>
-      <div className="mt-[12px] flex items-baseline gap-[10px]">
-        <span className="font-['Bai_Jamjuree'] text-[80px] font-bold text-white tracking-[-3px] tabular-nums leading-none">
-          {streak}
-        </span>
-        <span className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white/45 tracking-[-0.5px]">
-          días
-        </span>
+    <div
+      className="relative rounded-[26px] overflow-hidden px-[20px] py-[26px] flex items-center gap-[20px]"
+      style={{
+        background: "linear-gradient(135deg,#0F172A 0%,#1E293B 100%)",
+        border: "1px solid rgba(96,165,250,0.18)",
+        boxShadow: "0 10px 40px -20px rgba(37,99,235,0.55)",
+      }}
+    >
+      {/* soft glow */}
+      <div
+        aria-hidden
+        className="absolute -top-[40px] -left-[40px] w-[220px] h-[220px] rounded-full opacity-60 pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35) 0%, rgba(59,130,246,0) 70%)" }}
+      />
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="rotate-[-90deg]">
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(148,163,184,0.18)" strokeWidth={stroke} fill="none" />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke="url(#streakGrad)"
+            strokeWidth={stroke}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={c * (1 - pct)}
+            style={{ filter: "drop-shadow(0 0 8px rgba(96,165,250,0.55))" }}
+          />
+          <defs>
+            <linearGradient id="streakGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#3B82F6" />
+              <stop offset="100%" stopColor="#60A5FA" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <Flame className="h-[18px] w-[18px] text-[#60A5FA] mb-[2px]" strokeWidth={1.8} />
+          <span className="font-['Bai_Jamjuree'] text-[52px] font-bold text-white tabular-nums leading-none">
+            {streak}
+          </span>
+          <span className="font-['Geist'] text-[11px] uppercase tracking-[1.6px] text-[#93C5FD] mt-[4px]">días</span>
+        </div>
       </div>
-      <p className="mt-[14px] font-['Geist'] text-[13.5px] text-white/45 leading-[1.5] max-w-[280px]">
-        Sigue abriendo todos los días.
-      </p>
+      <div className="flex-1 min-w-0">
+        <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+          Racha activa
+        </div>
+        <div className="mt-[6px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2]">
+          {streak === 0 ? "Empieza tu racha hoy" : streak < 3 ? "Vas encaminado" : streak < 7 ? "Ritmo constante" : "Fuego imparable"}
+        </div>
+        <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/60 leading-[1.5]">
+          {streak < target ? `Faltan ${target - streak} para tu próxima meta.` : "Meta alcanzada — sigue sumando."}
+        </p>
+      </div>
     </div>
   );
 }
+
+/* Blue-tinted row for the Productivity hub */
+function BlueRow({
+  Icon,
+  label,
+  meta,
+  onClick,
+  accent = "#3B82F6",
+}: {
+  Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
+  meta: string;
+  onClick: () => void;
+  accent?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left rounded-[20px] p-[14px] flex items-center gap-[14px] active:scale-[0.99] transition-transform"
+      style={{
+        background: "linear-gradient(135deg, rgba(30,41,59,0.75) 0%, rgba(15,23,42,0.9) 100%)",
+        border: "1px solid rgba(96,165,250,0.14)",
+      }}
+    >
+      <span
+        className="h-[46px] w-[46px] rounded-[14px] flex items-center justify-center shrink-0"
+        style={{
+          background: `linear-gradient(135deg, ${accent} 0%, #1E40AF 100%)`,
+          boxShadow: `0 6px 18px -8px ${accent}`,
+        }}
+      >
+        <Icon className="h-[20px] w-[20px] text-white" strokeWidth={1.9} />
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white leading-[1.2]">{label}</div>
+        <div className="mt-[3px] font-['Geist'] text-[12px] text-[#CBD5E1]/75 leading-[1.35] truncate">{meta}</div>
+      </div>
+      <ChevronRight className="h-[16px] w-[16px] text-[#93C5FD]/60 shrink-0" strokeWidth={1.8} />
+    </button>
+  );
+}
+
+/* Animated count-up number for stat cards */
+function CountUp({
+  value,
+  suffix = "",
+  className,
+}: {
+  value: number;
+  suffix?: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: false, amount: 0.4 });
+  const [display, setDisplay] = useState(0);
+  const prev = useRef(0);
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(prev.current, value, {
+      duration: 1.4,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => setDisplay(v),
+    });
+    prev.current = value;
+    return () => controls.stop();
+  }, [inView, value]);
+  return (
+    <span ref={ref} className={className} style={{ fontVariantNumeric: "tabular-nums" }}>
+      {Math.round(display)}
+      {suffix}
+    </span>
+  );
+}
+
 
 /* ============ SHARED MODAL ============ */
 function Sheet({
@@ -1547,7 +1668,7 @@ const LEARNING_PATHS: LearningPath[] = [
   { id: "clientes", emoji: "🤝", name: "Atención al Cliente", description: "Convierte compradores ocasionales en fans del negocio.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", topics: ["Experiencia del cliente", "Manejo de quejas y reclamos", "Programas de fidelización", "Comunicación asertiva", "Post-venta que retiene"] },
   { id: "productividad", emoji: "🧠", name: "Productividad", description: "Menos tiempo perdido, más avances reales cada día.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#111827,#f59e0b)", topics: ["Regla del 80/20 aplicada al negocio", "Bloques de tiempo profundo", "Gestión de energía, no solo tiempo", "Rutinas de dueños de negocio", "Delegar y automatizar"] },
   { id: "organizacion", emoji: "🗂️", name: "Organización y Procesos", description: "Ordena tu negocio con procesos simples que no dependen de ti.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#1e293b,#64748b)", topics: ["Procesos que no dependen del dueño", "Checklists para reducir errores", "Orden del local y del almacén", "Documentar lo que ya funciona", "Delegar tareas repetitivas"] },
-  { id: "formalizacion", emoji: "📋", name: "Formalización y Trámites", description: "RUC, régimen tributario y trámites básicos sin dolores de cabeza.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#052e2b,#0891b2)", topics: ["Cómo sacar tu RUC y elegir régimen", "SUNAT: obligaciones básicas del pequeño negocio", "Registro de marca y Sunarp", "Licencias municipales básicas", "Errores comunes al formalizarse"] },
+  { id: "formalizacion", emoji: "📋", name: "Formalización y Trámites", description: "RUC, régimen tributario y trámites básicos sin dolores de cabeza.", level: "Avanzado", totalMinutes: 150, gradient: "linear-gradient(135deg,#052e2b,#0891b2)", topics: ["Cómo sacar tu RUC y elegir régimen", "SUNAT: obligaciones básicas del pequeño negocio", "Registro de marca y Sunarp", "Licencias municipales básicas", "Errores comunes al formalizarse"] },
   { id: "marketing", emoji: "📢", name: "Marketing Digital", description: "Redes sociales, WhatsApp Business y publicidad rentable.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#3b0764,#9333ea)", topics: ["Marketing en redes sociales", "WhatsApp Business avanzado", "Publicidad pagada rentable", "Contenido que vende", "SEO local para pequeños negocios"] },
   { id: "inventario", emoji: "📦", name: "Gestión de Inventario", description: "Evita quiebres de stock y capital dormido en almacén.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", topics: ["Rotación de inventario", "Método ABC de productos", "Reabastecimiento óptimo", "Control de mermas y robos", "Proveedores estratégicos"] },
   { id: "administracion", emoji: "📊", name: "Administración", description: "Los procesos que sostienen a un negocio que crece.", level: "Intermedio", totalMinutes: 210, gradient: "linear-gradient(135deg,#1e293b,#0d9488)", topics: ["Indicadores clave (KPIs)", "Toma de decisiones con datos", "Planeación semanal y mensual", "Procesos y manuales operativos", "Gestión de proveedores"] },
@@ -2824,10 +2945,52 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
   const activeProjects = projects.filter((p) => p.status === "active" || p.status === "planning").length;
   const lateProjects = projects.filter((p) => p.status === "late").length;
 
-  const levelStyle: Record<string, { bg: string; icon: React.ReactNode; label: string }> = {
-    info: { bg: "rgba(74,222,128,0.10)", icon: <Info className="h-[14px] w-[14px] text-[#4ADE80]" strokeWidth={1.8} />, label: "Informativo" },
-    warn: { bg: "rgba(250,204,21,0.10)", icon: <Flame className="h-[14px] w-[14px] text-[#FACC15]" strokeWidth={1.8} />, label: "Atención" },
-    urgent: { bg: "rgba(248,113,113,0.10)", icon: <AlertTriangle className="h-[14px] w-[14px] text-[#F87171]" strokeWidth={1.8} />, label: "Urgente" },
+  type LevelStyleEntry = {
+    accent: string;
+    bg: string;
+    border: string;
+    iconBg: string;
+    icon: React.ReactNode;
+    label: string;
+    cta: string;
+  };
+  const levelStyle: Record<string, LevelStyleEntry> = {
+    info: {
+      accent: "#60A5FA",
+      bg: "linear-gradient(135deg, rgba(37,99,235,0.18), rgba(15,23,42,0.55))",
+      border: "1px solid rgba(96,165,250,0.28)",
+      iconBg: "linear-gradient(135deg,#3B82F6,#1D4ED8)",
+      icon: <Info className="h-[16px] w-[16px] text-white" strokeWidth={1.9} />,
+      label: "Sugerencia",
+      cta: "Revisar",
+    },
+    success: {
+      accent: "#4ADE80",
+      bg: "linear-gradient(135deg, rgba(34,197,94,0.16), rgba(6,78,59,0.35))",
+      border: "1px solid rgba(74,222,128,0.32)",
+      iconBg: "linear-gradient(135deg,#22C55E,#15803D)",
+      icon: <CheckCircle2 className="h-[16px] w-[16px] text-white" strokeWidth={2} />,
+      label: "Buen momento",
+      cta: "Aprovechar",
+    },
+    warn: {
+      accent: "#FBBF24",
+      bg: "linear-gradient(135deg, rgba(234,179,8,0.16), rgba(66,32,6,0.45))",
+      border: "1px solid rgba(251,191,36,0.30)",
+      iconBg: "linear-gradient(135deg,#F59E0B,#B45309)",
+      icon: <Flame className="h-[16px] w-[16px] text-white" strokeWidth={1.9} />,
+      label: "Atención",
+      cta: "Ver detalle",
+    },
+    urgent: {
+      accent: "#F87171",
+      bg: "linear-gradient(135deg, rgba(239,68,68,0.18), rgba(69,10,10,0.5))",
+      border: "1px solid rgba(248,113,113,0.35)",
+      iconBg: "linear-gradient(135deg,#EF4444,#991B1B)",
+      icon: <AlertTriangle className="h-[16px] w-[16px] text-white" strokeWidth={2} />,
+      label: "Urgente",
+      cta: "Resolver",
+    },
   };
 
   return (
@@ -2838,43 +3001,86 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
         <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</div>
           <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
-            <Stat label="Productividad" value={`${productivity}%`} />
-            <Stat label="Tareas" value={`${doneTasks}/${totalTasks}`} />
-            <Stat label="Rutina" value={`${routineDone}/${routine.length || 0}`} />
-            <Stat label="Metas" value={`${activeGoals}`} />
-            <Stat label="Proyectos" value={`${activeProjects}`} />
-            <Stat label="En riesgo" value={`${lateProjects}`} highlight={lateProjects > 0} />
+            <AnimatedStat label="Productividad" value={productivity} suffix="%" />
+            <AnimatedStat label="Tareas" value={doneTasks} denom={totalTasks} />
+            <AnimatedStat label="Rutina" value={routineDone} denom={routine.length || 0} />
+            <AnimatedStat label="Metas" value={activeGoals} />
+            <AnimatedStat label="Proyectos" value={activeProjects} />
+            <AnimatedStat label="En riesgo" value={lateProjects} highlight={lateProjects > 0} />
           </div>
         </div>
 
         <SectionLabel>Recomendaciones</SectionLabel>
         {recommendations.length === 0 ? (
-          <div className="py-[32px] text-center font-['Geist'] text-[13px] text-white/40">
-            Cuando registres actividad, la IA te sugerirá acciones aquí.
+          <div
+            className="rounded-[18px] p-[20px] text-center"
+            style={{
+              background: "linear-gradient(135deg, rgba(37,99,235,0.14), rgba(15,23,42,0.55))",
+              border: "1px solid rgba(96,165,250,0.22)",
+            }}
+          >
+            <div className="mx-auto h-[42px] w-[42px] rounded-[14px] flex items-center justify-center mb-[10px]" style={{ background: "linear-gradient(135deg,#3B82F6,#1D4ED8)" }}>
+              <Sparkles className="h-[18px] w-[18px] text-white" strokeWidth={1.9} />
+            </div>
+            <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white">
+              Empieza registrando tus prioridades del día
+            </div>
+            <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/60 leading-[1.5]">
+              Crea 3 tareas y 1 meta — la IA usará esos datos para sugerirte acciones concretas.
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-[10px]">
+          <div className="flex flex-col gap-[12px]">
             {recommendations.map((r) => {
-              const s = levelStyle[r.level];
+              const s = levelStyle[r.level] ?? levelStyle.info;
               return (
-                <div key={r.id} className="rounded-[16px] p-[14px]" style={{ background: s.bg, border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-center gap-[8px]">
+                <div
+                  key={r.id}
+                  className="rounded-[18px] p-[14px] flex gap-[12px]"
+                  style={{ background: s.bg, border: s.border }}
+                >
+                  <span
+                    className="h-[40px] w-[40px] rounded-[12px] flex items-center justify-center shrink-0"
+                    style={{ background: s.iconBg, boxShadow: `0 6px 18px -8px ${s.accent}` }}
+                  >
                     {s.icon}
-                    <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/50">{s.label}</span>
-                  </div>
-                  <div className="mt-[6px] font-['Geist'] text-[14.5px] text-white leading-[1.35]">{r.title}</div>
-                  {r.body && <div className="mt-[4px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4]">{r.body}</div>}
-                  <div className="mt-[10px] flex flex-wrap gap-[6px]">
-                    {r.taskId && (
-                      <GhostButton onClick={() => goTo("priorities")}>Ver tareas</GhostButton>
-                    )}
-                    {r.projectId && (
-                      <GhostButton onClick={() => goTo("projects")}>Ver proyecto</GhostButton>
-                    )}
-                    {r.goalId && (
-                      <GhostButton onClick={() => goTo("goals")}>Ver meta</GhostButton>
-                    )}
-                    <GhostButton onClick={() => dismissRecommendation(r.id)}>Descartar</GhostButton>
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-['Geist'] text-[10px] uppercase tracking-[1.4px]" style={{ color: s.accent }}>
+                      {s.label}
+                    </div>
+                    <div className="mt-[3px] font-['Bai_Jamjuree'] text-[15px] font-semibold text-white leading-[1.3]">{r.title}</div>
+                    {r.body && <div className="mt-[4px] font-['Geist'] text-[12.5px] text-white/70 leading-[1.45]">{r.body}</div>}
+                    <div className="mt-[10px] flex flex-wrap gap-[6px]">
+                      {r.taskId || (!r.projectId && !r.goalId && r.level !== "success") ? (
+                        <button
+                          type="button"
+                          onClick={() => (r.projectId ? goTo("projects") : r.goalId ? goTo("goals") : goTo("priorities"))}
+                          className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] font-medium text-white flex items-center gap-[4px]"
+                          style={{ background: s.iconBg }}
+                        >
+                          {s.cta} <ArrowRight className="h-[12px] w-[12px]" strokeWidth={2} />
+                        </button>
+                      ) : null}
+                      {r.projectId && (
+                        <button type="button" onClick={() => goTo("projects")} className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] font-medium text-white flex items-center gap-[4px]" style={{ background: s.iconBg }}>
+                          Ver proyecto <ArrowRight className="h-[12px] w-[12px]" strokeWidth={2} />
+                        </button>
+                      )}
+                      {r.goalId && (
+                        <button type="button" onClick={() => goTo("goals")} className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] font-medium text-white flex items-center gap-[4px]" style={{ background: s.iconBg }}>
+                          Ver meta <ArrowRight className="h-[12px] w-[12px]" strokeWidth={2} />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => dismissRecommendation(r.id)}
+                        className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] text-white/55 hover:text-white/80"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      >
+                        Descartar
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -2885,6 +3091,36 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
     </SubScreen>
   );
 }
+
+function AnimatedStat({
+  label,
+  value,
+  denom,
+  suffix = "",
+  highlight,
+}: {
+  label: string;
+  value: number;
+  denom?: number;
+  suffix?: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div>
+      <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.2px] text-white/40">{label}</div>
+      <div
+        className="mt-[4px] font-['Bai_Jamjuree'] text-[20px] font-semibold tabular-nums"
+        style={{ color: highlight ? "#F87171" : "white" }}
+      >
+        <CountUp value={value} suffix={suffix} />
+        {typeof denom === "number" && (
+          <span className="text-white/40">/{denom}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
@@ -2951,90 +3187,103 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
 
             <ProductivityScroll className="pt-[20px] flex flex-col">
               <div className="px-[20px]">
-              <StreakHero streak={streak} />
-            </div>
+                <StreakHero streak={streak} />
+              </div>
 
-            <div className="mt-[40px] px-[20px]">
-              <SectionLabel>Hoy</SectionLabel>
-              <ListGroup>
-                <PlainRow
-                  Icon={ListChecks}
-                  label="Prioridades"
-                  meta={
-                    todayTotal === 0
-                      ? "Sin tareas todavía"
-                      : `${pendingTasks} pendientes${highPriorityToday > 0 ? ` · ${highPriorityToday} de alta prioridad` : ""}`
-                  }
-                  onClick={() => setView("priorities")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={CalendarDays}
-                  label="Calendario"
-                  meta={
-                    nextEvent
-                      ? `Próximo: ${nextEvent.title}${nextEvent.start ? ` · ${nextEvent.start}` : ""}`
-                      : "Sin eventos programados"
-                  }
-                  onClick={() => setView("calendar")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={Sun}
-                  label="Rutina diaria"
-                  meta={routine.length === 0 ? "Sin hábitos configurados" : `${routinePct}% completada`}
-                  onClick={() => setView("routine")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={FolderKanban}
-                  label="Proyectos"
-                  meta={
-                    projects.length === 0
-                      ? "Aún sin proyectos"
-                      : `${activeProjects} activos${lateProjects > 0 ? ` · ${lateProjects} retrasado${lateProjects > 1 ? "s" : ""}` : ""}`
-                  }
-                  onClick={() => setView("projects")}
-                />
-              </ListGroup>
-            </div>
+              <div className="mt-[28px] px-[20px]">
+                <div className="pb-[12px] flex items-center gap-[8px]">
+                  <div className="h-[4px] w-[4px] rounded-full bg-[#60A5FA]" />
+                  <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+                    Hoy
+                  </span>
+                </div>
+                <div className="flex flex-col gap-[10px]">
+                  <BlueRow
+                    Icon={ListChecks}
+                    label="Prioridades"
+                    meta={
+                      todayTotal === 0
+                        ? "Sin tareas todavía"
+                        : `${pendingTasks} pendientes${highPriorityToday > 0 ? ` · ${highPriorityToday} de alta prioridad` : ""}`
+                    }
+                    onClick={() => setView("priorities")}
+                    accent="#3B82F6"
+                  />
+                  <BlueRow
+                    Icon={CalendarDays}
+                    label="Calendario"
+                    meta={
+                      nextEvent
+                        ? `Próximo: ${nextEvent.title}${nextEvent.start ? ` · ${nextEvent.start}` : ""}`
+                        : "Sin eventos programados"
+                    }
+                    onClick={() => setView("calendar")}
+                    accent="#2563EB"
+                  />
+                  <BlueRow
+                    Icon={Sun}
+                    label="Rutina diaria"
+                    meta={routine.length === 0 ? "Sin hábitos configurados" : `${routinePct}% completada`}
+                    onClick={() => setView("routine")}
+                    accent="#60A5FA"
+                  />
+                  <BlueRow
+                    Icon={FolderKanban}
+                    label="Proyectos"
+                    meta={
+                      projects.length === 0
+                        ? "Aún sin proyectos"
+                        : `${activeProjects} activos${lateProjects > 0 ? ` · ${lateProjects} retrasado${lateProjects > 1 ? "s" : ""}` : ""}`
+                    }
+                    onClick={() => setView("projects")}
+                    accent="#1D4ED8"
+                  />
+                </div>
+              </div>
 
-            <div className="mt-[28px] px-[20px]">
-              <SectionLabel>Crece</SectionLabel>
-              <ListGroup>
-                <PlainRow
-                  Icon={Target}
-                  label="Metas"
-                  meta={goals.length === 0 ? "Define tu primera meta" : `${goals.length} activa${goals.length > 1 ? "s" : ""}`}
-                  onClick={() => setView("goals")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={BookOpen}
-                  label="Aprender"
-                  meta="Contenido para hacer crecer tu negocio"
-                  onClick={() => setView("learn")}
-                />
-                <RowDivider />
-                <PlainRow
-                  Icon={Sparkles}
-                  label="Recomendaciones IA"
-                  meta={
-                    recommendations.length === 0
-                      ? "Sin sugerencias por ahora"
-                      : `${recommendations.length} sugerencia${recommendations.length > 1 ? "s" : ""} para ti`
-                  }
-                  onClick={() => setView("recos")}
-                />
-              </ListGroup>
-            </div>
+              <div className="mt-[32px] px-[20px]">
+                <div className="pb-[12px] flex items-center gap-[8px]">
+                  <div className="h-[4px] w-[4px] rounded-full bg-[#60A5FA]" />
+                  <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+                    Crece
+                  </span>
+                </div>
+                <div className="flex flex-col gap-[10px]">
+                  <BlueRow
+                    Icon={Target}
+                    label="Metas"
+                    meta={goals.length === 0 ? "Define tu primera meta" : `${goals.length} activa${goals.length > 1 ? "s" : ""}`}
+                    onClick={() => setView("goals")}
+                    accent="#3B82F6"
+                  />
+                  <BlueRow
+                    Icon={BookOpen}
+                    label="Aprender"
+                    meta="Contenido para hacer crecer tu negocio"
+                    onClick={() => setView("learn")}
+                    accent="#2563EB"
+                  />
+                  <BlueRow
+                    Icon={Sparkles}
+                    label="Recomendaciones IA"
+                    meta={
+                      recommendations.length === 0
+                        ? "Sin sugerencias por ahora"
+                        : `${recommendations.length} sugerencia${recommendations.length > 1 ? "s" : ""} para ti`
+                    }
+                    onClick={() => setView("recos")}
+                    accent="#60A5FA"
+                  />
+                </div>
+              </div>
 
-            <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-white/40 text-center">
-              {todayDone} de {todayTotal} tareas completadas hoy
-            </div>
+              <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-[#93C5FD]/50 text-center">
+                {todayDone} de {todayTotal} tareas completadas hoy
+              </div>
 
               <FooterMark>Tu negocio crece contigo</FooterMark>
             </ProductivityScroll>
+
           </motion.div>
         )}
 
