@@ -1684,6 +1684,30 @@ function SessionCoverBg({ gradient, children }: { gradient: string; children?: R
   );
 }
 
+/** Anillo circular de progreso con porcentaje al centro. */
+function ProgressRing({ pct, size = 44 }: { pct: number; size?: number }) {
+  const stroke = 3.5;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const clamped = Math.max(0, Math.min(100, pct));
+  const offset = c - (clamped / 100) * c;
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(0,0,0,0.45)" strokeWidth={stroke} fill="none" />
+        <circle
+          cx={size / 2} cy={size / 2} r={r}
+          stroke="rgba(255,255,255,0.95)" strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={offset} fill="none"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center font-['Geist'] text-[10.5px] font-semibold text-white tabular-nums">
+        {clamped}%
+      </div>
+    </div>
+  );
+}
+
 /* -------- Session Setup Sheet -------- */
 function SessionSetupSheet({
   open, path, initialTopic, onClose, onGenerate, loading, error,
