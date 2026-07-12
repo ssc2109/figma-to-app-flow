@@ -1735,8 +1735,8 @@ function SessionSetupSheet({
         </Field>
       )}
       {!path && (
-        <Field label="Tema libre">
-          <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar con proveedores" />
+        <Field label="Pregunta o tema">
+          <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar el precio de alquiler de mi local" />
         </Field>
       )}
       <Field label="Nivel">
@@ -1766,7 +1766,9 @@ function SessionSetupSheet({
         </div>
       </Field>
       <div className="font-['Geist'] text-[12px] text-white/45 leading-[1.5]">
-        La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable.
+        {path
+          ? "La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable."
+          : "Pregúntale cualquier duda de tu negocio y la IA investigará y armará una sesión completa para ti."}
       </div>
       {loading && (
         <div className="flex items-center gap-[10px] rounded-[12px] p-[12px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
