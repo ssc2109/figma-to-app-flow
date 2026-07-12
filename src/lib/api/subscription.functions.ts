@@ -132,7 +132,7 @@ export const incrementAndCheckUsage = createServerFn({ method: "POST" })
     const limit = isSocia ? limits.maxSociaCredits : limits.maxLearnSessionsPerMonth;
     const windowSeconds = isSocia && limits.sociaCreditsWindowHours > 0
       ? limits.sociaCreditsWindowHours * 3600
-      : null;
+      : undefined;
 
     // Incremento atómico con ventana adecuada
     const { data: newCount, error } = await supabase.rpc("increment_usage_counter", {
