@@ -172,9 +172,34 @@ Devuelve exclusivamente el objeto JSON solicitado, sin texto adicional.`;
 export const generateLearnSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => InputSchema.parse(input))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("LOVABLE_API_KEY no está configurado.");
+
+    // === Gating por plan (Aprender) ===
+    // Contamos e imponemos el límite ANTES de generar. Si excede, lanzamos con
+    // marcador PLAN_LIMIT_REACHED para que el UI lo distinga.
+    const { supabase, userId } = context as { supabase: import("@supabase/supabase-js").SupabaseClient; userId: string };
+    const { limitsFor } = await import("@/lib/plans");
+    const { data: sub } = await supabase
+      .from("subscriptions")
+      .select("plan")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const plan = (sub?.plan ?? "trial") as "trial" | "pro" | "avanzado";
+    const limit = limitsFor(plan).maxLearnSessionsPerMonth;
+
+    const { data: newCount, error: rpcErr } = await supabase.rpc("increment_usage_counter", {
+      _kind: "learn",
+    });
+    if (rpcErr) throw new Error(rpcErr.message);
+    if (Number.isFinite(limit) && Number(newCount ?? 0) > limit) {
+      const err = new Error(
+        `Alcanzaste el límite de ${limit} sesiones de Aprender de tu plan ${plan} este mes. Sube al plan Avanzado para sesiones ilimitadas.`,
+      );
+      (err as Error & { code?: string }).code = "PLAN_LIMIT_REACHED";
+      throw err;
+    }
 
     const gateway = createLovableAiGatewayProvider(key);
     const model = gateway("google/gemini-2.5-flash");
