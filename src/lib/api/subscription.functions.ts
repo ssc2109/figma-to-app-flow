@@ -134,6 +134,28 @@ export const incrementAndCheckUsage = createServerFn({ method: "POST" })
       ? limits.sociaCreditsWindowHours * 3600
       : undefined;
 
+    const denyFromKind = async (reason: "window" | "monthly", kind: string) => {
+      const { data: row } = await supabase
+        .from("usage_counters")
+        .select("period_end")
+        .eq("user_id", userId)
+        .eq("kind", kind)
+        .gt("period_end", new Date().toISOString())
+        .order("period_end", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const periodEnd = (row as { period_end?: string } | null)?.period_end;
+      const resetInMs = periodEnd ? new Date(periodEnd).getTime() - Date.now() : undefined;
+      const err = new Error(
+        isSocia
+          ? sociaLimitMessage(plan, { resetInMs, reason })
+          : `Alcanzaste el límite de ${limit} sesiones de Aprender de tu plan ${plan}. Sube a Avanzado para sesiones ilimitadas.`,
+      );
+      (err as Error & { code?: string; resetInMs?: number }).code = "PLAN_LIMIT_REACHED";
+      (err as Error & { code?: string; resetInMs?: number }).resetInMs = resetInMs;
+      throw err;
+    };
+
     // Incremento atómico con ventana adecuada
     const { data: newCount, error } = await supabase.rpc("increment_usage_counter", {
       _kind: data.kind,
@@ -143,14 +165,19 @@ export const incrementAndCheckUsage = createServerFn({ method: "POST" })
 
     const count = Number(newCount ?? 0);
     if (Number.isFinite(limit) && count > limit) {
-      const err = new Error(
-        isSocia
-          ? sociaLimitMessage(plan)
-          : `Alcanzaste el límite de ${limit} sesiones de Aprender de tu plan ${plan}. Sube a Avanzado para sesiones ilimitadas.`,
-      );
-      // marca reconocible para el cliente
-      (err as Error & { code?: string }).code = "PLAN_LIMIT_REACHED";
-      throw err;
+      await denyFromKind(windowSeconds ? "window" : "monthly", data.kind);
+    }
+
+    // Tope mensual duro para socIA (solo si el plan tiene ventana rotativa, ej. gratis).
+    if (isSocia && windowSeconds && Number.isFinite(limits.maxSociaMonthlyCap)) {
+      const { data: monthCount, error: err2 } = await supabase.rpc("increment_usage_counter", {
+        _kind: "socia_month_cap",
+        _window_seconds: null,
+      });
+      if (err2) throw new Error(err2.message);
+      if (Number(monthCount ?? 0) > limits.maxSociaMonthlyCap) {
+        await denyFromKind("monthly", "socia_month_cap");
+      }
     }
 
     return { count, limit: Number.isFinite(limit) ? limit : null, plan };
