@@ -175,11 +175,17 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
           );
         })}
 
+        {notice && (
+          <div className="rounded-[16px] p-[14px] border border-emerald-400/25 bg-emerald-400/10 font-['Geist'] text-[13px] text-emerald-100">
+            {notice}
+          </div>
+        )}
         {error && (
           <div className="rounded-[16px] p-[14px] border border-red-500/30 bg-red-500/10 font-['Geist'] text-[13px] text-red-200">
             {error}
           </div>
         )}
+
 
         <div className="font-['Geist'] text-[11.5px] text-white/40 text-center pt-[6px] leading-[1.5]">
           Pagos procesados por Culqi (Perú). Aceptamos tarjetas y Yape.
