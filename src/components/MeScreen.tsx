@@ -2312,10 +2312,32 @@ function LearnView({ onBack }: { onBack: () => void }) {
   const [running, setRunning] = useState<StoredSession | null>(null);
 
   const openSetup = (path?: LearningPath, topic?: string) => {
+    // Tema libre (sin path) es exclusivo del plan Avanzado.
+    if (!path && plan !== "avanzado" && plan !== "trial") {
+      setUpgradePrompt({
+        title: "Pregúntale a la IA",
+        message: "Las preguntas libres a la IA están disponibles en el plan Avanzado. Pregunta cualquier duda de tu negocio y la IA armará una sesión completa.",
+        plan: "Avanzado",
+      });
+      return;
+    }
     setSetupPath(path);
     setSetupTopic(topic);
     setError(undefined);
     setSetupOpen(true);
+  };
+
+  const tryOpenPath = (p: LearningPath) => {
+    const required = minPlanForLevel(p.level);
+    if (!planMeetsRequirement(plan, required)) {
+      setUpgradePrompt({
+        title: p.name,
+        message: `Las rutas de nivel ${p.level} están disponibles en el plan ${required === "pro" ? "Pro" : "Avanzado"}. Sube de plan para desbloquear todo el catálogo.`,
+        plan: required === "pro" ? "Pro" : "Avanzado",
+      });
+      return;
+    }
+    setPathOpen(p);
   };
 
   const doGenerate = async (topic: string, level: LearnLevel, minutes: LearnMinutes) => {
