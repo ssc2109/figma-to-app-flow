@@ -125,6 +125,7 @@ function NavShell() {
                 initialView={negocioInitialView}
                 onNewSale={() => setSalesOpen(true)}
                 onNewExpense={() => setExpenseOpen(true)}
+                onOpenPlans={() => setPlansOpen(true)}
               />
             )}
             {currentScreen === "socia" && (
