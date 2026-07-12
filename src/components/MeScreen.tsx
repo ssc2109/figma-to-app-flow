@@ -2731,16 +2731,8 @@ function LearnView({ onBack }: { onBack: () => void }) {
           </div>
         )}
 
-        {tab === "biblioteca" && (
-          <BibliotecaView store={store} libTab={libTab} setLibTab={setLibTab} query={query} setQuery={setQuery} onOpen={setRunning} />
-        )}
-
         {tab === "historial" && (
           <HistorialView sessions={store.state.sessions} onOpen={setRunning} onRemove={store.removeSession} />
-        )}
-
-        {tab === "favoritos" && (
-          <FavoritosView store={store} onOpen={setRunning} />
         )}
       </ProductivityScroll>
 
