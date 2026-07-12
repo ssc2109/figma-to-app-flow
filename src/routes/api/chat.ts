@@ -405,7 +405,7 @@ export const Route = createFileRoute("/api/chat")({
           if (windowSeconds && Number.isFinite(monthlyCap)) {
             const { data: monthCount, error: rpc2 } = await supabase.rpc(
               "increment_usage_counter",
-              { _kind: "socia_month_cap", _window_seconds: null },
+              { _kind: "socia_month_cap", _window_seconds: undefined },
             );
             if (rpc2) return new Response(rpc2.message, { status: 500 });
             if (Number(monthCount ?? 0) > monthlyCap) {
