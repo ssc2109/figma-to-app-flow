@@ -12,6 +12,8 @@ import CatalogView from "./business/CatalogView";
 import PurchasesView from "./business/PurchasesView";
 import CalendarView from "./business/CalendarView";
 import CashActivityView from "./business/CashActivityView";
+import UpgradeGate from "./business/UpgradeGate";
+import { usePlan } from "@/hooks/usePlan";
 
 type View =
   | "hub"
