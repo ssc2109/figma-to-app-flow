@@ -233,7 +233,18 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     onError: (err) => {
       console.error(err);
-      toast.error("La IA no pudo responder. Intenta de nuevo.");
+      // Intentar extraer un mensaje de PLAN_LIMIT_REACHED del backend
+      let msg = "La IA no pudo responder. Intenta de nuevo.";
+      const raw = (err as Error)?.message ?? "";
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.message) msg = String(parsed.message);
+      } catch {
+        // Si viene como texto plano con JSON embebido, buscar el mensaje
+        const m = raw.match(/"message"\s*:\s*"([^"]+)"/);
+        if (m) msg = m[1];
+      }
+      toast.error(msg);
     },
     onFinish: async () => {
       qc.invalidateQueries({ queryKey: ["chat-threads"] });
