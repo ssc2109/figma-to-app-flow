@@ -12,6 +12,8 @@ import CatalogView from "./business/CatalogView";
 import PurchasesView from "./business/PurchasesView";
 import CalendarView from "./business/CalendarView";
 import CashActivityView from "./business/CashActivityView";
+import UpgradeGate from "./business/UpgradeGate";
+import { usePlan } from "@/hooks/usePlan";
 
 type View =
   | "hub"
@@ -68,15 +70,18 @@ type BusinessScreenProps = {
   initialView?: View;
   onNewSale: () => void;
   onNewExpense: () => void;
+  onOpenPlans?: () => void;
 };
 
 export default function BusinessScreen({
   initialView = "hub",
   onNewSale,
   onNewExpense,
+  onOpenPlans,
 }: BusinessScreenProps) {
   const [view, setView] = useState<View>(initialView);
   const back = () => setView("hub");
+  const { limits } = usePlan();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -118,8 +123,36 @@ export default function BusinessScreen({
         {view === "receivables" && <DebtsView key="receivables" onBack={back} initialKind="cobrar" lockKind />}
         {view === "payables" && <DebtsView key="payables" onBack={back} initialKind="pagar" lockKind />}
         {view === "catalog" && <CatalogView key="catalog" onBack={back} />}
-        {view === "purchases" && <PurchasesView key="purchases" onBack={back} />}
-        {view === "calendar" && <CalendarView key="calendar" onBack={back} />}
+        {view === "purchases" && (
+          limits.hasSupplierPurchases ? (
+            <PurchasesView key="purchases" onBack={back} />
+          ) : (
+            <UpgradeGate
+              key="purchases-gate"
+              title="Compras a proveedores"
+              eyebrow="Función Pro"
+              onBack={back}
+              onUpgrade={onOpenPlans}
+              message="Registra a tus proveedores, controla lo que compras y mejora tus márgenes. Disponible desde el plan Pro."
+              requiredPlan="Pro"
+            />
+          )
+        )}
+        {view === "calendar" && (
+          limits.hasCalendarAgenda ? (
+            <CalendarView key="calendar" onBack={back} />
+          ) : (
+            <UpgradeGate
+              key="calendar-gate"
+              title="Calendario y agenda"
+              eyebrow="Función Pro"
+              onBack={back}
+              onUpgrade={onOpenPlans}
+              message="Organiza pagos, cobros, pedidos y recordatorios en un solo lugar. Disponible desde el plan Pro."
+              requiredPlan="Pro"
+            />
+          )
+        )}
         {view === "cashHistory" && <CashActivityView key="cashHistory" onBack={back} />}
 
         {(view === "suppliers" || view === "channels" || view === "documents" || view === "team") && (

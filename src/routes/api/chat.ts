@@ -346,7 +346,7 @@ export const Route = createFileRoute("/api/chat")({
         if (userErr || !userData.user) return new Response("Unauthorized", { status: 401 });
         const userId = userData.user.id;
 
-        // === Gating por plan (socIA): sistema de créditos con ventana variable ===
+        // === Gating por plan (socIA): créditos por ventana + tope mensual duro ===
         {
           const { data: sub } = await supabase
             .from("subscriptions")
@@ -365,19 +365,52 @@ export const Route = createFileRoute("/api/chat")({
             ? limits.sociaCreditsWindowHours * 3600
             : undefined;
 
+          // Contador principal (ventana rotativa para gratis, mes calendario para pro).
           const { data: newCount, error: rpcErr } = await supabase.rpc(
             "increment_usage_counter",
             { _kind: "socia", _window_seconds: windowSeconds },
           );
           if (rpcErr) return new Response(rpcErr.message, { status: 500 });
-          if (Number.isFinite(limit) && Number(newCount ?? 0) > limit) {
+
+          const denyResponse = async (reason: "window" | "monthly", kind: string) => {
+            // Traer period_end de la ventana activa para calcular tiempo restante.
+            const { data: row } = await supabase
+              .from("usage_counters")
+              .select("period_end")
+              .eq("user_id", userId)
+              .eq("kind", kind)
+              .gt("period_end", new Date().toISOString())
+              .order("period_end", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            const periodEnd = (row as { period_end?: string } | null)?.period_end;
+            const resetInMs = periodEnd ? new Date(periodEnd).getTime() - Date.now() : undefined;
             return new Response(
               JSON.stringify({
                 error: "PLAN_LIMIT_REACHED",
-                message: sociaLimitMessage(plan),
+                message: sociaLimitMessage(plan, { resetInMs, reason }),
+                resetInMs: resetInMs ?? null,
+                reason,
               }),
               { status: 402, headers: { "Content-Type": "application/json" } },
             );
+          };
+
+          if (Number.isFinite(limit) && Number(newCount ?? 0) > limit) {
+            return denyResponse(windowSeconds ? "window" : "monthly", "socia");
+          }
+
+          // Tope mensual duro adicional (solo aplica cuando hay ventana rotativa).
+          const monthlyCap = limits.maxSociaMonthlyCap;
+          if (windowSeconds && Number.isFinite(monthlyCap)) {
+            const { data: monthCount, error: rpc2 } = await supabase.rpc(
+              "increment_usage_counter",
+              { _kind: "socia_month_cap", _window_seconds: undefined },
+            );
+            if (rpc2) return new Response(rpc2.message, { status: 500 });
+            if (Number(monthCount ?? 0) > monthlyCap) {
+              return denyResponse("monthly", "socia_month_cap");
+            }
           }
         }
 

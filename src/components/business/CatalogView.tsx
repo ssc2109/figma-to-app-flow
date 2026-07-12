@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { motion, AnimatePresence } from "motion/react";
-import { Share2, Tag, Search, Package, X, Check } from "lucide-react";
+import { Share2, Tag, Search, Package, X, Check, Sparkles } from "lucide-react";
 import { SubHeader, SubScreen } from "./shared";
 import { useInventory } from "@/data/inventory";
+import { usePlan } from "@/hooks/usePlan";
 import { toast } from "sonner";
 
 /**
@@ -13,6 +14,8 @@ import { toast } from "sonner";
  */
 export default function CatalogView({ onBack }: { onBack: () => void }) {
   const inv = useInventory();
+  const { limits } = usePlan();
+  const showTraxBadge = !limits.hasCatalogBranding;
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState(false);
 
@@ -132,7 +135,16 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
             ))}
           </div>
         )}
+
+        {showTraxBadge && (
+          <div className="mt-[24px] flex items-center justify-center gap-[6px] font-['Geist'] text-[11px] text-white/45">
+            <Sparkles className="h-[11px] w-[11px]" strokeWidth={1.8} />
+            <span>Hecho con Trax</span>
+          </div>
+        )}
       </div>
+
+
 
       <AnimatePresence>
         {editing && <PriceEditor onClose={() => setEditing(false)} />}
