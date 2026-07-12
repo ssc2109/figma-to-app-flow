@@ -128,20 +128,24 @@ export const incrementAndCheckUsage = createServerFn({ method: "POST" })
 
     const plan = ((sub?.plan as PlanId) ?? "trial") as PlanId;
     const limits = limitsFor(plan);
-    const limit =
-      data.kind === "socia" ? limits.maxSociaQueriesPerMonth : limits.maxLearnSessionsPerMonth;
+    const isSocia = data.kind === "socia";
+    const limit = isSocia ? limits.maxSociaCredits : limits.maxLearnSessionsPerMonth;
+    const windowSeconds = isSocia && limits.sociaCreditsWindowHours > 0
+      ? limits.sociaCreditsWindowHours * 3600
+      : null;
 
-    // Incremento atómico
+    // Incremento atómico con ventana adecuada
     const { data: newCount, error } = await supabase.rpc("increment_usage_counter", {
       _kind: data.kind,
+      _window_seconds: windowSeconds,
     });
     if (error) throw new Error(error.message);
 
     const count = Number(newCount ?? 0);
     if (Number.isFinite(limit) && count > limit) {
       const err = new Error(
-        data.kind === "socia"
-          ? `Alcanzaste el límite de ${limit} consultas a socIA de tu plan ${plan}. Sube a Avanzado para uso ilimitado.`
+        isSocia
+          ? sociaLimitMessage(plan)
           : `Alcanzaste el límite de ${limit} sesiones de Aprender de tu plan ${plan}. Sube a Avanzado para sesiones ilimitadas.`,
       );
       // marca reconocible para el cliente
