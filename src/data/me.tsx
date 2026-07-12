@@ -318,6 +318,38 @@ export function MeProvider({ children }: { children: ReactNode }) {
         });
       }
     }
+    // Positive: all today's tasks done
+    const todayItemsAll = todos.filter((t) => t.due === "Hoy" || !t.due);
+    if (todayItemsAll.length >= 2 && todayItemsAll.every((t) => t.done)) {
+      out.push({
+        id: "reco-day-clean",
+        level: "success",
+        title: "¡Cerraste todas tus tareas de hoy!",
+        body: "Aprovecha el impulso: adelanta una tarea de mañana o revisa una meta activa.",
+      });
+    }
+    // Info: upcoming event today
+    const today = new Date().toISOString().slice(0, 10);
+    const eventToday = events.find((e) => e.date === today);
+    if (eventToday) {
+      out.push({
+        id: `reco-event-${eventToday.id}`,
+        level: "info",
+        title: `Hoy tienes "${eventToday.title}"`,
+        body: eventToday.start ? `Programado a las ${eventToday.start}. Prepara lo necesario con tiempo.` : "Revisa los detalles y prepara lo necesario.",
+      });
+    }
+    // Info: active project without recent movement
+    const activeProj = projects.find((p) => p.status === "active" && p.progress < 100);
+    if (activeProj && out.length < 4) {
+      out.push({
+        id: `reco-proj-${activeProj.id}`,
+        level: "info",
+        title: `Avanza "${activeProj.name}"`,
+        body: `Va en ${activeProj.progress}%. Define la siguiente tarea concreta para no perder ritmo.`,
+        projectId: activeProj.id,
+      });
+    }
     if (todos.length === 0 && projects.length === 0 && goals.length === 0) {
       out.push({
         id: "reco-empty",
