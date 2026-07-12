@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { animate, useInView } from "motion/react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, animate, useInView } from "motion/react";
 import {
   CheckCircle2,
   Circle,
