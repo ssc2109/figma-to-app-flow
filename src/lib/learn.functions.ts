@@ -85,6 +85,30 @@ const SOURCE_LIBRARY: Record<string, string[]> = {
     "Management - Peter Drucker",
     "OCDE (oecd.org)",
   ],
+  organizacion: [
+    "The E-Myth Revisited - Michael Gerber",
+    "The Checklist Manifesto - Atul Gawande",
+  ],
+  formalizacion: [
+    "SUNAT (sunat.gob.pe)",
+    "Sunarp (sunarp.gob.pe)",
+    "Ministerio de la Producción (produce.gob.pe)",
+  ],
+  negociacion: [
+    "Getting to Yes - Fisher & Ury",
+    "Never Split the Difference - Chris Voss",
+    "Harvard Business Review (hbr.org/topic/negotiation)",
+  ],
+  expansion: [
+    "Scaling Up - Verne Harnish",
+    "The Founder's Dilemmas - Noam Wasserman",
+    "McKinsey Growth (mckinsey.com/capabilities/growth-marketing-and-sales)",
+  ],
+  inversion: [
+    "The Intelligent Investor - Benjamin Graham",
+    "Venture Deals - Brad Feld & Jason Mendelson",
+    "SBS Perú (sbs.gob.pe)",
+  ],
 };
 
 /* Schema tolerante — todos los arrays y strings tienen default; se rellena en normalize(). */
