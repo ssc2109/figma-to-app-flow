@@ -17,7 +17,7 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const handleChoose = async (target: "pro" | "avanzado") => {
+  const handleChoose = async (target: "gratis" | "pro" | "avanzado") => {
     setError(null);
     setNotice(null);
     setBusy(target);
