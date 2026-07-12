@@ -2832,53 +2832,6 @@ function HistorialView({
   );
 }
 
-function FavoritosView({
-  store, onOpen,
-}: {
-  store: ReturnType<typeof useLearnStore>;
-  onOpen: (s: StoredSession) => void;
-}) {
-  const items = store.state.favorites.map((f) => {
-    const s = store.state.sessions.find((x) => x.id === f.sessionId);
-    if (!s) return null;
-    let title = ""; let subtitle = ""; let body = "";
-    if (f.type === "book") { const b = s.session.books[f.index]; if (!b) return null; title = b.title; subtitle = b.author; body = b.idea; }
-    if (f.type === "case") { const c = s.session.cases[f.index]; if (!c) return null; title = c.company; subtitle = s.topic; body = `${c.story}\n\nMoraleja: ${c.lesson}`; }
-    if (f.type === "news") { const n = s.session.news[f.index]; if (!n) return null; title = n.headline; subtitle = `${n.source} · ${n.dateHint}`; body = n.summary; }
-    if (f.type === "trend") { const t = s.session.trends[f.index]; if (!t) return null; title = t.title; subtitle = s.topic; body = t.description; }
-    return { fav: f, s, title, subtitle, body };
-  }).filter(Boolean) as { fav: FavoriteRef; s: StoredSession; title: string; subtitle: string; body: string }[];
-
-  if (items.length === 0) {
-    return (
-      <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40 leading-[1.5]">
-        Aún no tienes favoritos.<br/>Toca ⭐ en libros, casos, noticias o tendencias.
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-col gap-[10px]">
-      {items.map((it, i) => (
-        <div key={`${it.fav.sessionId}-${it.fav.type}-${it.fav.index}-${i}`} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="flex items-start justify-between gap-[10px]">
-            <div className="min-w-0 flex-1">
-              <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/40">
-                {it.fav.type === "book" ? "Libro" : it.fav.type === "case" ? "Caso" : it.fav.type === "news" ? "Noticia" : "Tendencia"}
-              </div>
-              <div className="mt-[2px] font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white leading-[1.3]">{it.title}</div>
-              <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45">{it.subtitle}</div>
-            </div>
-            <FavStar active onClick={() => store.toggleFavorite(it.fav)} />
-          </div>
-          <p className="mt-[8px] font-['Geist'] text-[12.5px] text-white/70 leading-[1.5] whitespace-pre-line line-clamp-4">{it.body}</p>
-          <button type="button" onClick={() => onOpen(it.s)} className="mt-[10px] font-['Geist'] text-[12px] text-white/75 flex items-center gap-[4px]">
-            Abrir sesión completa <ArrowRight className="h-[12px] w-[12px]" strokeWidth={1.8} />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 /* ============ RECOMENDACIONES ============ */
 function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => void }) {
