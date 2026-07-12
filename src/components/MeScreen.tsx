@@ -61,6 +61,8 @@ import {
 } from "./business/shared";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { usePlan } from "@/hooks/usePlan";
+import type { PlanId } from "@/lib/plans";
 
 type View =
   | "hub"
@@ -1542,14 +1544,41 @@ type LearningPath = {
 const LEARNING_PATHS: LearningPath[] = [
   { id: "ventas", emoji: "📈", name: "Cómo aumentar las ventas", description: "Estrategias probadas para vender más sin gastar más.", level: "Básico", totalMinutes: 180, gradient: "linear-gradient(135deg,#1f2937,#0f766e)", topics: ["Psicología del comprador", "Cross-selling y up-selling", "Fidelización de clientes recurrentes", "Precios que convierten", "Cierre de venta consultivo"] },
   { id: "finanzas", emoji: "💰", name: "Finanzas para pequeños negocios", description: "Domina el flujo de caja, márgenes y decisiones de dinero.", level: "Básico", totalMinutes: 210, gradient: "linear-gradient(135deg,#0f172a,#2563eb)", topics: ["Flujo de caja diario", "Margen bruto vs. margen neto", "Punto de equilibrio", "Control de gastos operativos", "Cómo fijar precios correctamente"] },
-  { id: "marketing", emoji: "📢", name: "Marketing Digital", description: "Redes sociales, WhatsApp Business y publicidad rentable.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#3b0764,#9333ea)", topics: ["Marketing en redes sociales", "WhatsApp Business avanzado", "Publicidad pagada rentable", "Contenido que vende", "SEO local para pequeños negocios"] },
   { id: "clientes", emoji: "🤝", name: "Atención al Cliente", description: "Convierte compradores ocasionales en fans del negocio.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", topics: ["Experiencia del cliente", "Manejo de quejas y reclamos", "Programas de fidelización", "Comunicación asertiva", "Post-venta que retiene"] },
-  { id: "inventario", emoji: "📦", name: "Gestión de Inventario", description: "Evita quiebres de stock y capital dormido en almacén.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", topics: ["Rotación de inventario", "Método ABC de productos", "Reabastecimiento óptimo", "Control de mermas y robos", "Proveedores estratégicos"] },
-  { id: "liderazgo", emoji: "👥", name: "Liderazgo", description: "Guía tu equipo con claridad, cercanía y resultados.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#4c1d95,#db2777)", topics: ["Liderazgo situacional", "Delegación efectiva", "Feedback que construye", "Motivación intrínseca del equipo", "Cultura de servicio"] },
   { id: "productividad", emoji: "🧠", name: "Productividad", description: "Menos tiempo perdido, más avances reales cada día.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#111827,#f59e0b)", topics: ["Regla del 80/20 aplicada al negocio", "Bloques de tiempo profundo", "Gestión de energía, no solo tiempo", "Rutinas de dueños de negocio", "Delegar y automatizar"] },
-  { id: "ia", emoji: "🤖", name: "IA aplicada a negocios", description: "Casos reales de IA que ahorran horas y aumentan ingresos.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#000000,#7c3aed)", topics: ["IA para atención al cliente 24/7", "IA para marketing y contenido", "IA para análisis de ventas", "IA para inventario predictivo", "Automatización de tareas repetitivas"] },
+  { id: "organizacion", emoji: "🗂️", name: "Organización y Procesos", description: "Ordena tu negocio con procesos simples que no dependen de ti.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#1e293b,#64748b)", topics: ["Procesos que no dependen del dueño", "Checklists para reducir errores", "Orden del local y del almacén", "Documentar lo que ya funciona", "Delegar tareas repetitivas"] },
+  { id: "formalizacion", emoji: "📋", name: "Formalización y Trámites", description: "RUC, régimen tributario y trámites básicos sin dolores de cabeza.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#052e2b,#0891b2)", topics: ["Cómo sacar tu RUC y elegir régimen", "SUNAT: obligaciones básicas del pequeño negocio", "Registro de marca y Sunarp", "Licencias municipales básicas", "Errores comunes al formalizarse"] },
+  { id: "marketing", emoji: "📢", name: "Marketing Digital", description: "Redes sociales, WhatsApp Business y publicidad rentable.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#3b0764,#9333ea)", topics: ["Marketing en redes sociales", "WhatsApp Business avanzado", "Publicidad pagada rentable", "Contenido que vende", "SEO local para pequeños negocios"] },
+  { id: "inventario", emoji: "📦", name: "Gestión de Inventario", description: "Evita quiebres de stock y capital dormido en almacén.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", topics: ["Rotación de inventario", "Método ABC de productos", "Reabastecimiento óptimo", "Control de mermas y robos", "Proveedores estratégicos"] },
   { id: "administracion", emoji: "📊", name: "Administración", description: "Los procesos que sostienen a un negocio que crece.", level: "Intermedio", totalMinutes: 210, gradient: "linear-gradient(135deg,#1e293b,#0d9488)", topics: ["Indicadores clave (KPIs)", "Toma de decisiones con datos", "Planeación semanal y mensual", "Procesos y manuales operativos", "Gestión de proveedores"] },
+  { id: "negociacion", emoji: "🤝", name: "Negociación con Proveedores y Clientes", description: "Negocia mejores condiciones sin dañar la relación.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#422006,#ca8a04)", topics: ["Principios de negociación efectiva", "Cómo negociar precios con proveedores", "Manejo de objeciones en la venta", "Cuándo ceder y cuándo sostener postura", "Cerrar acuerdos que se cumplen"] },
+  { id: "liderazgo", emoji: "👥", name: "Liderazgo", description: "Guía tu equipo con claridad, cercanía y resultados.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#4c1d95,#db2777)", topics: ["Liderazgo situacional", "Delegación efectiva", "Feedback que construye", "Motivación intrínseca del equipo", "Cultura de servicio"] },
+  { id: "ia", emoji: "🤖", name: "IA aplicada a negocios", description: "Casos reales de IA que ahorran horas y aumentan ingresos.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#000000,#7c3aed)", topics: ["IA para atención al cliente 24/7", "IA para marketing y contenido", "IA para análisis de ventas", "IA para inventario predictivo", "Automatización de tareas repetitivas"] },
+  { id: "expansion", emoji: "🚀", name: "Expansión y Crecimiento", description: "Escala tu negocio a nuevas sucursales o mercados con orden.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#052e16,#16a34a)", topics: ["Cuándo tu negocio está listo para escalar", "Franquicias vs. sucursales propias", "Sistematizar antes de expandir", "Financiamiento para crecer", "Errores comunes al expandirse rápido"] },
+  { id: "inversion", emoji: "💹", name: "Finanzas Avanzadas e Inversión", description: "Reinvierte con criterio y entiende cómo acceder a capital.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#0c0a09,#dc2626)", topics: ["Cuándo y cómo reinvertir utilidades", "Acceso a crédito para negocios", "Fundamentos para atraer inversionistas", "Evaluar el retorno de una inversión", "Riesgos financieros que evitar"] },
 ];
+
+/** Plan mínimo requerido para acceder a rutas de un nivel. */
+type RequiredPlan = "gratis" | "pro" | "avanzado";
+function minPlanForLevel(level: LearnLevel): RequiredPlan {
+  if (level === "Básico") return "gratis";
+  if (level === "Intermedio") return "pro";
+  return "avanzado";
+}
+function planRank(p: PlanId): number {
+  if (p === "gratis") return 0;
+  if (p === "pro") return 1;
+  return 2; // avanzado y trial (trial = preview de Avanzado)
+}
+function planMeetsRequirement(plan: PlanId, required: RequiredPlan): boolean {
+  const req = required === "gratis" ? 0 : required === "pro" ? 1 : 2;
+  return planRank(plan) >= req;
+}
+function planLabel(required: RequiredPlan): string {
+  if (required === "gratis") return "Incluido en tu plan";
+  if (required === "pro") return "Plan Pro";
+  return "Plan Avanzado";
+}
 
 const LEARN_STORAGE_KEY = "trax.learn.v2";
 
@@ -1655,6 +1684,30 @@ function SessionCoverBg({ gradient, children }: { gradient: string; children?: R
   );
 }
 
+/** Anillo circular de progreso con porcentaje al centro. */
+function ProgressRing({ pct, size = 44 }: { pct: number; size?: number }) {
+  const stroke = 3.5;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const clamped = Math.max(0, Math.min(100, pct));
+  const offset = c - (clamped / 100) * c;
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(0,0,0,0.45)" strokeWidth={stroke} fill="none" />
+        <circle
+          cx={size / 2} cy={size / 2} r={r}
+          stroke="rgba(255,255,255,0.95)" strokeWidth={stroke} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={offset} fill="none"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center font-['Geist'] text-[10.5px] font-semibold text-white tabular-nums">
+        {clamped}%
+      </div>
+    </div>
+  );
+}
+
 /* -------- Session Setup Sheet -------- */
 function SessionSetupSheet({
   open, path, initialTopic, onClose, onGenerate, loading, error,
@@ -1681,7 +1734,7 @@ function SessionSetupSheet({
     <Sheet
       open={open}
       onClose={loading ? () => {} : onClose}
-      title={path ? `Sesión · ${path.name}` : "Nueva sesión de aprendizaje"}
+      title={path ? `Sesión · ${path.name}` : "Pregúntale a la IA"}
       footer={
         <>
           <GhostButton onClick={onClose} disabled={loading}>Cancelar</GhostButton>
@@ -1706,8 +1759,8 @@ function SessionSetupSheet({
         </Field>
       )}
       {!path && (
-        <Field label="Tema libre">
-          <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar con proveedores" />
+        <Field label="Pregunta o tema">
+          <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar el precio de alquiler de mi local" />
         </Field>
       )}
       <Field label="Nivel">
@@ -1737,7 +1790,9 @@ function SessionSetupSheet({
         </div>
       </Field>
       <div className="font-['Geist'] text-[12px] text-white/45 leading-[1.5]">
-        La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable.
+        {path
+          ? "La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable."
+          : "Pregúntale cualquier duda de tu negocio y la IA investigará y armará una sesión completa para ti."}
       </div>
       {loading && (
         <div className="flex items-center gap-[10px] rounded-[12px] p-[12px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -2267,6 +2322,7 @@ type LibraryTab = "libros" | "casos" | "noticias" | "tendencias";
 function LearnView({ onBack }: { onBack: () => void }) {
   const store = useLearnStore();
   const generate = useServerFn(generateLearnSession);
+  const { plan } = usePlan();
   const [tab, setTab] = useState<LearnTab>("rutas");
   const [libTab, setLibTab] = useState<LibraryTab>("libros");
   const [query, setQuery] = useState("");
@@ -2274,15 +2330,38 @@ function LearnView({ onBack }: { onBack: () => void }) {
   const [setupOpen, setSetupOpen] = useState(false);
   const [setupPath, setSetupPath] = useState<LearningPath | undefined>(undefined);
   const [setupTopic, setSetupTopic] = useState<string | undefined>(undefined);
+  const [upgradePrompt, setUpgradePrompt] = useState<{ title: string; message: string; plan: "Pro" | "Avanzado" } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [running, setRunning] = useState<StoredSession | null>(null);
 
   const openSetup = (path?: LearningPath, topic?: string) => {
+    // Tema libre (sin path) es exclusivo del plan Avanzado.
+    if (!path && plan !== "avanzado" && plan !== "trial") {
+      setUpgradePrompt({
+        title: "Pregúntale a la IA",
+        message: "Las preguntas libres a la IA están disponibles en el plan Avanzado. Pregunta cualquier duda de tu negocio y la IA armará una sesión completa.",
+        plan: "Avanzado",
+      });
+      return;
+    }
     setSetupPath(path);
     setSetupTopic(topic);
     setError(undefined);
     setSetupOpen(true);
+  };
+
+  const tryOpenPath = (p: LearningPath) => {
+    const required = minPlanForLevel(p.level);
+    if (!planMeetsRequirement(plan, required)) {
+      setUpgradePrompt({
+        title: p.name,
+        message: `Las rutas de nivel ${p.level} están disponibles en el plan ${required === "pro" ? "Pro" : "Avanzado"}. Sube de plan para desbloquear todo el catálogo.`,
+        plan: required === "pro" ? "Pro" : "Avanzado",
+      });
+      return;
+    }
+    setPathOpen(p);
   };
 
   const doGenerate = async (topic: string, level: LearnLevel, minutes: LearnMinutes) => {
@@ -2419,38 +2498,67 @@ function LearnView({ onBack }: { onBack: () => void }) {
         </div>
 
         {tab === "rutas" && (
-          <div className="flex flex-col gap-[14px]">
-            <SectionLabel>Rutas de aprendizaje</SectionLabel>
-            <div className="grid grid-cols-1 gap-[12px]">
-              {LEARNING_PATHS.map((p) => {
-                const done = store.state.pathProgress[p.id]?.length ?? 0;
-                const pct = p.topics.length > 0 ? Math.round((done / p.topics.length) * 100) : 0;
-                return (
-                  <button key={p.id} type="button" onClick={() => setPathOpen(p)}
-                    className="rounded-[18px] overflow-hidden text-left active:scale-[0.99] transition-transform"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-                  >
-                    <div className="h-[86px] relative" style={{ background: p.gradient }}>
-                      <div className="absolute top-[10px] left-[12px] font-['Bai_Jamjuree'] text-[28px]">{p.emoji}</div>
-                      <div className="absolute top-[10px] right-[10px] flex gap-[6px]">
-                        <LearnCoverTag>{p.level}</LearnCoverTag>
+          <div className="flex flex-col gap-[22px]">
+            {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((lvl) => {
+              const paths = LEARNING_PATHS.filter((p) => p.level === lvl);
+              if (paths.length === 0) return null;
+              const required = minPlanForLevel(lvl);
+              const unlocked = planMeetsRequirement(plan, required);
+              return (
+                <div key={lvl} className="flex flex-col gap-[10px]">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <div className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white tracking-[-0.2px]">{lvl}</div>
+                      <div className="font-['Geist'] text-[11.5px] text-white/45 mt-[2px] flex items-center gap-[6px]">
+                        {!unlocked && <Lock className="h-[10px] w-[10px]" strokeWidth={2} />}
+                        {planLabel(required)}
                       </div>
                     </div>
-                    <div className="p-[14px]">
-                      <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white leading-[1.25]">{p.name}</div>
-                      <div className="mt-[4px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4] line-clamp-2">{p.description}</div>
-                      <div className="mt-[10px] flex items-center justify-between">
-                        <div className="font-['Geist'] text-[11.5px] text-white/45">{p.topics.length} lecciones · ~{p.totalMinutes} min</div>
-                        <div className="font-['Geist'] text-[11.5px] text-white/60 tabular-nums">{pct}%</div>
-                      </div>
-                      <div className="mt-[6px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-                        <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
-                      </div>
+                    <div className="font-['Geist'] text-[11px] text-white/35 tabular-nums">{paths.length} rutas</div>
+                  </div>
+                  <div className="-mx-[20px] px-[20px] overflow-x-auto no-scrollbar">
+                    <div className="flex gap-[12px] pb-[4px]" style={{ scrollSnapType: "x mandatory" }}>
+                      {paths.map((p) => {
+                        const done = store.state.pathProgress[p.id]?.length ?? 0;
+                        const pct = p.topics.length > 0 ? Math.round((done / p.topics.length) * 100) : 0;
+                        const locked = !unlocked;
+                        return (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => tryOpenPath(p)}
+                            className="shrink-0 w-[190px] rounded-[20px] overflow-hidden text-left active:scale-[0.98] transition-transform relative"
+                            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", scrollSnapAlign: "start" }}
+                          >
+                            <div className="h-[130px] relative" style={{ background: p.gradient }}>
+                              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)" }} />
+                              <div className="absolute top-[10px] left-[12px] text-[38px] leading-none drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)]">{p.emoji}</div>
+                              <div className="absolute bottom-[10px] right-[10px]">
+                                <ProgressRing pct={pct} size={44} />
+                              </div>
+                            </div>
+                            <div className="p-[12px]">
+                              <div className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white leading-[1.2] line-clamp-2 min-h-[34px]">{p.name}</div>
+                              <div className="mt-[6px] font-['Geist'] text-[11px] text-white/45 tabular-nums">{p.topics.length} lecciones · ~{p.totalMinutes}m</div>
+                            </div>
+                            {locked && (
+                              <div className="absolute inset-0 rounded-[20px] flex flex-col items-center justify-center gap-[8px] backdrop-blur-[2px]" style={{ background: "rgba(0,0,0,0.55)" }}>
+                                <div className="h-[36px] w-[36px] rounded-full flex items-center justify-center" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.14)" }}>
+                                  <Lock className="h-[15px] w-[15px] text-white/85" strokeWidth={2} />
+                                </div>
+                                <div className="font-['Geist'] text-[11px] text-white/80 px-[10px] text-center leading-[1.3]">
+                                  Disponible en plan {required === "pro" ? "Pro" : "Avanzado"}
+                                </div>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -2476,6 +2584,32 @@ function LearnView({ onBack }: { onBack: () => void }) {
         loading={loading}
         error={error}
       />
+
+      {upgradePrompt && (
+        <Sheet
+          open
+          onClose={() => setUpgradePrompt(null)}
+          title={upgradePrompt.title}
+          footer={
+            <>
+              <GhostButton onClick={() => setUpgradePrompt(null)}>Ahora no</GhostButton>
+              <PrimaryButton onClick={() => setUpgradePrompt(null)}>Ver planes</PrimaryButton>
+            </>
+          }
+        >
+          <div className="flex flex-col items-center text-center gap-[14px] py-[6px]">
+            <div className="h-[56px] w-[56px] rounded-[18px] grid place-items-center" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}>
+              <Lock className="h-[22px] w-[22px] text-white/70" strokeWidth={1.6} />
+            </div>
+            <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.2px]">
+              Disponible en plan {upgradePrompt.plan}
+            </div>
+            <p className="font-['Geist'] text-[13px] text-white/60 leading-[1.5] max-w-[280px]">
+              {upgradePrompt.message}
+            </p>
+          </div>
+        </Sheet>
+      )}
     </SubScreen>
   );
 }
