@@ -17,11 +17,27 @@ export const getSubscription = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const { data: sub } = await supabase
+    let { data: sub } = await supabase
       .from("subscriptions")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
+
+    // Auto-degradar trial vencido a plan gratis (permanente, sin bloqueo).
+    if (
+      sub &&
+      sub.status === "trialing" &&
+      sub.trial_ends_at &&
+      new Date(sub.trial_ends_at).getTime() <= Date.now()
+    ) {
+      const { data: updated } = await supabase
+        .from("subscriptions")
+        .update({ plan: "gratis", status: "active" })
+        .eq("user_id", userId)
+        .select("*")
+        .maybeSingle();
+      if (updated) sub = updated;
+    }
 
     // Usage del mes actual
     const monthStart = new Date();
