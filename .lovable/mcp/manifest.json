@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://ppufzcizgtyxphgyfoea.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "trax-mcp",
+      "version": "0.1.0",
+      "title": "Trax"
+    },
+    "tools": [
+      {
+        "name": "get_business_summary",
+        "title": "Resumen del negocio hoy",
+        "description": "Devuelve ingresos, egresos, ganancia neta del día, número de productos con stock bajo y total de fiados pendientes.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_products",
+        "title": "Listar productos",
+        "description": "Lista los productos del catálogo del negocio. Permite filtrar por texto de búsqueda (nombre, sku o barcode) y limitar el número de resultados.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Texto a buscar en nombre, sku o barcode."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_low_stock",
+        "title": "Productos con stock crítico",
+        "description": "Lista los productos cuyo stock actual está por debajo o igual al umbral configurado.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_recent_sales",
+        "title": "Ventas recientes",
+        "description": "Devuelve las ventas más recientes con sus items.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_pending_debts",
+        "title": "Fiados pendientes",
+        "description": "Lista los fiados (créditos a clientes) que aún no han sido pagados.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "register_expense",
+        "title": "Registrar egreso",
+        "description": "Registra un gasto/egreso del negocio en Trax. Usa categorías como 'servicios', 'insumos', 'transporte', 'personal', 'otros'.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Monto del gasto en soles (PEN)."
+            },
+            "category": {
+              "type": "string",
+              "minLength": 1,
+              "default": "otros"
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 280
+            }
+          },
+          "required": [
+            "amount"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
