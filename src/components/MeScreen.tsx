@@ -2584,6 +2584,32 @@ function LearnView({ onBack }: { onBack: () => void }) {
         loading={loading}
         error={error}
       />
+
+      {upgradePrompt && (
+        <Sheet
+          open
+          onClose={() => setUpgradePrompt(null)}
+          title={upgradePrompt.title}
+          footer={
+            <>
+              <GhostButton onClick={() => setUpgradePrompt(null)}>Ahora no</GhostButton>
+              <PrimaryButton onClick={() => setUpgradePrompt(null)}>Ver planes</PrimaryButton>
+            </>
+          }
+        >
+          <div className="flex flex-col items-center text-center gap-[14px] py-[6px]">
+            <div className="h-[56px] w-[56px] rounded-[18px] grid place-items-center" style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}>
+              <Lock className="h-[22px] w-[22px] text-white/70" strokeWidth={1.6} />
+            </div>
+            <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tracking-[-0.2px]">
+              Disponible en plan {upgradePrompt.plan}
+            </div>
+            <p className="font-['Geist'] text-[13px] text-white/60 leading-[1.5] max-w-[280px]">
+              {upgradePrompt.message}
+            </p>
+          </div>
+        </Sheet>
+      )}
     </SubScreen>
   );
 }
