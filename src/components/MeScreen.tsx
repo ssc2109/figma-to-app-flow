@@ -35,6 +35,22 @@ import {
   Clock,
   Check,
   Play,
+  Trophy,
+  Award,
+  Medal,
+  Crown,
+  Rocket,
+  Gem,
+  Landmark,
+  ScrollText,
+  HandCoins,
+  Handshake,
+  Users,
+  Package,
+  Megaphone,
+  Brain,
+  BarChart3,
+  Cpu,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
