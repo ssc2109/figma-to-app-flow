@@ -60,7 +60,7 @@ export const getSubscription = createServerFn({ method: "GET" })
   });
 
 const SubscribeInput = z.object({
-  plan: z.enum(["pro", "avanzado"]),
+  plan: z.enum(["gratis", "pro", "avanzado"]),
   culqiToken: z.string().min(1).optional(), // token generado por Culqi.js en el cliente
 });
 
