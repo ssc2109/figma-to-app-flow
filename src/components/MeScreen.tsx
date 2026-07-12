@@ -1567,8 +1567,8 @@ function minPlanForLevel(level: LearnLevel): RequiredPlan {
 }
 function planRank(p: PlanId): number {
   if (p === "gratis") return 0;
-  if (p === "trial" || p === "pro") return 1;
-  return 2; // avanzado
+  if (p === "pro") return 1;
+  return 2; // avanzado y trial (trial = preview de Avanzado)
 }
 function planMeetsRequirement(plan: PlanId, required: RequiredPlan): boolean {
   const req = required === "gratis" ? 0 : required === "pro" ? 1 : 2;
