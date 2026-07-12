@@ -172,7 +172,7 @@ export const incrementAndCheckUsage = createServerFn({ method: "POST" })
     if (isSocia && windowSeconds && Number.isFinite(limits.maxSociaMonthlyCap)) {
       const { data: monthCount, error: err2 } = await supabase.rpc("increment_usage_counter", {
         _kind: "socia_month_cap",
-        _window_seconds: null,
+        _window_seconds: undefined,
       });
       if (err2) throw new Error(err2.message);
       if (Number(monthCount ?? 0) > limits.maxSociaMonthlyCap) {
