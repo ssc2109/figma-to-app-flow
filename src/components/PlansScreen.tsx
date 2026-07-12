@@ -5,30 +5,35 @@ import { useServerFn } from "@tanstack/react-start";
 import { subscribeToPlan } from "@/lib/api/subscription.functions";
 import { PLAN_FEATURES, PLAN_PRICES, type PlanId } from "@/lib/plans";
 import { usePlan } from "@/hooks/usePlan";
-
-/**
- * Culqi (modo test). El checkout real usa Culqi.js con la llave pública:
- * <script src="https://checkout.culqi.com/js/v4"></script>
- * ⚠️  Para producción, agregar VITE_CULQI_PUBLIC_KEY como secret y reemplazar el placeholder.
- */
-const CULQI_PUBLIC_KEY_TEST = "pk_test_placeholder_replace_in_production";
+import { useCulqiCheckout } from "@/components/CulqiCheckout";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function PlansScreen({ onBack }: { onBack: () => void }) {
   const { subscription, plan, isTrialing, daysLeft, refresh } = usePlan();
+  const { user } = useAuth();
   const subscribe = useServerFn(subscribeToPlan);
+  const openCulqi = useCulqiCheckout();
   const [busy, setBusy] = useState<PlanId | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const handleChoose = async (target: "pro" | "avanzado") => {
     setError(null);
+    setNotice(null);
     setBusy(target);
     try {
-      // TODO Culqi real: abrir Culqi Checkout, obtener token, pasarlo a subscribeToPlan.
-      // Por ahora (sandbox sin llaves reales) omitimos el token → server marca el plan como active
-      // sin cobrar. Reemplazar cuando el dueño configure sus llaves.
-      void CULQI_PUBLIC_KEY_TEST;
-      await subscribe({ data: { plan: target } });
+      const { token, demo, error: culqiErr } = await openCulqi(
+        target,
+        user?.email ?? "cliente@trax.pe",
+      );
+      if (culqiErr) throw new Error(culqiErr);
+      await subscribe({ data: { plan: target, culqiToken: token ?? undefined } });
       await refresh();
+      setNotice(
+        demo
+          ? `Plan ${target} activado en modo demo (Culqi no configurado). Configura VITE_CULQI_PUBLIC_KEY en Secrets para cobrar de verdad.`
+          : `¡Listo! Plan ${target} activo.`,
+      );
     } catch (e) {
       const msg = e instanceof Error ? e.message : "No se pudo activar el plan.";
       setError(msg);
@@ -36,6 +41,7 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
       setBusy(null);
     }
   };
+
 
   return (
     <div className="relative w-full text-white pb-[180px]">
