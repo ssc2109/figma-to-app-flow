@@ -17,11 +17,27 @@ export const getSubscription = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const { data: sub } = await supabase
+    let { data: sub } = await supabase
       .from("subscriptions")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
+
+    // Auto-degradar trial vencido a plan gratis (permanente, sin bloqueo).
+    if (
+      sub &&
+      sub.status === "trialing" &&
+      sub.trial_ends_at &&
+      new Date(sub.trial_ends_at).getTime() <= Date.now()
+    ) {
+      const { data: updated } = await supabase
+        .from("subscriptions")
+        .update({ plan: "gratis", status: "active" })
+        .eq("user_id", userId)
+        .select("*")
+        .maybeSingle();
+      if (updated) sub = updated;
+    }
 
     // Usage del mes actual
     const monthStart = new Date();
@@ -44,7 +60,7 @@ export const getSubscription = createServerFn({ method: "GET" })
   });
 
 const SubscribeInput = z.object({
-  plan: z.enum(["pro", "avanzado"]),
+  plan: z.enum(["gratis", "pro", "avanzado"]),
   culqiToken: z.string().min(1).optional(), // token generado por Culqi.js en el cliente
 });
 
@@ -78,20 +94,21 @@ export const subscribeToPlan = createServerFn({ method: "POST" })
     const periodEnd = new Date(now);
     periodEnd.setMonth(periodEnd.getMonth() + 1);
 
+    const isPaid = plan === "pro" || plan === "avanzado";
     const { error } = await supabase
       .from("subscriptions")
       .update({
         plan,
         status: "active",
         current_period_start: now.toISOString(),
-        current_period_end: periodEnd.toISOString(),
-        payment_provider: "culqi",
-        provider_subscription_id: providerSubscriptionId,
+        current_period_end: isPaid ? periodEnd.toISOString() : null,
+        payment_provider: isPaid ? "culqi" : null,
+        provider_subscription_id: isPaid ? providerSubscriptionId : null,
       })
       .eq("user_id", userId);
 
     if (error) throw new Error(error.message);
-    return { ok: true, plan, price: PLAN_PRICES[plan as "pro" | "avanzado"] };
+    return { ok: true, plan, price: PLAN_PRICES[plan as "gratis" | "pro" | "avanzado"] };
   });
 
 const IncInput = z.object({
