@@ -16,6 +16,7 @@ import {
   Loader2,
   Check,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -229,7 +230,7 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
   );
 }
 
-export default function SettingsScreen({ onBack }: { onBack: () => void }) {
+export default function SettingsScreen({ onBack, onOpenPlans }: { onBack: () => void; onOpenPlans?: () => void }) {
   const { user, profile, refreshProfile, signOut } = useAuth();
   const inv = useInventory();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -507,6 +508,28 @@ export default function SettingsScreen({ onBack }: { onBack: () => void }) {
           />
         </div>
       </Section>
+
+      {onOpenPlans && (
+        <Section title="Suscripción">
+          <button
+            type="button"
+            onClick={onOpenPlans}
+            className="w-full flex items-center gap-[12px] px-[16px] py-[14px] text-left active:bg-white/[0.03]"
+          >
+            <div className="h-[34px] w-[34px] rounded-[10px] grid place-items-center bg-white/[0.05] border border-white/[0.07] shrink-0">
+              <Sparkles className="h-[15px] w-[15px] text-white/85" strokeWidth={1.7} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-['Geist'] text-[14.5px] text-white">Planes y suscripción</div>
+              <div className="font-['Geist'] text-[12px] text-white/40 mt-[2px]">
+                Elige un plan o gestiona tu suscripción
+              </div>
+            </div>
+            <ChevronRight className="h-[16px] w-[16px] text-white/30" />
+          </button>
+        </Section>
+      )}
+
 
       <Section title="Cuenta">
         <div className="flex items-center gap-[12px] px-[16px] py-[14px]">
