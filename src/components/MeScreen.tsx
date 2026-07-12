@@ -91,25 +91,146 @@ const PROJECT_STATUS: Record<ProjectStatus, { label: string; color: string }> = 
 
 /* ============ HUB HERO ============ */
 function StreakHero({ streak }: { streak: number }) {
+  const target = Math.max(streak, 7);
+  const pct = Math.min(streak / target, 1);
+  const size = 168;
+  const stroke = 10;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
   return (
-    <div className="flex flex-col items-center text-center py-[10px]">
-      <span className="font-['Geist'] text-[11.5px] font-medium uppercase tracking-[1.8px] text-white/35">
-        Racha
-      </span>
-      <div className="mt-[12px] flex items-baseline gap-[10px]">
-        <span className="font-['Bai_Jamjuree'] text-[80px] font-bold text-white tracking-[-3px] tabular-nums leading-none">
-          {streak}
-        </span>
-        <span className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white/45 tracking-[-0.5px]">
-          días
-        </span>
+    <div
+      className="relative rounded-[26px] overflow-hidden px-[20px] py-[26px] flex items-center gap-[20px]"
+      style={{
+        background: "linear-gradient(135deg,#0F172A 0%,#1E293B 100%)",
+        border: "1px solid rgba(96,165,250,0.18)",
+        boxShadow: "0 10px 40px -20px rgba(37,99,235,0.55)",
+      }}
+    >
+      {/* soft glow */}
+      <div
+        aria-hidden
+        className="absolute -top-[40px] -left-[40px] w-[220px] h-[220px] rounded-full opacity-60 pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35) 0%, rgba(59,130,246,0) 70%)" }}
+      />
+      <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="rotate-[-90deg]">
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(148,163,184,0.18)" strokeWidth={stroke} fill="none" />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke="url(#streakGrad)"
+            strokeWidth={stroke}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={c * (1 - pct)}
+            style={{ filter: "drop-shadow(0 0 8px rgba(96,165,250,0.55))" }}
+          />
+          <defs>
+            <linearGradient id="streakGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#3B82F6" />
+              <stop offset="100%" stopColor="#60A5FA" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <Flame className="h-[18px] w-[18px] text-[#60A5FA] mb-[2px]" strokeWidth={1.8} />
+          <span className="font-['Bai_Jamjuree'] text-[52px] font-bold text-white tabular-nums leading-none">
+            {streak}
+          </span>
+          <span className="font-['Geist'] text-[11px] uppercase tracking-[1.6px] text-[#93C5FD] mt-[4px]">días</span>
+        </div>
       </div>
-      <p className="mt-[14px] font-['Geist'] text-[13.5px] text-white/45 leading-[1.5] max-w-[280px]">
-        Sigue abriendo todos los días.
-      </p>
+      <div className="flex-1 min-w-0">
+        <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+          Racha activa
+        </div>
+        <div className="mt-[6px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2]">
+          {streak === 0 ? "Empieza tu racha hoy" : streak < 3 ? "Vas encaminado" : streak < 7 ? "Ritmo constante" : "Fuego imparable"}
+        </div>
+        <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/60 leading-[1.5]">
+          {streak < target ? `Faltan ${target - streak} para tu próxima meta.` : "Meta alcanzada — sigue sumando."}
+        </p>
+      </div>
     </div>
   );
 }
+
+/* Blue-tinted row for the Productivity hub */
+function BlueRow({
+  Icon,
+  label,
+  meta,
+  onClick,
+  accent = "#3B82F6",
+}: {
+  Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  label: string;
+  meta: string;
+  onClick: () => void;
+  accent?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full text-left rounded-[20px] p-[14px] flex items-center gap-[14px] active:scale-[0.99] transition-transform"
+      style={{
+        background: "linear-gradient(135deg, rgba(30,41,59,0.75) 0%, rgba(15,23,42,0.9) 100%)",
+        border: "1px solid rgba(96,165,250,0.14)",
+      }}
+    >
+      <span
+        className="h-[46px] w-[46px] rounded-[14px] flex items-center justify-center shrink-0"
+        style={{
+          background: `linear-gradient(135deg, ${accent} 0%, #1E40AF 100%)`,
+          boxShadow: `0 6px 18px -8px ${accent}`,
+        }}
+      >
+        <Icon className="h-[20px] w-[20px] text-white" strokeWidth={1.9} />
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white leading-[1.2]">{label}</div>
+        <div className="mt-[3px] font-['Geist'] text-[12px] text-[#CBD5E1]/75 leading-[1.35] truncate">{meta}</div>
+      </div>
+      <ChevronRight className="h-[16px] w-[16px] text-[#93C5FD]/60 shrink-0" strokeWidth={1.8} />
+    </button>
+  );
+}
+
+/* Animated count-up number for stat cards */
+function CountUp({
+  value,
+  suffix = "",
+  className,
+}: {
+  value: number;
+  suffix?: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: false, amount: 0.4 });
+  const [display, setDisplay] = useState(0);
+  const prev = useRef(0);
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(prev.current, value, {
+      duration: 1.4,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => setDisplay(v),
+    });
+    prev.current = value;
+    return () => controls.stop();
+  }, [inView, value]);
+  return (
+    <span ref={ref} className={className} style={{ fontVariantNumeric: "tabular-nums" }}>
+      {Math.round(display)}
+      {suffix}
+    </span>
+  );
+}
+
 
 /* ============ SHARED MODAL ============ */
 function Sheet({
