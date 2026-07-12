@@ -6,9 +6,10 @@ import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 /* ============================================================
    Centro Inteligente de Aprendizaje Empresarial (Trax)
-   - Genera sesiones de estudio de 30/45/60 min con IA.
-   - Fuentes de calidad: libros clásicos, casos reales,
-     noticias recientes, tendencias.
+   Formato micro-aprendizaje tipo Duolingo:
+   - Pasos cortos (idea + ejemplo mype peruano + reflexión).
+   - Quiz corto al final (3-5 preguntas de opción múltiple).
+   - Dificultad progresiva según posición del topic en el path.
    ============================================================ */
 
 const InputSchema = z.object({
@@ -18,6 +19,8 @@ const InputSchema = z.object({
   businessType: z.string().max(120).optional(),
   previousTopics: z.array(z.string().max(120)).max(20).optional(),
   pathId: z.string().max(40).optional(),
+  topicIndex: z.number().int().min(0).max(20).optional(),
+  topicTotal: z.number().int().min(1).max(20).optional(),
 });
 
 const SOURCE_LIBRARY: Record<string, string[]> = {
@@ -26,64 +29,47 @@ const SOURCE_LIBRARY: Record<string, string[]> = {
     "SPIN Selling - Neil Rackham",
     "The Challenger Sale - Dixon & Adamson",
     "To Sell Is Human - Daniel Pink",
-    "Pre-Suasion - Robert Cialdini",
     "Harvard Business Review (hbr.org/topic/sales)",
   ],
   finanzas: [
     "Profit First - Mike Michalowicz",
     "Financial Intelligence - Berman & Knight",
     "BID (iadb.org)",
-    "CEPAL (cepal.org)",
-    "Banco Mundial (worldbank.org)",
     "Investopedia (investopedia.com)",
   ],
   marketing: [
     "Permission Marketing - Seth Godin",
-    "Purple Cow - Seth Godin",
     "Contagious - Jonah Berger",
     "Positioning - Ries & Trout",
     "Meta for Business (business.facebook.com)",
-    "Google Digital Garage (learndigital.withgoogle.com)",
   ],
   clientes: [
     "Delivering Happiness - Tony Hsieh",
     "The Effortless Experience - Matthew Dixon",
     "Zendesk Blog (zendesk.com/blog)",
-    "Harvard Business Review (hbr.org/topic/customer-service)",
   ],
   inventario: [
     "The Goal - Eliyahu Goldratt",
     "ASCM/APICS (ascm.org)",
-    "Investopedia Inventory Management (investopedia.com/terms/i/inventory-management.asp)",
   ],
   liderazgo: [
     "Good to Great - Jim Collins",
     "Start With Why - Simon Sinek",
-    "Leaders Eat Last - Simon Sinek",
     "The Five Dysfunctions of a Team - Patrick Lencioni",
-    "Multipliers - Liz Wiseman",
-    "MIT Sloan Management Review (sloanreview.mit.edu)",
   ],
   productividad: [
     "Deep Work - Cal Newport",
     "Atomic Habits - James Clear",
-    "The 7 Habits of Highly Effective People - Stephen Covey",
     "Getting Things Done - David Allen",
-    "Essentialism - Greg McKeown",
   ],
   ia: [
     "McKinsey Digital (mckinsey.com/capabilities/mckinsey-digital)",
     "MIT Technology Review (technologyreview.com)",
-    "OpenAI Blog (openai.com/blog)",
-    "Google AI Blog (ai.googleblog.com)",
   ],
   administracion: [
     "Competitive Strategy - Michael Porter",
-    "The Innovator's Dilemma - Clayton Christensen",
     "Measure What Matters - John Doerr",
-    "Blue Ocean Strategy - Kim & Mauborgne",
     "Management - Peter Drucker",
-    "OCDE (oecd.org)",
   ],
   organizacion: [
     "The E-Myth Revisited - Michael Gerber",
@@ -97,100 +83,85 @@ const SOURCE_LIBRARY: Record<string, string[]> = {
   negociacion: [
     "Getting to Yes - Fisher & Ury",
     "Never Split the Difference - Chris Voss",
-    "Harvard Business Review (hbr.org/topic/negotiation)",
   ],
   expansion: [
     "Scaling Up - Verne Harnish",
-    "The Founder's Dilemmas - Noam Wasserman",
-    "McKinsey Growth (mckinsey.com/capabilities/growth-marketing-and-sales)",
   ],
   inversion: [
     "The Intelligent Investor - Benjamin Graham",
-    "Venture Deals - Brad Feld & Jason Mendelson",
     "SBS Perú (sbs.gob.pe)",
   ],
 };
 
-/* Schema tolerante — todos los arrays y strings tienen default; se rellena en normalize(). */
+/* Schema tolerante — nuevos campos con defaults para no romper si la IA omite algo. */
 const strOpt = z.string().optional().default("");
+
+const StepSchema = z.object({
+  title: strOpt,
+  idea: strOpt,
+  example: strOpt,
+  reflection: z.string().optional().default(""),
+});
+
+const QuizSchema = z.object({
+  question: strOpt,
+  options: z.array(z.string()).optional().default([]),
+  correctIndex: z.number().optional().default(0),
+  explanation: strOpt,
+});
+
 const SessionSchema = z.object({
   title: strOpt,
   category: strOpt,
   level: strOpt,
   minutes: z.number().optional().default(30),
-  intro: strOpt,
-  concepts: z.array(z.object({
-    title: strOpt,
-    description: strOpt,
-  })).optional().default([]),
-  books: z.array(z.object({
-    author: strOpt,
-    title: strOpt,
-    idea: strOpt,
-  })).optional().default([]),
-  cases: z.array(z.object({
-    company: strOpt,
-    story: strOpt,
-    lesson: strOpt,
-  })).optional().default([]),
-  news: z.array(z.object({
-    headline: strOpt,
-    summary: strOpt,
-    source: strOpt,
-    dateHint: strOpt,
-  })).optional().default([]),
-  trends: z.array(z.object({
-    title: strOpt,
-    description: strOpt,
-  })).optional().default([]),
+  steps: z.array(StepSchema).optional().default([]),
+  quiz: z.array(QuizSchema).optional().default([]),
   summary: strOpt,
-  exercise: strOpt,
-  quiz: z.array(z.object({
-    question: strOpt,
-    options: z.array(z.string()).optional().default([]),
-    correctIndex: z.number().optional().default(0),
-    explanation: strOpt,
-  })).optional().default([]),
-  furtherReading: z.array(z.string()).optional().default([]),
 });
 
+export type LearnStep = z.infer<typeof StepSchema>;
+export type LearnQuizQ = z.infer<typeof QuizSchema>;
 export type LearnSession = z.infer<typeof SessionSchema>;
 
+function difficultyBand(index: number | undefined, total: number | undefined) {
+  if (index == null || total == null || total <= 0) return { band: "básica", note: "Explica de forma sencilla, con lenguaje claro y ejemplos muy cotidianos." };
+  if (index <= 1) return { band: "básica", note: "Explica de forma sencilla, con lenguaje claro y ejemplos muy cotidianos. Este es de los primeros temas del path." };
+  if (index <= 3) return { band: "intermedia", note: "Sube un poco la complejidad: usa términos técnicos con su explicación corta y ejemplos con más variables (mix de productos, temporadas, costos)." };
+  return { band: "alta", note: "Presenta un caso más complejo: varias variables interactuando, decisión con trade-offs, y una reflexión más estratégica. El usuario ya avanzó en el path." };
+}
+
 function buildPrompt(input: z.infer<typeof InputSchema>) {
-  const { topic, level, minutes, businessType, previousTopics, pathId } = input;
+  const { topic, level, minutes, businessType, previousTopics, pathId, topicIndex, topicTotal } = input;
   const curatedSources = pathId ? SOURCE_LIBRARY[pathId] : undefined;
-  const depth =
-    minutes === 30
-      ? "3 conceptos, 2 libros, 2 casos, 2 noticias, 2 tendencias, 5 preguntas de quiz"
-      : minutes === 45
-      ? "4 conceptos, 3 libros, 3 casos, 3 noticias, 3 tendencias, 7 preguntas de quiz"
-      : "5 conceptos, 4 libros, 4 casos, 3 noticias, 4 tendencias, 10 preguntas de quiz";
+  const stepCount = minutes === 30 ? "5" : minutes === 45 ? "6" : "8";
+  const quizCount = minutes === 30 ? "3" : minutes === 45 ? "4" : "5";
+  const diff = difficultyBand(topicIndex, topicTotal);
 
-  return `Eres un instructor experto en administración y negocios que diseña sesiones de estudio para dueños de pequeños negocios físicos (bodegas, minimarkets, ferreterías, panaderías, farmacias, etc.) en Perú/Latam.
+  return `Eres un instructor experto en administración y negocios que diseña micro-lecciones para dueños de MYPEs peruanas (bodegas, minimarkets, ferreterías, panaderías, farmacias, juguerías, tiendas de ropa, etc.). Los usuarios NO tienen tiempo para leer artículos largos: necesitan aprender rápido en formato tipo Duolingo.
 
-Genera una sesión de aprendizaje de aproximadamente ${minutes} minutos sobre el tema: "${topic}" a nivel ${level}${businessType ? ` para un negocio del tipo: ${businessType}` : ""}.
+Tema: "${topic}"
+Nivel del path: ${level}
+Dificultad relativa dentro del path: ${diff.band}${topicIndex != null && topicTotal != null ? ` (topic ${topicIndex + 1} de ${topicTotal})` : ""}.
+Duración objetivo: ${minutes} minutos.${businessType ? ` Negocio del usuario: ${businessType}.` : ""}
 
-Objetivo: que el usuario aprenda mucho en poco tiempo con contenido claro, verificado y accionable. Usa únicamente información proveniente de fuentes confiables: libros de referencia (Peter Drucker, Philip Kotler, Jim Collins, Michael Porter, Simon Sinek, Seth Godin, Eric Ries, Daniel Kahneman, Clayton Christensen, etc.), publicaciones académicas, casos empresariales reconocidos, noticias económicas actuales, informes de organismos internacionales (BID, CEPAL, OCDE, FMI, Banco Mundial), universidades top y documentación oficial.
+REGLAS DE CONTENIDO (obligatorias):
+- ${diff.note}
+- Devuelve exactamente ${stepCount} pasos en "steps". Cada paso es UNA idea clara y practicable, NO un párrafo largo.
+- Cada "steps[].title": máximo 6 palabras, directo. Sin numeración manual, sin comillas.
+- Cada "steps[].idea": 1-2 frases cortas explicando la idea principal. Español claro, sin jerga innecesaria.
+- Cada "steps[].example": 1-3 frases con un ejemplo CONCRETO ambientado en una MYPE peruana real (bodega en Comas, panadería en Villa El Salvador, ferretería en Los Olivos, etc.). Usa nombres realistas, cifras en soles (S/), productos comunes en Perú.
+- Cada "steps[].reflection": OPCIONAL. Si aporta, una pregunta corta de reflexión personal al dueño ("¿Cuánto de tu inventario rota en menos de 30 días?"). Máximo 15 palabras. Puede quedar vacía si el paso no lo necesita.
+- Devuelve exactamente ${quizCount} preguntas en "quiz". Cada una con 4 opciones y solo una correcta (correctIndex 0-3). "explanation": 1-2 frases justificando la respuesta correcta.
+- "summary": una sola frase (máximo 20 palabras) con la idea clave de toda la sesión.
 
-Reglas obligatorias:
-- Nunca inventes cifras, autores ni citas falsas. Si no estás seguro, generaliza sin dar un dato concreto.
-- Prioriza información reciente cuando el tema lo requiera; combina con clásicos cuando aporten.
-- Español neutro claro. Sin relleno. Sin markdown excesivo.
-- Estructura exactamente: ${depth}.
-- El campo "intro" debe ser un párrafo de 3-5 líneas.
-- Cada "concept.description" debe explicar el concepto en 2-3 frases con un ejemplo.
-- Cada "books[].idea" debe resumir en 2-4 frases la idea principal aplicable al negocio.
-- Cada "cases[].story" describe brevemente qué hizo la empresa (2-4 frases). "cases[].lesson" es una línea con la moraleja.
-- Cada "news[].summary" resume en 2-3 frases. "news[].source" es el medio o tipo de fuente (ej. "Harvard Business Review", "Reuters", "Bloomberg"). "news[].dateHint" es una referencia temporal ("últimos 12 meses", "2024-2025") sin inventar fechas exactas.
-- "trends" describe 2-5 tendencias actuales del mercado ligadas al tema.
-- "summary" es un resumen ejecutivo de 4-6 líneas con los puntos clave.
-- "exercise" es una actividad concreta y aplicable al negocio del usuario, escrita en imperativo.
-- "quiz": cada pregunta tiene 4 opciones y solo una correcta (correctIndex 0-3). La "explanation" justifica la respuesta correcta.
-- "furtherReading": 3-6 títulos o recursos reales recomendados para profundizar.
-${previousTopics && previousTopics.length > 0 ? `\nEl usuario ya estudió recientemente: ${previousTopics.join(", ")}. Evita repetir esos ángulos; profundiza o complementa.` : ""}
-${curatedSources && curatedSources.length > 0 ? `\nPara este tema, prioriza y apóyate en estas fuentes específicas y confiables cuando sean relevantes: ${curatedSources.join("; ")}. Puedes complementar con otras fuentes reconocidas si el tema lo requiere, pero nunca inventes datos o cifras.` : ""}
+REGLAS DE FUENTES (obligatorias):
+- No inventes cifras, autores ni citas falsas. Si no estás seguro, generaliza sin dar dato concreto.
+- Cuando cites una idea de un libro o autor, que sea real y verificable.
+${curatedSources && curatedSources.length > 0 ? `- Para este tema, apóyate cuando sea relevante en: ${curatedSources.join("; ")}.` : ""}
+${previousTopics && previousTopics.length > 0 ? `- El usuario ya vio: ${previousTopics.join(", ")}. Evita repetir esos ángulos.` : ""}
 
-Devuelve exclusivamente el objeto JSON solicitado, sin texto adicional.`;
+Devuelve exclusivamente el objeto JSON solicitado, sin texto adicional, sin markdown, sin comentarios.`;
 }
 
 export const generateLearnSession = createServerFn({ method: "POST" })
@@ -201,8 +172,6 @@ export const generateLearnSession = createServerFn({ method: "POST" })
     if (!key) throw new Error("LOVABLE_API_KEY no está configurado.");
 
     // === Gating por plan (Aprender) ===
-    // Contamos e imponemos el límite ANTES de generar. Si excede, lanzamos con
-    // marcador PLAN_LIMIT_REACHED para que el UI lo distinga.
     const { supabase, userId } = context as { supabase: import("@supabase/supabase-js").SupabaseClient; userId: string };
     const { limitsFor } = await import("@/lib/plans");
     const { data: sub } = await supabase
@@ -288,6 +257,12 @@ function normalize(session: LearnSession, input: z.infer<typeof InputSchema>): L
     title: session.title || input.topic,
     level: session.level || input.level,
     minutes: session.minutes || input.minutes,
+    steps: (session.steps ?? []).map((s) => ({
+      title: s.title ?? "",
+      idea: s.idea ?? "",
+      example: s.example ?? "",
+      reflection: s.reflection ?? "",
+    })),
     quiz: (session.quiz ?? []).map((q) => ({
       ...q,
       options: q.options ?? [],
