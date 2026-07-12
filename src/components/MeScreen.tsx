@@ -1710,7 +1710,7 @@ function SessionSetupSheet({
     <Sheet
       open={open}
       onClose={loading ? () => {} : onClose}
-      title={path ? `Sesión · ${path.name}` : "Nueva sesión de aprendizaje"}
+      title={path ? `Sesión · ${path.name}` : "Pregúntale a la IA"}
       footer={
         <>
           <GhostButton onClick={onClose} disabled={loading}>Cancelar</GhostButton>
