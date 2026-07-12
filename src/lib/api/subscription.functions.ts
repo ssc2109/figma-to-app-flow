@@ -91,7 +91,7 @@ export const subscribeToPlan = createServerFn({ method: "POST" })
       .eq("user_id", userId);
 
     if (error) throw new Error(error.message);
-    return { ok: true, plan, price: PLAN_PRICES[plan] };
+    return { ok: true, plan, price: PLAN_PRICES[plan as "pro" | "avanzado"] };
   });
 
 const IncInput = z.object({
