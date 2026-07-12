@@ -1,7 +1,7 @@
 // Configuración central de planes de Trax.
 // Los límites se aplican vía usePlan() en el cliente y vía RPC/server fns en el backend.
 
-export type PlanId = "trial" | "pro" | "avanzado";
+export type PlanId = "trial" | "gratis" | "pro" | "avanzado";
 export type SubscriptionStatus = "active" | "past_due" | "canceled" | "trialing";
 
 export type PlanLimits = {
@@ -28,6 +28,16 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
     hasWhatsappReminders: true,
     prioritySupport: true,
   },
+  gratis: {
+    maxTeamMembers: 1,
+    maxCatalogProducts: 30,
+    maxSociaQueriesPerMonth: 5,
+    maxLearnSessionsPerMonth: 2,
+    hasAdvancedReports: false,
+    hasCustomCatalogBranding: false,
+    hasWhatsappReminders: false,
+    prioritySupport: false,
+  },
   pro: {
     maxTeamMembers: 3, // 1 dueño + 2 miembros
     maxCatalogProducts: 200,
@@ -50,12 +60,27 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
   },
 };
 
-export const PLAN_PRICES: Record<Exclude<PlanId, "trial">, { amount: number; currency: string; label: string }> = {
+export type PaidOrFreePlan = Exclude<PlanId, "trial">;
+
+export const PLAN_PRICES: Record<PaidOrFreePlan, { amount: number; currency: string; label: string }> = {
+  gratis: { amount: 0, currency: "PEN", label: "Gratis" },
   pro: { amount: 29.9, currency: "PEN", label: "S/ 29.90 / mes" },
   avanzado: { amount: 79.9, currency: "PEN", label: "S/ 79.90 / mes" },
 };
 
-export const PLAN_FEATURES: Record<Exclude<PlanId, "trial">, { name: string; tagline: string; features: string[] }> = {
+export const PLAN_FEATURES: Record<PaidOrFreePlan, { name: string; tagline: string; features: string[] }> = {
+  gratis: {
+    name: "Gratis",
+    tagline: "Para empezar sin costo",
+    features: [
+      "Ventas ilimitadas",
+      "Catálogo hasta 30 productos",
+      "Hasta 15 clientes y fiados",
+      "1 usuario (sin equipo)",
+      "socIA: 5 consultas/mes",
+      "Aprender: 2 sesiones/mes",
+    ],
+  },
   pro: {
     name: "Pro",
     tagline: "Para negocios que empiezan a crecer",
@@ -87,7 +112,7 @@ export const PLAN_FEATURES: Record<Exclude<PlanId, "trial">, { name: string; tag
 };
 
 export function limitsFor(plan: PlanId): PlanLimits {
-  return PLAN_LIMITS[plan] ?? PLAN_LIMITS.pro;
+  return PLAN_LIMITS[plan] ?? PLAN_LIMITS.gratis;
 }
 
 export function trialDaysLeft(trialEndsAt: string | null | undefined): number {
