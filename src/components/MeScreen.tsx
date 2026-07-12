@@ -61,6 +61,8 @@ import {
 } from "./business/shared";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { usePlan } from "@/hooks/usePlan";
+import type { PlanId } from "@/lib/plans";
 
 type View =
   | "hub"
