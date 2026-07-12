@@ -2645,9 +2645,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
           {(
             [
               { id: "rutas", label: "Rutas", icon: Compass },
-              { id: "biblioteca", label: "Biblioteca", icon: BookOpen },
               { id: "historial", label: "Historial", icon: PlayCircle },
-              { id: "favoritos", label: "Favoritos", icon: Star },
             ] as { id: LearnTab; label: string; icon: typeof Compass }[]
           ).map(({ id, label, icon: Icon }) => (
             <button
