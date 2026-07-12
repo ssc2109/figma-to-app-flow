@@ -106,7 +106,7 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
           </div>
         )}
 
-        {(["pro", "avanzado"] as const).map((id) => {
+        {(["gratis", "pro", "avanzado"] as const).map((id) => {
           const info = PLAN_FEATURES[id];
           const price = PLAN_PRICES[id];
           const isCurrent = plan === id;
