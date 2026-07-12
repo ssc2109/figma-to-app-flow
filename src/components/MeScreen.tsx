@@ -33,6 +33,8 @@ import {
   Compass,
   Calendar as CalendarIcon,
   Clock,
+  Check,
+  Play,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
@@ -2001,6 +2003,224 @@ function FavStar({ active, onClick }: { active: boolean; onClick: () => void }) 
 }
 
 /* -------- Path Detail -------- */
+function extractGradientColors(g: string): [string, string] {
+  const hex = g.match(/#[0-9a-fA-F]{3,8}/g);
+  if (hex && hex.length >= 2) return [hex[0], hex[1]];
+  return ["#334155", "#94a3b8"];
+}
+
+function PathNodesTrail({
+  path,
+  completedTopics,
+  onStartTopic,
+}: {
+  path: LearningPath;
+  completedTopics: string[];
+  onStartTopic: (topic: string) => void;
+}) {
+  const done = new Set(completedTopics);
+  const [c1, c2] = extractGradientColors(path.gradient);
+  const currentIdx = path.topics.findIndex((t) => !done.has(t));
+  const allDone = currentIdx === -1;
+  const total = path.topics.length;
+  // Node positions: alternate xPercent using a 4-phase zigzag for smoother curve
+  const phases = [22, 50, 78, 50];
+  const rowH = 118; // vertical distance between nodes
+  const topPad = 44;
+  const items = [...path.topics, "__final__"];
+  const positions = items.map((_, i) => ({
+    x: phases[i % phases.length],
+    y: topPad + i * rowH,
+  }));
+  const height = topPad + (items.length - 1) * rowH + 72;
+  const width = 320; // logical viewBox width
+
+  // Build connector path
+  let d = "";
+  positions.forEach((p, i) => {
+    const x = (p.x / 100) * width;
+    const y = p.y;
+    if (i === 0) {
+      d += `M ${x} ${y}`;
+    } else {
+      const prev = positions[i - 1];
+      const px = (prev.x / 100) * width;
+      const py = prev.y;
+      const midY = (py + y) / 2;
+      d += ` C ${px} ${midY}, ${x} ${midY}, ${x} ${y}`;
+    }
+  });
+
+  // Reached fraction along the path (based on completion)
+  const reachedIdx = allDone ? items.length - 1 : currentIdx; // index of current node
+  const reachedFrac = items.length > 1 ? reachedIdx / (items.length - 1) : 0;
+
+  const gradId = `path-grad-${path.id}`;
+
+  return (
+    <div className="relative w-full" style={{ height }}>
+      <svg
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={c1} />
+            <stop offset="100%" stopColor={c2} />
+          </linearGradient>
+        </defs>
+        {/* Base track (dashed, dim) */}
+        <path
+          d={d}
+          fill="none"
+          stroke="rgba(255,255,255,0.10)"
+          strokeWidth={2}
+          strokeDasharray="4 6"
+          strokeLinecap="round"
+        />
+        {/* Progress overlay (solid, gradient) — clipped by dasharray trick */}
+        <path
+          d={d}
+          fill="none"
+          stroke={`url(#${gradId})`}
+          strokeWidth={2.5}
+          strokeLinecap="round"
+          pathLength={1}
+          strokeDasharray={`${reachedFrac} 1`}
+          style={{ transition: "stroke-dasharray 400ms ease" }}
+        />
+      </svg>
+
+      {items.map((t, i) => {
+        const pos = positions[i];
+        const isFinal = t === "__final__";
+        const isDone = !isFinal && done.has(t);
+        const isCurrent = !isFinal && i === currentIdx;
+        const isLocked = !isFinal && !isDone && !isCurrent;
+        const isFinalActive = isFinal && allDone;
+
+        const size = isCurrent || isFinalActive ? 72 : 60;
+        const clickable = isDone || isCurrent || isFinalActive;
+
+        const bg = isDone
+          ? `linear-gradient(135deg, ${c1}, ${c2})`
+          : isCurrent
+          ? "rgba(0,0,0,0.55)"
+          : isFinalActive
+          ? `linear-gradient(135deg, ${c1}, ${c2})`
+          : "rgba(255,255,255,0.05)";
+
+        const ring = isCurrent
+          ? `0 0 0 2px ${c2}, 0 0 24px -4px ${c2}`
+          : isFinal && !isFinalActive
+          ? "inset 0 0 0 1px rgba(255,255,255,0.08)"
+          : isFinal
+          ? `0 0 0 2px ${c2}, 0 0 28px -4px ${c2}`
+          : isLocked
+          ? "inset 0 0 0 1px rgba(255,255,255,0.06)"
+          : "none";
+
+        const label = isFinal
+          ? "Ruta completada"
+          : isCurrent
+          ? t
+          : "";
+
+        return (
+          <div
+            key={`${t}-${i}`}
+            className="absolute flex flex-col items-center"
+            style={{
+              left: `${pos.x}%`,
+              top: pos.y,
+              transform: "translate(-50%, -50%)",
+              width: 140,
+            }}
+          >
+            <button
+              type="button"
+              disabled={!clickable}
+              onClick={() => {
+                if (isFinalActive) return; // celebratory node, no session
+                if (clickable && !isFinal) onStartTopic(t);
+              }}
+              aria-label={isFinal ? "Ruta completada" : t}
+              className={`relative rounded-full flex items-center justify-center transition-transform ${
+                clickable ? "active:scale-95" : "cursor-default"
+              }`}
+              style={{
+                width: size,
+                height: size,
+                background: bg,
+                boxShadow: ring,
+                opacity: isLocked ? 0.55 : 1,
+              }}
+            >
+              {isFinal ? (
+                <GraduationCap
+                  className="text-white"
+                  style={{ width: size * 0.42, height: size * 0.42, opacity: isFinalActive ? 1 : 0.45 }}
+                  strokeWidth={1.6}
+                />
+              ) : isDone ? (
+                <Check className="text-white" style={{ width: size * 0.42, height: size * 0.42 }} strokeWidth={2.4} />
+              ) : isCurrent ? (
+                <Play
+                  className="text-white"
+                  style={{ width: size * 0.38, height: size * 0.38, marginLeft: 2 }}
+                  strokeWidth={2}
+                  fill="white"
+                />
+              ) : (
+                <Lock
+                  className="text-white/40"
+                  style={{ width: size * 0.34, height: size * 0.34 }}
+                  strokeWidth={1.8}
+                />
+              )}
+              {/* Step number badge for non-final nodes */}
+              {!isFinal && (
+                <span
+                  className="absolute -top-1 -right-1 flex items-center justify-center rounded-full font-['Geist'] text-[10px] font-medium tabular-nums text-white/80"
+                  style={{
+                    width: 20,
+                    height: 20,
+                    background: "rgba(0,0,0,0.75)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
+                >
+                  {i + 1}
+                </span>
+              )}
+            </button>
+            {label && (
+              <div
+                className={`mt-[8px] text-center font-['Geist'] leading-[1.2] ${
+                  isFinal ? "text-white/70 text-[11.5px]" : "text-white text-[12px]"
+                }`}
+                style={{ maxWidth: 140 }}
+              >
+                {label}
+                {isCurrent && (
+                  <div className="mt-[2px] font-['Geist'] text-[10.5px] uppercase tracking-[1.2px] text-white/45">
+                    Siguiente
+                  </div>
+                )}
+              </div>
+            )}
+            {isFinal && !isFinalActive && (
+              <div className="mt-[8px] text-center font-['Geist'] text-[11px] text-white/35 leading-[1.2]" style={{ maxWidth: 140 }}>
+                Completa las {total} lecciones
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function PathDetail({
   path, completedTopics, onBack, onStartTopic,
 }: {
@@ -2031,27 +2251,10 @@ function PathDetail({
           </div>
         </div>
 
-        <SectionLabel>Lecciones</SectionLabel>
-        <ListGroup className="shrink-0">
-          {path.topics.map((t, i) => {
-            const isDone = done.has(t);
-            return (
-              <div key={t}>
-                <button type="button" onClick={() => onStartTopic(t)} className="w-full flex items-center gap-[14px] px-[16px] py-[14px] text-left active:bg-white/[0.03]">
-                  <div className="h-[28px] w-[28px] rounded-full flex items-center justify-center shrink-0" style={{ background: isDone ? "rgba(74,222,128,0.18)" : "rgba(255,255,255,0.06)" }}>
-                    {isDone ? <CheckCircle2 className="h-[14px] w-[14px] text-[#4ADE80]" strokeWidth={2} /> : <PlayCircle className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-['Geist'] text-[14.5px] text-white leading-[1.3]">{t}</div>
-                    <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45">Sesión IA · 30-60 min</div>
-                  </div>
-                  <ArrowRight className="h-[15px] w-[15px] text-white/35" strokeWidth={1.6} />
-                </button>
-                {i < path.topics.length - 1 && <div className="h-px bg-white/[0.05] ml-[58px]" />}
-              </div>
-            );
-          })}
-        </ListGroup>
+        <SectionLabel>Camino de lecciones</SectionLabel>
+        <div className="shrink-0">
+          <PathNodesTrail path={path} completedTopics={completedTopics} onStartTopic={onStartTopic} />
+        </div>
       </ProductivityScroll>
     </SubScreen>
   );
