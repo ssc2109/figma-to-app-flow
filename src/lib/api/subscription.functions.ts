@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { PLAN_LIMITS, PLAN_PRICES, limitsFor, type PlanId } from "@/lib/plans";
+import { PLAN_LIMITS, PLAN_PRICES, limitsFor, sociaLimitMessage, type PlanId } from "@/lib/plans";
 
 /**
  * Culqi (pasarela peruana). Actualmente en modo test/sandbox.
@@ -39,21 +39,18 @@ export const getSubscription = createServerFn({ method: "GET" })
       if (updated) sub = updated;
     }
 
-    // Usage del mes actual
-    const monthStart = new Date();
-    monthStart.setUTCDate(1);
-    monthStart.setUTCHours(0, 0, 0, 0);
-    const monthISO = monthStart.toISOString().slice(0, 10);
-
+    // Usage: tomamos la ventana activa (no vencida) de cada kind
+    const nowIso = new Date().toISOString();
     const { data: usage } = await supabase
       .from("usage_counters")
-      .select("kind,count")
+      .select("kind,count,period_end")
       .eq("user_id", userId)
-      .eq("period_month", monthISO);
+      .gt("period_end", nowIso);
 
     const usageMap: Record<string, number> = {};
     (usage ?? []).forEach((r: { kind: string; count: number }) => {
-      usageMap[r.kind] = r.count;
+      // Si hay múltiples ventanas activas por kind, nos quedamos con la mayor cuenta
+      usageMap[r.kind] = Math.max(usageMap[r.kind] ?? 0, r.count);
     });
 
     return { subscription: sub ?? null, usage: usageMap };
@@ -131,20 +128,24 @@ export const incrementAndCheckUsage = createServerFn({ method: "POST" })
 
     const plan = ((sub?.plan as PlanId) ?? "trial") as PlanId;
     const limits = limitsFor(plan);
-    const limit =
-      data.kind === "socia" ? limits.maxSociaQueriesPerMonth : limits.maxLearnSessionsPerMonth;
+    const isSocia = data.kind === "socia";
+    const limit = isSocia ? limits.maxSociaCredits : limits.maxLearnSessionsPerMonth;
+    const windowSeconds = isSocia && limits.sociaCreditsWindowHours > 0
+      ? limits.sociaCreditsWindowHours * 3600
+      : undefined;
 
-    // Incremento atómico
+    // Incremento atómico con ventana adecuada
     const { data: newCount, error } = await supabase.rpc("increment_usage_counter", {
       _kind: data.kind,
+      _window_seconds: windowSeconds,
     });
     if (error) throw new Error(error.message);
 
     const count = Number(newCount ?? 0);
     if (Number.isFinite(limit) && count > limit) {
       const err = new Error(
-        data.kind === "socia"
-          ? `Alcanzaste el límite de ${limit} consultas a socIA de tu plan ${plan}. Sube a Avanzado para uso ilimitado.`
+        isSocia
+          ? sociaLimitMessage(plan)
           : `Alcanzaste el límite de ${limit} sesiones de Aprender de tu plan ${plan}. Sube a Avanzado para sesiones ilimitadas.`,
       );
       // marca reconocible para el cliente

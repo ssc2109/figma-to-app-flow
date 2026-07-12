@@ -605,7 +605,8 @@ export type Database = {
           created_at: string
           id: string
           kind: string
-          period_month: string
+          period_end: string
+          period_start: string
           updated_at: string
           user_id: string
         }
@@ -614,7 +615,8 @@ export type Database = {
           created_at?: string
           id?: string
           kind: string
-          period_month: string
+          period_end: string
+          period_start: string
           updated_at?: string
           user_id: string
         }
@@ -623,7 +625,8 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
-          period_month?: string
+          period_end?: string
+          period_start?: string
           updated_at?: string
           user_id?: string
         }
@@ -634,7 +637,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      increment_usage_counter: { Args: { _kind: string }; Returns: number }
+      increment_usage_counter: {
+        Args: { _kind: string; _window_seconds?: number }
+        Returns: number
+      }
     }
     Enums: {
       subscription_plan: "trial" | "pro" | "avanzado" | "gratis"
