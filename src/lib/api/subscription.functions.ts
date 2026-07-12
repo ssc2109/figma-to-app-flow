@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { PLAN_LIMITS, PLAN_PRICES, limitsFor, type PlanId } from "@/lib/plans";
+import { PLAN_LIMITS, PLAN_PRICES, limitsFor, sociaLimitMessage, type PlanId } from "@/lib/plans";
 
 /**
  * Culqi (pasarela peruana). Actualmente en modo test/sandbox.
