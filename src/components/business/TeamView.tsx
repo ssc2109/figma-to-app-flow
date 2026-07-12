@@ -1,5 +1,7 @@
 import { ChevronRight, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
+import { usePlan } from "@/hooks/usePlan";
 
 const MEMBERS = [
   { name: "Alberto Ramos", role: "Dueño · acceso total" },
@@ -8,6 +10,16 @@ const MEMBERS = [
 ];
 
 export default function TeamView({ onBack }: { onBack: () => void }) {
+  const { limits, plan } = usePlan();
+  const handleInvite = () => {
+    if (Number.isFinite(limits.maxTeamMembers) && MEMBERS.length >= limits.maxTeamMembers) {
+      toast.error(
+        `Tu plan ${plan} permite hasta ${limits.maxTeamMembers} miembros. Sube al plan Avanzado para equipo ilimitado.`,
+      );
+      return;
+    }
+    toast.info("Próximamente: invitar miembro por correo.");
+  };
   return (
     <SubScreen>
       <SubHeader
@@ -17,6 +29,7 @@ export default function TeamView({ onBack }: { onBack: () => void }) {
         action={
           <button
             type="button"
+            onClick={handleInvite}
             className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95"
             aria-label="Invitar"
           >

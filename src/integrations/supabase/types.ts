@@ -557,15 +557,88 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          payment_provider: string | null
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          provider_subscription_id: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          payment_provider?: string | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          provider_subscription_id?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          payment_provider?: string | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          provider_subscription_id?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      usage_counters: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          kind: string
+          period_month: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind: string
+          period_month: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          period_month?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_usage_counter: { Args: { _kind: string }; Returns: number }
     }
     Enums: {
-      [_ in never]: never
+      subscription_plan: "trial" | "pro" | "avanzado"
+      subscription_status: "active" | "past_due" | "canceled" | "trialing"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -692,6 +765,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      subscription_plan: ["trial", "pro", "avanzado"],
+      subscription_status: ["active", "past_due", "canceled", "trialing"],
+    },
   },
 } as const

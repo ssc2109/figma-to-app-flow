@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Plus, Minus, PackagePlus, Package, X, Trash2 } from "lucide-react";
 import { useInventory, type InventoryItem } from "@/data/inventory";
+import { usePlan } from "@/hooks/usePlan";
 import { toast } from "sonner";
 
 import { SubHeader, SubScreen, ListGroup } from "./shared";
@@ -110,7 +111,8 @@ function ProductSheet({
   item: InventoryItem | "new";
   onClose: () => void;
 }) {
-  const { addProduct, updateProduct, removeProduct } = useInventory();
+  const { addProduct, updateProduct, removeProduct, items } = useInventory();
+  const { limits, plan } = usePlan();
   const isNew = item === "new";
   const current = isNew ? null : item;
 
@@ -134,6 +136,13 @@ function ProductSheet({
     setSaving(true);
     try {
       if (isNew) {
+        if (Number.isFinite(limits.maxCatalogProducts) && items.length >= limits.maxCatalogProducts) {
+          toast.error(
+            `Tu plan ${plan} permite hasta ${limits.maxCatalogProducts} productos. Sube al plan Avanzado para catálogo ilimitado.`,
+          );
+          setSaving(false);
+          return;
+        }
         await addProduct({
           name: name.trim(),
           price: p,

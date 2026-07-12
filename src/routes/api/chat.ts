@@ -346,6 +346,36 @@ export const Route = createFileRoute("/api/chat")({
         if (userErr || !userData.user) return new Response("Unauthorized", { status: 401 });
         const userId = userData.user.id;
 
+        // === Gating por plan (socIA): contamos consultas/mes y bloqueamos si excede ===
+        {
+          const { data: sub } = await supabase
+            .from("subscriptions")
+            .select("plan")
+            .eq("user_id", userId)
+            .maybeSingle();
+          const plan = ((sub as { plan?: string } | null)?.plan ?? "trial") as
+            | "trial"
+            | "pro"
+            | "avanzado";
+          const LIMITS: Record<string, number> = { trial: Infinity, pro: 30, avanzado: Infinity };
+          const limit = LIMITS[plan];
+          const { data: newCount, error: rpcErr } = await supabase.rpc(
+            "increment_usage_counter",
+            { _kind: "socia" },
+          );
+          if (rpcErr) return new Response(rpcErr.message, { status: 500 });
+          if (Number.isFinite(limit) && Number(newCount ?? 0) > limit) {
+            return new Response(
+              JSON.stringify({
+                error: "PLAN_LIMIT_REACHED",
+                message: `Alcanzaste el límite de ${limit} consultas a socIA de tu plan ${plan} este mes. Sube al plan Avanzado para consultas ilimitadas.`,
+              }),
+              { status: 402, headers: { "Content-Type": "application/json" } },
+            );
+          }
+        }
+
+
         // Validate thread ownership if provided
         let threadId = body.threadId;
         if (threadId) {

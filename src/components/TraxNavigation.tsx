@@ -13,6 +13,7 @@ import QuickActionsScreen from "@/components/QuickActionsScreen";
 import AuthScreen from "@/components/AuthScreen";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import SettingsScreen from "@/components/SettingsScreen";
+import PlansScreen from "@/components/PlansScreen";
 import { InventoryProvider } from "@/data/inventory";
 import { FinanceProvider } from "@/data/finance";
 import { MeProvider } from "@/data/me";
@@ -33,6 +34,7 @@ function NavShell() {
   const [scanOpen, setScanOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [plansOpen, setPlansOpen] = useState(false);
   const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "receivables">("hub");
   const [sociaPrompt, setSociaPrompt] = useState<string | undefined>(undefined);
   const { setHandler } = useQuickActions();
@@ -166,7 +168,26 @@ function NavShell() {
             className="fixed inset-0 z-[60] bg-black overflow-y-auto"
           >
             <div className="mx-auto w-full max-w-[430px] min-h-screen">
-              <SettingsScreen onBack={() => setSettingsOpen(false)} />
+              <SettingsScreen
+                onBack={() => setSettingsOpen(false)}
+                onOpenPlans={() => setPlansOpen(true)}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {plansOpen && (
+          <motion.div
+            key="plans-sheet"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-[70] bg-black overflow-y-auto"
+          >
+            <div className="mx-auto w-full max-w-[430px] min-h-screen">
+              <PlansScreen onBack={() => setPlansOpen(false)} />
             </div>
           </motion.div>
         )}
