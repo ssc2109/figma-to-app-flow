@@ -1544,14 +1544,41 @@ type LearningPath = {
 const LEARNING_PATHS: LearningPath[] = [
   { id: "ventas", emoji: "📈", name: "Cómo aumentar las ventas", description: "Estrategias probadas para vender más sin gastar más.", level: "Básico", totalMinutes: 180, gradient: "linear-gradient(135deg,#1f2937,#0f766e)", topics: ["Psicología del comprador", "Cross-selling y up-selling", "Fidelización de clientes recurrentes", "Precios que convierten", "Cierre de venta consultivo"] },
   { id: "finanzas", emoji: "💰", name: "Finanzas para pequeños negocios", description: "Domina el flujo de caja, márgenes y decisiones de dinero.", level: "Básico", totalMinutes: 210, gradient: "linear-gradient(135deg,#0f172a,#2563eb)", topics: ["Flujo de caja diario", "Margen bruto vs. margen neto", "Punto de equilibrio", "Control de gastos operativos", "Cómo fijar precios correctamente"] },
-  { id: "marketing", emoji: "📢", name: "Marketing Digital", description: "Redes sociales, WhatsApp Business y publicidad rentable.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#3b0764,#9333ea)", topics: ["Marketing en redes sociales", "WhatsApp Business avanzado", "Publicidad pagada rentable", "Contenido que vende", "SEO local para pequeños negocios"] },
   { id: "clientes", emoji: "🤝", name: "Atención al Cliente", description: "Convierte compradores ocasionales en fans del negocio.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", topics: ["Experiencia del cliente", "Manejo de quejas y reclamos", "Programas de fidelización", "Comunicación asertiva", "Post-venta que retiene"] },
-  { id: "inventario", emoji: "📦", name: "Gestión de Inventario", description: "Evita quiebres de stock y capital dormido en almacén.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", topics: ["Rotación de inventario", "Método ABC de productos", "Reabastecimiento óptimo", "Control de mermas y robos", "Proveedores estratégicos"] },
-  { id: "liderazgo", emoji: "👥", name: "Liderazgo", description: "Guía tu equipo con claridad, cercanía y resultados.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#4c1d95,#db2777)", topics: ["Liderazgo situacional", "Delegación efectiva", "Feedback que construye", "Motivación intrínseca del equipo", "Cultura de servicio"] },
   { id: "productividad", emoji: "🧠", name: "Productividad", description: "Menos tiempo perdido, más avances reales cada día.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#111827,#f59e0b)", topics: ["Regla del 80/20 aplicada al negocio", "Bloques de tiempo profundo", "Gestión de energía, no solo tiempo", "Rutinas de dueños de negocio", "Delegar y automatizar"] },
-  { id: "ia", emoji: "🤖", name: "IA aplicada a negocios", description: "Casos reales de IA que ahorran horas y aumentan ingresos.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#000000,#7c3aed)", topics: ["IA para atención al cliente 24/7", "IA para marketing y contenido", "IA para análisis de ventas", "IA para inventario predictivo", "Automatización de tareas repetitivas"] },
+  { id: "organizacion", emoji: "🗂️", name: "Organización y Procesos", description: "Ordena tu negocio con procesos simples que no dependen de ti.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#1e293b,#64748b)", topics: ["Procesos que no dependen del dueño", "Checklists para reducir errores", "Orden del local y del almacén", "Documentar lo que ya funciona", "Delegar tareas repetitivas"] },
+  { id: "formalizacion", emoji: "📋", name: "Formalización y Trámites", description: "RUC, régimen tributario y trámites básicos sin dolores de cabeza.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#052e2b,#0891b2)", topics: ["Cómo sacar tu RUC y elegir régimen", "SUNAT: obligaciones básicas del pequeño negocio", "Registro de marca y Sunarp", "Licencias municipales básicas", "Errores comunes al formalizarse"] },
+  { id: "marketing", emoji: "📢", name: "Marketing Digital", description: "Redes sociales, WhatsApp Business y publicidad rentable.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#3b0764,#9333ea)", topics: ["Marketing en redes sociales", "WhatsApp Business avanzado", "Publicidad pagada rentable", "Contenido que vende", "SEO local para pequeños negocios"] },
+  { id: "inventario", emoji: "📦", name: "Gestión de Inventario", description: "Evita quiebres de stock y capital dormido en almacén.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", topics: ["Rotación de inventario", "Método ABC de productos", "Reabastecimiento óptimo", "Control de mermas y robos", "Proveedores estratégicos"] },
   { id: "administracion", emoji: "📊", name: "Administración", description: "Los procesos que sostienen a un negocio que crece.", level: "Intermedio", totalMinutes: 210, gradient: "linear-gradient(135deg,#1e293b,#0d9488)", topics: ["Indicadores clave (KPIs)", "Toma de decisiones con datos", "Planeación semanal y mensual", "Procesos y manuales operativos", "Gestión de proveedores"] },
+  { id: "negociacion", emoji: "🤝", name: "Negociación con Proveedores y Clientes", description: "Negocia mejores condiciones sin dañar la relación.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#422006,#ca8a04)", topics: ["Principios de negociación efectiva", "Cómo negociar precios con proveedores", "Manejo de objeciones en la venta", "Cuándo ceder y cuándo sostener postura", "Cerrar acuerdos que se cumplen"] },
+  { id: "liderazgo", emoji: "👥", name: "Liderazgo", description: "Guía tu equipo con claridad, cercanía y resultados.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#4c1d95,#db2777)", topics: ["Liderazgo situacional", "Delegación efectiva", "Feedback que construye", "Motivación intrínseca del equipo", "Cultura de servicio"] },
+  { id: "ia", emoji: "🤖", name: "IA aplicada a negocios", description: "Casos reales de IA que ahorran horas y aumentan ingresos.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#000000,#7c3aed)", topics: ["IA para atención al cliente 24/7", "IA para marketing y contenido", "IA para análisis de ventas", "IA para inventario predictivo", "Automatización de tareas repetitivas"] },
+  { id: "expansion", emoji: "🚀", name: "Expansión y Crecimiento", description: "Escala tu negocio a nuevas sucursales o mercados con orden.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#052e16,#16a34a)", topics: ["Cuándo tu negocio está listo para escalar", "Franquicias vs. sucursales propias", "Sistematizar antes de expandir", "Financiamiento para crecer", "Errores comunes al expandirse rápido"] },
+  { id: "inversion", emoji: "💹", name: "Finanzas Avanzadas e Inversión", description: "Reinvierte con criterio y entiende cómo acceder a capital.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#0c0a09,#dc2626)", topics: ["Cuándo y cómo reinvertir utilidades", "Acceso a crédito para negocios", "Fundamentos para atraer inversionistas", "Evaluar el retorno de una inversión", "Riesgos financieros que evitar"] },
 ];
+
+/** Plan mínimo requerido para acceder a rutas de un nivel. */
+type RequiredPlan = "gratis" | "pro" | "avanzado";
+function minPlanForLevel(level: LearnLevel): RequiredPlan {
+  if (level === "Básico") return "gratis";
+  if (level === "Intermedio") return "pro";
+  return "avanzado";
+}
+function planRank(p: PlanId): number {
+  if (p === "gratis") return 0;
+  if (p === "trial" || p === "pro") return 1;
+  return 2; // avanzado
+}
+function planMeetsRequirement(plan: PlanId, required: RequiredPlan): boolean {
+  const req = required === "gratis" ? 0 : required === "pro" ? 1 : 2;
+  return planRank(plan) >= req;
+}
+function planLabel(required: RequiredPlan): string {
+  if (required === "gratis") return "Incluido en tu plan";
+  if (required === "pro") return "Plan Pro";
+  return "Plan Avanzado";
+}
 
 const LEARN_STORAGE_KEY = "trax.learn.v2";
 
