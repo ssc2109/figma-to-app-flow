@@ -346,7 +346,7 @@ export const Route = createFileRoute("/api/chat")({
         if (userErr || !userData.user) return new Response("Unauthorized", { status: 401 });
         const userId = userData.user.id;
 
-        // === Gating por plan (socIA): contamos consultas/mes y bloqueamos si excede ===
+        // === Gating por plan (socIA): sistema de créditos con ventana variable ===
         {
           const { data: sub } = await supabase
             .from("subscriptions")
@@ -355,20 +355,26 @@ export const Route = createFileRoute("/api/chat")({
             .maybeSingle();
           const plan = ((sub as { plan?: string } | null)?.plan ?? "trial") as
             | "trial"
+            | "gratis"
             | "pro"
             | "avanzado";
-          const LIMITS: Record<string, number> = { trial: Infinity, pro: 30, avanzado: Infinity };
-          const limit = LIMITS[plan];
+          const { limitsFor, sociaLimitMessage } = await import("@/lib/plans");
+          const limits = limitsFor(plan);
+          const limit = limits.maxSociaCredits;
+          const windowSeconds = limits.sociaCreditsWindowHours > 0
+            ? limits.sociaCreditsWindowHours * 3600
+            : undefined;
+
           const { data: newCount, error: rpcErr } = await supabase.rpc(
             "increment_usage_counter",
-            { _kind: "socia" },
+            { _kind: "socia", _window_seconds: windowSeconds },
           );
           if (rpcErr) return new Response(rpcErr.message, { status: 500 });
           if (Number.isFinite(limit) && Number(newCount ?? 0) > limit) {
             return new Response(
               JSON.stringify({
                 error: "PLAN_LIMIT_REACHED",
-                message: `Alcanzaste el límite de ${limit} consultas a socIA de tu plan ${plan} este mes. Sube al plan Avanzado para consultas ilimitadas.`,
+                message: sociaLimitMessage(plan),
               }),
               { status: 402, headers: { "Content-Type": "application/json" } },
             );
