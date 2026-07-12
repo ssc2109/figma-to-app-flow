@@ -2435,7 +2435,7 @@ function PathNodesTrail({
               }}
             >
               {isFinal ? (
-                <GraduationCap
+                <FinalIcon
                   className="text-white"
                   style={{ width: size * 0.42, height: size * 0.42, opacity: isFinalActive ? 1 : 0.45 }}
                   strokeWidth={1.6}
