@@ -22,18 +22,24 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
     setNotice(null);
     setBusy(target);
     try {
-      const { token, demo, error: culqiErr } = await openCulqi(
-        target,
-        user?.email ?? "cliente@trax.pe",
-      );
-      if (culqiErr) throw new Error(culqiErr);
-      await subscribe({ data: { plan: target, culqiToken: token ?? undefined } });
-      await refresh();
-      setNotice(
-        demo
-          ? `Plan ${target} activado en modo demo (Culqi no configurado). Configura VITE_CULQI_PUBLIC_KEY en Secrets para cobrar de verdad.`
-          : `¡Listo! Plan ${target} activo.`,
-      );
+      if (target === "gratis") {
+        await subscribe({ data: { plan: "gratis" } });
+        await refresh();
+        setNotice("Estás en el plan Gratis. Puedes subir a Pro o Avanzado cuando quieras.");
+      } else {
+        const { token, demo, error: culqiErr } = await openCulqi(
+          target,
+          user?.email ?? "cliente@trax.pe",
+        );
+        if (culqiErr) throw new Error(culqiErr);
+        await subscribe({ data: { plan: target, culqiToken: token ?? undefined } });
+        await refresh();
+        setNotice(
+          demo
+            ? `Plan ${target} activado en modo demo (Culqi no configurado). Configura VITE_CULQI_PUBLIC_KEY en Secrets para cobrar de verdad.`
+            : `¡Listo! Plan ${target} activo.`,
+        );
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "No se pudo activar el plan.";
       setError(msg);
