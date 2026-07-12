@@ -2490,16 +2490,13 @@ function PathDetail({
 }
 
 /* -------- Main LearnView -------- */
-type LearnTab = "rutas" | "biblioteca" | "historial" | "favoritos";
-type LibraryTab = "libros" | "casos" | "noticias" | "tendencias";
+type LearnTab = "rutas" | "historial";
 
 function LearnView({ onBack }: { onBack: () => void }) {
   const store = useLearnStore();
   const generate = useServerFn(generateLearnSession);
   const { plan } = usePlan();
   const [tab, setTab] = useState<LearnTab>("rutas");
-  const [libTab, setLibTab] = useState<LibraryTab>("libros");
-  const [query, setQuery] = useState("");
   const [pathOpen, setPathOpen] = useState<LearningPath | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
   const [setupPath, setSetupPath] = useState<LearningPath | undefined>(undefined);
