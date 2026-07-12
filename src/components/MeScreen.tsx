@@ -2580,8 +2580,6 @@ function LearnView({ onBack }: { onBack: () => void }) {
     return (
       <SessionRunner
         stored={running}
-        isFav={store.isFavorite}
-        toggleFav={store.toggleFavorite}
         onClose={() => setRunning(null)}
         onComplete={completeRunning}
         onRemove={removeRunning}
