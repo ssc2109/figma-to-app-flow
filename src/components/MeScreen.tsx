@@ -33,6 +33,8 @@ import {
   Compass,
   Calendar as CalendarIcon,
   Clock,
+  Check,
+  Play,
 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
