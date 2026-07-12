@@ -135,7 +135,16 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
             ))}
           </div>
         )}
+
+        {showTraxBadge && (
+          <div className="mt-[24px] flex items-center justify-center gap-[6px] font-['Geist'] text-[11px] text-white/45">
+            <Sparkles className="h-[11px] w-[11px]" strokeWidth={1.8} />
+            <span>Hecho con Trax</span>
+          </div>
+        )}
       </div>
+
+
 
       <AnimatePresence>
         {editing && <PriceEditor onClose={() => setEditing(false)} />}
