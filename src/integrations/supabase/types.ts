@@ -637,7 +637,7 @@ export type Database = {
       increment_usage_counter: { Args: { _kind: string }; Returns: number }
     }
     Enums: {
-      subscription_plan: "trial" | "pro" | "avanzado"
+      subscription_plan: "trial" | "pro" | "avanzado" | "gratis"
       subscription_status: "active" | "past_due" | "canceled" | "trialing"
     }
     CompositeTypes: {
@@ -766,7 +766,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      subscription_plan: ["trial", "pro", "avanzado"],
+      subscription_plan: ["trial", "pro", "avanzado", "gratis"],
       subscription_status: ["active", "past_due", "canceled", "trialing"],
     },
   },
