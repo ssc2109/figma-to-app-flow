@@ -13,9 +13,20 @@ export type PlanLimits = {
    *  0 = ventana de mes calendario (comportamiento clásico).
    *  >0 = ventana rotativa (ej: 8 horas para plan gratis). */
   sociaCreditsWindowHours: number;
+  /** Tope duro mensual adicional de créditos socIA (aplica sobre la ventana rotativa).
+   *  Infinito = sin tope mensual. */
+  maxSociaMonthlyCap: number;
   maxLearnSessionsPerMonth: number;
+  /** Días de historial de ventas visibles. Infinito = sin límite. */
+  maxSalesHistoryDays: number;
+  /** Acceso a Compras a proveedores. */
+  hasSupplierPurchases: boolean;
+  /** Acceso a Calendario y agenda. */
+  hasCalendarAgenda: boolean;
+  /** Catálogo público sin la marca "Hecho con Trax".
+   *  true = SIN marca (limpio). false = con marca. */
+  hasCatalogBranding: boolean;
   hasAdvancedReports: boolean;
-  hasCustomCatalogBranding: boolean;
   hasWhatsappReminders: boolean;
   prioritySupport: boolean;
 };
@@ -28,9 +39,13 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
     maxCatalogProducts: UNLIMITED,
     maxSociaCredits: UNLIMITED,
     sociaCreditsWindowHours: 0,
+    maxSociaMonthlyCap: UNLIMITED,
     maxLearnSessionsPerMonth: UNLIMITED,
+    maxSalesHistoryDays: UNLIMITED,
+    hasSupplierPurchases: true,
+    hasCalendarAgenda: true,
+    hasCatalogBranding: true,
     hasAdvancedReports: true,
-    hasCustomCatalogBranding: true,
     hasWhatsappReminders: true,
     prioritySupport: true,
   },
@@ -39,9 +54,13 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
     maxCatalogProducts: 30,
     maxSociaCredits: 5,
     sociaCreditsWindowHours: 8,
+    maxSociaMonthlyCap: 15,
     maxLearnSessionsPerMonth: 2,
+    maxSalesHistoryDays: 30,
+    hasSupplierPurchases: false,
+    hasCalendarAgenda: false,
+    hasCatalogBranding: false,
     hasAdvancedReports: false,
-    hasCustomCatalogBranding: false,
     hasWhatsappReminders: false,
     prioritySupport: false,
   },
@@ -50,9 +69,13 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
     maxCatalogProducts: 200,
     maxSociaCredits: 50,
     sociaCreditsWindowHours: 0, // mes calendario
+    maxSociaMonthlyCap: UNLIMITED,
     maxLearnSessionsPerMonth: 10,
+    maxSalesHistoryDays: UNLIMITED,
+    hasSupplierPurchases: true,
+    hasCalendarAgenda: true,
+    hasCatalogBranding: true, // sin marca de Trax
     hasAdvancedReports: false,
-    hasCustomCatalogBranding: false,
     hasWhatsappReminders: false,
     prioritySupport: false,
   },
@@ -61,9 +84,13 @@ export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
     maxCatalogProducts: UNLIMITED,
     maxSociaCredits: UNLIMITED,
     sociaCreditsWindowHours: 0,
+    maxSociaMonthlyCap: UNLIMITED,
     maxLearnSessionsPerMonth: UNLIMITED,
+    maxSalesHistoryDays: UNLIMITED,
+    hasSupplierPurchases: true,
+    hasCalendarAgenda: true,
+    hasCatalogBranding: true,
     hasAdvancedReports: true,
-    hasCustomCatalogBranding: true,
     hasWhatsappReminders: true,
     prioritySupport: true,
   },
@@ -83,10 +110,14 @@ export const PLAN_FEATURES: Record<PaidOrFreePlan, { name: string; tagline: stri
     tagline: "Para empezar sin costo",
     features: [
       "Ventas ilimitadas",
+      "Historial de ventas: últimos 30 días",
       "Catálogo hasta 30 productos",
       "Hasta 15 clientes y fiados",
       "1 usuario (sin equipo)",
-      "socIA: 5 créditos cada 8 horas",
+      "Sin compras a proveedores",
+      "Sin calendario y agenda",
+      "Catálogo público con marca Hecho con Trax",
+      "socIA: 5 créditos cada 8h (tope 15/mes)",
       "Aprender: 2 sesiones/mes",
     ],
   },
@@ -94,12 +125,13 @@ export const PLAN_FEATURES: Record<PaidOrFreePlan, { name: string; tagline: stri
     name: "Pro",
     tagline: "Para negocios que empiezan a crecer",
     features: [
-      "Ventas ilimitadas",
+      "Ventas ilimitadas + historial completo",
       "Catálogo hasta 200 productos",
       "Clientes y fiados ilimitados",
       "Compras a proveedores (básico)",
       "Calendario y agenda",
       "Hasta 2 miembros de equipo",
+      "Catálogo público sin marca de Trax",
       "socIA hasta 50 créditos/mes",
       "Aprender: 10 sesiones IA/mes",
     ],
@@ -130,11 +162,35 @@ export function trialDaysLeft(trialEndsAt: string | null | undefined): number {
   return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
 }
 
-/** Mensaje user-facing cuando se acaban los créditos de socIA. */
-export function sociaLimitMessage(plan: PlanId): string {
+/** Formatea milisegundos restantes a un texto natural en español ("2 h 15 min", "45 min", "unos minutos"). */
+export function formatTimeRemaining(ms: number): string {
+  if (!Number.isFinite(ms) || ms <= 0) return "unos minutos";
+  const totalMin = Math.ceil(ms / 60000);
+  if (totalMin < 60) return `${totalMin} min`;
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (m === 0) return `${h} h`;
+  return `${h} h ${m} min`;
+}
+
+/** Mensaje user-facing cuando se acaban los créditos de socIA.
+ *  Si se pasa `resetInMs`, se muestra el tiempo restante hasta que se reinicie
+ *  la ventana. `reason` distingue "window" (ventana rotativa) de "monthly" (tope mensual). */
+export function sociaLimitMessage(
+  plan: PlanId,
+  opts?: { resetInMs?: number; reason?: "window" | "monthly" },
+): string {
   const l = limitsFor(plan);
-  if (l.sociaCreditsWindowHours > 0) {
-    return `Alcanzaste tus ${l.maxSociaCredits} créditos de socIA de las últimas ${l.sociaCreditsWindowHours} horas. Vuelve a intentar más tarde o sube de plan.`;
+  const reason = opts?.reason ?? (l.sociaCreditsWindowHours > 0 ? "window" : "monthly");
+  const remaining = opts?.resetInMs;
+
+  if (reason === "monthly") {
+    if (plan === "gratis") {
+      return `Alcanzaste tu tope mensual de ${l.maxSociaMonthlyCap} créditos de socIA. Pasa a Pro y no esperes al próximo mes.`;
+    }
+    return `Alcanzaste tus ${l.maxSociaCredits} créditos de socIA de este mes. Sube al plan Avanzado para créditos ilimitados.`;
   }
-  return `Alcanzaste tus ${l.maxSociaCredits} créditos de socIA de este mes. Sube al plan Avanzado para créditos ilimitados.`;
+  // reason === "window"
+  const when = remaining && remaining > 0 ? `Vuelve en ${formatTimeRemaining(remaining)}` : "Vuelve más tarde";
+  return `Se acabaron tus créditos por ahora. ${when}, o pasa a Pro y no esperes más.`;
 }
