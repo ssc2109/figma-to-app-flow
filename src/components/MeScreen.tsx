@@ -2945,10 +2945,52 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
   const activeProjects = projects.filter((p) => p.status === "active" || p.status === "planning").length;
   const lateProjects = projects.filter((p) => p.status === "late").length;
 
-  const levelStyle: Record<string, { bg: string; icon: React.ReactNode; label: string }> = {
-    info: { bg: "rgba(74,222,128,0.10)", icon: <Info className="h-[14px] w-[14px] text-[#4ADE80]" strokeWidth={1.8} />, label: "Informativo" },
-    warn: { bg: "rgba(250,204,21,0.10)", icon: <Flame className="h-[14px] w-[14px] text-[#FACC15]" strokeWidth={1.8} />, label: "Atención" },
-    urgent: { bg: "rgba(248,113,113,0.10)", icon: <AlertTriangle className="h-[14px] w-[14px] text-[#F87171]" strokeWidth={1.8} />, label: "Urgente" },
+  type LevelStyleEntry = {
+    accent: string;
+    bg: string;
+    border: string;
+    iconBg: string;
+    icon: React.ReactNode;
+    label: string;
+    cta: string;
+  };
+  const levelStyle: Record<string, LevelStyleEntry> = {
+    info: {
+      accent: "#60A5FA",
+      bg: "linear-gradient(135deg, rgba(37,99,235,0.18), rgba(15,23,42,0.55))",
+      border: "1px solid rgba(96,165,250,0.28)",
+      iconBg: "linear-gradient(135deg,#3B82F6,#1D4ED8)",
+      icon: <Info className="h-[16px] w-[16px] text-white" strokeWidth={1.9} />,
+      label: "Sugerencia",
+      cta: "Revisar",
+    },
+    success: {
+      accent: "#4ADE80",
+      bg: "linear-gradient(135deg, rgba(34,197,94,0.16), rgba(6,78,59,0.35))",
+      border: "1px solid rgba(74,222,128,0.32)",
+      iconBg: "linear-gradient(135deg,#22C55E,#15803D)",
+      icon: <CheckCircle2 className="h-[16px] w-[16px] text-white" strokeWidth={2} />,
+      label: "Buen momento",
+      cta: "Aprovechar",
+    },
+    warn: {
+      accent: "#FBBF24",
+      bg: "linear-gradient(135deg, rgba(234,179,8,0.16), rgba(66,32,6,0.45))",
+      border: "1px solid rgba(251,191,36,0.30)",
+      iconBg: "linear-gradient(135deg,#F59E0B,#B45309)",
+      icon: <Flame className="h-[16px] w-[16px] text-white" strokeWidth={1.9} />,
+      label: "Atención",
+      cta: "Ver detalle",
+    },
+    urgent: {
+      accent: "#F87171",
+      bg: "linear-gradient(135deg, rgba(239,68,68,0.18), rgba(69,10,10,0.5))",
+      border: "1px solid rgba(248,113,113,0.35)",
+      iconBg: "linear-gradient(135deg,#EF4444,#991B1B)",
+      icon: <AlertTriangle className="h-[16px] w-[16px] text-white" strokeWidth={2} />,
+      label: "Urgente",
+      cta: "Resolver",
+    },
   };
 
   return (
@@ -2959,43 +3001,86 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
         <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</div>
           <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
-            <Stat label="Productividad" value={`${productivity}%`} />
-            <Stat label="Tareas" value={`${doneTasks}/${totalTasks}`} />
-            <Stat label="Rutina" value={`${routineDone}/${routine.length || 0}`} />
-            <Stat label="Metas" value={`${activeGoals}`} />
-            <Stat label="Proyectos" value={`${activeProjects}`} />
-            <Stat label="En riesgo" value={`${lateProjects}`} highlight={lateProjects > 0} />
+            <AnimatedStat label="Productividad" value={productivity} suffix="%" />
+            <AnimatedStat label="Tareas" value={doneTasks} denom={totalTasks} />
+            <AnimatedStat label="Rutina" value={routineDone} denom={routine.length || 0} />
+            <AnimatedStat label="Metas" value={activeGoals} />
+            <AnimatedStat label="Proyectos" value={activeProjects} />
+            <AnimatedStat label="En riesgo" value={lateProjects} highlight={lateProjects > 0} />
           </div>
         </div>
 
         <SectionLabel>Recomendaciones</SectionLabel>
         {recommendations.length === 0 ? (
-          <div className="py-[32px] text-center font-['Geist'] text-[13px] text-white/40">
-            Cuando registres actividad, la IA te sugerirá acciones aquí.
+          <div
+            className="rounded-[18px] p-[20px] text-center"
+            style={{
+              background: "linear-gradient(135deg, rgba(37,99,235,0.14), rgba(15,23,42,0.55))",
+              border: "1px solid rgba(96,165,250,0.22)",
+            }}
+          >
+            <div className="mx-auto h-[42px] w-[42px] rounded-[14px] flex items-center justify-center mb-[10px]" style={{ background: "linear-gradient(135deg,#3B82F6,#1D4ED8)" }}>
+              <Sparkles className="h-[18px] w-[18px] text-white" strokeWidth={1.9} />
+            </div>
+            <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white">
+              Empieza registrando tus prioridades del día
+            </div>
+            <div className="mt-[6px] font-['Geist'] text-[12.5px] text-white/60 leading-[1.5]">
+              Crea 3 tareas y 1 meta — la IA usará esos datos para sugerirte acciones concretas.
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-[10px]">
+          <div className="flex flex-col gap-[12px]">
             {recommendations.map((r) => {
-              const s = levelStyle[r.level];
+              const s = levelStyle[r.level] ?? levelStyle.info;
               return (
-                <div key={r.id} className="rounded-[16px] p-[14px]" style={{ background: s.bg, border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-center gap-[8px]">
+                <div
+                  key={r.id}
+                  className="rounded-[18px] p-[14px] flex gap-[12px]"
+                  style={{ background: s.bg, border: s.border }}
+                >
+                  <span
+                    className="h-[40px] w-[40px] rounded-[12px] flex items-center justify-center shrink-0"
+                    style={{ background: s.iconBg, boxShadow: `0 6px 18px -8px ${s.accent}` }}
+                  >
                     {s.icon}
-                    <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/50">{s.label}</span>
-                  </div>
-                  <div className="mt-[6px] font-['Geist'] text-[14.5px] text-white leading-[1.35]">{r.title}</div>
-                  {r.body && <div className="mt-[4px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.4]">{r.body}</div>}
-                  <div className="mt-[10px] flex flex-wrap gap-[6px]">
-                    {r.taskId && (
-                      <GhostButton onClick={() => goTo("priorities")}>Ver tareas</GhostButton>
-                    )}
-                    {r.projectId && (
-                      <GhostButton onClick={() => goTo("projects")}>Ver proyecto</GhostButton>
-                    )}
-                    {r.goalId && (
-                      <GhostButton onClick={() => goTo("goals")}>Ver meta</GhostButton>
-                    )}
-                    <GhostButton onClick={() => dismissRecommendation(r.id)}>Descartar</GhostButton>
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-['Geist'] text-[10px] uppercase tracking-[1.4px]" style={{ color: s.accent }}>
+                      {s.label}
+                    </div>
+                    <div className="mt-[3px] font-['Bai_Jamjuree'] text-[15px] font-semibold text-white leading-[1.3]">{r.title}</div>
+                    {r.body && <div className="mt-[4px] font-['Geist'] text-[12.5px] text-white/70 leading-[1.45]">{r.body}</div>}
+                    <div className="mt-[10px] flex flex-wrap gap-[6px]">
+                      {r.taskId || (!r.projectId && !r.goalId && r.level !== "success") ? (
+                        <button
+                          type="button"
+                          onClick={() => (r.projectId ? goTo("projects") : r.goalId ? goTo("goals") : goTo("priorities"))}
+                          className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] font-medium text-white flex items-center gap-[4px]"
+                          style={{ background: s.iconBg }}
+                        >
+                          {s.cta} <ArrowRight className="h-[12px] w-[12px]" strokeWidth={2} />
+                        </button>
+                      ) : null}
+                      {r.projectId && (
+                        <button type="button" onClick={() => goTo("projects")} className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] font-medium text-white flex items-center gap-[4px]" style={{ background: s.iconBg }}>
+                          Ver proyecto <ArrowRight className="h-[12px] w-[12px]" strokeWidth={2} />
+                        </button>
+                      )}
+                      {r.goalId && (
+                        <button type="button" onClick={() => goTo("goals")} className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] font-medium text-white flex items-center gap-[4px]" style={{ background: s.iconBg }}>
+                          Ver meta <ArrowRight className="h-[12px] w-[12px]" strokeWidth={2} />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => dismissRecommendation(r.id)}
+                        className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[11.5px] text-white/55 hover:text-white/80"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      >
+                        Descartar
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -3006,6 +3091,36 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
     </SubScreen>
   );
 }
+
+function AnimatedStat({
+  label,
+  value,
+  denom,
+  suffix = "",
+  highlight,
+}: {
+  label: string;
+  value: number;
+  denom?: number;
+  suffix?: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div>
+      <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.2px] text-white/40">{label}</div>
+      <div
+        className="mt-[4px] font-['Bai_Jamjuree'] text-[20px] font-semibold tabular-nums"
+        style={{ color: highlight ? "#F87171" : "white" }}
+      >
+        <CountUp value={value} suffix={suffix} />
+        {typeof denom === "number" && (
+          <span className="text-white/40">/{denom}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
