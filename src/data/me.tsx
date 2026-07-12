@@ -79,7 +79,7 @@ export type Project = {
   notes?: string;
 };
 
-export type RecoLevel = "info" | "warn" | "urgent";
+export type RecoLevel = "info" | "warn" | "urgent" | "success";
 
 export type Recommendation = {
   id: string;
