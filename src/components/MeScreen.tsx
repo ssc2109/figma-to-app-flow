@@ -1930,35 +1930,81 @@ function SessionSetupSheet({
   );
 }
 
-/* -------- Session Runner -------- */
+/* -------- Session Runner (micro-lecciones tipo Duolingo) -------- */
 function SessionRunner({
-  stored, isFav, toggleFav, onClose, onComplete, onRemove,
+  stored, onClose, onComplete, onRemove,
 }: {
   stored: StoredSession;
-  isFav: (f: FavoriteRef) => boolean;
-  toggleFav: (f: FavoriteRef) => void;
   onClose: () => void;
   onComplete: (score: number, total: number) => void;
   onRemove: () => void;
 }) {
   const { session } = stored;
+  const steps = session.steps ?? [];
+  const quiz = session.quiz ?? [];
+  const totalSteps = steps.length;
+  const totalQuestions = quiz.length;
+  // stages: step 0..N-1 -> "quiz" -> "score"
+  const [stepIdx, setStepIdx] = useState(0);
+  const [stage, setStage] = useState<"steps" | "quiz" | "score">(totalSteps > 0 ? "steps" : totalQuestions > 0 ? "quiz" : "score");
+  const [quizIdx, setQuizIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [submitted, setSubmitted] = useState(!!stored.completed);
-  const score = session.quiz.reduce((s, q, i) => s + (answers[i] === q.correctIndex ? 1 : 0), 0);
-  const total = session.quiz.length;
-
-  const submitQuiz = () => {
-    setSubmitted(true);
-    onComplete(score, total);
-  };
+  const [revealed, setRevealed] = useState<Record<number, boolean>>({});
+  const savedRef = useRef(false);
 
   const path = LEARNING_PATHS.find((p) => p.id === stored.pathId);
+  const [c1, c2] = extractGradientColors(path?.gradient ?? "linear-gradient(135deg,#0f172a,#3b0764)");
+
+  const progress =
+    stage === "score"
+      ? 100
+      : stage === "quiz"
+      ? Math.round(((totalSteps + Math.min(quizIdx + 1, totalQuestions)) / (totalSteps + Math.max(totalQuestions, 1))) * 100)
+      : Math.round(((stepIdx + 1) / Math.max(totalSteps + (totalQuestions > 0 ? 1 : 0), 1)) * 100);
+
+  const goNextFromStep = () => {
+    if (stepIdx < totalSteps - 1) setStepIdx((i) => i + 1);
+    else setStage(totalQuestions > 0 ? "quiz" : "score");
+  };
+  const goPrevFromStep = () => {
+    if (stepIdx > 0) setStepIdx((i) => i - 1);
+  };
+
+  const chooseAnswer = (qi: number, oi: number) => {
+    if (revealed[qi]) return;
+    setAnswers((a) => ({ ...a, [qi]: oi }));
+    setRevealed((r) => ({ ...r, [qi]: true }));
+  };
+  const goNextFromQuiz = () => {
+    if (quizIdx < totalQuestions - 1) setQuizIdx((i) => i + 1);
+    else setStage("score");
+  };
+
+  const score = quiz.reduce((s, q, i) => s + (answers[i] === q.correctIndex ? 1 : 0), 0);
+
+  useEffect(() => {
+    if (stage === "score" && !savedRef.current) {
+      savedRef.current = true;
+      onComplete(score, totalQuestions);
+    }
+  }, [stage, score, totalQuestions, onComplete]);
+
+  const scoreMessage =
+    totalQuestions === 0
+      ? { title: "¡Sesión terminada!", body: "Aplica el aprendizaje en tu negocio esta semana." }
+      : score === totalQuestions
+      ? { title: "¡Perfecto!", body: "Dominas el tema. Pon en práctica lo aprendido en tu negocio." }
+      : score >= Math.ceil(totalQuestions * 0.7)
+      ? { title: "¡Muy bien!", body: "Aprendiste lo esencial. Revisa las respuestas incorrectas antes de aplicar." }
+      : score >= Math.ceil(totalQuestions * 0.4)
+      ? { title: "Vas bien", body: "Repasa los pasos y vuelve a intentar el quiz para reforzar." }
+      : { title: "Sigue practicando", body: "Repasa los pasos con calma. Es un tema que rinde mucho al dominarlo." };
 
   return (
     <SubScreen>
       <SubHeader
         eyebrow={path ? path.name : "Sesión de IA"}
-        title={session.title}
+        title={session.title || stored.topic}
         onBack={onClose}
         action={
           <button type="button" onClick={onRemove} className="h-[32px] w-[32px] rounded-full flex items-center justify-center active:bg-white/[0.06]" aria-label="Eliminar sesión">
@@ -1967,214 +2013,221 @@ function SessionRunner({
         }
       />
 
-      <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[18px]">
-        <div className="rounded-[18px] overflow-hidden" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <SessionCoverBg gradient={path?.gradient ?? "linear-gradient(135deg,#0f172a,#3b0764)"}>
-            <div className="absolute top-[10px] left-[10px] flex gap-[6px]">
-              <LearnCoverTag>{stored.level}</LearnCoverTag>
-              <LearnCoverTag>{stored.minutes} min</LearnCoverTag>
-              {path && <LearnCoverTag>{path.emoji} {path.name}</LearnCoverTag>}
-            </div>
-          </SessionCoverBg>
-          <div className="p-[16px]">
-            <div className="font-['Geist'] text-[12px] uppercase tracking-[1.4px] text-white/45">1 · Introducción</div>
-            <p className="mt-[8px] font-['Geist'] text-[14px] text-white/85 leading-[1.6]">{session.intro}</p>
+      {/* Barra de progreso arriba */}
+      <div className="px-[20px] pt-[4px] pb-[10px]">
+        <div className="flex items-center gap-[10px]">
+          <div className="flex-1 h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: `linear-gradient(90deg, ${c1}, ${c2})` }}
+              initial={false}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            />
+          </div>
+          <div className="font-['Geist'] text-[11px] text-white/45 tabular-nums w-[46px] text-right">
+            {stage === "score" ? "Fin" : stage === "quiz" ? `Quiz ${quizIdx + 1}/${totalQuestions}` : `${stepIdx + 1}/${totalSteps}`}
           </div>
         </div>
+      </div>
 
-        <SectionBlock icon={<Lightbulb className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="2 · Conceptos fundamentales">
-          <div className="flex flex-col gap-[10px]">
-            {session.concepts.map((c, i) => (
-              <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white">{c.title}</div>
-                <p className="mt-[6px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{c.description}</p>
-              </div>
-            ))}
-          </div>
-        </SectionBlock>
+      <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 px-[20px] overflow-y-auto pb-[12px]">
+          <AnimatePresence mode="wait" initial={false}>
+            {stage === "steps" && steps[stepIdx] && (
+              <motion.div
+                key={`step-${stepIdx}`}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="flex flex-col gap-[16px]"
+              >
+                <div className="rounded-[20px] p-[18px] relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${c1}22, ${c2}12)`, border: `1px solid ${c2}33` }}>
+                  <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px]" style={{ color: c2 }}>
+                    Paso {stepIdx + 1} de {totalSteps}
+                  </div>
+                  <div className="mt-[6px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white leading-[1.2] tracking-[-0.3px]">
+                    {steps[stepIdx].title}
+                  </div>
+                </div>
 
-        <SectionBlock icon={<BookOpen className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="3 · Ideas de libros">
-          <div className="flex flex-col gap-[10px]">
-            {session.books.map((b, i) => {
-              const fav: FavoriteRef = { type: "book", sessionId: stored.id, index: i };
-              return (
-                <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-start justify-between gap-[10px]">
-                    <div className="min-w-0">
-                      <div className="font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white">{b.title}</div>
-                      <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45">{b.author}</div>
+                <div className="rounded-[16px] p-[16px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-center gap-[8px] mb-[8px]">
+                    <Lightbulb className="h-[14px] w-[14px]" style={{ color: c2 }} strokeWidth={1.8} />
+                    <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-white/50">Idea</span>
+                  </div>
+                  <p className="font-['Geist'] text-[15px] text-white leading-[1.55]">{steps[stepIdx].idea}</p>
+                </div>
+
+                {steps[stepIdx].example && (
+                  <div className="rounded-[16px] p-[16px]" style={{ background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.18)" }}>
+                    <div className="flex items-center gap-[8px] mb-[8px]">
+                      <Building2 className="h-[14px] w-[14px] text-[#4ADE80]" strokeWidth={1.8} />
+                      <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-[#4ADE80]/80">Ejemplo real</span>
                     </div>
-                    <FavStar active={isFav(fav)} onClick={() => toggleFav(fav)} />
+                    <p className="font-['Geist'] text-[14px] text-white/90 leading-[1.55]">{steps[stepIdx].example}</p>
                   </div>
-                  <p className="mt-[8px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{b.idea}</p>
-                </div>
-              );
-            })}
-          </div>
-        </SectionBlock>
+                )}
 
-        <SectionBlock icon={<Building2 className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="4 · Casos reales">
-          <div className="flex flex-col gap-[10px]">
-            {session.cases.map((c, i) => {
-              const fav: FavoriteRef = { type: "case", sessionId: stored.id, index: i };
-              return (
-                <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-start justify-between gap-[10px]">
-                    <div className="font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white">{c.company}</div>
-                    <FavStar active={isFav(fav)} onClick={() => toggleFav(fav)} />
-                  </div>
-                  <p className="mt-[6px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{c.story}</p>
-                  <p className="mt-[8px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.5]"><span className="text-white/40">Moraleja: </span>{c.lesson}</p>
-                </div>
-              );
-            })}
-          </div>
-        </SectionBlock>
-
-        <SectionBlock icon={<Newspaper className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="5 · Noticias recientes">
-          <div className="flex flex-col gap-[10px]">
-            {session.news.map((n, i) => {
-              const fav: FavoriteRef = { type: "news", sessionId: stored.id, index: i };
-              return (
-                <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-start justify-between gap-[10px]">
-                    <div className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white leading-[1.3]">{n.headline}</div>
-                    <FavStar active={isFav(fav)} onClick={() => toggleFav(fav)} />
-                  </div>
-                  <p className="mt-[6px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{n.summary}</p>
-                  <div className="mt-[8px] flex items-center gap-[6px]">
-                    <LibraryTagPill>{n.source}</LibraryTagPill>
-                    <LibraryTagPill>{n.dateHint}</LibraryTagPill>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </SectionBlock>
-
-        <SectionBlock icon={<TrendingUp className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="6 · Tendencias">
-          <div className="flex flex-col gap-[10px]">
-            {session.trends.map((t, i) => {
-              const fav: FavoriteRef = { type: "trend", sessionId: stored.id, index: i };
-              return (
-                <div key={i} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="flex items-start justify-between gap-[10px]">
-                    <div className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white">{t.title}</div>
-                    <FavStar active={isFav(fav)} onClick={() => toggleFav(fav)} />
-                  </div>
-                  <p className="mt-[6px] font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{t.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </SectionBlock>
-
-        <SectionBlock icon={<Sparkles className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="7 · Resumen">
-          <div className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <p className="font-['Geist'] text-[13.5px] text-white/80 leading-[1.6] whitespace-pre-line">{session.summary}</p>
-          </div>
-        </SectionBlock>
-
-        <SectionBlock icon={<Target className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="8 · Ejercicio práctico">
-          <div className="rounded-[14px] p-[14px]" style={{ background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.20)" }}>
-            <p className="font-['Geist'] text-[13.5px] text-white leading-[1.6] whitespace-pre-line">{session.exercise}</p>
-          </div>
-        </SectionBlock>
-
-        <SectionBlock icon={<GraduationCap className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow={`9 · Evaluación · ${total} preguntas`}>
-          <div className="flex flex-col gap-[10px]">
-            {session.quiz.map((q, qi) => {
-              const chosen = answers[qi];
-              const isCorrect = submitted && chosen === q.correctIndex;
-              return (
-                <div key={qi} className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <div className="font-['Geist'] text-[13.5px] text-white leading-[1.4]">{qi + 1}. {q.question}</div>
-                  <div className="mt-[8px] flex flex-col gap-[6px]">
-                    {q.options.map((opt, oi) => {
-                      const active = chosen === oi;
-                      const showCorrect = submitted && oi === q.correctIndex;
-                      const showWrong = submitted && active && oi !== q.correctIndex;
-                      return (
-                        <button
-                          key={oi}
-                          type="button"
-                          disabled={submitted}
-                          onClick={() => setAnswers((a) => ({ ...a, [qi]: oi }))}
-                          className="text-left rounded-[10px] px-[12px] py-[10px] font-['Geist'] text-[12.5px]"
-                          style={{
-                            background: showCorrect ? "rgba(74,222,128,0.12)" : showWrong ? "rgba(248,113,113,0.12)" : active ? "rgba(255,255,255,0.08)" : "transparent",
-                            border: `1px solid ${showCorrect ? "rgba(74,222,128,0.35)" : showWrong ? "rgba(248,113,113,0.35)" : active ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.08)"}`,
-                            color: showCorrect ? "#4ADE80" : showWrong ? "#F87171" : "white",
-                          }}
-                        >
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {submitted && !isCorrect && (
-                    <div className="mt-[8px] font-['Geist'] text-[12px] text-white/55 leading-[1.5]">
-                      <span className="text-white/40">Explicación: </span>{q.explanation}
+                {steps[stepIdx].reflection && (
+                  <div className="rounded-[16px] p-[16px]" style={{ background: "rgba(250,204,21,0.06)", border: "1px solid rgba(250,204,21,0.22)" }}>
+                    <div className="flex items-center gap-[8px] mb-[8px]">
+                      <Sparkles className="h-[14px] w-[14px] text-[#FACC15]" strokeWidth={1.8} />
+                      <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-[#FACC15]/85">Reflexiona</span>
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    <p className="font-['Geist'] text-[14px] text-white/90 leading-[1.55] italic">{steps[stepIdx].reflection}</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
 
-          {!submitted ? (
+            {stage === "quiz" && quiz[quizIdx] && (
+              <motion.div
+                key={`q-${quizIdx}`}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="flex flex-col gap-[14px]"
+              >
+                <div className="rounded-[20px] p-[18px]" style={{ background: `linear-gradient(135deg, ${c1}22, ${c2}12)`, border: `1px solid ${c2}33` }}>
+                  <div className="flex items-center gap-[8px]">
+                    <GraduationCap className="h-[14px] w-[14px]" style={{ color: c2 }} strokeWidth={1.8} />
+                    <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px]" style={{ color: c2 }}>
+                      Pregunta {quizIdx + 1} de {totalQuestions}
+                    </span>
+                  </div>
+                  <div className="mt-[8px] font-['Bai_Jamjuree'] text-[19px] font-semibold text-white leading-[1.3]">
+                    {quiz[quizIdx].question}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-[8px]">
+                  {quiz[quizIdx].options.map((opt, oi) => {
+                    const chosen = answers[quizIdx];
+                    const isRevealed = revealed[quizIdx];
+                    const isCorrect = oi === quiz[quizIdx].correctIndex;
+                    const isChosen = chosen === oi;
+                    let bg = "rgba(255,255,255,0.04)";
+                    let border = "rgba(255,255,255,0.08)";
+                    let color = "white";
+                    if (isRevealed) {
+                      if (isCorrect) { bg = "rgba(74,222,128,0.14)"; border = "rgba(74,222,128,0.45)"; color = "#4ADE80"; }
+                      else if (isChosen) { bg = "rgba(248,113,113,0.14)"; border = "rgba(248,113,113,0.45)"; color = "#F87171"; }
+                    } else if (isChosen) {
+                      bg = "rgba(255,255,255,0.10)"; border = "rgba(255,255,255,0.22)";
+                    }
+                    return (
+                      <button
+                        key={oi}
+                        type="button"
+                        disabled={isRevealed}
+                        onClick={() => chooseAnswer(quizIdx, oi)}
+                        className="text-left rounded-[14px] px-[14px] py-[12px] font-['Geist'] text-[14px] transition-colors"
+                        style={{ background: bg, border: `1px solid ${border}`, color }}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {revealed[quizIdx] && (
+                  <div className="rounded-[14px] p-[14px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/40 mb-[4px]">Explicación</div>
+                    <p className="font-['Geist'] text-[13px] text-white/80 leading-[1.55]">{quiz[quizIdx].explanation}</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {stage === "score" && (
+              <motion.div
+                key="score"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="flex flex-col items-center text-center gap-[16px] pt-[16px]"
+              >
+                <div
+                  className="h-[110px] w-[110px] rounded-full flex items-center justify-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${c1}, ${c2})`,
+                    boxShadow: `0 0 0 6px ${c2}22, 0 12px 32px -8px ${c2}88`,
+                  }}
+                >
+                  <GraduationCap className="h-[52px] w-[52px] text-white" strokeWidth={1.6} />
+                </div>
+                <div className="font-['Bai_Jamjuree'] text-[26px] font-semibold text-white tracking-[-0.3px]">
+                  {scoreMessage.title}
+                </div>
+                {totalQuestions > 0 && (
+                  <div className="rounded-[16px] px-[22px] py-[12px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-white/40">Puntuación</div>
+                    <div className="mt-[2px] font-['Bai_Jamjuree'] text-[32px] font-semibold text-white tabular-nums">{score}<span className="text-white/40 text-[20px]"> / {totalQuestions}</span></div>
+                  </div>
+                )}
+                <p className="font-['Geist'] text-[13.5px] text-white/65 leading-[1.55] max-w-[300px]">{scoreMessage.body}</p>
+                {session.summary && (
+                  <div className="mt-[6px] rounded-[14px] p-[14px] text-left w-full" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/40 mb-[4px]">Idea clave</div>
+                    <p className="font-['Geist'] text-[13.5px] text-white/80 leading-[1.55]">{session.summary}</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Footer con botones */}
+        <div className="px-[20px] py-[12px] flex items-center gap-[10px]" style={{ background: "linear-gradient(180deg, transparent, rgba(0,0,0,0.55) 30%)" }}>
+          {stage === "steps" && (
+            <>
+              <button
+                type="button"
+                onClick={goPrevFromStep}
+                disabled={stepIdx === 0}
+                className="h-[46px] px-[16px] rounded-full font-['Geist'] text-[13px] font-medium text-white disabled:opacity-30"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}
+              >
+                Atrás
+              </button>
+              <button
+                type="button"
+                onClick={goNextFromStep}
+                className="flex-1 h-[46px] rounded-full font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white flex items-center justify-center gap-[8px] active:scale-[0.98] transition-transform"
+                style={{ background: `linear-gradient(135deg, ${c1}, ${c2})`, boxShadow: `0 8px 24px -10px ${c2}` }}
+              >
+                {stepIdx === totalSteps - 1 ? (totalQuestions > 0 ? "Ir al quiz" : "Terminar") : "Siguiente"}
+                <ArrowRight className="h-[16px] w-[16px]" strokeWidth={2} />
+              </button>
+            </>
+          )}
+          {stage === "quiz" && (
             <button
               type="button"
-              onClick={submitQuiz}
-              disabled={Object.keys(answers).length < total}
-              className="mt-[14px] h-[42px] w-full rounded-full bg-white text-black font-['Geist'] text-[13.5px] font-semibold disabled:opacity-40 active:scale-[0.98]"
+              onClick={goNextFromQuiz}
+              disabled={!revealed[quizIdx]}
+              className="flex-1 h-[46px] rounded-full font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white flex items-center justify-center gap-[8px] disabled:opacity-40 active:scale-[0.98] transition-transform"
+              style={{ background: `linear-gradient(135deg, ${c1}, ${c2})`, boxShadow: `0 8px 24px -10px ${c2}` }}
             >
-              Enviar respuestas
+              {quizIdx === totalQuestions - 1 ? "Ver resultado" : "Siguiente pregunta"}
+              <ArrowRight className="h-[16px] w-[16px]" strokeWidth={2} />
             </button>
-          ) : (
-            <div className="mt-[14px] rounded-[14px] p-[14px] flex items-center justify-between" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              <div>
-                <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Puntuación</div>
-                <div className="font-['Bai_Jamjuree'] text-[26px] font-semibold text-white tabular-nums">{score} / {total}</div>
-              </div>
-              <div className="font-['Geist'] text-[12.5px] text-white/55 max-w-[55%] text-right leading-[1.5]">
-                {score === total ? "¡Perfecto! Aplica el ejercicio esta semana." : score >= Math.ceil(total * 0.7) ? "Muy bien. Repasa el resumen y practica lo aprendido." : "Repasa los conceptos y las ideas de libros antes de aplicar."}
-              </div>
-            </div>
           )}
-        </SectionBlock>
-
-        {session.furtherReading.length > 0 && (
-          <SectionBlock icon={<BookOpen className="h-[14px] w-[14px] text-white/70" strokeWidth={1.8} />} eyebrow="Para profundizar">
-            <ul className="flex flex-col gap-[6px]">
-              {session.furtherReading.map((f, i) => (
-                <li key={i} className="font-['Geist'] text-[13px] text-white/70 leading-[1.5]">• {f}</li>
-              ))}
-            </ul>
-          </SectionBlock>
-        )}
-      </ProductivityScroll>
-    </SubScreen>
-  );
-}
-
-function SectionBlock({ eyebrow, icon, children }: { eyebrow: string; icon?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="flex items-center gap-[8px] px-[6px] pb-[10px]">
-        {icon}
-        <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.6px] text-white/45">{eyebrow}</span>
+          {stage === "score" && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 h-[46px] rounded-full font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-black flex items-center justify-center gap-[8px] active:scale-[0.98] transition-transform bg-white"
+            >
+              Volver a Aprender
+            </button>
+          )}
+        </div>
       </div>
-      {children}
-    </div>
-  );
-}
-
-function FavStar({ active, onClick }: { active: boolean; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="h-[26px] w-[26px] rounded-full flex items-center justify-center shrink-0" aria-label={active ? "Quitar de favoritos" : "Guardar en favoritos"}>
-      <Star className="h-[15px] w-[15px]" strokeWidth={1.8} style={{ color: active ? "#FACC15" : "rgba(255,255,255,0.55)", fill: active ? "#FACC15" : "transparent" }} />
-    </button>
+    </SubScreen>
   );
 }
 
