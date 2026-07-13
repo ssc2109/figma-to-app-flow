@@ -311,6 +311,66 @@ function makeTools(supabase: SupabaseClient, userId: string) {
         };
       },
     }),
+
+    investigarWeb: tool({
+      description:
+        "Busca información pública actualizada en Internet (Tavily) cuando la respuesta NO puede obtenerse de la base de datos del negocio. Úsala para: tendencias del mercado, precios promedio del sector, noticias económicas, análisis de competencia, negocios similares, proveedores, estrategias comerciales, presencia digital y datos públicos de empresas. Combínala con las herramientas internas (consultarStock, analizarNegocio, etc.) cuando el usuario pida comparar sus datos con el mercado. No la uses para acciones (registrar, actualizar) ni para datos ya disponibles internamente.",
+      inputSchema: z.object({
+        consulta: z.string().min(3).describe("Consulta clara para el buscador, en español, enfocada al negocio del usuario (ej: 'precio promedio saco de arroz 50kg Lima 2026', 'competencia bodegas Miraflores', 'tendencias panaderías Perú')"),
+        profundidad: z.enum(["basica", "avanzada"]).optional().describe("Usa 'avanzada' para análisis de competencia o mercado; 'basica' para consultas rápidas"),
+        maxResultados: z.number().int().min(1).max(10).optional().describe("Máximo de resultados a devolver, por defecto 5"),
+        incluirDominios: z.array(z.string()).optional().describe("Restringe la búsqueda a dominios específicos (opcional)"),
+        tema: z.enum(["general", "news"]).optional().describe("Usa 'news' cuando el usuario pida noticias o cambios recientes"),
+      }),
+      execute: async ({ consulta, profundidad, maxResultados, incluirDominios, tema }) => {
+        const apiKey = process.env.Tavily || process.env.TAVILY_API_KEY;
+        if (!apiKey) {
+          return { ok: false, error: "Tavily no está configurado en el servidor.", resultados: [] };
+        }
+        try {
+          const res = await fetch("https://api.tavily.com/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              api_key: apiKey,
+              query: consulta,
+              search_depth: profundidad === "avanzada" ? "advanced" : "basic",
+              max_results: maxResultados ?? 5,
+              include_answer: true,
+              include_raw_content: false,
+              include_images: false,
+              topic: tema === "news" ? "news" : "general",
+              include_domains: incluirDominios && incluirDominios.length ? incluirDominios : undefined,
+            }),
+          });
+          if (!res.ok) {
+            const txt = await res.text().catch(() => "");
+            return { ok: false, error: `Tavily HTTP ${res.status}`, detalle: txt.slice(0, 200), resultados: [] };
+          }
+          const data = (await res.json()) as {
+            answer?: string;
+            results?: Array<{ title?: string; url?: string; content?: string; score?: number; published_date?: string }>;
+          };
+          const resultados = (data.results ?? []).map((r) => ({
+            titulo: r.title ?? "",
+            url: r.url ?? "",
+            resumen: (r.content ?? "").slice(0, 500),
+            score: r.score ?? null,
+            fecha: r.published_date ?? null,
+          }));
+          return {
+            ok: true,
+            consulta,
+            respuesta_sintetizada: data.answer ?? null,
+            total: resultados.length,
+            resultados,
+            aviso: "Información obtenida de fuentes públicas via Tavily. Verifica antes de tomar decisiones críticas.",
+          };
+        } catch (e) {
+          return { ok: false, error: e instanceof Error ? e.message : "Error consultando Tavily", resultados: [] };
+        }
+      },
+    }),
   };
 }
 
