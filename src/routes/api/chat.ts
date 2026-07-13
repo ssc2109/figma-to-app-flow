@@ -26,6 +26,9 @@ Cómo trabajas:
 4. Para análisis pide la herramienta "analizarNegocio" cuando el usuario pida un resumen o sugerencias del día/semana/mes.
 5. Si una herramienta falla, dilo con honestidad y sugiere alternativa manual.
 6. Nunca inventes números del negocio que no estén en el contexto ni vinieron de una herramienta.
+7. Si la pregunta requiere información que NO está en la base de datos del negocio (tendencias del mercado, precios promedio del sector, noticias, análisis de competencia, negocios similares, proveedores, presencia digital de otras empresas, cambios económicos), usa la herramienta "investigarWeb" — decides tú automáticamente, el usuario no tiene que pedirlo.
+8. Si la consulta necesita comparar datos internos con el mercado (ej: "¿mis precios están altos?", "¿cómo va mi rubro?"), llama en paralelo a las herramientas internas (consultarStock/analizarNegocio) Y a "investigarWeb", y luego combina ambas fuentes en tu respuesta.
+9. Si investigarWeb devuelve ok:false o sin resultados, dilo con transparencia y responde sólo con los datos internos disponibles. Nunca inventes datos externos.
 
 Reglas:
 - Moneda por defecto: Soles (S/).
@@ -309,6 +312,66 @@ function makeTools(supabase: SupabaseClient, userId: string) {
             variacion_pct: variacionPct,
           },
         };
+      },
+    }),
+
+    investigarWeb: tool({
+      description:
+        "Busca información pública actualizada en Internet (Tavily) cuando la respuesta NO puede obtenerse de la base de datos del negocio. Úsala para: tendencias del mercado, precios promedio del sector, noticias económicas, análisis de competencia, negocios similares, proveedores, estrategias comerciales, presencia digital y datos públicos de empresas. Combínala con las herramientas internas (consultarStock, analizarNegocio, etc.) cuando el usuario pida comparar sus datos con el mercado. No la uses para acciones (registrar, actualizar) ni para datos ya disponibles internamente.",
+      inputSchema: z.object({
+        consulta: z.string().min(3).describe("Consulta clara para el buscador, en español, enfocada al negocio del usuario (ej: 'precio promedio saco de arroz 50kg Lima 2026', 'competencia bodegas Miraflores', 'tendencias panaderías Perú')"),
+        profundidad: z.enum(["basica", "avanzada"]).optional().describe("Usa 'avanzada' para análisis de competencia o mercado; 'basica' para consultas rápidas"),
+        maxResultados: z.number().int().min(1).max(10).optional().describe("Máximo de resultados a devolver, por defecto 5"),
+        incluirDominios: z.array(z.string()).optional().describe("Restringe la búsqueda a dominios específicos (opcional)"),
+        tema: z.enum(["general", "news"]).optional().describe("Usa 'news' cuando el usuario pida noticias o cambios recientes"),
+      }),
+      execute: async ({ consulta, profundidad, maxResultados, incluirDominios, tema }) => {
+        const apiKey = process.env.Tavily || process.env.TAVILY_API_KEY;
+        if (!apiKey) {
+          return { ok: false, error: "Tavily no está configurado en el servidor.", resultados: [] };
+        }
+        try {
+          const res = await fetch("https://api.tavily.com/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              api_key: apiKey,
+              query: consulta,
+              search_depth: profundidad === "avanzada" ? "advanced" : "basic",
+              max_results: maxResultados ?? 5,
+              include_answer: true,
+              include_raw_content: false,
+              include_images: false,
+              topic: tema === "news" ? "news" : "general",
+              include_domains: incluirDominios && incluirDominios.length ? incluirDominios : undefined,
+            }),
+          });
+          if (!res.ok) {
+            const txt = await res.text().catch(() => "");
+            return { ok: false, error: `Tavily HTTP ${res.status}`, detalle: txt.slice(0, 200), resultados: [] };
+          }
+          const data = (await res.json()) as {
+            answer?: string;
+            results?: Array<{ title?: string; url?: string; content?: string; score?: number; published_date?: string }>;
+          };
+          const resultados = (data.results ?? []).map((r) => ({
+            titulo: r.title ?? "",
+            url: r.url ?? "",
+            resumen: (r.content ?? "").slice(0, 500),
+            score: r.score ?? null,
+            fecha: r.published_date ?? null,
+          }));
+          return {
+            ok: true,
+            consulta,
+            respuesta_sintetizada: data.answer ?? null,
+            total: resultados.length,
+            resultados,
+            aviso: "Información obtenida de fuentes públicas via Tavily. Verifica antes de tomar decisiones críticas.",
+          };
+        } catch (e) {
+          return { ok: false, error: e instanceof Error ? e.message : "Error consultando Tavily", resultados: [] };
+        }
       },
     }),
   };
