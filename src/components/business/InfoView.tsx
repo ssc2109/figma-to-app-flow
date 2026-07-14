@@ -1,11 +1,25 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, X, Copy, Download, Settings2, ExternalLink } from "lucide-react";
+import {
+  ChevronRight,
+  X,
+  Copy,
+  Download,
+  Settings2,
+  ExternalLink,
+  Lock,
+  FileText,
+  Share2,
+  FileSpreadsheet,
+  Plug,
+  Sparkles,
+} from "lucide-react";
 import { SubHeader, SubScreen, SectionLabel, ListGroup } from "./shared";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePlan } from "@/hooks/usePlan";
 
 type FieldKey =
   | "business_name"
