@@ -3234,9 +3234,12 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
+            className="relative min-h-[100dvh] overflow-hidden"
           >
+            <AuroraBg />
+
             {onClose && (
-              <div className="absolute top-[22px] right-[20px] z-10">
+              <div className="absolute top-[22px] right-[20px] z-20">
                 <button
                   type="button"
                   onClick={onClose}
@@ -3247,107 +3250,166 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
               </div>
             )}
 
-            <PageHeader eyebrow="Productividad" title={`Hola, ${name}`} />
+            <div className="relative z-10">
+              <PageHeader eyebrow="Productividad" title={`Hola, ${name}`} />
 
-            <ProductivityScroll className="pt-[20px] flex flex-col">
-              <div className="px-[20px]">
-                <StreakHero streak={streak} />
-              </div>
-
-              <div className="mt-[28px] px-[20px]">
-                <div className="pb-[12px] flex items-center gap-[8px]">
-                  <div className="h-[4px] w-[4px] rounded-full bg-[#60A5FA]" />
-                  <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
-                    Hoy
-                  </span>
+              <ProductivityScroll className="pt-[16px] flex flex-col">
+                {/* Hero streak — blends with aurora */}
+                <div className="px-[20px] pt-[6px] pb-[4px]">
+                  <StreakAurora streak={streak} name={name} />
                 </div>
-                <div className="flex flex-col gap-[10px]">
-                  <BlueRow
-                    Icon={ListChecks}
-                    label="Prioridades"
-                    meta={
-                      todayTotal === 0
-                        ? "Sin tareas todavía"
-                        : `${pendingTasks} pendientes${highPriorityToday > 0 ? ` · ${highPriorityToday} de alta prioridad` : ""}`
-                    }
-                    onClick={() => setView("priorities")}
-                    accent="#3B82F6"
-                  />
-                  <BlueRow
-                    Icon={CalendarDays}
-                    label="Calendario"
-                    meta={
-                      nextEvent
-                        ? `Próximo: ${nextEvent.title}${nextEvent.start ? ` · ${nextEvent.start}` : ""}`
-                        : "Sin eventos programados"
-                    }
-                    onClick={() => setView("calendar")}
-                    accent="#2563EB"
-                  />
-                  <BlueRow
-                    Icon={Sun}
-                    label="Rutina diaria"
-                    meta={routine.length === 0 ? "Sin hábitos configurados" : `${routinePct}% completada`}
-                    onClick={() => setView("routine")}
-                    accent="#60A5FA"
-                  />
-                  <BlueRow
-                    Icon={FolderKanban}
-                    label="Proyectos"
-                    meta={
-                      projects.length === 0
-                        ? "Aún sin proyectos"
-                        : `${activeProjects} activos${lateProjects > 0 ? ` · ${lateProjects} retrasado${lateProjects > 1 ? "s" : ""}` : ""}`
-                    }
-                    onClick={() => setView("projects")}
-                    accent="#1D4ED8"
-                  />
+
+                {/* HOY — bento grid */}
+                <div className="mt-[26px] px-[20px]">
+                  <div className="pb-[12px] flex items-center gap-[8px]">
+                    <div className="h-[4px] w-[4px] rounded-full bg-[#60A5FA]" />
+                    <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+                      Hoy
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-[10px] auto-rows-min">
+                    <BentoTile
+                      Icon={ListChecks}
+                      label="Prioridades"
+                      meta={
+                        todayTotal === 0
+                          ? "Sin tareas todavía"
+                          : `${pendingTasks} pendiente${pendingTasks === 1 ? "" : "s"}${highPriorityToday > 0 ? ` · ${highPriorityToday} de alta prioridad` : ""}`
+                      }
+                      onClick={() => setView("priorities")}
+                      accent="#3B82F6"
+                      span={pendingTasks > 0 ? 2 : 1}
+                      minH={pendingTasks > 0 ? 132 : 118}
+                    >
+                      {pendingTasks > 0 && (
+                        <div className="flex items-center gap-[6px] mt-[2px]">
+                          <div className="h-[6px] flex-1 rounded-full bg-white/[0.06] overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${todayTotal > 0 ? Math.round((todayDone / todayTotal) * 100) : 0}%`,
+                                background: "linear-gradient(90deg,#60A5FA,#3B82F6)",
+                                boxShadow: "0 0 8px rgba(96,165,250,0.55)",
+                              }}
+                            />
+                          </div>
+                          <span className="font-['Geist'] text-[10.5px] text-white/50 tabular-nums">
+                            {todayDone}/{todayTotal}
+                          </span>
+                        </div>
+                      )}
+                    </BentoTile>
+
+                    <BentoTile
+                      Icon={CalendarDays}
+                      label="Calendario"
+                      meta={
+                        nextEvent
+                          ? `${nextEvent.title}${nextEvent.start ? ` · ${nextEvent.start}` : ""}`
+                          : "Sin eventos"
+                      }
+                      onClick={() => setView("calendar")}
+                      accent="#2563EB"
+                      minH={132}
+                    />
+
+                    <BentoTile
+                      Icon={Sun}
+                      label="Rutina"
+                      meta={routine.length === 0 ? "Sin hábitos" : `${routinePct}% del día`}
+                      onClick={() => setView("routine")}
+                      accent="#60A5FA"
+                      minH={132}
+                    >
+                      {routine.length > 0 && (
+                        <div className="flex items-center gap-[8px] mt-[2px]">
+                          <div className="relative h-[26px] w-[26px] shrink-0">
+                            <svg viewBox="0 0 32 32" className="h-full w-full -rotate-90">
+                              <circle cx="16" cy="16" r="13" stroke="rgba(148,163,184,0.18)" strokeWidth="4" fill="none" />
+                              <circle
+                                cx="16"
+                                cy="16"
+                                r="13"
+                                stroke="#60A5FA"
+                                strokeWidth="4"
+                                fill="none"
+                                strokeLinecap="round"
+                                strokeDasharray={2 * Math.PI * 13}
+                                strokeDashoffset={2 * Math.PI * 13 * (1 - routinePct / 100)}
+                                style={{ filter: "drop-shadow(0 0 4px rgba(96,165,250,0.7))" }}
+                              />
+                            </svg>
+                          </div>
+                          <span className="font-['Bai_Jamjuree'] text-[13px] font-semibold text-white tabular-nums">
+                            {routineDone}<span className="text-white/40">/{routine.length}</span>
+                          </span>
+                        </div>
+                      )}
+                    </BentoTile>
+
+                    <BentoTile
+                      Icon={FolderKanban}
+                      label="Proyectos"
+                      meta={
+                        projects.length === 0
+                          ? "Aún sin proyectos"
+                          : `${activeProjects} activo${activeProjects === 1 ? "" : "s"}${lateProjects > 0 ? ` · ${lateProjects} retrasado${lateProjects > 1 ? "s" : ""}` : ""}`
+                      }
+                      onClick={() => setView("projects")}
+                      accent="#1D4ED8"
+                      span={2}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="mt-[32px] px-[20px]">
-                <div className="pb-[12px] flex items-center gap-[8px]">
-                  <div className="h-[4px] w-[4px] rounded-full bg-[#60A5FA]" />
-                  <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
-                    Crece
-                  </span>
+                {/* CRECE — bento grid separado */}
+                <div className="mt-[28px] px-[20px]">
+                  <div className="pb-[12px] flex items-center gap-[8px]">
+                    <div className="h-[4px] w-[4px] rounded-full bg-[#A78BFA]" />
+                    <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#C4B5FD]/80">
+                      Crece
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-[10px] auto-rows-min">
+                    <BentoTile
+                      Icon={Target}
+                      label="Metas"
+                      meta={goals.length === 0 ? "Define tu primera meta" : `${goals.length} activa${goals.length > 1 ? "s" : ""}`}
+                      onClick={() => setView("goals")}
+                      accent="#6366F1"
+                      span={2}
+                      minH={128}
+                    />
+                    <BentoTile
+                      Icon={BookOpen}
+                      label="Aprender"
+                      meta="Crece tu negocio"
+                      onClick={() => setView("learn")}
+                      accent="#2563EB"
+                      minH={128}
+                    />
+                    <BentoTile
+                      Icon={Sparkles}
+                      label="Recos IA"
+                      meta={
+                        recommendations.length === 0
+                          ? "Sin sugerencias"
+                          : `${recommendations.length} para ti`
+                      }
+                      onClick={() => setView("recos")}
+                      accent="#8B5CF6"
+                      minH={128}
+                    />
+                  </div>
                 </div>
-                <div className="flex flex-col gap-[10px]">
-                  <BlueRow
-                    Icon={Target}
-                    label="Metas"
-                    meta={goals.length === 0 ? "Define tu primera meta" : `${goals.length} activa${goals.length > 1 ? "s" : ""}`}
-                    onClick={() => setView("goals")}
-                    accent="#3B82F6"
-                  />
-                  <BlueRow
-                    Icon={BookOpen}
-                    label="Aprender"
-                    meta="Contenido para hacer crecer tu negocio"
-                    onClick={() => setView("learn")}
-                    accent="#2563EB"
-                  />
-                  <BlueRow
-                    Icon={Sparkles}
-                    label="Recomendaciones IA"
-                    meta={
-                      recommendations.length === 0
-                        ? "Sin sugerencias por ahora"
-                        : `${recommendations.length} sugerencia${recommendations.length > 1 ? "s" : ""} para ti`
-                    }
-                    onClick={() => setView("recos")}
-                    accent="#60A5FA"
-                  />
+
+                <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-[#93C5FD]/50 text-center">
+                  {todayDone} de {todayTotal} tareas completadas hoy
                 </div>
-              </div>
 
-              <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-[#93C5FD]/50 text-center">
-                {todayDone} de {todayTotal} tareas completadas hoy
-              </div>
-
-              <FooterMark>Tu negocio crece contigo</FooterMark>
-            </ProductivityScroll>
-
+                <FooterMark>Tu negocio crece contigo</FooterMark>
+              </ProductivityScroll>
+            </div>
           </motion.div>
         )}
 
