@@ -3130,7 +3130,9 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22 }}
+            className="relative"
           >
+            <ProductivityAurora />
             {onClose && (
               <div className="absolute top-[22px] right-[20px] z-10">
                 <button
@@ -3145,7 +3147,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
 
             <PageHeader eyebrow="Productividad" title={`Hola, ${name}`} />
 
-            <ProductivityScroll className="pt-[20px] flex flex-col">
+            <ProductivityScroll className="pt-[20px] flex flex-col relative">
               <div className="px-[20px]">
                 <StreakHero streak={streak} />
               </div>
