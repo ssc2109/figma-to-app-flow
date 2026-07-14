@@ -386,5 +386,40 @@ textarea.trax-fixed-textarea::-webkit-resizer {
   .trax-lift { transition: none !important; }
 }
 
+/* ===== Home v6 (proactive briefing) ===== */
+@keyframes trax-ping-home { 75%, 100% { transform: scale(2); opacity: 0; } }
+.trax-ping-home { animation: trax-ping-home 1.6s cubic-bezier(0,0,0.2,1) infinite; }
 
+@keyframes socia-spin-core {
+  0%   { transform: rotate(90deg);
+         box-shadow: 0 6px 12px 0 #38bdf8 inset, 0 12px 18px 0 #005dff inset, 0 36px 36px 0 #1e40af inset, 0 0 3px 1.2px rgba(56,189,248,0.3), 0 0 6px 1.8px rgba(0,93,255,0.2); }
+  50%  { transform: rotate(270deg);
+         box-shadow: 0 6px 12px 0 #60a5fa inset, 0 12px 6px 0 #0284c7 inset, 0 24px 36px 0 #005dff inset, 0 0 3px 1.2px rgba(56,189,248,0.3), 0 0 6px 1.8px rgba(0,93,255,0.2); }
+  100% { transform: rotate(450deg);
+         box-shadow: 0 6px 12px 0 #4dc8fd inset, 0 12px 18px 0 #005dff inset, 0 36px 36px 0 #1e40af inset, 0 0 3px 1.2px rgba(56,189,248,0.3), 0 0 6px 1.8px rgba(0,93,255,0.2); }
+}
+.socia-orb-core { animation: socia-spin-core 5s linear infinite; }
+
+@keyframes socia-bloom-home { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+.socia-bloom-home { animation: socia-bloom-home 4s ease-in-out infinite; }
+
+@keyframes socia-letter { 0%,100% { opacity: 0.4; transform: translateY(0); } 20% { opacity: 1; transform: scale(1.18); } 40% { opacity: 0.7; transform: translateY(0); } }
+.socia-letter { display: inline-block; animation: socia-letter 3s infinite; }
+
+@keyframes socia-word { from { opacity: 0; filter: blur(3px); } to { opacity: 1; filter: blur(0); } }
+.socia-word { opacity: 0; animation: socia-word 0.42s ease forwards; }
+
+@keyframes socia-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.socia-fade { opacity: 0; animation: socia-fade 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+
+@keyframes trax-rise-home { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.trax-rise-home { animation: trax-rise-home 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .socia-orb-core, .socia-bloom-home, .socia-letter, .socia-word, .socia-fade,
+  .trax-rise-home, .trax-ping-home { animation: none !important; opacity: 1 !important; }
+}
 
