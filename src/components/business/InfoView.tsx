@@ -334,7 +334,40 @@ function AdvancedSheet({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const exportData = () => {
+  const copyRazon = async () => {
+    if (!profile?.razon_social) return toast.error("Aún no has registrado la razón social");
+    try {
+      await navigator.clipboard.writeText(profile.razon_social);
+      toast.success("Razón social copiada");
+    } catch {
+      toast.info(profile.razon_social);
+    }
+  };
+
+  const shareCard = async () => {
+    const text = [
+      profile?.business_name,
+      profile?.razon_social && `Razón social: ${profile.razon_social}`,
+      profile?.ruc && `RUC: ${profile.ruc}`,
+      profile?.regimen && `Régimen: ${profile.regimen}`,
+      profile?.direccion_fiscal && `Dirección fiscal: ${profile.direccion_fiscal}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    if (!text) return toast.error("Aún no hay datos fiscales para compartir");
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Ficha del negocio", text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast.success("Ficha copiada");
+      }
+    } catch {
+      /* usuario canceló */
+    }
+  };
+
+  const exportJson = () => {
     const payload = {
       business_name: profile?.business_name ?? null,
       ruc: profile?.ruc ?? null,
@@ -354,6 +387,29 @@ function AdvancedSheet({ onClose }: { onClose: () => void }) {
     toast.success("Datos exportados");
   };
 
+  const exportCsv = () => {
+    const rows: Array<[string, string]> = [
+      ["Campo", "Valor"],
+      ["Negocio", profile?.business_name ?? ""],
+      ["Razón social", profile?.razon_social ?? ""],
+      ["RUC", profile?.ruc ?? ""],
+      ["Régimen", profile?.regimen ?? ""],
+      ["Dirección fiscal", profile?.direccion_fiscal ?? ""],
+      ["Actividad económica", profile?.actividad_economica ?? ""],
+    ];
+    const csv = rows
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `trax-datos-tributarios-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Excel/CSV descargado");
+  };
+
   return createPortal(
     <motion.div
       className="fixed inset-0 z-[80] flex items-end justify-center"
@@ -367,24 +423,95 @@ function AdvancedSheet({ onClose }: { onClose: () => void }) {
         animate={{ y: 0 }}
         exit={{ y: 100 }}
         transition={{ type: "spring", stiffness: 340, damping: 32 }}
-        className="relative w-full max-w-[430px] rounded-t-[28px] pt-[14px] pb-[24px] px-[20px]"
+        className="relative w-full max-w-[430px] max-h-[85vh] overflow-y-auto rounded-t-[28px] pt-[14px] pb-[28px] px-[20px]"
         style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
       >
         <div className="mx-auto h-[4px] w-[40px] rounded-full bg-white/15 mb-[14px]" />
-        <div className="flex items-center justify-between mb-[16px]">
-          <h3 className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white">Opciones avanzadas</h3>
+        <div className="flex items-center justify-between mb-[6px]">
+          <div>
+            <div className="font-['Geist'] text-[10px] uppercase tracking-[1.6px] text-white/45">
+              Plan Avanzado
+            </div>
+            <h3 className="mt-[2px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white">
+              Opciones avanzadas
+            </h3>
+          </div>
           <button onClick={onClose} className="h-[32px] w-[32px] rounded-full grid place-items-center active:bg-white/[0.05]">
             <X className="h-[15px] w-[15px] text-white/55" strokeWidth={1.8} />
           </button>
         </div>
-        <div className="flex flex-col gap-[8px]">
-          <AdvRow Icon={Copy} label="Copiar RUC" desc={profile?.ruc ?? "Aún sin RUC configurado"} onClick={copyRuc} />
-          <AdvRow Icon={Download} label="Exportar datos tributarios" desc="Descarga un JSON con tu información fiscal" onClick={exportData} />
-          <AdvRow Icon={ExternalLink} label="Consultar SUNAT" desc="Próximamente · validación automática del RUC" disabled />
-        </div>
+
+        <AdvSection title="Datos fiscales">
+          <AdvRow
+            Icon={Copy}
+            gradient="linear-gradient(135deg, #60A5FA, #6366F1)"
+            label="Copiar RUC"
+            desc={profile?.ruc ?? "Aún sin RUC configurado"}
+            onClick={copyRuc}
+          />
+          <AdvRow
+            Icon={FileText}
+            gradient="linear-gradient(135deg, #6366F1, #8B5CF6)"
+            label="Copiar razón social"
+            desc={profile?.razon_social ?? "Aún sin razón social"}
+            onClick={copyRazon}
+          />
+          <AdvRow
+            Icon={Share2}
+            gradient="linear-gradient(135deg, #22D3EE, #60A5FA)"
+            label="Compartir ficha del negocio"
+            desc="RUC, razón social, régimen y dirección"
+            onClick={shareCard}
+          />
+        </AdvSection>
+
+        <AdvSection title="Documentos y reportes">
+          <AdvRow
+            Icon={Download}
+            gradient="linear-gradient(135deg, #34D399, #10B981)"
+            label="Exportar como JSON"
+            desc="Para tu contador o backup técnico"
+            onClick={exportJson}
+          />
+          <AdvRow
+            Icon={FileSpreadsheet}
+            gradient="linear-gradient(135deg, #10B981, #059669)"
+            label="Exportar como Excel"
+            desc="Planilla CSV compatible con Excel"
+            onClick={exportCsv}
+          />
+        </AdvSection>
+
+        <AdvSection title="Integraciones">
+          <AdvRow
+            Icon={Plug}
+            gradient="linear-gradient(135deg, #F59E0B, #F97316)"
+            label="SUNAT"
+            desc="Validación automática del RUC · próximamente"
+            disabled
+          />
+          <AdvRow
+            Icon={Sparkles}
+            gradient="linear-gradient(135deg, #A855F7, #EC4899)"
+            label="Facturación electrónica"
+            desc="Emisión desde Trax · próximamente"
+            disabled
+          />
+        </AdvSection>
       </motion.div>
     </motion.div>,
     document.body,
+  );
+}
+
+function AdvSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mt-[18px]">
+      <div className="px-[4px] mb-[8px] font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-white/40">
+        {title}
+      </div>
+      <div className="flex flex-col gap-[8px]">{children}</div>
+    </div>
   );
 }
 
@@ -394,28 +521,34 @@ function AdvRow({
   desc,
   onClick,
   disabled,
+  gradient,
 }: {
   Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   label: string;
   desc: string;
   onClick?: () => void;
   disabled?: boolean;
+  gradient?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full flex items-center gap-[12px] px-[14px] py-[14px] rounded-[16px] text-left active:bg-white/[0.04] transition-colors disabled:opacity-45"
+      className="w-full flex items-center gap-[12px] px-[14px] py-[14px] rounded-[16px] text-left active:bg-white/[0.04] transition-colors disabled:opacity-50"
       style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
     >
-      <div className="h-[36px] w-[36px] rounded-[12px] grid place-items-center" style={{ background: "rgba(255,255,255,0.05)" }}>
-        <Icon className="h-[15px] w-[15px] text-white/70" strokeWidth={1.7} />
+      <div
+        className="h-[36px] w-[36px] rounded-full grid place-items-center flex-none"
+        style={{ background: gradient ?? "rgba(255,255,255,0.05)" }}
+      >
+        <Icon className="h-[15px] w-[15px] text-white" strokeWidth={1.9} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-['Geist'] text-[14px] text-white truncate">{label}</div>
         <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45 truncate">{desc}</div>
       </div>
+      <ChevronRight className="h-[14px] w-[14px] text-white/30" strokeWidth={1.6} />
     </button>
   );
 }
