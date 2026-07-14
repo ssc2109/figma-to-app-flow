@@ -105,32 +105,50 @@ const PROJECT_STATUS: Record<ProjectStatus, { label: string; color: string }> = 
   late: { label: "Retrasado", color: "#F87171" },
 };
 
-/* ============ HUB HERO ============ */
+/* ============ AURORA BACKGROUND ============ */
+function ProductivityAurora() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[720px] overflow-hidden -z-10">
+      <style>{`
+        @keyframes trax-aurora-a { 0%,100% { transform: translate3d(-10%,-8%,0) scale(1); } 50% { transform: translate3d(8%,4%,0) scale(1.15); } }
+        @keyframes trax-aurora-b { 0%,100% { transform: translate3d(15%,-4%,0) scale(1.1); } 50% { transform: translate3d(-6%,10%,0) scale(0.95); } }
+        @keyframes trax-aurora-c { 0%,100% { transform: translate3d(-4%,20%,0) scale(1); } 50% { transform: translate3d(10%,-6%,0) scale(1.2); } }
+        @keyframes trax-aurora-d { 0%,100% { transform: translate3d(20%,30%,0) scale(0.9); } 50% { transform: translate3d(-10%,10%,0) scale(1.1); } }
+        .trax-aurora-blob { position:absolute; border-radius:9999px; filter: blur(90px); will-change: transform; }
+        @media (prefers-reduced-motion: reduce) { .trax-aurora-blob { animation: none !important; } }
+      `}</style>
+      {/* base midnight wash */}
+      <div className="absolute inset-0" style={{ background: "radial-gradient(120% 80% at 50% 0%, #0B1120 0%, #020617 60%, #000 100%)" }} />
+      {/* blobs */}
+      <div className="trax-aurora-blob" style={{ top: "-8%", left: "-10%", width: 420, height: 420, background: "#3B82F6", opacity: 0.55, animation: "trax-aurora-a 22s ease-in-out infinite" }} />
+      <div className="trax-aurora-blob" style={{ top: "-4%", right: "-14%", width: 380, height: 380, background: "#60A5FA", opacity: 0.45, animation: "trax-aurora-b 26s ease-in-out infinite" }} />
+      <div className="trax-aurora-blob" style={{ top: "22%", left: "18%", width: 340, height: 340, background: "#1D4ED8", opacity: 0.5, animation: "trax-aurora-c 30s ease-in-out infinite" }} />
+      <div className="trax-aurora-blob" style={{ top: "38%", right: "-8%", width: 300, height: 300, background: "#2563EB", opacity: 0.35, animation: "trax-aurora-d 28s ease-in-out infinite" }} />
+      {/* fade out to page bg so cards below breathe */}
+      <div className="absolute inset-x-0 bottom-0 h-[280px]" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, #000 92%)" }} />
+    </div>
+  );
+}
+
+/* ============ HUB HERO (integrated into aurora, no card) ============ */
 function StreakHero({ streak }: { streak: number }) {
   const target = Math.max(streak, 7);
   const pct = Math.min(streak / target, 1);
-  const size = 168;
+  const size = 176;
   const stroke = 10;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   return (
-    <div
-      className="relative rounded-[26px] overflow-hidden px-[20px] py-[26px] flex items-center gap-[20px]"
-      style={{
-        background: "linear-gradient(135deg,#0F172A 0%,#1E293B 100%)",
-        border: "1px solid rgba(96,165,250,0.18)",
-        boxShadow: "0 10px 40px -20px rgba(37,99,235,0.55)",
-      }}
-    >
-      {/* soft glow */}
-      <div
-        aria-hidden
-        className="absolute -top-[40px] -left-[40px] w-[220px] h-[220px] rounded-full opacity-60 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35) 0%, rgba(59,130,246,0) 70%)" }}
-      />
+    <div className="relative flex items-center gap-[22px] px-[6px] py-[8px]">
       <div className="relative shrink-0" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="rotate-[-90deg]">
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(148,163,184,0.18)" strokeWidth={stroke} fill="none" />
+        {/* electric glow behind ring */}
+        <div
+          aria-hidden
+          className="absolute inset-0 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(96,165,250,0.35) 0%, rgba(59,130,246,0) 65%)", filter: "blur(6px)" }}
+        />
+        <svg width={size} height={size} className="relative rotate-[-90deg]">
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(148,163,184,0.14)" strokeWidth={stroke} fill="none" />
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -141,31 +159,31 @@ function StreakHero({ streak }: { streak: number }) {
             strokeLinecap="round"
             strokeDasharray={c}
             strokeDashoffset={c * (1 - pct)}
-            style={{ filter: "drop-shadow(0 0 8px rgba(96,165,250,0.55))" }}
+            style={{ filter: "drop-shadow(0 0 12px rgba(96,165,250,0.75))" }}
           />
           <defs>
             <linearGradient id="streakGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#3B82F6" />
-              <stop offset="100%" stopColor="#60A5FA" />
+              <stop offset="0%" stopColor="#93C5FD" />
+              <stop offset="100%" stopColor="#3B82F6" />
             </linearGradient>
           </defs>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Flame className="h-[18px] w-[18px] text-[#60A5FA] mb-[2px]" strokeWidth={1.8} />
-          <span className="font-['Bai_Jamjuree'] text-[52px] font-bold text-white tabular-nums leading-none">
+          <Flame className="h-[18px] w-[18px] text-[#BFDBFE] mb-[2px]" strokeWidth={1.8} />
+          <span className="font-['Bai_Jamjuree'] text-[56px] font-bold text-white tabular-nums leading-none" style={{ textShadow: "0 0 20px rgba(96,165,250,0.35)" }}>
             {streak}
           </span>
-          <span className="font-['Geist'] text-[11px] uppercase tracking-[1.6px] text-[#93C5FD] mt-[4px]">días</span>
+          <span className="font-['Geist'] text-[11px] uppercase tracking-[1.8px] text-[#BFDBFE]/85 mt-[4px]">días</span>
         </div>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+        <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#BFDBFE]/80">
           Racha activa
         </div>
-        <div className="mt-[6px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2]">
+        <div className="mt-[6px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white leading-[1.15] tracking-[-0.3px]">
           {streak === 0 ? "Empieza tu racha hoy" : streak < 3 ? "Vas encaminado" : streak < 7 ? "Ritmo constante" : "Fuego imparable"}
         </div>
-        <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/60 leading-[1.5]">
+        <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/65 leading-[1.5]">
           {streak < target ? `Faltan ${target - streak} para tu próxima meta.` : "Meta alcanzada — sigue sumando."}
         </p>
       </div>
@@ -173,7 +191,7 @@ function StreakHero({ streak }: { streak: number }) {
   );
 }
 
-/* Blue-tinted row for the Productivity hub */
+/* Glassmorphic row for the Productivity hub */
 function BlueRow({
   Icon,
   label,
@@ -191,26 +209,28 @@ function BlueRow({
     <button
       type="button"
       onClick={onClick}
-      className="w-full text-left rounded-[20px] p-[14px] flex items-center gap-[14px] active:scale-[0.99] transition-transform"
+      className="w-full text-left rounded-[22px] p-[14px] flex items-center gap-[14px] active:scale-[0.99] transition-transform relative overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, rgba(30,41,59,0.75) 0%, rgba(15,23,42,0.9) 100%)",
-        border: "1px solid rgba(96,165,250,0.14)",
+        background: "rgba(15,23,42,0.55)",
+        backdropFilter: "blur(20px) saturate(140%)",
+        border: "1px solid rgba(96,165,250,0.18)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 20px rgba(96,165,250,0.05), 0 8px 24px -16px rgba(0,0,0,0.6)",
       }}
     >
       <span
-        className="h-[46px] w-[46px] rounded-[14px] flex items-center justify-center shrink-0"
+        className="relative h-[44px] w-[44px] rounded-full flex items-center justify-center shrink-0"
         style={{
-          background: `linear-gradient(135deg, ${accent} 0%, #1E40AF 100%)`,
-          boxShadow: `0 6px 18px -8px ${accent}`,
+          background: `radial-gradient(circle at 30% 25%, ${accent} 0%, #1E3A8A 85%)`,
+          boxShadow: `0 0 18px -2px ${accent}80, inset 0 1px 0 rgba(255,255,255,0.25)`,
         }}
       >
-        <Icon className="h-[20px] w-[20px] text-white" strokeWidth={1.9} />
+        <Icon className="h-[19px] w-[19px] text-white relative" strokeWidth={1.9} />
       </span>
       <div className="flex-1 min-w-0">
         <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white leading-[1.2]">{label}</div>
-        <div className="mt-[3px] font-['Geist'] text-[12px] text-[#CBD5E1]/75 leading-[1.35] truncate">{meta}</div>
+        <div className="mt-[3px] font-['Geist'] text-[12px] text-white/60 leading-[1.35] truncate">{meta}</div>
       </div>
-      <ChevronRight className="h-[16px] w-[16px] text-[#93C5FD]/60 shrink-0" strokeWidth={1.8} />
+      <ChevronRight className="h-[16px] w-[16px] text-[#BFDBFE]/60 shrink-0" strokeWidth={1.8} />
     </button>
   );
 }
