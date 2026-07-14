@@ -3210,9 +3210,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [view, setView] = useState<View>("hub");
   const {
     name,
-    streak,
     todos,
-    routine,
     goals,
     projects,
     recommendations,
@@ -3223,11 +3221,15 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
     activeProjects,
     lateProjects,
   } = useMe();
+  const finance = useFinance();
+  const inventory = useInventory();
   const back = () => setView("hub");
 
-  const routineDone = routine.filter((r) => r.done).length;
-  const routinePct = routine.length > 0 ? Math.round((routineDone / routine.length) * 100) : 0;
   const pendingTasks = todos.filter((t) => !t.done).length;
+  const urgentAlerts =
+    (inventory.lowStock?.length ?? 0) +
+    (finance.fiadosOverdue > 0 ? 1 : 0) +
+    highPriorityToday;
 
   return (
     <div className="relative w-full">
