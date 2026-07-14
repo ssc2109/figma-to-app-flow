@@ -3264,10 +3264,10 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                 {/* Estado del negocio hoy — reemplaza racha */}
                 <div className="px-[20px] pt-[6px] pb-[4px]">
                   <TodayStatus
+                    name={name}
                     tasksDone={todayDone}
                     tasksTotal={todayTotal}
                     salesToday={finance.todayIncome}
-                    salesCount={finance.todayTxCount ?? 0}
                     alerts={urgentAlerts}
                     lowStock={inventory.lowStock?.length ?? 0}
                     fiadosOverdue={finance.fiadosOverdue}
