@@ -51,7 +51,13 @@ import {
   Brain,
   BarChart3,
   Cpu,
+  BrainCircuit,
+  Activity,
+  ShoppingBag,
+  AlertOctagon,
 } from "lucide-react";
+import { useFinance } from "@/data/finance";
+import { useInventory } from "@/data/inventory";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
 import {
@@ -64,6 +70,7 @@ import {
   type Goal,
   type ProjectStatus,
   type RoutineItem,
+  type Recommendation,
 } from "@/data/me";
 import {
   PageHeader,
@@ -84,7 +91,6 @@ type View =
   | "hub"
   | "priorities"
   | "calendar"
-  | "routine"
   | "projects"
   | "goals"
   | "learn"
@@ -293,6 +299,121 @@ function BentoTile({
     </button>
   );
 }
+/* Today status — reemplaza la racha con datos reales del negocio */
+function TodayStatus({
+  name,
+  tasksDone,
+  tasksTotal,
+  salesToday,
+  alerts,
+  lowStock,
+  fiadosOverdue,
+}: {
+  name: string;
+  tasksDone: number;
+  tasksTotal: number;
+  salesToday: number;
+  alerts: number;
+  lowStock: number;
+  fiadosOverdue: number;
+}) {
+  const items: Array<{
+    Icon: typeof Activity;
+    accent: string;
+    label: string;
+    value: string;
+    hint: string;
+  }> = [
+    {
+      Icon: ShoppingBag,
+      accent: "#60A5FA",
+      label: "Ventas hoy",
+      value: `S/ ${Math.round(salesToday)}`,
+      hint: salesToday > 0 ? "Sigue así" : "Sin registro aún",
+    },
+    {
+      Icon: CheckCircle2,
+      accent: "#3B82F6",
+      label: "Tareas hoy",
+      value: `${tasksDone}/${tasksTotal}`,
+      hint:
+        tasksTotal === 0
+          ? "Sin tareas"
+          : tasksDone === tasksTotal
+          ? "Todo cerrado"
+          : `${tasksTotal - tasksDone} por hacer`,
+    },
+    {
+      Icon: AlertOctagon,
+      accent: alerts > 0 ? "#F87171" : "#93C5FD",
+      label: "Alertas",
+      value: `${alerts}`,
+      hint:
+        alerts === 0
+          ? "Sin urgencias"
+          : lowStock > 0 && fiadosOverdue > 0
+          ? `Stock bajo y fiados`
+          : lowStock > 0
+          ? `${lowStock} en stock bajo`
+          : fiadosOverdue > 0
+          ? `Fiados vencidos`
+          : "Revisa prioridades",
+    },
+  ];
+
+  return (
+    <div className="relative">
+      <div className="pb-[10px] flex items-center gap-[8px]">
+        <Activity className="h-[14px] w-[14px] text-[#93C5FD]" strokeWidth={1.9} />
+        <span className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+          Estado del negocio hoy
+        </span>
+      </div>
+      <div className="mb-[14px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2] tracking-[-0.3px]">
+        {alerts > 0
+          ? `${name}, hay ${alerts} cosa${alerts === 1 ? "" : "s"} que atender`
+          : salesToday > 0
+          ? `Buen ritmo, ${name}`
+          : `A darle, ${name}`}
+      </div>
+      <div className="grid grid-cols-3 gap-[8px]">
+        {items.map((it) => (
+          <div
+            key={it.label}
+            className="rounded-[16px] p-[12px] flex flex-col gap-[8px] min-h-[92px]"
+            style={{
+              background: "rgba(15,23,42,0.55)",
+              border: `1px solid ${it.accent}22`,
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            <div
+              className="h-[26px] w-[26px] rounded-full grid place-items-center"
+              style={{
+                background: `linear-gradient(135deg, ${it.accent}44, ${it.accent}18)`,
+                boxShadow: `0 0 12px ${it.accent}33`,
+              }}
+            >
+              <it.Icon className="h-[13px] w-[13px] text-white" strokeWidth={1.9} />
+            </div>
+            <div>
+              <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tabular-nums leading-none">
+                {it.value}
+              </div>
+              <div className="mt-[4px] font-['Geist'] text-[10.5px] text-white/55 leading-[1.3]">
+                {it.label}
+              </div>
+              <div className="mt-[2px] font-['Geist'] text-[10px] text-white/40 leading-[1.3]">
+                {it.hint}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 /* Streak hero that blends into the aurora (no card border) */
 function StreakAurora({ streak, name }: { streak: number; name: string }) {
@@ -2999,15 +3120,66 @@ function HistorialView({
 
 /* ============ RECOMENDACIONES ============ */
 function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => void }) {
-  const { recommendations, dismissRecommendation, todos, projects, goals, routine } = useMe();
+  const { recommendations: baseRecos, dismissRecommendation, todos, projects, goals } = useMe();
+  const finance = useFinance();
+  const inventory = useInventory();
 
   const totalTasks = todos.length;
   const doneTasks = todos.filter((t) => t.done).length;
   const productivity = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-  const routineDone = routine.filter((r) => r.done).length;
   const activeGoals = goals.length;
   const activeProjects = projects.filter((p) => p.status === "active" || p.status === "planning").length;
   const lateProjects = projects.filter((p) => p.status === "late").length;
+
+  // Recos derivadas de datos reales del negocio (finanzas + inventario).
+  const businessRecos = useMemo<Recommendation[]>(() => {
+    const out: Recommendation[] = [];
+    if (finance.fiadosOverdue > 0) {
+      out.push({
+        id: "biz-fiados",
+        level: "urgent",
+        title: `Tienes S/ ${Math.round(finance.fiadosOverdue)} en fiados vencidos`,
+        body: "Envía un recordatorio hoy — cada día que pasa baja la probabilidad de cobrar.",
+      });
+    }
+    if ((inventory.lowStock?.length ?? 0) > 0) {
+      const first = inventory.lowStock[0];
+      out.push({
+        id: "biz-lowstock",
+        level: "warn",
+        title:
+          inventory.lowStock.length === 1
+            ? `"${first?.name ?? "Un producto"}" está por agotarse`
+            : `${inventory.lowStock.length} productos con stock bajo`,
+        body: "Repón antes de que un cliente te pida algo que ya no tienes.",
+      });
+    }
+    if (finance.todayIncome === 0 && new Date().getHours() >= 12) {
+      out.push({
+        id: "biz-noSales",
+        level: "warn",
+        title: "Sin ventas registradas hoy",
+        body: "Anota cada venta apenas ocurra — la caja de fin de día se llena con los pequeños tickets.",
+      });
+    }
+    if (finance.todayIncome > 0 && (finance.todayNet ?? 0) > 0) {
+      out.push({
+        id: "biz-good",
+        level: "success",
+        title: `Vas S/ ${Math.round(finance.todayNet)} en positivo hoy`,
+        body: "Aprovecha el impulso: revisa qué producto rota más y refuerza su stock.",
+      });
+    }
+    return out;
+  }, [finance.fiadosOverdue, finance.todayIncome, finance.todayNet, inventory.lowStock]);
+
+  const recommendations = useMemo(
+    () => [...businessRecos, ...baseRecos].slice(0, 6),
+    [businessRecos, baseRecos],
+  );
+  const routineDone = 0;
+  const routineTotal = 0;
+
 
   type LevelStyleEntry = {
     accent: string;
@@ -3067,7 +3239,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
           <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
             <AnimatedStat label="Productividad" value={productivity} suffix="%" />
             <AnimatedStat label="Tareas" value={doneTasks} denom={totalTasks} />
-            <AnimatedStat label="Rutina" value={routineDone} denom={routine.length || 0} />
+            <AnimatedStat label="Ventas hoy" value={Math.round(finance.todayIncome)} suffix=" S/" />
             <AnimatedStat label="Metas" value={activeGoals} />
             <AnimatedStat label="Proyectos" value={activeProjects} />
             <AnimatedStat label="En riesgo" value={lateProjects} highlight={lateProjects > 0} />
@@ -3084,7 +3256,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
             }}
           >
             <div className="mx-auto h-[42px] w-[42px] rounded-[14px] flex items-center justify-center mb-[10px]" style={{ background: "linear-gradient(135deg,#3B82F6,#1D4ED8)" }}>
-              <Sparkles className="h-[18px] w-[18px] text-white" strokeWidth={1.9} />
+              <BrainCircuit className="h-[18px] w-[18px] text-white" strokeWidth={1.9} />
             </div>
             <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white">
               Empieza registrando tus prioridades del día
@@ -3205,9 +3377,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [view, setView] = useState<View>("hub");
   const {
     name,
-    streak,
     todos,
-    routine,
     goals,
     projects,
     recommendations,
@@ -3218,11 +3388,15 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
     activeProjects,
     lateProjects,
   } = useMe();
+  const finance = useFinance();
+  const inventory = useInventory();
   const back = () => setView("hub");
 
-  const routineDone = routine.filter((r) => r.done).length;
-  const routinePct = routine.length > 0 ? Math.round((routineDone / routine.length) * 100) : 0;
   const pendingTasks = todos.filter((t) => !t.done).length;
+  const urgentAlerts =
+    (inventory.lowStock?.length ?? 0) +
+    (finance.fiadosOverdue > 0 ? 1 : 0) +
+    highPriorityToday;
 
   return (
     <div className="relative w-full">
@@ -3254,9 +3428,17 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
               <PageHeader eyebrow="Productividad" title={`Hola, ${name}`} />
 
               <ProductivityScroll className="pt-[16px] flex flex-col">
-                {/* Hero streak — blends with aurora */}
+                {/* Estado del negocio hoy — reemplaza racha */}
                 <div className="px-[20px] pt-[6px] pb-[4px]">
-                  <StreakAurora streak={streak} name={name} />
+                  <TodayStatus
+                    name={name}
+                    tasksDone={todayDone}
+                    tasksTotal={todayTotal}
+                    salesToday={finance.todayIncome}
+                    alerts={urgentAlerts}
+                    lowStock={inventory.lowStock?.length ?? 0}
+                    fiadosOverdue={finance.fiadosOverdue}
+                  />
                 </div>
 
                 {/* HOY — bento grid */}
@@ -3279,26 +3461,8 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                       onClick={() => setView("priorities")}
                       accent="#3B82F6"
                       span={pendingTasks > 0 ? 2 : 1}
-                      minH={pendingTasks > 0 ? 132 : 118}
-                    >
-                      {pendingTasks > 0 && (
-                        <div className="flex items-center gap-[6px] mt-[2px]">
-                          <div className="h-[6px] flex-1 rounded-full bg-white/[0.06] overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${todayTotal > 0 ? Math.round((todayDone / todayTotal) * 100) : 0}%`,
-                                background: "linear-gradient(90deg,#60A5FA,#3B82F6)",
-                                boxShadow: "0 0 8px rgba(96,165,250,0.55)",
-                              }}
-                            />
-                          </div>
-                          <span className="font-['Geist'] text-[10.5px] text-white/50 tabular-nums">
-                            {todayDone}/{todayTotal}
-                          </span>
-                        </div>
-                      )}
-                    </BentoTile>
+                      minH={pendingTasks > 0 ? 128 : 118}
+                    />
 
                     <BentoTile
                       Icon={CalendarDays}
@@ -3314,40 +3478,6 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                     />
 
                     <BentoTile
-                      Icon={Sun}
-                      label="Rutina"
-                      meta={routine.length === 0 ? "Sin hábitos" : `${routinePct}% del día`}
-                      onClick={() => setView("routine")}
-                      accent="#60A5FA"
-                      minH={132}
-                    >
-                      {routine.length > 0 && (
-                        <div className="flex items-center gap-[8px] mt-[2px]">
-                          <div className="relative h-[26px] w-[26px] shrink-0">
-                            <svg viewBox="0 0 32 32" className="h-full w-full -rotate-90">
-                              <circle cx="16" cy="16" r="13" stroke="rgba(148,163,184,0.18)" strokeWidth="4" fill="none" />
-                              <circle
-                                cx="16"
-                                cy="16"
-                                r="13"
-                                stroke="#60A5FA"
-                                strokeWidth="4"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeDasharray={2 * Math.PI * 13}
-                                strokeDashoffset={2 * Math.PI * 13 * (1 - routinePct / 100)}
-                                style={{ filter: "drop-shadow(0 0 4px rgba(96,165,250,0.7))" }}
-                              />
-                            </svg>
-                          </div>
-                          <span className="font-['Bai_Jamjuree'] text-[13px] font-semibold text-white tabular-nums">
-                            {routineDone}<span className="text-white/40">/{routine.length}</span>
-                          </span>
-                        </div>
-                      )}
-                    </BentoTile>
-
-                    <BentoTile
                       Icon={FolderKanban}
                       label="Proyectos"
                       meta={
@@ -3357,7 +3487,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                       }
                       onClick={() => setView("projects")}
                       accent="#1D4ED8"
-                      span={2}
+                      minH={132}
                     />
                   </div>
                 </div>
@@ -3389,7 +3519,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                       minH={128}
                     />
                     <BentoTile
-                      Icon={Sparkles}
+                      Icon={BrainCircuit}
                       label="Recos IA"
                       meta={
                         recommendations.length === 0
@@ -3401,6 +3531,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                       minH={128}
                     />
                   </div>
+
                 </div>
 
                 <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-[#93C5FD]/50 text-center">
@@ -3415,7 +3546,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
 
         {view === "priorities" && <PrioritiesView key="pv" onBack={back} />}
         {view === "calendar" && <CalendarView key="cv" onBack={back} />}
-        {view === "routine" && <RoutineView key="rv" onBack={back} />}
+        
         {view === "projects" && <ProjectsView key="prv" onBack={back} />}
         {view === "goals" && <GoalsView key="gv" onBack={back} />}
         {view === "learn" && <LearnView key="lv" onBack={back} />}
