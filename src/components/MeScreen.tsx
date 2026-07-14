@@ -3119,15 +3119,71 @@ function HistorialView({
 
 /* ============ RECOMENDACIONES ============ */
 function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => void }) {
-  const { recommendations, dismissRecommendation, todos, projects, goals, routine } = useMe();
+  const { recommendations: baseRecos, dismissRecommendation, todos, projects, goals } = useMe();
+  const finance = useFinance();
+  const inventory = useInventory();
 
   const totalTasks = todos.length;
   const doneTasks = todos.filter((t) => t.done).length;
   const productivity = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-  const routineDone = routine.filter((r) => r.done).length;
   const activeGoals = goals.length;
   const activeProjects = projects.filter((p) => p.status === "active" || p.status === "planning").length;
   const lateProjects = projects.filter((p) => p.status === "late").length;
+
+  // Recos derivadas de datos reales del negocio (finanzas + inventario).
+  const businessRecos = useMemo(() => {
+    const out: Array<{
+      id: string;
+      level: "info" | "warn" | "urgent" | "success";
+      title: string;
+      body?: string;
+    }> = [];
+    if (finance.fiadosOverdue > 0) {
+      out.push({
+        id: "biz-fiados",
+        level: "urgent",
+        title: `Tienes S/ ${Math.round(finance.fiadosOverdue)} en fiados vencidos`,
+        body: "Envía un recordatorio hoy — cada día que pasa baja la probabilidad de cobrar.",
+      });
+    }
+    if ((inventory.lowStock?.length ?? 0) > 0) {
+      const first = inventory.lowStock[0];
+      out.push({
+        id: "biz-lowstock",
+        level: "warn",
+        title:
+          inventory.lowStock.length === 1
+            ? `"${first?.name ?? "Un producto"}" está por agotarse`
+            : `${inventory.lowStock.length} productos con stock bajo`,
+        body: "Repón antes de que un cliente te pida algo que ya no tienes.",
+      });
+    }
+    if (finance.todayIncome === 0 && new Date().getHours() >= 12) {
+      out.push({
+        id: "biz-noSales",
+        level: "warn",
+        title: "Sin ventas registradas hoy",
+        body: "Anota cada venta apenas ocurra — la caja de fin de día se llena con los pequeños tickets.",
+      });
+    }
+    if (finance.todayIncome > 0 && (finance.todayNet ?? 0) > 0) {
+      out.push({
+        id: "biz-good",
+        level: "success",
+        title: `Vas S/ ${Math.round(finance.todayNet)} en positivo hoy`,
+        body: "Aprovecha el impulso: revisa qué producto rota más y refuerza su stock.",
+      });
+    }
+    return out;
+  }, [finance.fiadosOverdue, finance.todayIncome, finance.todayNet, inventory.lowStock]);
+
+  const recommendations = useMemo(
+    () => [...businessRecos, ...baseRecos].slice(0, 6),
+    [businessRecos, baseRecos],
+  );
+  const routineDone = 0;
+  const routineTotal = 0;
+
 
   type LevelStyleEntry = {
     accent: string;
