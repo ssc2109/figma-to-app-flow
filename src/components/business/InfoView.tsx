@@ -208,6 +208,8 @@ function EditableRow({
 
 export default function InfoView({ onBack }: { onBack: () => void }) {
   const { profile, refreshProfile } = useAuth();
+  const { plan } = usePlan();
+  const isAvanzado = plan === "avanzado" || plan === "trial";
   const [edit, setEdit] = useState<FieldKey | null>(null);
   const [advanced, setAdvanced] = useState(false);
 
