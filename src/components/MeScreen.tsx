@@ -3379,7 +3379,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
 
         {view === "priorities" && <PrioritiesView key="pv" onBack={back} />}
         {view === "calendar" && <CalendarView key="cv" onBack={back} />}
-        {view === "routine" && <RoutineView key="rv" onBack={back} />}
+        
         {view === "projects" && <ProjectsView key="prv" onBack={back} />}
         {view === "goals" && <GoalsView key="gv" onBack={back} />}
         {view === "learn" && <LearnView key="lv" onBack={back} />}
