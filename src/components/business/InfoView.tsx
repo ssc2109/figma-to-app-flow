@@ -267,15 +267,38 @@ export default function InfoView({ onBack }: { onBack: () => void }) {
         <div>
           <SectionLabel>Opciones avanzadas</SectionLabel>
           <button
-            onClick={() => setAdvanced(true)}
-            className="w-full flex items-center gap-[12px] px-[16px] py-[14px] rounded-[18px] text-left active:bg-white/[0.04] transition-colors"
+            onClick={() => {
+              if (!isAvanzado) {
+                toast.info("Opciones avanzadas es exclusivo del plan Avanzado");
+                return;
+              }
+              setAdvanced(true);
+            }}
+            className="relative w-full flex items-center gap-[12px] px-[16px] py-[14px] rounded-[18px] text-left active:bg-white/[0.04] transition-colors overflow-hidden"
             style={{ background: "rgba(17,17,17,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
-            <Settings2 className="h-[15px] w-[15px] text-white/60" strokeWidth={1.7} />
+            <div
+              className="h-[36px] w-[36px] rounded-full grid place-items-center flex-none"
+              style={{
+                background: isAvanzado
+                  ? "linear-gradient(135deg, #60A5FA, #6366F1)"
+                  : "rgba(255,255,255,0.05)",
+              }}
+            >
+              {isAvanzado ? (
+                <Settings2 className="h-[15px] w-[15px] text-white" strokeWidth={1.9} />
+              ) : (
+                <Lock className="h-[14px] w-[14px] text-white/60" strokeWidth={1.9} />
+              )}
+            </div>
             <div className="flex-1 min-w-0">
-              <div className="font-['Geist'] text-[14px] text-white">Abrir opciones avanzadas</div>
+              <div className="font-['Geist'] text-[14px] text-white">
+                {isAvanzado ? "Abrir opciones avanzadas" : "Opciones avanzadas"}
+              </div>
               <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45">
-                Copiar RUC, exportar datos, futuras integraciones
+                {isAvanzado
+                  ? "Datos fiscales, reportes e integraciones"
+                  : "Exclusivo del plan Avanzado"}
               </div>
             </div>
             <ChevronRight className="h-[15px] w-[15px] text-white/30" strokeWidth={1.6} />
