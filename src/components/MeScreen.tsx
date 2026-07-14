@@ -3132,13 +3132,8 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
   const lateProjects = projects.filter((p) => p.status === "late").length;
 
   // Recos derivadas de datos reales del negocio (finanzas + inventario).
-  const businessRecos = useMemo(() => {
-    const out: Array<{
-      id: string;
-      level: "info" | "warn" | "urgent" | "success";
-      title: string;
-      body?: string;
-    }> = [];
+  const businessRecos = useMemo<Recommendation[]>(() => {
+    const out: Recommendation[] = [];
     if (finance.fiadosOverdue > 0) {
       out.push({
         id: "biz-fiados",
