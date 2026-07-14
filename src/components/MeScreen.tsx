@@ -90,7 +90,6 @@ type View =
   | "hub"
   | "priorities"
   | "calendar"
-  | "routine"
   | "projects"
   | "goals"
   | "learn"
