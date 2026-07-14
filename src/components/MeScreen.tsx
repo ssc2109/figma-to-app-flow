@@ -3261,9 +3261,17 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
               <PageHeader eyebrow="Productividad" title={`Hola, ${name}`} />
 
               <ProductivityScroll className="pt-[16px] flex flex-col">
-                {/* Hero streak — blends with aurora */}
+                {/* Estado del negocio hoy — reemplaza racha */}
                 <div className="px-[20px] pt-[6px] pb-[4px]">
-                  <StreakAurora streak={streak} name={name} />
+                  <TodayStatus
+                    tasksDone={todayDone}
+                    tasksTotal={todayTotal}
+                    salesToday={finance.todayIncome}
+                    salesCount={finance.todayTxCount ?? 0}
+                    alerts={urgentAlerts}
+                    lowStock={inventory.lowStock?.length ?? 0}
+                    fiadosOverdue={finance.fiadosOverdue}
+                  />
                 </div>
 
                 {/* HOY — bento grid */}
@@ -3286,26 +3294,8 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                       onClick={() => setView("priorities")}
                       accent="#3B82F6"
                       span={pendingTasks > 0 ? 2 : 1}
-                      minH={pendingTasks > 0 ? 132 : 118}
-                    >
-                      {pendingTasks > 0 && (
-                        <div className="flex items-center gap-[6px] mt-[2px]">
-                          <div className="h-[6px] flex-1 rounded-full bg-white/[0.06] overflow-hidden">
-                            <div
-                              className="h-full rounded-full"
-                              style={{
-                                width: `${todayTotal > 0 ? Math.round((todayDone / todayTotal) * 100) : 0}%`,
-                                background: "linear-gradient(90deg,#60A5FA,#3B82F6)",
-                                boxShadow: "0 0 8px rgba(96,165,250,0.55)",
-                              }}
-                            />
-                          </div>
-                          <span className="font-['Geist'] text-[10.5px] text-white/50 tabular-nums">
-                            {todayDone}/{todayTotal}
-                          </span>
-                        </div>
-                      )}
-                    </BentoTile>
+                      minH={pendingTasks > 0 ? 128 : 118}
+                    />
 
                     <BentoTile
                       Icon={CalendarDays}
@@ -3321,40 +3311,6 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                     />
 
                     <BentoTile
-                      Icon={Sun}
-                      label="Rutina"
-                      meta={routine.length === 0 ? "Sin hábitos" : `${routinePct}% del día`}
-                      onClick={() => setView("routine")}
-                      accent="#60A5FA"
-                      minH={132}
-                    >
-                      {routine.length > 0 && (
-                        <div className="flex items-center gap-[8px] mt-[2px]">
-                          <div className="relative h-[26px] w-[26px] shrink-0">
-                            <svg viewBox="0 0 32 32" className="h-full w-full -rotate-90">
-                              <circle cx="16" cy="16" r="13" stroke="rgba(148,163,184,0.18)" strokeWidth="4" fill="none" />
-                              <circle
-                                cx="16"
-                                cy="16"
-                                r="13"
-                                stroke="#60A5FA"
-                                strokeWidth="4"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeDasharray={2 * Math.PI * 13}
-                                strokeDashoffset={2 * Math.PI * 13 * (1 - routinePct / 100)}
-                                style={{ filter: "drop-shadow(0 0 4px rgba(96,165,250,0.7))" }}
-                              />
-                            </svg>
-                          </div>
-                          <span className="font-['Bai_Jamjuree'] text-[13px] font-semibold text-white tabular-nums">
-                            {routineDone}<span className="text-white/40">/{routine.length}</span>
-                          </span>
-                        </div>
-                      )}
-                    </BentoTile>
-
-                    <BentoTile
                       Icon={FolderKanban}
                       label="Proyectos"
                       meta={
@@ -3364,7 +3320,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                       }
                       onClick={() => setView("projects")}
                       accent="#1D4ED8"
-                      span={2}
+                      minH={132}
                     />
                   </div>
                 </div>
@@ -3396,7 +3352,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                       minH={128}
                     />
                     <BentoTile
-                      Icon={Sparkles}
+                      Icon={BrainCircuit}
                       label="Recos IA"
                       meta={
                         recommendations.length === 0
@@ -3408,6 +3364,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                       minH={128}
                     />
                   </div>
+
                 </div>
 
                 <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-[#93C5FD]/50 text-center">
