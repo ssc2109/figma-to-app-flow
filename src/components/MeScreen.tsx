@@ -51,7 +51,13 @@ import {
   Brain,
   BarChart3,
   Cpu,
+  BrainCircuit,
+  Activity,
+  ShoppingBag,
+  AlertOctagon,
 } from "lucide-react";
+import { useFinance } from "@/data/finance";
+import { useInventory } from "@/data/inventory";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
 import {
