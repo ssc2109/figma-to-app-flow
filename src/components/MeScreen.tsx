@@ -3243,7 +3243,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
           <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
             <AnimatedStat label="Productividad" value={productivity} suffix="%" />
             <AnimatedStat label="Tareas" value={doneTasks} denom={totalTasks} />
-            <AnimatedStat label="Rutina" value={routineDone} denom={routine.length || 0} />
+            <AnimatedStat label="Ventas hoy" value={Math.round(finance.todayIncome)} suffix=" S/" />
             <AnimatedStat label="Metas" value={activeGoals} />
             <AnimatedStat label="Proyectos" value={activeProjects} />
             <AnimatedStat label="En riesgo" value={lateProjects} highlight={lateProjects > 0} />
