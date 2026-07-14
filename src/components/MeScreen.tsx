@@ -70,6 +70,7 @@ import {
   type Goal,
   type ProjectStatus,
   type RoutineItem,
+  type Recommendation,
 } from "@/data/me";
 import {
   PageHeader,
