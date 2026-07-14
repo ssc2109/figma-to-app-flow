@@ -3256,7 +3256,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
             }}
           >
             <div className="mx-auto h-[42px] w-[42px] rounded-[14px] flex items-center justify-center mb-[10px]" style={{ background: "linear-gradient(135deg,#3B82F6,#1D4ED8)" }}>
-              <Sparkles className="h-[18px] w-[18px] text-white" strokeWidth={1.9} />
+              <BrainCircuit className="h-[18px] w-[18px] text-white" strokeWidth={1.9} />
             </div>
             <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white">
               Empieza registrando tus prioridades del día
