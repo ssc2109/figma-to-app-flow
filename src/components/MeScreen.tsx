@@ -298,6 +298,121 @@ function BentoTile({
     </button>
   );
 }
+/* Today status — reemplaza la racha con datos reales del negocio */
+function TodayStatus({
+  name,
+  tasksDone,
+  tasksTotal,
+  salesToday,
+  alerts,
+  lowStock,
+  fiadosOverdue,
+}: {
+  name: string;
+  tasksDone: number;
+  tasksTotal: number;
+  salesToday: number;
+  alerts: number;
+  lowStock: number;
+  fiadosOverdue: number;
+}) {
+  const items: Array<{
+    Icon: typeof Activity;
+    accent: string;
+    label: string;
+    value: string;
+    hint: string;
+  }> = [
+    {
+      Icon: ShoppingBag,
+      accent: "#60A5FA",
+      label: "Ventas hoy",
+      value: `S/ ${Math.round(salesToday)}`,
+      hint: salesToday > 0 ? "Sigue así" : "Sin registro aún",
+    },
+    {
+      Icon: CheckCircle2,
+      accent: "#3B82F6",
+      label: "Tareas hoy",
+      value: `${tasksDone}/${tasksTotal}`,
+      hint:
+        tasksTotal === 0
+          ? "Sin tareas"
+          : tasksDone === tasksTotal
+          ? "Todo cerrado"
+          : `${tasksTotal - tasksDone} por hacer`,
+    },
+    {
+      Icon: AlertOctagon,
+      accent: alerts > 0 ? "#F87171" : "#93C5FD",
+      label: "Alertas",
+      value: `${alerts}`,
+      hint:
+        alerts === 0
+          ? "Sin urgencias"
+          : lowStock > 0 && fiadosOverdue > 0
+          ? `Stock bajo y fiados`
+          : lowStock > 0
+          ? `${lowStock} en stock bajo`
+          : fiadosOverdue > 0
+          ? `Fiados vencidos`
+          : "Revisa prioridades",
+    },
+  ];
+
+  return (
+    <div className="relative">
+      <div className="pb-[10px] flex items-center gap-[8px]">
+        <Activity className="h-[14px] w-[14px] text-[#93C5FD]" strokeWidth={1.9} />
+        <span className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
+          Estado del negocio hoy
+        </span>
+      </div>
+      <div className="mb-[14px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2] tracking-[-0.3px]">
+        {alerts > 0
+          ? `${name}, hay ${alerts} cosa${alerts === 1 ? "" : "s"} que atender`
+          : salesToday > 0
+          ? `Buen ritmo, ${name}`
+          : `A darle, ${name}`}
+      </div>
+      <div className="grid grid-cols-3 gap-[8px]">
+        {items.map((it) => (
+          <div
+            key={it.label}
+            className="rounded-[16px] p-[12px] flex flex-col gap-[8px] min-h-[92px]"
+            style={{
+              background: "rgba(15,23,42,0.55)",
+              border: `1px solid ${it.accent}22`,
+              backdropFilter: "blur(20px)",
+            }}
+          >
+            <div
+              className="h-[26px] w-[26px] rounded-full grid place-items-center"
+              style={{
+                background: `linear-gradient(135deg, ${it.accent}44, ${it.accent}18)`,
+                boxShadow: `0 0 12px ${it.accent}33`,
+              }}
+            >
+              <it.Icon className="h-[13px] w-[13px] text-white" strokeWidth={1.9} />
+            </div>
+            <div>
+              <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tabular-nums leading-none">
+                {it.value}
+              </div>
+              <div className="mt-[4px] font-['Geist'] text-[10.5px] text-white/55 leading-[1.3]">
+                {it.label}
+              </div>
+              <div className="mt-[2px] font-['Geist'] text-[10px] text-white/40 leading-[1.3]">
+                {it.hint}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
 /* Streak hero that blends into the aurora (no card border) */
 function StreakAurora({ streak, name }: { streak: number; name: string }) {
