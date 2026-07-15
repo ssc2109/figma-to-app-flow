@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { useBriefing, type Briefing } from "@/components/home/SociaInsightCard";
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
+import { getDistinctCtaLabel } from "@/lib/cta-labels";
 import MissionsCarousel from "@/components/home/MissionsCarousel";
 import traxLogo from "@/assets/trax-logo.png.asset.json";
 
@@ -268,33 +269,34 @@ type SociaAction = { label: string; Icon: typeof Package; intent: HomeNavIntent 
 function insightToAction(ins: Briefing["insights"][number]): SociaAction | null {
   if (!ins.cta) return null;
   const a = ins.cta.action;
+  const label = getDistinctCtaLabel(ins.cta.label, a, ins.text);
   if (a === "reponer")
     return {
-      label: ins.cta.label,
+      label,
       Icon: Package,
       intent: { kind: "reponer", productHint: ins.cta.payload },
     };
   if (a === "cobrar_fiado")
     return {
-      label: ins.cta.label,
+      label,
       Icon: HandCoins,
       intent: { kind: "screen", screen: "negocio" },
     };
   if (a === "ventas")
-    return { label: ins.cta.label, Icon: PackagePlus, intent: { kind: "sales" } };
+    return { label, Icon: PackagePlus, intent: { kind: "sales" } };
   if (a === "finanzas")
     return {
-      label: ins.cta.label,
+      label,
       Icon: Receipt,
       intent: { kind: "screen", screen: "negocio", subview: "finanzas" },
     };
   if (a === "promo")
     return {
-      label: ins.cta.label,
+      label,
       Icon: Sparkles,
       intent: { kind: "screen", screen: "crecer" },
     };
-  return { label: ins.cta.label, Icon: MessageCircle, intent: { kind: "chat", prompt: ins.text } };
+  return { label, Icon: MessageCircle, intent: { kind: "chat", prompt: ins.text } };
 }
 
 /* ---------- SociaAskBar (barra "Pregúntale a socIA") ---------- */
@@ -418,7 +420,7 @@ function SociaAskBar({
             flex: "none",
           }}
         >
-          {primary.cta!.label}
+          {primaryAction.label}
         </span>
       </button>
     );
