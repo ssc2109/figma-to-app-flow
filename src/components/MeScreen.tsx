@@ -5351,6 +5351,19 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           </span>
         </div>
 
+        {/* Estado del negocio hoy */}
+        <div className="px-[20px] mt-[26px]">
+          <TodayStatus
+            name={name}
+            tasksDone={todayDone}
+            tasksTotal={todaysTasks.length}
+            salesToday={finance.todayIncome}
+            alerts={(inventory.lowStock?.length ?? 0) + (finance.fiadosOverdue ?? 0)}
+            lowStock={inventory.lowStock?.length ?? 0}
+            fiadosOverdue={finance.fiadosOverdue ?? 0}
+          />
+        </div>
+
         {/* socIA Whisper */}
         <div className="mt-[26px]">
           <SociaWhisper items={whispers} />
