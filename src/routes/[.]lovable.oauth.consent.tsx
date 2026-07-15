@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import AuthScreen from "@/components/AuthScreen";
+import { TraxWordmark } from "@/components/auth/shared";
+
 
 // Beta namespace on the Supabase JS client — locally typed so TS is happy.
 type OAuthDetails = {
