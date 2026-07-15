@@ -27,27 +27,19 @@ function Tab({ active, onClick, Icon, label, glow }: TabProps) {
       className="relative flex items-center justify-center flex-1 h-[56px]"
     >
       <div className="relative flex items-center justify-center h-[40px] w-[52px]">
-        {active && (
-          <motion.span
-            layoutId="trax-nav-pill"
-            className="absolute inset-0 rounded-full bg-white/95"
-            style={{ boxShadow: "0 4px 22px rgba(255,255,255,0.22)" }}
-            transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.8 }}
-          />
-        )}
-        {glow && !active && (
+        {glow && (
           <span
             className="absolute inset-0 rounded-full"
             style={{
               background:
-                "radial-gradient(60% 60% at 50% 50%, rgba(180,200,255,0.25) 0%, transparent 70%)",
+                "radial-gradient(60% 60% at 50% 50%, rgba(180,200,255,0.22) 0%, transparent 70%)",
             }}
           />
         )}
         <Icon
           filled={active}
           className={`relative w-[22px] h-[22px] transition-colors duration-300 ${
-            active ? "text-black" : "text-white/65"
+            active ? "text-white" : "text-white/55"
           }`}
         />
       </div>
