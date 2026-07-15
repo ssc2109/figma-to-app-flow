@@ -155,7 +155,7 @@ export function NotificationsScreen({ onBack }: { onBack: () => void }) {
     await refreshProfile();
   };
 
-  // (helper `row` removido — usamos `rowStatic` para todas las filas)
+  const rowStatic = (
     Icon: typeof AlertTriangle,
     key: keyof Prefs,
     title: string,
