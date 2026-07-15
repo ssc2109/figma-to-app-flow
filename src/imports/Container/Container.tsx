@@ -652,7 +652,7 @@ function SociaActions({
           </span>
         </span>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {shown.map((it, i) => (
           <button
             type="button"
@@ -661,34 +661,34 @@ function SociaActions({
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 13,
-              padding: "11px 12px",
-              borderRadius: 16,
+              gap: 10,
+              padding: "8px 10px",
+              borderRadius: 12,
               cursor: "pointer",
               textAlign: "left",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.07)",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.06)",
             }}
           >
             <span
               style={{
-                height: 40,
-                width: 40,
-                borderRadius: 12,
+                height: 28,
+                width: 28,
+                borderRadius: 9,
                 display: "grid",
                 placeItems: "center",
                 flex: "none",
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(124,195,255,0.08)",
+                border: "1px solid rgba(124,195,255,0.20)",
               }}
             >
-              <it.Icon size={18} color="#fff" strokeWidth={1.8} />
+              <it.Icon size={14} color={SOCIA} strokeWidth={2} />
             </span>
             <span
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 2,
+                gap: 1,
                 minWidth: 0,
                 flex: 1,
               }}
@@ -696,11 +696,11 @@ function SociaActions({
               <span
                 style={{
                   fontFamily: G,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: 500,
                   color: "#fff",
                   letterSpacing: "-0.1px",
-                  lineHeight: "18px",
+                  lineHeight: "17px",
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",
@@ -712,14 +712,21 @@ function SociaActions({
               <span
                 style={{
                   fontFamily: G,
-                  fontSize: 12,
+                  fontSize: 10.5,
                   fontWeight: 400,
-                  color: "rgba(255,255,255,0.5)",
+                  color: "rgba(255,255,255,0.45)",
+                  letterSpacing: "0.2px",
                 }}
               >
                 {it.sub}
               </span>
             </span>
+            <ArrowRight
+              size={13}
+              color="rgba(124,195,255,0.75)"
+              strokeWidth={2.2}
+              style={{ flex: "none" }}
+            />
           </button>
         ))}
       </div>
