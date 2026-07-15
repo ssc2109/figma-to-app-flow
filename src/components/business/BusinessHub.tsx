@@ -20,7 +20,6 @@ type Props = {
   onReceivables: () => void;
   onPayables: () => void;
   onSuppliers: () => void;
-  onChannels: () => void;
   onDocuments: () => void;
   onTeam: () => void;
   onCatalog: () => void;
@@ -31,7 +30,7 @@ type Props = {
   onNewExpense: () => void;
 };
 
-type Area = "operacion" | "caja" | "clientes" | "canales";
+type Area = "operacion" | "caja" | "clientes";
 
 /* ---------- helpers ---------- */
 const has = (v: unknown) => typeof v === "string" && v.trim().length > 0;
@@ -219,7 +218,7 @@ function buildInsights(s: Signals, p: Props): Insight[] {
   if (!s.hasWA) list.push({
     id: "wa", priority: 6,
     text: "Configura WhatsApp para que tus clientes te contacten directo.",
-    cta: "Configurar WhatsApp", go: p.onInfo, area: "canales",
+    cta: "Configurar WhatsApp", go: p.onInfo,
   });
 
   // 7. Stock crítico
@@ -244,7 +243,7 @@ function buildInsights(s: Signals, p: Props): Insight[] {
     cta: "Agregar cliente", go: p.onClients, area: "clientes",
   });
 
-  // 10. Canales (dirección / horario / logo)
+  // 10. Presencia (dirección / horario / logo)
   if (s.hasIdentity && (!s.hasAddress || !s.hasHours || !s.hasLogo)) {
     const missing = [
       !s.hasAddress && "dirección",
@@ -252,9 +251,9 @@ function buildInsights(s: Signals, p: Props): Insight[] {
       !s.hasLogo && "logo",
     ].filter(Boolean).join(", ");
     list.push({
-      id: "channels", priority: 10,
+      id: "presence", priority: 10,
       text: `Completa tu presencia: te falta ${missing}.`,
-      cta: "Completar canales", go: p.onInfo, area: "canales",
+      cta: "Completar perfil", go: p.onInfo,
     });
   }
 
@@ -397,13 +396,12 @@ const AREAS: { id: Area; label: string }[] = [
   { id: "operacion", label: "Operación" },
   { id: "caja", label: "Caja" },
   { id: "clientes", label: "Clientes" },
-  { id: "canales", label: "Canales" },
 ];
 
 function AreaTabs({ area, onChange }: { area: Area; onChange: (a: Area) => void }) {
   return (
     <LayoutGroup id="biz-area-tabs">
-      <div className="mx-[22px] grid grid-cols-4 gap-[4px] p-[5px] rounded-[24px]"
+      <div className="mx-[22px] grid grid-cols-3 gap-[4px] p-[5px] rounded-[24px]"
         style={{ background: "rgba(16,17,17,0.85)", border: "1px solid rgba(255,255,255,0.07)" }}>
         {AREAS.map((a) => {
           const active = area === a.id;
@@ -985,82 +983,6 @@ function ClientsArea(p: Props, s: Signals) {
   );
 }
 
-/* ============================================================
-   AREA: Canales
-   ============================================================ */
-function ChannelsArea(p: Props, s: Signals) {
-  const items = [
-    { label: "WhatsApp", ok: s.hasWA },
-    { label: "Dirección", ok: s.hasAddress },
-    { label: "Horario", ok: s.hasHours },
-    { label: "Logo / foto", ok: s.hasLogo },
-  ];
-  const ready = items.filter((i) => i.ok).length;
-
-
-
-  if (ready === 0) {
-    return (
-      <div className="flex flex-col gap-[14px]">
-        <SectionTitle>Cómo te encuentran</SectionTitle>
-        <EmptyPanel
-          title="Presencia"
-          headline="Tu negocio aún no es visible"
-          body="Completa WhatsApp, dirección y horario para que tus clientes puedan encontrarte y contactarte."
-          cta="Configurar presencia"
-          onCta={p.onInfo}
-        />
-        <ShortcutsRow
-          title="Módulos"
-          items={[
-            { label: "WhatsApp", sub: "Configurar", onClick: p.onInfo },
-            { label: "Perfil público", sub: "Dirección y horario", onClick: p.onInfo },
-            { label: "Catálogo", sub: "Compartir productos", onClick: p.onCatalog },
-            { label: "Canales venta", sub: "Delivery, redes", onClick: p.onChannels },
-          ]}
-        />
-      </div>
-    );
-  }
-
-  const chips: MetricItem[] = [
-    {
-      label: "Perfil público",
-      value: ready === 4 ? "Listo" : "Parcial",
-      sub: `${ready}/4 datos`,
-      tone: ready === 4 ? "green" : "yellow",
-    },
-    {
-      label: "Contacto",
-      value: s.hasWA ? "WhatsApp" : "—",
-      sub: s.hasWA ? "activo" : "sin número",
-      tone: s.hasWA ? "green" : "muted",
-    },
-  ];
-
-  return (
-    <div className="flex flex-col gap-[14px]">
-      <SectionTitle>Cómo te encuentran</SectionTitle>
-      <BigPanel
-        title="Presencia del negocio"
-        headlineLabel="Canales activos"
-        headline={`${ready}/4`}
-        headlineTone={ready === 4 ? "green" : "default"}
-        visual={<PresenceDots items={items} />}
-        chips={chips}
-      />
-      <ShortcutsRow
-        title="Módulos"
-        items={[
-          { label: "WhatsApp", sub: s.hasWA ? (s.phone ?? "Activo") : "Configurar", onClick: p.onInfo },
-          { label: "Perfil público", sub: ready === 4 ? "Completo" : `${ready}/4 datos`, onClick: p.onInfo },
-          { label: "Catálogo", sub: "Compartir productos", onClick: p.onCatalog },
-          { label: "Canales venta", sub: "Delivery, redes", onClick: p.onChannels },
-        ]}
-      />
-    </div>
-  );
-}
 
 /* ============================================================
    Advanced configuration row
@@ -1117,7 +1039,6 @@ export default function BusinessHub(p: Props) {
               {area === "operacion" && OperationArea(p, signals)}
               {area === "caja" && CashArea(p, signals)}
               {area === "clientes" && ClientsArea(p, signals)}
-              {area === "canales" && ChannelsArea(p, signals)}
             </motion.div>
           </AnimatePresence>
         </div>
