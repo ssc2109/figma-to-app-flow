@@ -1,5 +1,5 @@
-import { Home, Briefcase, Sparkles, User, Lightbulb } from "lucide-react";
 import { motion } from "motion/react";
+import { HomeIcon, BusinessIcon, SociaIcon, ProductivityIcon, GrowIcon } from "@/components/icons/NavIcons";
 
 export type Screen = "inicio" | "negocio" | "socia" | "yo" | "crecer";
 
@@ -11,7 +11,7 @@ interface BottomNavBarProps {
 interface TabProps {
   active?: boolean;
   onClick?: () => void;
-  Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  Icon: React.ComponentType<{ className?: string; filled?: boolean }>;
   label: string;
   glow?: boolean;
 }
@@ -45,10 +45,10 @@ function Tab({ active, onClick, Icon, label, glow }: TabProps) {
           />
         )}
         <Icon
-          className={`relative size-[20px] transition-colors duration-300 ${
+          filled={active}
+          className={`relative w-[22px] h-[22px] transition-colors duration-300 ${
             active ? "text-black" : "text-white/65"
           }`}
-          strokeWidth={active ? 2.2 : 1.8}
         />
       </div>
     </motion.button>
