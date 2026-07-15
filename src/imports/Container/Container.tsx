@@ -1394,10 +1394,10 @@ export default function Container({
       />
       <div
         style={{
-          padding: "0 20px",
+          padding: "6px 20px 0",
           display: "flex",
           flexDirection: "column",
-          gap: 22,
+          gap: 30,
         }}
       >
         <SociaHero
