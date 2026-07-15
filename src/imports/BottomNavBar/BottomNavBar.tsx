@@ -1,5 +1,5 @@
-import { Home, Briefcase, Sparkles, User, Lightbulb } from "lucide-react";
 import { motion } from "motion/react";
+import { HomeIcon, BusinessIcon, SociaIcon, ProductivityIcon, GrowIcon } from "@/components/icons/NavIcons";
 
 export type Screen = "inicio" | "negocio" | "socia" | "yo" | "crecer";
 
@@ -11,7 +11,7 @@ interface BottomNavBarProps {
 interface TabProps {
   active?: boolean;
   onClick?: () => void;
-  Icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  Icon: React.ComponentType<{ className?: string; filled?: boolean }>;
   label: string;
   glow?: boolean;
 }
@@ -45,10 +45,10 @@ function Tab({ active, onClick, Icon, label, glow }: TabProps) {
           />
         )}
         <Icon
-          className={`relative size-[20px] transition-colors duration-300 ${
+          filled={active}
+          className={`relative w-[22px] h-[22px] transition-colors duration-300 ${
             active ? "text-black" : "text-white/65"
           }`}
-          strokeWidth={active ? 2.2 : 1.8}
         />
       </div>
     </motion.button>
@@ -67,11 +67,11 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
         WebkitBackdropFilter: "blur(28px) saturate(180%)",
       }}
     >
-      <Tab label="Inicio" Icon={Home} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
-      <Tab label="Mi Negocio" Icon={Briefcase} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
-      <Tab label="socIA" Icon={Sparkles} active={currentScreen === "socia"} onClick={() => go("socia")} glow />
-      <Tab label="Yo" Icon={User} active={currentScreen === "yo"} onClick={() => go("yo")} />
-      <Tab label="Crecer" Icon={Lightbulb} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
+      <Tab label="Inicio" Icon={HomeIcon} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
+      <Tab label="Mi Negocio" Icon={BusinessIcon} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
+      <Tab label="socIA" Icon={SociaIcon} active={currentScreen === "socia"} onClick={() => go("socia")} glow />
+      <Tab label="Yo" Icon={ProductivityIcon} active={currentScreen === "yo"} onClick={() => go("yo")} />
+      <Tab label="Crecer" Icon={GrowIcon} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
   );
 }
