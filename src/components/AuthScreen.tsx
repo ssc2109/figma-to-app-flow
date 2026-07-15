@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import SignInView from "./auth/SignInView";
 import SignUpView from "./auth/SignUpView";
