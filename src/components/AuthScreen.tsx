@@ -3,14 +3,15 @@ import { AnimatePresence, motion } from "motion/react";
 import SignInView from "./auth/SignInView";
 import SignUpView from "./auth/SignUpView";
 import ForgotPasswordView from "./auth/ForgotPasswordView";
+import PhoneAuthView from "./auth/PhoneAuthView";
 import { TraxWordmark } from "./auth/shared";
 import authBg from "@/assets/auth-bg.mp4.asset.json";
 import authBgPoster from "@/assets/auth-bg-poster.jpg.asset.json";
 
-type View = "signin" | "signup" | "forgot";
+type View = "signin" | "signup" | "forgot" | "phone";
 
 const dirFor = (from: View, to: View): 1 | -1 => {
-  const order: Record<View, number> = { signin: 0, signup: 1, forgot: 2 };
+  const order: Record<View, number> = { signin: 0, signup: 1, forgot: 2, phone: 3 };
   return order[to] > order[from] ? 1 : -1;
 };
 
