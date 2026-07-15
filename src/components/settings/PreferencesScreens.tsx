@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   Moon,
-  Sun,
   Type,
   MousePointer2,
   Bell,
@@ -12,7 +11,6 @@ import {
   MessageSquare,
   Sparkles,
   Trash2,
-  Download,
   Cpu,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
