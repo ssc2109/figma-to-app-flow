@@ -67,11 +67,11 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
         WebkitBackdropFilter: "blur(28px) saturate(180%)",
       }}
     >
-      <Tab label="Inicio" Icon={Home} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
-      <Tab label="Mi Negocio" Icon={Briefcase} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
-      <Tab label="socIA" Icon={Sparkles} active={currentScreen === "socia"} onClick={() => go("socia")} glow />
-      <Tab label="Yo" Icon={User} active={currentScreen === "yo"} onClick={() => go("yo")} />
-      <Tab label="Crecer" Icon={Lightbulb} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
+      <Tab label="Inicio" Icon={HomeIcon} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
+      <Tab label="Mi Negocio" Icon={BusinessIcon} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
+      <Tab label="socIA" Icon={SociaIcon} active={currentScreen === "socia"} onClick={() => go("socia")} glow />
+      <Tab label="Yo" Icon={ProductivityIcon} active={currentScreen === "yo"} onClick={() => go("yo")} />
+      <Tab label="Crecer" Icon={GrowIcon} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
   );
 }
