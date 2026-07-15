@@ -16,11 +16,28 @@ const dirFor = (from: View, to: View): 1 | -1 => {
 export default function AuthScreen() {
   const [view, setView] = useState<View>("signin");
   const [direction, setDirection] = useState<1 | -1>(1);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const go = (next: View) => {
     setDirection(dirFor(view, next));
     setView(next);
   };
+
+  // iOS Safari won't autoplay unless muted+playsInline are set BEFORE the play() call,
+  // and often needs an explicit .play() attempt after mount.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute("muted", "");
+    v.setAttribute("playsinline", "");
+    const tryPlay = () => v.play().catch(() => {});
+    tryPlay();
+    const onTouch = () => tryPlay();
+    document.addEventListener("touchstart", onTouch, { once: true, passive: true });
+    return () => document.removeEventListener("touchstart", onTouch);
+  }, []);
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[20px] py-[20px] relative overflow-hidden">
