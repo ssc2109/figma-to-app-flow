@@ -722,26 +722,6 @@ function StockHealth({ healthy, low, out }: { healthy: number; low: number; out:
   );
 }
 
-function PresenceDots({ items }: { items: { label: string; ok: boolean }[] }) {
-  return (
-    <div className="flex flex-col gap-[10px]">
-      {items.map((it) => (
-        <div key={it.label} className="flex items-center gap-[10px]">
-          <span
-            className="h-[8px] w-[8px] rounded-full shrink-0"
-            style={{ background: it.ok ? "#4ADE80" : "rgba(255,255,255,0.22)" }}
-          />
-          <span
-            className="font-['Geist'] text-[14px]"
-            style={{ color: it.ok ? "#ffffff" : "rgba(255,255,255,0.55)" }}
-          >
-            {it.label}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function ClientsBreakdown({ registered, withDebt }: { registered: number; withDebt: number }) {
   const cells = [
