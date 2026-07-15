@@ -4543,52 +4543,182 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
       )}
 
       <div className="relative z-10 pb-[180px]">
-        {/* Header vivo */}
+        {/* Header + Day Ring */}
         <div className="px-[20px] pt-[64px] pb-[8px]">
-          <div className="flex flex-col gap-[6px]">
-            <span className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.6px] text-white/40">
-              Productividad
-            </span>
-            <h1 className="font-['Bai_Jamjuree'] font-semibold text-[28px] leading-[32px] text-white tracking-[-0.6px]">
-              Hola, {name}
-            </h1>
-            <span className="font-['Geist'] text-[12.5px] text-white/45 capitalize">{dateLabel}</span>
+          <div className="flex items-center gap-[14px]">
+            <div className="flex-1 min-w-0 flex flex-col gap-[4px]">
+              <span className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.6px] text-white/40">
+                Command Deck
+              </span>
+              <h1 className="font-['Bai_Jamjuree'] font-semibold text-[26px] leading-[30px] text-white tracking-[-0.6px] truncate">
+                Hola, {name}
+              </h1>
+              <span className="font-['Geist'] text-[11.5px] text-white/45 capitalize">{dateLabel}</span>
+            </div>
+            <DayRing done={todayDone} pending={pending} />
           </div>
         </div>
 
-        {/* Focus ribbon */}
+        {/* Next Move Hero */}
         <div className="px-[20px] mt-[18px]">
-          <FocusRibbon pending={pending} atRisk={atRisk} done={todayDone} />
+          {(() => {
+            const now = new Date();
+            const nowMin = now.getHours() * 60 + now.getMinutes();
+            let candidate: React.ComponentProps<typeof NextMoveHero>["candidate"] = null;
+            let heroTask: Todo | null = null;
+            let heroEvent: CalendarEvent | null = null;
+
+            // 1. Evento en <60 min
+            const soonEvent = [...todaysEvents]
+              .filter((e) => e.start)
+              .map((e) => {
+                const [h, m] = e.start!.split(":").map(Number);
+                return { e, diff: h * 60 + m - nowMin };
+              })
+              .filter((x) => x.diff >= -30 && x.diff <= 60)
+              .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))[0];
+            if (soonEvent) {
+              heroEvent = soonEvent.e;
+              const diff = soonEvent.diff;
+              candidate = {
+                kind: "event",
+                title: soonEvent.e.title,
+                subtitle: `${soonEvent.e.start}${soonEvent.e.place ? ` · ${soonEvent.e.place}` : ""}`,
+                accent: "#FFFFFF",
+                countdown:
+                  diff <= 0 ? "ahora" : diff < 60 ? `en ${diff} min` : `en ${Math.round(diff / 60)}h`,
+                urgent: diff <= 15 && diff >= -5,
+              };
+            } else {
+              // 2. Tarea P0 vencida
+              const p0Overdue = todos.find(
+                (t) => !t.done && t.priority === "urgent" && t.due && isISODate(t.due) && t.due < today,
+              );
+              // 3. Tarea P0 hoy
+              const p0Today = todos.find(
+                (t) => !t.done && t.priority === "urgent" && (t.due === "Hoy" || t.due === today),
+              );
+              // 4. Tarea con hora más próxima
+              const timed = todaysTasks
+                .filter((t) => t.time && !t.done)
+                .map((t) => {
+                  const [h, m] = t.time!.split(":").map(Number);
+                  return { t, min: h * 60 + m };
+                })
+                .filter((x) => x.min >= nowMin - 30)
+                .sort((a, b) => a.min - b.min)[0];
+              // 5. Tarea P1 sin hora
+              const p1 = todos.find(
+                (t) => !t.done && t.priority === "high" && (t.due === "Hoy" || t.due === today || !t.due),
+              );
+              const pick = p0Overdue ?? p0Today ?? timed?.t ?? p1 ?? null;
+              if (pick) {
+                heroTask = pick;
+                const dueTxt =
+                  pick.due === "Hoy" || pick.due === today
+                    ? pick.time
+                      ? `hoy ${pick.time}`
+                      : "hoy"
+                    : pick.due && isISODate(pick.due) && pick.due < today
+                      ? "vencida"
+                      : pick.due
+                        ? formatDueLabel(pick.due)
+                        : "sin fecha";
+                candidate = {
+                  kind: "task",
+                  title: pick.title,
+                  subtitle: `${PRIO[pick.priority].label} · ${dueTxt}`,
+                  accent: PRIO[pick.priority].color,
+                  urgent: pick.priority === "urgent",
+                };
+              }
+            }
+
+            return (
+              <NextMoveHero
+                candidate={candidate}
+                onDone={() => {
+                  if (heroTask) toggleTodo(heroTask.id);
+                }}
+                onSnooze={() => {
+                  if (heroTask && heroTask.time) {
+                    const [h, m] = heroTask.time.split(":").map(Number);
+                    const total = h * 60 + m + 15;
+                    const nh = Math.min(23, Math.floor(total / 60));
+                    const nm = total % 60;
+                    updateTodo(heroTask.id, {
+                      time: `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`,
+                    });
+                  } else if (heroTask) {
+                    setTaskSheet({ open: true, initial: heroTask });
+                  }
+                }}
+                onTap={() => {
+                  if (heroTask) setTaskSheet({ open: true, initial: heroTask });
+                  else if (heroEvent) setEventSheet({ open: true, date: heroEvent.date });
+                  else setTaskSheet({ open: true });
+                }}
+              />
+            );
+          })()}
         </div>
 
-        {/* Command bar */}
+        {/* Momentum Strip */}
         <div className="px-[20px] mt-[14px]">
-          <CommandBar onAdd={handleQuickAdd} mode={mode} setMode={setMode} />
+          {(() => {
+            const xpMap = { urgent: 30, high: 20, normal: 10, low: 5 } as const;
+            const xp = todos
+              .filter((t) => t.done && (t.due === "Hoy" || t.due === today))
+              .reduce((s, t) => s + xpMap[t.priority], 0);
+            const focusMin = todos
+              .filter((t) => t.done && (t.due === "Hoy" || t.due === today) && t.time)
+              .reduce((s) => s + 25, 0);
+            return <MomentumStrip done={todayDone} xp={xp} focusMin={focusMin} />;
+          })()}
         </div>
 
-        {/* Cronograma */}
-        <div className="px-[20px] mt-[26px]">
+        {/* Timeline horizontal */}
+        <div className="px-[20px] mt-[22px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              {mode === "day" ? "Cronograma de hoy" : "Semana"}
+              {mode === "day" ? "Franja de hoy" : "Semana"}
             </h3>
-            <button
-              type="button"
-              onClick={() => setEventSheet({ open: true, date: today })}
-              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
-            >
-              <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Evento
-            </button>
+            <div className="flex items-center gap-[8px]">
+              <div
+                className="flex rounded-[10px] p-[2px]"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                {(["day", "week"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMode(m)}
+                    className="h-[26px] px-[10px] rounded-[8px] font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[0.8px]"
+                    style={{
+                      background: mode === m ? "rgba(255,255,255,0.12)" : "transparent",
+                      color: mode === m ? "#fff" : "rgba(255,255,255,0.5)",
+                    }}
+                  >
+                    {m === "day" ? "Día" : "Semana"}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setEventSheet({ open: true, date: today })}
+                className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
+              >
+                <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Evento
+              </button>
+            </div>
           </div>
           {mode === "day" ? (
-            <DayTimeline
+            <HorizontalTimeline
               events={todaysEvents}
               tasks={todaysTasks}
-              onEmpty={(h) => setEventSheet({ open: true, date: today })}
+              onEmpty={() => setEventSheet({ open: true, date: today })}
               onTaskTap={(t) => setTaskSheet({ open: true, initial: t })}
-              onEventTap={() => {
-                /* editar evento inline en próxima iteración */
-              }}
+              onEventTap={() => setEventSheet({ open: true, date: today })}
             />
           ) : (
             <WeekGantt
@@ -4602,11 +4732,16 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           )}
         </div>
 
-        {/* Inbox / Prioridades */}
-        <div className="px-[20px] mt-[28px]">
+        {/* Command bar compacto */}
+        <div className="px-[20px] mt-[14px]">
+          <CommandBar onAdd={handleQuickAdd} mode={mode} setMode={setMode} />
+        </div>
+
+        {/* Missions */}
+        <div className="px-[20px] mt-[26px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Inbox
+              Misiones
             </h3>
             <div className="flex gap-[4px]">
               {(["today", "overdue", "week"] as const).map((f) => (
@@ -4614,7 +4749,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                   key={f}
                   type="button"
                   onClick={() => setInboxFilter(f)}
-                  className="h-[24px] px-[10px] rounded-full font-['Geist'] text-[10.5px] font-medium uppercase tracking-[0.8px]"
+                  className="h-[22px] px-[9px] rounded-full font-['Geist'] text-[10px] font-semibold uppercase tracking-[0.7px]"
                   style={{
                     background: inboxFilter === f ? "rgba(255,255,255,0.10)" : "transparent",
                     color: inboxFilter === f ? "#fff" : "rgba(255,255,255,0.45)",
@@ -4626,80 +4761,96 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
               ))}
             </div>
           </div>
-          <div
-            className="rounded-[16px] overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            {inboxTasks.length === 0 ? (
-              <div className="px-[14px] py-[22px] text-center">
-                <span className="font-['Geist'] text-[12.5px] text-white/40">
-                  Nada pendiente aquí. Bien hecho.
-                </span>
-              </div>
-            ) : (
-              inboxTasks.slice(0, 8).map((t, i) => (
-                <TaskInboxRow
-                  key={t.id}
-                  todo={t}
-                  index={i}
-                  onToggle={() => toggleTodo(t.id)}
-                  onTap={() => setTaskSheet({ open: true, initial: t })}
-                />
-              ))
-            )}
+          {inboxTasks.length === 0 ? (
             <button
               type="button"
               onClick={() => setTaskSheet({ open: true })}
-              className="w-full h-[42px] px-[14px] flex items-center gap-[10px] text-left active:bg-white/[0.03]"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
+              style={{
+                background:
+                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                border: "1px dashed rgba(255,255,255,0.10)",
+              }}
             >
-              <Plus className="h-[13px] w-[13px] text-white/40" strokeWidth={2} />
-              <span className="font-['Geist'] text-[12.5px] text-white/45">Añadir tarea</span>
+              <Rocket className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
+              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
+                Lanza tu primera misión
+              </span>
+              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
+                Captura una tarea y súmala al día.
+              </span>
             </button>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-[8px]">
+              {inboxTasks.slice(0, 8).map((t) => (
+                <MissionCard
+                  key={t.id}
+                  todo={t}
+                  onToggle={() => toggleTodo(t.id)}
+                  onTap={() => setTaskSheet({ open: true, initial: t })}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={() => setTaskSheet({ open: true })}
+                className="h-[38px] rounded-[12px] flex items-center justify-center gap-[6px] active:bg-white/[0.03]"
+                style={{ border: "1px dashed rgba(255,255,255,0.10)" }}
+              >
+                <Plus className="h-[12px] w-[12px] text-white/50" strokeWidth={2} />
+                <span className="font-['Geist'] text-[12px] text-white/55">Añadir misión</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Entregables */}
-        <div className="px-[20px] mt-[28px]">
+        {/* Proyectos en vuelo */}
+        <div className="px-[20px] mt-[26px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Entregables
+              Proyectos en vuelo
             </h3>
             <button
               type="button"
               onClick={() => setProjectSheet({ open: true })}
-              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
             >
               <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Nuevo
             </button>
           </div>
-          <div
-            className="rounded-[16px] overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            {projects.length === 0 ? (
-              <div className="px-[14px] py-[22px] text-center">
-                <span className="font-['Geist'] text-[12.5px] text-white/40">
-                  Sin entregables. Crea uno para dividir tu trabajo.
-                </span>
-              </div>
-            ) : (
-              projects
-                .slice(0, 6)
-                .map((p, i) => (
-                  <DeliverableRow
-                    key={p.id}
-                    project={p}
-                    index={i}
-                    onTap={() => setProjectSheet({ open: true, initial: p })}
-                  />
-                ))
-            )}
-          </div>
+          {projects.length === 0 ? (
+            <button
+              type="button"
+              onClick={() => setProjectSheet({ open: true })}
+              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
+              style={{
+                background:
+                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                border: "1px dashed rgba(255,255,255,0.10)",
+              }}
+            >
+              <FolderKanban className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
+              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
+                Divide un proyecto grande
+              </span>
+              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
+                Los entregables te dan pista de despegue.
+              </span>
+            </button>
+          ) : (
+            <div className="flex flex-col gap-[10px]">
+              {projects.slice(0, 3).map((p) => (
+                <ProjectFlightCard
+                  key={p.id}
+                  project={p}
+                  onTap={() => setProjectSheet({ open: true, initial: p })}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Metas */}
-        <div className="px-[20px] mt-[28px]">
+        {/* Metas — anillos */}
+        <div className="px-[20px] mt-[26px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
               Metas
@@ -4707,31 +4858,41 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             <button
               type="button"
               onClick={() => setGoalSheet({ open: true })}
-              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
             >
               <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Meta
             </button>
           </div>
-          <div
-            className="rounded-[16px] overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            {goals.length === 0 ? (
-              <div className="px-[14px] py-[22px] text-center">
-                <span className="font-['Geist'] text-[12.5px] text-white/40">
-                  Define tu primera meta trimestral.
-                </span>
-              </div>
-            ) : (
-              goals.map((g, i) => (
-                <GoalRow key={g.id} goal={g} index={i} onTap={() => setGoalSheet({ open: true, initial: g })} />
-              ))
-            )}
-          </div>
+          {goals.length === 0 ? (
+            <button
+              type="button"
+              onClick={() => setGoalSheet({ open: true })}
+              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
+              style={{
+                background:
+                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                border: "1px dashed rgba(255,255,255,0.10)",
+              }}
+            >
+              <Target className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
+              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
+                Define tu primera meta
+              </span>
+              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
+                Sin norte no hay velocidad.
+              </span>
+            </button>
+          ) : (
+            <div className="grid grid-cols-2 gap-[10px]">
+              {goals.slice(0, 6).map((g) => (
+                <GoalRing key={g.id} goal={g} onTap={() => setGoalSheet({ open: true, initial: g })} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Aprender */}
-        <div className="px-[20px] mt-[28px]">
+        <div className="px-[20px] mt-[26px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
               Aprender
@@ -4739,7 +4900,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             <button
               type="button"
               onClick={() => setLearnOpen(true)}
-              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
             >
               Ver rutas <ArrowRight className="h-[11px] w-[11px]" strokeWidth={2} />
             </button>
@@ -4768,52 +4929,55 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           </button>
         </div>
 
-        {/* Recos IA */}
+        {/* Coach IA */}
         {activeRecos.length > 0 && (
-          <div className="mt-[28px]">
-            <div className="px-[20px] pb-[10px]">
+          <div className="mt-[26px]">
+            <div className="px-[20px] pb-[10px] flex items-center gap-[6px]">
+              <Sparkles className="h-[13px] w-[13px] text-white/60" strokeWidth={1.8} />
               <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-                Recos IA
+                Coach IA
               </h3>
             </div>
-            <div className="-mx-[0] px-[20px] flex gap-[10px] overflow-x-auto no-scrollbar">
-              {activeRecos.slice(0, 8).map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => dismissRecommendation(r.id)}
-                  className="shrink-0 max-w-[240px] rounded-[12px] px-[12px] py-[10px] text-left flex flex-col gap-[4px] active:opacity-80"
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <span
-                    className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1px]"
+            <div className="px-[20px] flex gap-[10px] overflow-x-auto no-scrollbar">
+              {activeRecos.slice(0, 8).map((r) => {
+                const c =
+                  r.level === "urgent"
+                    ? "#F87171"
+                    : r.level === "warn"
+                      ? "#F5B944"
+                      : r.level === "success"
+                        ? "#4ADE80"
+                        : "#FFFFFF";
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => dismissRecommendation(r.id)}
+                    className="shrink-0 max-w-[260px] rounded-[14px] px-[14px] py-[12px] text-left flex flex-col gap-[6px] active:opacity-80"
                     style={{
-                      color:
-                        r.level === "urgent"
-                          ? "#F87171"
-                          : r.level === "warn"
-                            ? "#F5B944"
-                            : r.level === "success"
-                              ? "#4ADE80"
-                              : "rgba(255,255,255,0.5)",
+                      background:
+                        "radial-gradient(circle at top left, rgba(255,255,255,0.05), rgba(255,255,255,0.015))",
+                      border: `1px solid ${c}30`,
                     }}
                   >
-                    {r.level === "urgent"
-                      ? "Urgente"
-                      : r.level === "warn"
-                        ? "Atención"
-                        : r.level === "success"
-                          ? "Buena"
-                          : "Nota"}
-                  </span>
-                  <span className="font-['Geist'] text-[12.5px] font-medium text-white/90 line-clamp-2">
-                    {r.title}
-                  </span>
-                </button>
-              ))}
+                    <span
+                      className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1px]"
+                      style={{ color: c }}
+                    >
+                      {r.level === "urgent"
+                        ? "Actúa ya"
+                        : r.level === "warn"
+                          ? "Atención"
+                          : r.level === "success"
+                            ? "Buen ritmo"
+                            : "Sugerencia"}
+                    </span>
+                    <span className="font-['Geist'] text-[12.5px] font-medium text-white/95 line-clamp-3">
+                      {r.title}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -4822,6 +4986,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           <FooterMark>Tu negocio crece contigo</FooterMark>
         </div>
       </div>
+
 
       {/* Sheets */}
       <TaskSheet
