@@ -81,26 +81,28 @@ export default function SignInView({
       <div className="text-center text-[11.5px] text-white/40 font-['Geist']">O continúa con</div>
 
       <div className="flex items-center justify-center gap-[14px]">
-        <button
-          type="button"
-          onClick={() => handleOAuth("google")}
-          disabled={loading}
-          aria-label="Google"
-          className="h-[44px] w-[44px] rounded-full border border-white/10 bg-white/[0.04] flex items-center justify-center active:bg-white/[0.08] disabled:opacity-50"
-        >
+        <SocialCircle label="Google" onClick={() => handleOAuth("google")} disabled={loading}>
           <GoogleIcon />
-        </button>
+        </SocialCircle>
         {isApple && (
-          <button
-            type="button"
-            onClick={() => handleOAuth("apple")}
-            disabled={loading}
-            aria-label="Apple"
-            className="h-[44px] w-[44px] rounded-full border border-white/10 bg-white/[0.04] flex items-center justify-center active:bg-white/[0.08] disabled:opacity-50"
-          >
+          <SocialCircle label="Apple" onClick={() => handleOAuth("apple")} disabled={loading}>
             <AppleIcon />
-          </button>
+          </SocialCircle>
         )}
+        <SocialCircle
+          label="Facebook"
+          onClick={() => sonner.info("Facebook estará disponible pronto")}
+          soon
+        >
+          <FacebookIcon />
+        </SocialCircle>
+        <SocialCircle
+          label="Teléfono"
+          onClick={() => sonner.info("Ingreso por SMS estará disponible pronto")}
+          soon
+        >
+          <PhoneIcon />
+        </SocialCircle>
       </div>
 
       <button
