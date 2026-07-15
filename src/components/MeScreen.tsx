@@ -4445,9 +4445,549 @@ function GoalRing({ goal, onTap }: { goal: Goal; onTap: () => void }) {
   );
 }
 
+/* ============================================================
+   PRODUCTIVIDAD 4.0 — Living Command
+   Piezas: PulseCanvas, SociaWhisper, HorizonteStrip, FocusOrb,
+   GoalConstellation, FlightCard.
+   ============================================================ */
+
+function PulseCanvas({
+  goalPct,
+  dayPct,
+  centerValue,
+  centerLabel,
+  centerDelta,
+  onNext,
+  dotIdx,
+  dotCount,
+}: {
+  goalPct: number;
+  dayPct: number;
+  centerValue: string;
+  centerLabel: string;
+  centerDelta?: { v: string; pos: boolean };
+  onNext: () => void;
+  dotIdx: number;
+  dotCount: number;
+}) {
+  const size = 260;
+  const outerStroke = 12;
+  const gap = 8;
+  const innerStroke = 3;
+  const outerR = (size - outerStroke) / 2 - 2;
+  const innerR = outerR - outerStroke / 2 - gap - innerStroke / 2;
+  const cOuter = 2 * Math.PI * outerR;
+  const cInner = 2 * Math.PI * innerR;
+  return (
+    <div className="relative mx-auto" style={{ width: size, height: size }}>
+      <div
+        className="absolute inset-0 rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(255,255,255,0.07), rgba(255,255,255,0) 65%)",
+        }}
+      />
+      <svg width={size} height={size} className="rotate-[-90deg]">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={outerR}
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth={outerStroke}
+          fill="none"
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={outerR}
+          stroke={goalPct >= 1 ? "#4ADE80" : "#FFFFFF"}
+          strokeWidth={outerStroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={cOuter}
+          initial={{ strokeDashoffset: cOuter }}
+          animate={{ strokeDashoffset: cOuter * (1 - Math.min(1, goalPct)) }}
+          transition={{ type: "spring", stiffness: 40, damping: 18 }}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={innerR}
+          stroke="rgba(255,255,255,0.05)"
+          strokeWidth={innerStroke}
+          fill="none"
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={innerR}
+          stroke="rgba(255,255,255,0.6)"
+          strokeWidth={innerStroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={cInner}
+          initial={{ strokeDashoffset: cInner }}
+          animate={{ strokeDashoffset: cInner * (1 - Math.min(1, dayPct)) }}
+          transition={{ type: "spring", stiffness: 40, damping: 18, delay: 0.15 }}
+        />
+      </svg>
+      <button
+        type="button"
+        onClick={onNext}
+        className="absolute inset-0 grid place-items-center active:opacity-80"
+      >
+        <div className="flex flex-col items-center gap-[6px] px-[18px]">
+          <span className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.6px] text-white/40">
+            {centerLabel}
+          </span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={centerValue + centerLabel}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.32 }}
+              className="font-['Bai_Jamjuree'] tabular-nums text-[34px] leading-[36px] font-semibold text-white tracking-[-0.8px] text-center"
+            >
+              {centerValue}
+            </motion.span>
+          </AnimatePresence>
+          {centerDelta && (
+            <span
+              className="font-['Bai_Jamjuree'] tabular-nums text-[11px] font-semibold"
+              style={{ color: centerDelta.pos ? "#4ADE80" : "#F87171" }}
+            >
+              {centerDelta.v}
+            </span>
+          )}
+          <div className="mt-[6px] flex items-center gap-[4px]">
+            {Array.from({ length: dotCount }).map((_, i) => (
+              <span
+                key={i}
+                className="h-[3px] rounded-full transition-all"
+                style={{
+                  width: i === dotIdx ? 14 : 3,
+                  background: i === dotIdx ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+type Whisper = {
+  id: string;
+  chip: string;
+  text: string;
+  tone: "good" | "warn" | "urgent" | "info";
+  action?: string;
+  onAct?: () => void;
+};
+
+function SociaWhisper({ items }: { items: Whisper[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div
+      className="relative"
+      style={{
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar">
+        {items.map((w) => {
+          const c =
+            w.tone === "urgent"
+              ? "#F87171"
+              : w.tone === "warn"
+                ? "#F5B944"
+                : w.tone === "good"
+                  ? "#4ADE80"
+                  : "#FFFFFF";
+          return (
+            <div
+              key={w.id}
+              className="snap-start shrink-0 w-full flex items-center gap-[12px] px-[20px] py-[14px]"
+            >
+              <div className="flex items-center gap-[6px] shrink-0">
+                <Sparkles className="h-[11px] w-[11px]" style={{ color: c }} strokeWidth={2} />
+                <span
+                  className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.2px]"
+                  style={{ color: c }}
+                >
+                  {w.chip}
+                </span>
+              </div>
+              <p className="font-['Geist'] text-[12.5px] leading-[16px] text-white/85 flex-1 min-w-0">
+                {w.text}
+              </p>
+              {w.action && w.onAct && (
+                <button
+                  type="button"
+                  onClick={w.onAct}
+                  className="shrink-0 font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1px] text-white/85 active:text-white pl-[10px]"
+                  style={{ borderLeft: "1px solid rgba(255,255,255,0.10)" }}
+                >
+                  {w.action} →
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+type WeekBucket = {
+  start: Date;
+  label: string;
+  count: number;
+  done: number;
+  markers: { color: string; kind: string }[];
+};
+
+function HorizonteStrip({
+  weeks,
+  onWeek,
+}: {
+  weeks: WeekBucket[];
+  onWeek: (w: WeekBucket) => void;
+}) {
+  const maxCount = Math.max(1, ...weeks.map((w) => w.count));
+  const now = new Date();
+  const currentIdx = weeks.findIndex((w) => {
+    const end = new Date(w.start);
+    end.setDate(end.getDate() + 7);
+    return now >= w.start && now < end;
+  });
+  return (
+    <div className="flex gap-[6px] h-[110px]">
+      {weeks.map((w, i) => {
+        const density = 0.025 + 0.12 * (w.count / maxCount);
+        const isCurrent = i === currentIdx;
+        return (
+          <button
+            type="button"
+            key={i}
+            onClick={() => onWeek(w)}
+            className="relative flex-1 rounded-[10px] flex flex-col justify-end p-[6px] active:opacity-80"
+            style={{
+              background: `rgba(255,255,255,${density})`,
+              border: `1px solid ${isCurrent ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.05)"}`,
+            }}
+          >
+            {isCurrent && (
+              <span className="absolute top-[6px] left-1/2 -translate-x-1/2 h-[4px] w-[4px] rounded-full bg-white" />
+            )}
+            <div className="flex flex-col gap-[3px] items-center mb-[4px] min-h-[15px]">
+              {w.markers.slice(0, 3).map((m, mi) => (
+                <span
+                  key={mi}
+                  className="h-[4px] w-[4px] rounded-full"
+                  style={{ background: m.color }}
+                />
+              ))}
+            </div>
+            <span className="font-['Bai_Jamjuree'] tabular-nums text-[10px] font-semibold text-white/60 text-center leading-none">
+              {w.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function FocusOrb({
+  title,
+  context,
+  tone,
+  onDone,
+  onLater,
+  onDismiss,
+}: {
+  title: string;
+  context: string;
+  tone: "urgent" | "focus" | "calm";
+  onDone?: () => void;
+  onLater?: () => void;
+  onDismiss?: () => void;
+}) {
+  const c = tone === "urgent" ? "#F87171" : tone === "calm" ? "#4ADE80" : "#FFFFFF";
+  const chip = tone === "urgent" ? "Actúa ya" : tone === "calm" ? "Todo en orden" : "Foco ahora";
+  return (
+    <div
+      className="relative w-full rounded-[24px] overflow-hidden"
+      style={{
+        background: `radial-gradient(circle at 25% 20%, ${c}18, rgba(255,255,255,0.01) 62%), rgba(255,255,255,0.03)`,
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <motion.div
+        className="absolute -top-[50px] -right-[50px] h-[170px] w-[170px] rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${c}22, transparent 70%)` }}
+        animate={{ scale: [1, 1.08, 1], opacity: [0.7, 0.4, 0.7] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <div className="relative p-[20px] flex flex-col gap-[14px]">
+        <div className="flex items-center gap-[6px]">
+          <span
+            className="h-[6px] w-[6px] rounded-full animate-pulse"
+            style={{ background: c }}
+          />
+          <span
+            className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.4px]"
+            style={{ color: c }}
+          >
+            {chip}
+          </span>
+        </div>
+        <h2 className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[26px] text-white tracking-[-0.4px]">
+          {title}
+        </h2>
+        <p className="font-['Geist'] text-[12px] leading-[16px] text-white/55">{context}</p>
+        {(onDone || onLater || onDismiss) && (
+          <div className="flex items-center gap-[8px] pt-[4px]">
+            {onDone && (
+              <button
+                type="button"
+                onClick={onDone}
+                className="h-[36px] flex-1 rounded-[12px] font-['Geist'] text-[12.5px] font-semibold text-black active:opacity-90"
+                style={{ background: "#FFFFFF" }}
+              >
+                Hecho
+              </button>
+            )}
+            {onLater && (
+              <button
+                type="button"
+                onClick={onLater}
+                className="h-[36px] px-[14px] rounded-[12px] font-['Geist'] text-[12px] font-medium text-white/70 active:text-white"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                Después
+              </button>
+            )}
+            {onDismiss && (
+              <button
+                type="button"
+                onClick={onDismiss}
+                className="h-[36px] w-[36px] rounded-[12px] grid place-items-center text-white/45 active:text-white/80"
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <X className="h-[13px] w-[13px]" strokeWidth={1.8} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function GoalConstellation({
+  goals,
+  onTap,
+  onAdd,
+}: {
+  goals: Goal[];
+  onTap: (g: Goal) => void;
+  onAdd: () => void;
+}) {
+  if (goals.length === 0) {
+    return (
+      <button
+        type="button"
+        onClick={onAdd}
+        className="w-full h-[180px] rounded-[24px] grid place-items-center active:opacity-90"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(255,255,255,0.05), rgba(255,255,255,0.01) 65%)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div className="flex flex-col items-center gap-[8px]">
+          <motion.div
+            className="h-[54px] w-[54px] rounded-full grid place-items-center"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.10)",
+            }}
+            animate={{ scale: [1, 1.06, 1], opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Compass className="h-[20px] w-[20px] text-white/70" strokeWidth={1.5} />
+          </motion.div>
+          <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
+            Define tu norte
+          </span>
+          <span className="font-['Geist'] text-[11px] text-white/40">
+            Cada meta es una estrella en tu constelación.
+          </span>
+        </div>
+      </button>
+    );
+  }
+  const H = 200;
+  const positions = [
+    { x: 0.22, y: 0.35 },
+    { x: 0.55, y: 0.22 },
+    { x: 0.8, y: 0.55 },
+    { x: 0.3, y: 0.75 },
+    { x: 0.68, y: 0.75 },
+    { x: 0.1, y: 0.62 },
+  ];
+  const maxTarget = Math.max(1, ...goals.map((g) => g.target));
+  return (
+    <div
+      className="relative w-full rounded-[24px] overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.04), rgba(255,255,255,0.005) 70%)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        height: H,
+      }}
+    >
+      {goals.slice(0, 6).map((g, i) => {
+        const pos = positions[i];
+        const pct = g.target > 0 ? Math.min(1, g.current / g.target) : 0;
+        const size = 34 + (g.target / maxTarget) * 38;
+        const opacity = 0.4 + pct * 0.55;
+        const isClose = pct >= 0.8;
+        return (
+          <button
+            type="button"
+            key={g.id}
+            onClick={() => onTap(g)}
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full grid place-items-center active:scale-95 transition-transform"
+            style={{
+              left: `${pos.x * 100}%`,
+              top: `${pos.y * 100}%`,
+              width: size,
+              height: size,
+              background: `radial-gradient(circle, rgba(255,255,255,${opacity * 0.55}), rgba(255,255,255,0.02))`,
+              border: `1px solid rgba(255,255,255,${opacity * 0.4})`,
+              boxShadow: isClose ? `0 0 26px rgba(74,222,128,0.28)` : "none",
+            }}
+          >
+            {pct > 0.05 && (
+              <motion.span
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{ border: `1px solid rgba(255,255,255,${opacity * 0.3})` }}
+                animate={{ scale: [1, 1.12, 1], opacity: [0.55, 0.15, 0.55] }}
+                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
+            <span className="font-['Bai_Jamjuree'] tabular-nums text-[11px] font-semibold text-white/95 leading-none">
+              {Math.round(pct * 100)}
+            </span>
+          </button>
+        );
+      })}
+      {goals.length < 6 && (
+        <button
+          type="button"
+          onClick={onAdd}
+          className="absolute bottom-[10px] right-[12px] h-[26px] px-[10px] rounded-full font-['Geist'] text-[10px] font-semibold uppercase tracking-[1px] text-white/55 active:text-white"
+          style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          + meta
+        </button>
+      )}
+    </div>
+  );
+}
+
+function FlightCard({ project, onTap }: { project: Project; onTap: () => void }) {
+  const pct = Math.min(100, Math.max(0, project.progress));
+  const daysLeft = project.dueDate
+    ? Math.ceil((new Date(project.dueDate).getTime() - Date.now()) / 86400000)
+    : null;
+  const dueColor =
+    daysLeft === null
+      ? "rgba(255,255,255,0.4)"
+      : daysLeft < 0
+        ? "#F87171"
+        : daysLeft <= 3
+          ? "#F5B944"
+          : "rgba(255,255,255,0.55)";
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="w-full rounded-[20px] p-[18px] text-left flex flex-col gap-[14px] active:opacity-90"
+      style={{
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="flex items-start justify-between gap-[10px]">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-['Bai_Jamjuree'] font-semibold text-[15px] text-white/95 truncate">
+            {project.name}
+          </h4>
+          {project.description && (
+            <p className="font-['Geist'] text-[11.5px] text-white/50 mt-[2px] line-clamp-1">
+              {project.description}
+            </p>
+          )}
+        </div>
+        <span
+          className="font-['Bai_Jamjuree'] tabular-nums text-[11px] font-semibold shrink-0"
+          style={{ color: dueColor }}
+        >
+          {daysLeft === null
+            ? "—"
+            : daysLeft < 0
+              ? `${-daysLeft}d atraso`
+              : daysLeft === 0
+                ? "hoy"
+                : `${daysLeft}d`}
+        </span>
+      </div>
+      <div
+        className="relative h-[3px] w-full rounded-full"
+        style={{ background: "rgba(255,255,255,0.06)" }}
+      >
+        <motion.div
+          className="absolute left-0 top-0 h-full rounded-full"
+          style={{ background: pct >= 100 ? "#4ADE80" : "#FFFFFF" }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ type: "spring", stiffness: 50, damping: 18 }}
+        />
+        <motion.div
+          className="absolute top-1/2 -translate-y-1/2 h-[8px] w-[8px] rounded-full"
+          style={{ background: "#FFFFFF", boxShadow: "0 0 8px rgba(255,255,255,0.6)" }}
+          initial={{ left: 0 }}
+          animate={{ left: `calc(${pct}% - 4px)` }}
+          transition={{ type: "spring", stiffness: 50, damping: 18 }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[1.1px] text-white/40">
+          {PROJECT_STATUS[project.status].label}
+        </span>
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[12px] font-semibold text-white/85">
+          {pct}%
+        </span>
+      </div>
+    </button>
+  );
+}
+
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [learnOpen, setLearnOpen] = useState(false);
-  const [mode, setMode] = useState<"day" | "week">("day");
   const [taskSheet, setTaskSheet] = useState<{ open: boolean; initial?: Todo }>({ open: false });
   const [eventSheet, setEventSheet] = useState<{ open: boolean; date: string }>({
     open: false,
@@ -4455,7 +4995,9 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
   });
   const [projectSheet, setProjectSheet] = useState<{ open: boolean; initial?: Project }>({ open: false });
   const [goalSheet, setGoalSheet] = useState<{ open: boolean; initial?: Goal }>({ open: false });
-  const [inboxFilter, setInboxFilter] = useState<"today" | "overdue" | "week">("today");
+  const [weekSheet, setWeekSheet] = useState<{ open: boolean; week?: WeekBucket }>({ open: false });
+  const [centerIdx, setCenterIdx] = useState(0);
+  const [whisperIdx, setWhisperIdx] = useState(0);
 
   const {
     name,
@@ -4463,9 +5005,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
     goals,
     projects,
     events,
-    recommendations,
     todayDone,
-    highPriorityToday,
     addTodo,
     updateTodo,
     toggleTodo,
@@ -4474,7 +5014,6 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
     updateProject,
     addGoal,
     updateGoal,
-    dismissRecommendation,
   } = useMe();
 
   const finance = useFinance();
@@ -4482,34 +5021,12 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
 
   const today = todayISO();
   const todaysEvents = useMemo(() => events.filter((e) => e.date === today), [events, today]);
-  const todaysTasks = useMemo(() => todos.filter((t) => t.due === "Hoy" || t.due === today), [todos, today]);
+  const todaysTasks = useMemo(
+    () => todos.filter((t) => t.due === "Hoy" || t.due === today),
+    [todos, today],
+  );
 
   const pending = todos.filter((t) => !t.done).length;
-  const atRisk =
-    (inventory.lowStock?.length ?? 0) +
-    (finance.fiadosOverdue > 0 ? 1 : 0) +
-    highPriorityToday;
-
-  const inboxTasks = useMemo(() => {
-    const now = today;
-    if (inboxFilter === "today") {
-      return todos.filter((t) => !t.done && (t.due === "Hoy" || t.due === now));
-    }
-    if (inboxFilter === "overdue") {
-      return todos.filter((t) => !t.done && t.due && isISODate(t.due) && t.due < now);
-    }
-    // week
-    const end = new Date();
-    end.setDate(end.getDate() + 7);
-    const endIso = end.toISOString().slice(0, 10);
-    return todos.filter(
-      (t) =>
-        !t.done &&
-        (t.due === "Hoy" || (t.due && isISODate(t.due) && t.due >= now && t.due <= endIso)),
-    );
-  }, [todos, inboxFilter, today]);
-
-  const activeRecos = recommendations.filter((r) => !r.dismissed);
 
   const dateLabel = new Date().toLocaleDateString("es-PE", {
     weekday: "long",
@@ -4517,12 +5034,260 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
     month: "long",
   });
 
-  const handleQuickAdd = (k: "task" | "event" | "project" | "goal") => {
-    if (k === "task") setTaskSheet({ open: true });
-    if (k === "event") setEventSheet({ open: true, date: today });
-    if (k === "project") setProjectSheet({ open: true });
-    if (k === "goal") setGoalSheet({ open: true });
+  /* --- Pulse: rings + rotating center readings ---------------- */
+  const priorityGoal = useMemo(() => {
+    if (goals.length === 0) return null;
+    return [...goals]
+      .filter((g) => g.target > 0)
+      .sort((a, b) => b.current / b.target - a.current / a.target)[0] ?? goals[0];
+  }, [goals]);
+  const goalPct = priorityGoal && priorityGoal.target > 0
+    ? Math.min(1, priorityGoal.current / priorityGoal.target)
+    : 0;
+  const dayPct = todaysTasks.length === 0 ? 0 : todayDone / todaysTasks.length;
+
+  const yesterdayIncome = finance.last7Days?.[finance.last7Days.length - 2]?.income ?? 0;
+  const deltaPct = yesterdayIncome > 0
+    ? Math.round(((finance.todayIncome - yesterdayIncome) / yesterdayIncome) * 100)
+    : 0;
+
+  type Center = { label: string; value: string; delta?: { v: string; pos: boolean } };
+  const centers: Center[] = useMemo(() => {
+    const arr: Center[] = [];
+    arr.push({
+      label: "Ventas hoy",
+      value: `S/ ${Math.round(finance.todayIncome).toLocaleString("es-PE")}`,
+      delta: deltaPct !== 0
+        ? { v: `${deltaPct > 0 ? "+" : ""}${deltaPct}% vs ayer`, pos: deltaPct >= 0 }
+        : undefined,
+    });
+    if (priorityGoal) {
+      arr.push({
+        label: priorityGoal.label,
+        value: `${Math.round(goalPct * 100)}%`,
+        delta: { v: `de S/ ${priorityGoal.target.toLocaleString("es-PE")}`, pos: goalPct >= 0.5 },
+      });
+    }
+    if ((inventory.lowStock?.length ?? 0) > 0) {
+      arr.push({
+        label: "Stock crítico",
+        value: `${inventory.lowStock.length}`,
+        delta: { v: "productos por reponer", pos: false },
+      });
+    } else {
+      arr.push({
+        label: "Tareas hoy",
+        value: `${todayDone}/${todaysTasks.length}`,
+        delta: undefined,
+      });
+    }
+    return arr.slice(0, 3);
+  }, [
+    finance.todayIncome, deltaPct, priorityGoal, goalPct,
+    inventory.lowStock, todayDone, todaysTasks.length,
+  ]);
+
+  useEffect(() => {
+    if (centers.length <= 1) return;
+    const id = setInterval(() => setCenterIdx((i) => (i + 1) % centers.length), 5000);
+    return () => clearInterval(id);
+  }, [centers.length]);
+  const currentCenter = centers[Math.min(centerIdx, centers.length - 1)] ?? centers[0];
+
+  /* --- socIA Whispers ---------------------------------------- */
+  const whispers: Whisper[] = useMemo(() => {
+    const out: Whisper[] = [];
+    const closeGoal = goals.find(
+      (g) => g.target > 0 && g.current / g.target >= 0.75 && g.current < g.target,
+    );
+    if (closeGoal) {
+      out.push({
+        id: "w-goal",
+        chip: "meta cerca",
+        tone: "good",
+        text: `Vas ${Math.round((closeGoal.current / closeGoal.target) * 100)}% en "${closeGoal.label}". Un empujón y la cierras.`,
+        action: "ver",
+        onAct: () => setGoalSheet({ open: true, initial: closeGoal }),
+      });
+    }
+    if (inventory.lowStock?.length) {
+      const p = inventory.lowStock[0];
+      out.push({
+        id: "w-stock",
+        chip: "stock bajo",
+        tone: "warn",
+        text: `${p.name} quedó en ${p.stock} unidades. Repón antes de perder ventas.`,
+        action: "reponer",
+        onAct: () =>
+          addTodo({
+            title: `Reponer ${p.name}`,
+            priority: "high",
+            due: today,
+          }),
+      });
+    }
+    if (finance.fiadosOverdue > 0) {
+      out.push({
+        id: "w-debt",
+        chip: "por cobrar",
+        tone: "urgent",
+        text: `Tienes ${finance.fiadosOverdue} fiado${finance.fiadosOverdue > 1 ? "s" : ""} vencido${finance.fiadosOverdue > 1 ? "s" : ""}. Cobra hoy y ordena la caja.`,
+      });
+    }
+    const overdue = todos.find(
+      (t) => !t.done && t.due && isISODate(t.due) && t.due < today,
+    );
+    if (overdue) {
+      out.push({
+        id: "w-task",
+        chip: "vencida",
+        tone: "urgent",
+        text: `"${overdue.title}" quedó atrás. Ciérrala o repriorízala.`,
+        action: "abrir",
+        onAct: () => setTaskSheet({ open: true, initial: overdue }),
+      });
+    }
+    if (
+      finance.todayIncome > 0 &&
+      yesterdayIncome > 0 &&
+      finance.todayIncome > yesterdayIncome * 1.2
+    ) {
+      out.push({
+        id: "w-sales",
+        chip: "buen día",
+        tone: "good",
+        text: `Ventas hoy superan en ${Math.round((finance.todayIncome / yesterdayIncome - 1) * 100)}% las de ayer. Sostén el ritmo.`,
+      });
+    }
+    if (out.length === 0) {
+      out.push({
+        id: "w-idle",
+        chip: "socIA",
+        tone: "info",
+        text: "Todo bajo control. Aprovecha para pensar en la siguiente meta o cerrar algo del pipeline.",
+      });
+    }
+    return out;
+  }, [goals, inventory.lowStock, finance.fiadosOverdue, finance.todayIncome, yesterdayIncome, todos, today, addTodo]);
+
+  useEffect(() => {
+    if (whispers.length <= 1) return;
+    const id = setInterval(() => setWhisperIdx((i) => (i + 1) % whispers.length), 6000);
+    return () => clearInterval(id);
+  }, [whispers.length]);
+  // NOTE: whisperIdx is used by the ambient header line only.
+  const ambientLine = whispers[whisperIdx % whispers.length]?.text ?? "";
+
+  /* --- Horizonte: 8 semanas ---------------------------------- */
+  const weeks: WeekBucket[] = useMemo(() => {
+    const monday = new Date();
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    return Array.from({ length: 8 }, (_, i) => {
+      const start = new Date(monday);
+      start.setDate(start.getDate() + i * 7);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 7);
+      const startIso = start.toISOString().slice(0, 10);
+      const endIso = end.toISOString().slice(0, 10);
+      const inRange = (iso?: string) =>
+        !!iso && isISODate(iso) && iso >= startIso && iso < endIso;
+      const wt = todos.filter((t) => inRange(t.due));
+      const we = events.filter((e) => inRange(e.date));
+      const wp = projects.filter((p) => inRange(p.dueDate));
+      const markers: { color: string; kind: string }[] = [];
+      if (wt.some((t) => t.priority === "urgent")) markers.push({ color: "#F87171", kind: "u" });
+      if (wp.length) markers.push({ color: "#F5B944", kind: "p" });
+      if (we.length) markers.push({ color: "#FFFFFF", kind: "e" });
+      const label = start
+        .toLocaleDateString("es-PE", { day: "2-digit", month: "short" })
+        .replace(".", "");
+      return {
+        start,
+        label,
+        count: wt.length + we.length + wp.length,
+        done: wt.filter((t) => t.done).length,
+        markers,
+      };
+    });
+  }, [todos, events, projects]);
+
+  /* --- Focus Orb --------------------------------------------- */
+  type FocusPick = {
+    title: string;
+    context: string;
+    tone: "urgent" | "focus" | "calm";
+    task?: Todo;
+    event?: CalendarEvent;
   };
+  const focus: FocusPick = useMemo(() => {
+    const overdueP0 = todos.find(
+      (t) => !t.done && t.priority === "urgent" && t.due && isISODate(t.due) && t.due < today,
+    );
+    if (overdueP0)
+      return {
+        title: overdueP0.title,
+        context: "Tarea urgente vencida. Ciérrala antes de que cargue el día.",
+        tone: "urgent",
+        task: overdueP0,
+      };
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const soonEvent = todaysEvents
+      .filter((e) => e.start)
+      .map((e) => {
+        const [h, m] = e.start!.split(":").map(Number);
+        return { e, diff: h * 60 + m - nowMin };
+      })
+      .filter((x) => x.diff >= -30 && x.diff <= 120)
+      .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))[0];
+    if (soonEvent)
+      return {
+        title: soonEvent.e.title,
+        context: `Evento hoy a las ${soonEvent.e.start}${soonEvent.e.place ? ` · ${soonEvent.e.place}` : ""}. Prepara lo necesario con tiempo.`,
+        tone: "focus",
+        event: soonEvent.e,
+      };
+    const p0 = todos.find(
+      (t) => !t.done && t.priority === "urgent" && (t.due === "Hoy" || t.due === today),
+    );
+    if (p0)
+      return {
+        title: p0.title,
+        context: "Prioridad máxima del día. Bloquea 25 min y ciérrala primero.",
+        tone: "urgent",
+        task: p0,
+      };
+    const p1 = todos.find(
+      (t) => !t.done && t.priority === "high" && (t.due === "Hoy" || t.due === today || !t.due),
+    );
+    if (p1)
+      return {
+        title: p1.title,
+        context: "Es lo que más mueve tu día. Ataca antes del mediodía.",
+        tone: "focus",
+        task: p1,
+      };
+    if (inventory.lowStock?.length) {
+      const p = inventory.lowStock[0];
+      return {
+        title: `Repón ${p.name}`,
+        context: "Está a punto de agotarse. Sin stock, no hay ventas.",
+        tone: "focus",
+      };
+    }
+    if (finance.fiadosOverdue > 0)
+      return {
+        title: "Cobra los fiados vencidos",
+        context: "La caja se ordena cuando cobras a tiempo. Empieza por el más antiguo.",
+        tone: "focus",
+      };
+    return {
+      title: "Vas bien. Todo despejado.",
+      context: "No hay urgencias. Descansa o adelanta algo para mañana.",
+      tone: "calm",
+    };
+  }, [todos, todaysEvents, today, inventory.lowStock, finance.fiadosOverdue]);
 
   if (learnOpen) {
     return <LearnView onBack={() => setLearnOpen(false)} />;
@@ -4543,303 +5308,168 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
       )}
 
       <div className="relative z-10 pb-[180px]">
-        {/* Header + Day Ring */}
-        <div className="px-[20px] pt-[64px] pb-[8px]">
-          <div className="flex items-center gap-[14px]">
-            <div className="flex-1 min-w-0 flex flex-col gap-[4px]">
-              <span className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.6px] text-white/40">
-                Command Deck
-              </span>
-              <h1 className="font-['Bai_Jamjuree'] font-semibold text-[26px] leading-[30px] text-white tracking-[-0.6px] truncate">
-                Hola, {name}
-              </h1>
-              <span className="font-['Geist'] text-[11.5px] text-white/45 capitalize">{dateLabel}</span>
-            </div>
-            <DayRing done={todayDone} pending={pending} />
-          </div>
-        </div>
-
-        {/* Next Move Hero */}
-        <div className="px-[20px] mt-[18px]">
-          {(() => {
-            const now = new Date();
-            const nowMin = now.getHours() * 60 + now.getMinutes();
-            let candidate: React.ComponentProps<typeof NextMoveHero>["candidate"] = null;
-            let heroTask: Todo | null = null;
-            let heroEvent: CalendarEvent | null = null;
-
-            // 1. Evento en <60 min
-            const soonEvent = [...todaysEvents]
-              .filter((e) => e.start)
-              .map((e) => {
-                const [h, m] = e.start!.split(":").map(Number);
-                return { e, diff: h * 60 + m - nowMin };
-              })
-              .filter((x) => x.diff >= -30 && x.diff <= 60)
-              .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))[0];
-            if (soonEvent) {
-              heroEvent = soonEvent.e;
-              const diff = soonEvent.diff;
-              candidate = {
-                kind: "event",
-                title: soonEvent.e.title,
-                subtitle: `${soonEvent.e.start}${soonEvent.e.place ? ` · ${soonEvent.e.place}` : ""}`,
-                accent: "#FFFFFF",
-                countdown:
-                  diff <= 0 ? "ahora" : diff < 60 ? `en ${diff} min` : `en ${Math.round(diff / 60)}h`,
-                urgent: diff <= 15 && diff >= -5,
-              };
-            } else {
-              // 2. Tarea P0 vencida
-              const p0Overdue = todos.find(
-                (t) => !t.done && t.priority === "urgent" && t.due && isISODate(t.due) && t.due < today,
-              );
-              // 3. Tarea P0 hoy
-              const p0Today = todos.find(
-                (t) => !t.done && t.priority === "urgent" && (t.due === "Hoy" || t.due === today),
-              );
-              // 4. Tarea con hora más próxima
-              const timed = todaysTasks
-                .filter((t) => t.time && !t.done)
-                .map((t) => {
-                  const [h, m] = t.time!.split(":").map(Number);
-                  return { t, min: h * 60 + m };
-                })
-                .filter((x) => x.min >= nowMin - 30)
-                .sort((a, b) => a.min - b.min)[0];
-              // 5. Tarea P1 sin hora
-              const p1 = todos.find(
-                (t) => !t.done && t.priority === "high" && (t.due === "Hoy" || t.due === today || !t.due),
-              );
-              const pick = p0Overdue ?? p0Today ?? timed?.t ?? p1 ?? null;
-              if (pick) {
-                heroTask = pick;
-                const dueTxt =
-                  pick.due === "Hoy" || pick.due === today
-                    ? pick.time
-                      ? `hoy ${pick.time}`
-                      : "hoy"
-                    : pick.due && isISODate(pick.due) && pick.due < today
-                      ? "vencida"
-                      : pick.due
-                        ? formatDueLabel(pick.due)
-                        : "sin fecha";
-                candidate = {
-                  kind: "task",
-                  title: pick.title,
-                  subtitle: `${PRIO[pick.priority].label} · ${dueTxt}`,
-                  accent: PRIO[pick.priority].color,
-                  urgent: pick.priority === "urgent",
-                };
-              }
-            }
-
-            return (
-              <NextMoveHero
-                candidate={candidate}
-                onDone={() => {
-                  if (heroTask) toggleTodo(heroTask.id);
-                }}
-                onSnooze={() => {
-                  if (heroTask && heroTask.time) {
-                    const [h, m] = heroTask.time.split(":").map(Number);
-                    const total = h * 60 + m + 15;
-                    const nh = Math.min(23, Math.floor(total / 60));
-                    const nm = total % 60;
-                    updateTodo(heroTask.id, {
-                      time: `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`,
-                    });
-                  } else if (heroTask) {
-                    setTaskSheet({ open: true, initial: heroTask });
-                  }
-                }}
-                onTap={() => {
-                  if (heroTask) setTaskSheet({ open: true, initial: heroTask });
-                  else if (heroEvent) setEventSheet({ open: true, date: heroEvent.date });
-                  else setTaskSheet({ open: true });
-                }}
-              />
-            );
-          })()}
-        </div>
-
-        {/* Momentum Strip */}
-        <div className="px-[20px] mt-[14px]">
-          {(() => {
-            const xpMap = { urgent: 30, high: 20, normal: 10, low: 5 } as const;
-            const xp = todos
-              .filter((t) => t.done && (t.due === "Hoy" || t.due === today))
-              .reduce((s, t) => s + xpMap[t.priority], 0);
-            const focusMin = todos
-              .filter((t) => t.done && (t.due === "Hoy" || t.due === today) && t.time)
-              .reduce((s) => s + 25, 0);
-            return <MomentumStrip done={todayDone} xp={xp} focusMin={focusMin} />;
-          })()}
-        </div>
-
-        {/* Timeline horizontal */}
-        <div className="px-[20px] mt-[22px]">
-          <div className="flex items-end justify-between pb-[10px]">
-            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              {mode === "day" ? "Franja de hoy" : "Semana"}
-            </h3>
-            <div className="flex items-center gap-[8px]">
-              <div
-                className="flex rounded-[10px] p-[2px]"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
-              >
-                {(["day", "week"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setMode(m)}
-                    className="h-[26px] px-[10px] rounded-[8px] font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[0.8px]"
-                    style={{
-                      background: mode === m ? "rgba(255,255,255,0.12)" : "transparent",
-                      color: mode === m ? "#fff" : "rgba(255,255,255,0.5)",
-                    }}
-                  >
-                    {m === "day" ? "Día" : "Semana"}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setEventSheet({ open: true, date: today })}
-                className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
-              >
-                <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Evento
-              </button>
-            </div>
-          </div>
-          {mode === "day" ? (
-            <HorizontalTimeline
-              events={todaysEvents}
-              tasks={todaysTasks}
-              onEmpty={() => setEventSheet({ open: true, date: today })}
-              onTaskTap={(t) => setTaskSheet({ open: true, initial: t })}
-              onEventTap={() => setEventSheet({ open: true, date: today })}
-            />
-          ) : (
-            <WeekGantt
-              events={events}
-              tasks={todos}
-              projects={projects}
-              onTaskTap={(t) => setTaskSheet({ open: true, initial: t })}
-              onEventTap={() => {}}
-              onProjectTap={(p) => setProjectSheet({ open: true, initial: p })}
-            />
-          )}
-        </div>
-
-        {/* Command bar compacto */}
-        <div className="px-[20px] mt-[14px]">
-          <CommandBar onAdd={handleQuickAdd} mode={mode} setMode={setMode} />
-        </div>
-
-        {/* Missions */}
-        <div className="px-[20px] mt-[26px]">
-          <div className="flex items-end justify-between pb-[10px]">
-            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Misiones
-            </h3>
-            <div className="flex gap-[4px]">
-              {(["today", "overdue", "week"] as const).map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setInboxFilter(f)}
-                  className="h-[22px] px-[9px] rounded-full font-['Geist'] text-[10px] font-semibold uppercase tracking-[0.7px]"
-                  style={{
-                    background: inboxFilter === f ? "rgba(255,255,255,0.10)" : "transparent",
-                    color: inboxFilter === f ? "#fff" : "rgba(255,255,255,0.45)",
-                    border: `1px solid ${inboxFilter === f ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.06)"}`,
-                  }}
-                >
-                  {f === "today" ? "Hoy" : f === "overdue" ? "Vencidas" : "Semana"}
-                </button>
-              ))}
-            </div>
-          </div>
-          {inboxTasks.length === 0 ? (
-            <button
-              type="button"
-              onClick={() => setTaskSheet({ open: true })}
-              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
-              style={{
-                background:
-                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-                border: "1px dashed rgba(255,255,255,0.10)",
-              }}
+        {/* Ambient Header */}
+        <div className="px-[20px] pt-[64px] pb-[6px]">
+          <span className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.6px] text-white/35">
+            {dateLabel}
+          </span>
+          <h1 className="mt-[6px] font-['Bai_Jamjuree'] font-semibold text-[24px] leading-[28px] text-white tracking-[-0.5px]">
+            Hola, {name}
+          </h1>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={ambientLine}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.35 }}
+              className="mt-[6px] font-['Geist'] text-[12px] leading-[16px] text-white/50 min-h-[16px]"
             >
-              <Rocket className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
-              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
-                Lanza tu primera misión
-              </span>
-              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
-                Captura una tarea y súmala al día.
-              </span>
-            </button>
-          ) : (
-            <div className="flex flex-col gap-[8px]">
-              {inboxTasks.slice(0, 8).map((t) => (
-                <MissionCard
-                  key={t.id}
-                  todo={t}
-                  onToggle={() => toggleTodo(t.id)}
-                  onTap={() => setTaskSheet({ open: true, initial: t })}
-                />
-              ))}
-              <button
-                type="button"
-                onClick={() => setTaskSheet({ open: true })}
-                className="h-[38px] rounded-[12px] flex items-center justify-center gap-[6px] active:bg-white/[0.03]"
-                style={{ border: "1px dashed rgba(255,255,255,0.10)" }}
-              >
-                <Plus className="h-[12px] w-[12px] text-white/50" strokeWidth={2} />
-                <span className="font-['Geist'] text-[12px] text-white/55">Añadir misión</span>
-              </button>
-            </div>
-          )}
+              <span className="text-white/80">socIA · </span>
+              {ambientLine}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+
+        {/* Pulse Canvas */}
+        <div className="mt-[26px] flex justify-center">
+          <PulseCanvas
+            goalPct={goalPct}
+            dayPct={dayPct}
+            centerLabel={currentCenter?.label ?? "Trax"}
+            centerValue={currentCenter?.value ?? "—"}
+            centerDelta={currentCenter?.delta}
+            onNext={() => setCenterIdx((i) => (i + 1) % Math.max(1, centers.length))}
+            dotIdx={Math.min(centerIdx, centers.length - 1)}
+            dotCount={centers.length}
+          />
+        </div>
+
+        {/* legenda mini bajo Pulse */}
+        <div className="mt-[10px] flex justify-center gap-[16px]">
+          <span className="flex items-center gap-[6px] font-['Geist'] text-[10px] font-medium text-white/50">
+            <span className="h-[6px] w-[6px] rounded-full bg-white/85" /> meta principal
+          </span>
+          <span className="flex items-center gap-[6px] font-['Geist'] text-[10px] font-medium text-white/50">
+            <span className="h-[6px] w-[6px] rounded-full bg-white/40" /> día productivo
+          </span>
+        </div>
+
+        {/* socIA Whisper */}
+        <div className="mt-[26px]">
+          <SociaWhisper items={whispers} />
+        </div>
+
+        {/* Horizonte */}
+        <div className="px-[20px] mt-[26px]">
+          <div className="flex items-baseline justify-between pb-[10px]">
+            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
+              Horizonte
+            </h3>
+            <span className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.2px] text-white/35">
+              8 semanas
+            </span>
+          </div>
+          <HorizonteStrip
+            weeks={weeks}
+            onWeek={(w) => setWeekSheet({ open: true, week: w })}
+          />
+        </div>
+
+        {/* Focus Orb */}
+        <div className="px-[20px] mt-[26px]">
+          <FocusOrb
+            title={focus.title}
+            context={focus.context}
+            tone={focus.tone}
+            onDone={
+              focus.task
+                ? () => toggleTodo(focus.task!.id)
+                : undefined
+            }
+            onLater={
+              focus.task
+                ? () => {
+                    if (focus.task!.time) {
+                      const [h, m] = focus.task!.time.split(":").map(Number);
+                      const total = h * 60 + m + 15;
+                      const nh = Math.min(23, Math.floor(total / 60));
+                      const nm = total % 60;
+                      updateTodo(focus.task!.id, {
+                        time: `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`,
+                      });
+                    } else {
+                      setTaskSheet({ open: true, initial: focus.task });
+                    }
+                  }
+                : focus.event
+                  ? () => setEventSheet({ open: true, date: focus.event!.date })
+                  : undefined
+            }
+          />
+        </div>
+
+        {/* Constelación de Metas */}
+        <div className="px-[20px] mt-[26px]">
+          <div className="flex items-baseline justify-between pb-[10px]">
+            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
+              Constelación
+            </h3>
+            <span className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.2px] text-white/35">
+              {goals.length > 0 ? `${goals.length} meta${goals.length > 1 ? "s" : ""}` : "sin metas"}
+            </span>
+          </div>
+          <GoalConstellation
+            goals={goals}
+            onTap={(g) => setGoalSheet({ open: true, initial: g })}
+            onAdd={() => setGoalSheet({ open: true })}
+          />
         </div>
 
         {/* Proyectos en vuelo */}
         <div className="px-[20px] mt-[26px]">
-          <div className="flex items-end justify-between pb-[10px]">
+          <div className="flex items-baseline justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Proyectos en vuelo
+              En vuelo
             </h3>
             <button
               type="button"
               onClick={() => setProjectSheet({ open: true })}
-              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
+              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/45 active:text-white"
             >
-              <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Nuevo
+              + nuevo
             </button>
           </div>
           {projects.length === 0 ? (
             <button
               type="button"
               onClick={() => setProjectSheet({ open: true })}
-              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
+              className="w-full rounded-[20px] p-[20px] text-left flex items-center gap-[14px] active:opacity-90"
               style={{
-                background:
-                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-                border: "1px dashed rgba(255,255,255,0.10)",
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
-              <FolderKanban className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
-              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
-                Divide un proyecto grande
-              </span>
-              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
-                Los entregables te dan pista de despegue.
-              </span>
+              <div
+                className="h-[42px] w-[42px] rounded-[14px] grid place-items-center shrink-0"
+                style={{ background: "rgba(255,255,255,0.05)" }}
+              >
+                <Rocket className="h-[18px] w-[18px] text-white/70" strokeWidth={1.6} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/90">
+                  Lanza tu primer proyecto
+                </p>
+                <p className="font-['Geist'] text-[11.5px] text-white/45 mt-[2px]">
+                  Divide lo grande en entregables con pista de despegue.
+                </p>
+              </div>
+              <ArrowRight className="h-[14px] w-[14px] text-white/40" strokeWidth={1.6} />
             </button>
           ) : (
             <div className="flex flex-col gap-[10px]">
-              {projects.slice(0, 3).map((p) => (
-                <ProjectFlightCard
+              {projects.slice(0, 2).map((p) => (
+                <FlightCard
                   key={p.id}
                   project={p}
                   onTap={() => setProjectSheet({ open: true, initial: p })}
@@ -4849,58 +5479,16 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           )}
         </div>
 
-        {/* Metas — anillos */}
-        <div className="px-[20px] mt-[26px]">
-          <div className="flex items-end justify-between pb-[10px]">
-            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Metas
-            </h3>
-            <button
-              type="button"
-              onClick={() => setGoalSheet({ open: true })}
-              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
-            >
-              <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Meta
-            </button>
-          </div>
-          {goals.length === 0 ? (
-            <button
-              type="button"
-              onClick={() => setGoalSheet({ open: true })}
-              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
-              style={{
-                background:
-                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-                border: "1px dashed rgba(255,255,255,0.10)",
-              }}
-            >
-              <Target className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
-              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
-                Define tu primera meta
-              </span>
-              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
-                Sin norte no hay velocidad.
-              </span>
-            </button>
-          ) : (
-            <div className="grid grid-cols-2 gap-[10px]">
-              {goals.slice(0, 6).map((g) => (
-                <GoalRing key={g.id} goal={g} onTap={() => setGoalSheet({ open: true, initial: g })} />
-              ))}
-            </div>
-          )}
-        </div>
-
         {/* Aprender */}
         <div className="px-[20px] mt-[26px]">
-          <div className="flex items-end justify-between pb-[10px]">
+          <div className="flex items-baseline justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
               Aprender
             </h3>
             <button
               type="button"
               onClick={() => setLearnOpen(true)}
-              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
+              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/45 active:text-white flex items-center gap-[3px]"
             >
               Ver rutas <ArrowRight className="h-[11px] w-[11px]" strokeWidth={2} />
             </button>
@@ -4908,12 +5496,18 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           <button
             type="button"
             onClick={() => setLearnOpen(true)}
-            className="w-full rounded-[16px] p-[16px] text-left flex items-center gap-[14px] active:opacity-90"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+            className="w-full rounded-[20px] p-[16px] text-left flex items-center gap-[14px] active:opacity-90"
+            style={{
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
           >
             <div
               className="h-[42px] w-[42px] rounded-[12px] grid place-items-center shrink-0"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
             >
               <GraduationCap className="h-[18px] w-[18px] text-white/80" strokeWidth={1.6} />
             </div>
@@ -4929,63 +5523,95 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           </button>
         </div>
 
-        {/* Coach IA */}
-        {activeRecos.length > 0 && (
-          <div className="mt-[26px]">
-            <div className="px-[20px] pb-[10px] flex items-center gap-[6px]">
-              <Sparkles className="h-[13px] w-[13px] text-white/60" strokeWidth={1.8} />
-              <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-                Coach IA
-              </h3>
-            </div>
-            <div className="px-[20px] flex gap-[10px] overflow-x-auto no-scrollbar">
-              {activeRecos.slice(0, 8).map((r) => {
-                const c =
-                  r.level === "urgent"
-                    ? "#F87171"
-                    : r.level === "warn"
-                      ? "#F5B944"
-                      : r.level === "success"
-                        ? "#4ADE80"
-                        : "#FFFFFF";
-                return (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => dismissRecommendation(r.id)}
-                    className="shrink-0 max-w-[260px] rounded-[14px] px-[14px] py-[12px] text-left flex flex-col gap-[6px] active:opacity-80"
-                    style={{
-                      background:
-                        "radial-gradient(circle at top left, rgba(255,255,255,0.05), rgba(255,255,255,0.015))",
-                      border: `1px solid ${c}30`,
-                    }}
-                  >
-                    <span
-                      className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1px]"
-                      style={{ color: c }}
-                    >
-                      {r.level === "urgent"
-                        ? "Actúa ya"
-                        : r.level === "warn"
-                          ? "Atención"
-                          : r.level === "success"
-                            ? "Buen ritmo"
-                            : "Sugerencia"}
-                    </span>
-                    <span className="font-['Geist'] text-[12.5px] font-medium text-white/95 line-clamp-3">
-                      {r.title}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-[24px] px-[20px]">
+        <div className="mt-[28px] px-[20px]">
           <FooterMark>Tu negocio crece contigo</FooterMark>
         </div>
       </div>
+
+      {/* Detalle de semana (sheet reusa WeekGantt para dar contexto) */}
+      {weekSheet.open && weekSheet.week && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setWeekSheet({ open: false })}
+        >
+          <div
+            className="absolute bottom-0 left-0 right-0 max-h-[80dvh] overflow-y-auto rounded-t-[24px] p-[20px] pb-[40px]"
+            style={{
+              background: "#0a0a0a",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-[16px]">
+              <div>
+                <span className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[1.4px] text-white/40">
+                  Semana del
+                </span>
+                <h3 className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white/95 mt-[2px]">
+                  {weekSheet.week.label}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWeekSheet({ open: false })}
+                className="h-[32px] w-[32px] rounded-full grid place-items-center text-white/60 active:text-white"
+                style={{ background: "rgba(255,255,255,0.05)" }}
+              >
+                <X className="h-[14px] w-[14px]" strokeWidth={1.8} />
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-[8px] mb-[16px]">
+              <div className="rounded-[12px] p-[10px]" style={{ background: "rgba(255,255,255,0.03)" }}>
+                <div className="font-['Geist'] text-[9px] font-semibold uppercase tracking-[1.2px] text-white/40">Total</div>
+                <div className="font-['Bai_Jamjuree'] tabular-nums text-[18px] font-semibold text-white/95 mt-[2px]">{weekSheet.week.count}</div>
+              </div>
+              <div className="rounded-[12px] p-[10px]" style={{ background: "rgba(255,255,255,0.03)" }}>
+                <div className="font-['Geist'] text-[9px] font-semibold uppercase tracking-[1.2px] text-white/40">Hechas</div>
+                <div className="font-['Bai_Jamjuree'] tabular-nums text-[18px] font-semibold text-white/95 mt-[2px]" style={{ color: "#4ADE80" }}>{weekSheet.week.done}</div>
+              </div>
+              <div className="rounded-[12px] p-[10px]" style={{ background: "rgba(255,255,255,0.03)" }}>
+                <div className="font-['Geist'] text-[9px] font-semibold uppercase tracking-[1.2px] text-white/40">Pendiente</div>
+                <div className="font-['Bai_Jamjuree'] tabular-nums text-[18px] font-semibold text-white/95 mt-[2px]">{weekSheet.week.count - weekSheet.week.done}</div>
+              </div>
+            </div>
+            <div className="flex gap-[8px]">
+              <button
+                type="button"
+                onClick={() => {
+                  const iso = weekSheet.week!.start.toISOString().slice(0, 10);
+                  setWeekSheet({ open: false });
+                  setTaskSheet({ open: true, initial: undefined });
+                  // pre-fill via a follow-up if needed; sheet handles empty due
+                  void iso;
+                }}
+                className="flex-1 h-[42px] rounded-[12px] font-['Geist'] text-[12.5px] font-semibold text-black"
+                style={{ background: "#FFFFFF" }}
+              >
+                + Añadir tarea
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const iso = weekSheet.week!.start.toISOString().slice(0, 10);
+                  setWeekSheet({ open: false });
+                  setEventSheet({ open: true, date: iso });
+                }}
+                className="flex-1 h-[42px] rounded-[12px] font-['Geist'] text-[12.5px] font-semibold text-white/80"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                + Añadir evento
+              </button>
+            </div>
+            {pending === 0 && (
+              <p className="mt-[14px] font-['Geist'] text-[11.5px] text-white/40 text-center">
+                Sin actividad registrada para esta semana.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+
 
 
       {/* Sheets */}
