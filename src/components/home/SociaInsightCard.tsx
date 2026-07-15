@@ -204,26 +204,21 @@ export default function SociaInsightCard({
 }) {
   const messages = useMemo(() => {
     if (!briefing) return [];
+    // Solo insights reales (data-driven). Nunca mezclar quickPrompts genéricos.
     const fromInsights = briefing.insights.map((ins) => ({
       text: ins.text,
       key: `i-${ins.id}`,
       tone: ins.tone,
     }));
-    const fromPrompts = (briefing.quickPrompts ?? []).map((p, i) => ({
-      text: p,
-      key: `p-${i}`,
-      tone: "info" as Tone,
-    }));
-    const all = [...fromInsights, ...fromPrompts];
-    return all.length > 0
-      ? all
-      : [
-          {
-            text: "Todo está bajo control. Disfruta tu café.",
-            key: "fallback",
-            tone: "info" as Tone,
-          },
-        ];
+    if (fromInsights.length > 0) return fromInsights.slice(0, 3);
+    // Sin insights accionables: un único mensaje de estado calmo, contextual si hay salesNote.
+    return [
+      {
+        text: briefing.salesNote ?? "Todo tranquilo por ahora. Sin alertas del negocio.",
+        key: "calm",
+        tone: "info" as Tone,
+      },
+    ];
   }, [briefing]);
 
   const [idx, setIdx] = useState(0);
