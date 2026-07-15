@@ -431,3 +431,17 @@ textarea.trax-fixed-textarea::-webkit-resizer {
   .socia-prompt-fade, .trax-rise-home, .trax-ping-home { animation: none !important; opacity: 1 !important; }
 }
 
+/* ===== User preferences: text size scaling ===== */
+html { font-size: calc(16px * var(--text-scale, 1)); }
+
+/* ===== User preferences: reduce motion (manual toggle) ===== */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+

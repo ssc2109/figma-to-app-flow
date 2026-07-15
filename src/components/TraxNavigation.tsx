@@ -14,7 +14,9 @@ import AuthScreen from "@/components/AuthScreen";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import SettingsScreen from "@/components/SettingsScreen";
 import PlansScreen from "@/components/PlansScreen";
+import PreferencesEffects from "@/components/PreferencesEffects";
 import { InventoryProvider } from "@/data/inventory";
+
 import { FinanceProvider } from "@/data/finance";
 import { MeProvider } from "@/data/me";
 import { QuickActionsProvider, useQuickActions, type ActionId } from "@/data/quickActions";
@@ -37,7 +39,9 @@ function NavShell() {
   const [plansOpen, setPlansOpen] = useState(false);
   const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "receivables">("hub");
   const [sociaPrompt, setSociaPrompt] = useState<string | undefined>(undefined);
+  const [sociaShowHistory, setSociaShowHistory] = useState(false);
   const { setHandler } = useQuickActions();
+
 
   const goToInventory = () => {
     setNegocioInitialView("hub");
@@ -129,8 +133,9 @@ function NavShell() {
               />
             )}
             {currentScreen === "socia" && (
-              <SociaScreen initialPrompt={sociaPrompt} />
+              <SociaScreen initialPrompt={sociaPrompt} initialShowHistory={sociaShowHistory} />
             )}
+
             {currentScreen === "yo" && <MeScreen />}
             {currentScreen === "crecer" && <GrowScreen />}
           </ScreenTransition>
@@ -148,9 +153,13 @@ function NavShell() {
             setQuickActionsOpen(false);
             window.scrollTo({ top: 0, behavior: "auto" });
             if (s === "negocio") setNegocioInitialView("hub");
-            if (s !== "socia") setSociaPrompt(undefined);
+            if (s !== "socia") {
+              setSociaPrompt(undefined);
+              setSociaShowHistory(false);
+            }
             setCurrentScreen(s);
           }}
+
         />
       </div>
 
@@ -172,7 +181,13 @@ function NavShell() {
               <SettingsScreen
                 onBack={() => setSettingsOpen(false)}
                 onOpenPlans={() => setPlansOpen(true)}
+                onOpenSocia={() => {
+                  setSettingsOpen(false);
+                  setSociaShowHistory(true);
+                  setCurrentScreen("socia");
+                }}
               />
+
             </div>
           </motion.div>
         )}
@@ -216,6 +231,7 @@ function AuthGate() {
       <FinanceProvider>
         <MeProvider>
           <QuickActionsProvider>
+            <PreferencesEffects />
             <NavShell />
           </QuickActionsProvider>
         </MeProvider>
@@ -223,6 +239,7 @@ function AuthGate() {
     </InventoryProvider>
   );
 }
+
 
 export default function TraxNavigation() {
   return (

@@ -527,12 +527,26 @@ export const Route = createFileRoute("/api/chat")({
           ? `\n\nContexto actual del negocio del usuario (en vivo):\n\`\`\`json\n${JSON.stringify(ctx, null, 2)}\n\`\`\``
           : "";
 
+        // Tono de socIA según preferencia del usuario (profiles.preferences.socia_tone)
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("preferences")
+          .eq("id", userId)
+          .maybeSingle();
+        const tone = ((prof as { preferences?: { socia_tone?: string } } | null)
+          ?.preferences?.socia_tone ?? "cercano") as "cercano" | "formal";
+        const toneBlock =
+          tone === "formal"
+            ? "\n\nAjuste de tono (preferencia del usuario): usa un registro FORMAL y profesional. Trata de usted. Evita coloquialismos y modismos. Mantén la brevedad y la utilidad."
+            : "\n\nAjuste de tono (preferencia del usuario): usa un registro CERCANO y peruano. Tutea siempre, con calidez y naturalidad.";
+
         const gateway = createLovableAiGatewayProvider(lovableKey);
         const model = gateway("google/gemini-3-flash-preview");
 
         const result = streamText({
           model,
-          system: SYSTEM_PROMPT + ctxBlock,
+          system: SYSTEM_PROMPT + toneBlock + ctxBlock,
+
           messages: await convertToModelMessages(body.messages),
           tools: makeTools(supabase, userId),
           stopWhen: stepCountIs(8),

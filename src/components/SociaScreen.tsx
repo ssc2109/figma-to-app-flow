@@ -133,7 +133,7 @@ function uiMessageText(m: UIMessage): string {
     .join("");
 }
 
-export default function SociaScreen({ initialPrompt }: { initialPrompt?: string } = {}) {
+export default function SociaScreen({ initialPrompt, initialShowHistory }: { initialPrompt?: string; initialShowHistory?: boolean } = {}) {
   const inv = useInventory();
   const fin = useFinance();
   const qc = useQueryClient();
@@ -155,7 +155,7 @@ export default function SociaScreen({ initialPrompt }: { initialPrompt?: string 
   const threads = threadsData?.threads ?? [];
 
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(!!initialShowHistory);
   const [voiceCfgOpen, setVoiceCfgOpen] = useState(false);
   const [voiceCfg, setVoiceCfg] = useState<VoiceConfig>(() => loadVoiceCfg());
   useEffect(() => {
