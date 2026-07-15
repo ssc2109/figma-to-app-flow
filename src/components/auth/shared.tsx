@@ -111,6 +111,37 @@ export function SocialButton({
   );
 }
 
+export function SocialCircle({
+  children,
+  onClick,
+  disabled,
+  label,
+  soon,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  label: string;
+  soon?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="relative h-[46px] w-[46px] rounded-full border border-white/10 bg-white/[0.04] flex items-center justify-center active:bg-white/[0.08] disabled:opacity-50 transition"
+    >
+      <span className={soon ? "opacity-50" : ""}>{children}</span>
+      {soon && (
+        <span className="absolute -bottom-[14px] left-1/2 -translate-x-1/2 text-[8.5px] tracking-[0.06em] uppercase text-white/40 font-['Geist']">
+          Pronto
+        </span>
+      )}
+    </button>
+  );
+}
+
 export function Divider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-[10px]">
