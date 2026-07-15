@@ -26,13 +26,18 @@ export default function AuthScreen() {
     <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[24px] py-[32px] relative overflow-hidden">
       {/* Background video */}
       <video
-        src={authBg.url}
         autoPlay
         loop
         muted
         playsInline
+        // @ts-expect-error iOS legacy attr
+        webkit-playsinline="true"
+        preload="auto"
+        disableRemotePlayback
         className="absolute inset-0 w-full h-full object-cover z-0"
-      />
+      >
+        <source src={authBg.url} type="video/mp4" />
+      </video>
       {/* Dark overlay for legibility */}
       <div className="absolute inset-0 bg-black/55 z-0" />
 
