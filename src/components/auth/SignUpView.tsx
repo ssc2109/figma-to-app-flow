@@ -99,11 +99,7 @@ export default function SignUpView({ onBack, onGoToPhone }: { onBack: () => void
         >
           <FacebookIcon />
         </SocialCircle>
-        <SocialCircle
-          label="Teléfono"
-          onClick={() => toast.info("Ingreso por SMS estará disponible pronto")}
-          soon
-        >
+        <SocialCircle label="Teléfono" onClick={onGoToPhone} disabled={loading}>
           <PhoneIcon />
         </SocialCircle>
       </div>
