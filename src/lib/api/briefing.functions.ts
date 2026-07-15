@@ -442,7 +442,7 @@ function fallbackBriefing(
       tone: "info",
       emoji: "🗓",
       text: `Tienes hoy: ${e.title}.`,
-      cta: { label: "Ver detalle", action: "chat", payload: e.title },
+      cta: { label: "Ver", action: "chat", payload: e.title },
     });
   }
   if (
