@@ -16,9 +16,11 @@ import {
 export default function SignInView({
   onGoToSignUp,
   onGoToForgot,
+  onGoToPhone,
 }: {
   onGoToSignUp: () => void;
   onGoToForgot: () => void;
+  onGoToPhone: () => void;
 }) {
   void onGoToSignUp;
   const isApple = useIsAppleDevice();
