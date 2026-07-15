@@ -263,7 +263,7 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
                   </div>
                   {ins.cta && (
                     <span className="flex-none self-center inline-flex items-center gap-[4px] px-[10px] py-[6px] rounded-full text-[12px] font-medium font-['Geist'] text-black bg-white">
-                      {ins.cta.label}
+                      {sanitizeCtaLabel(ins.cta.label, ins.cta.action as InsightAction, ins.text)}
                       <ArrowUpRight className="h-[12px] w-[12px]" strokeWidth={2.2} />
                     </span>
                   )}
