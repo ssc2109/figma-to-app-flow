@@ -3373,185 +3373,992 @@ function Stat({ label, value, highlight }: { label: string; value: string; highl
 }
 
 /* ============ SCREEN ============ */
+/* ============ Productividad 2.0 — Notion × Linear ============ */
+
+const HOUR_H = 46;
+const DAY_HOURS = Array.from({ length: 17 }, (_, i) => i + 6); // 06..22
+
+function FocusRibbon({ pending, atRisk, done }: { pending: number; atRisk: number; done: number }) {
+  const items: { label: string; value: number; color: string }[] = [
+    { label: "Pendientes", value: pending, color: "#FFFFFF" },
+    { label: "En riesgo", value: atRisk, color: "#F5B944" },
+    { label: "Hechas hoy", value: done, color: "#4ADE80" },
+  ];
+  return (
+    <div
+      className="grid grid-cols-3 gap-[1px] rounded-[14px] overflow-hidden"
+      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      {items.map((it) => (
+        <div key={it.label} className="bg-black px-[14px] py-[14px] flex flex-col gap-[4px]">
+          <span className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.4px] text-white/45">
+            {it.label}
+          </span>
+          <span
+            className="font-['Bai_Jamjuree'] text-[26px] leading-[28px] font-semibold tabular-nums"
+            style={{ color: it.color }}
+          >
+            {it.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CommandBar({
+  onAdd,
+  mode,
+  setMode,
+}: {
+  onAdd: (k: "task" | "event" | "project" | "goal") => void;
+  mode: "day" | "week";
+  setMode: (m: "day" | "week") => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const opts: { k: "task" | "event" | "project" | "goal"; label: string; Icon: typeof ListChecks }[] = [
+    { k: "task", label: "Tarea", Icon: ListChecks },
+    { k: "event", label: "Evento", Icon: CalendarDays },
+    { k: "project", label: "Entregable", Icon: FolderKanban },
+    { k: "goal", label: "Meta", Icon: Target },
+  ];
+  return (
+    <div className="flex items-center gap-[8px]">
+      <div className="flex-1 relative">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="w-full h-[42px] pl-[14px] pr-[10px] rounded-[12px] flex items-center gap-[10px] text-left"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <Plus className="h-[14px] w-[14px] text-white/50" strokeWidth={2} />
+          <span className="font-['Geist'] text-[13px] text-white/55 flex-1">Añadir…</span>
+          <span className="font-['Geist'] tabular-nums text-[10.5px] text-white/30 uppercase tracking-[1.4px]">
+            ⌘ K
+          </span>
+        </button>
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className="absolute left-0 right-0 top-[46px] rounded-[12px] p-[6px] z-30"
+              style={{
+                background: "#0B0B0F",
+                border: "1px solid rgba(255,255,255,0.08)",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
+              }}
+            >
+              {opts.map(({ k, label, Icon }) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    onAdd(k);
+                  }}
+                  className="w-full h-[38px] px-[10px] rounded-[8px] flex items-center gap-[10px] text-left active:bg-white/[0.05]"
+                >
+                  <Icon className="h-[14px] w-[14px] text-white/55" strokeWidth={1.8} />
+                  <span className="font-['Geist'] text-[13px] text-white/85 flex-1">{label}</span>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <div
+        className="flex rounded-[12px] p-[2px]"
+        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        {(["day", "week"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            className="h-[38px] px-[12px] rounded-[10px] font-['Geist'] text-[12px] font-medium"
+            style={{
+              background: mode === m ? "rgba(255,255,255,0.10)" : "transparent",
+              color: mode === m ? "#fff" : "rgba(255,255,255,0.55)",
+            }}
+          >
+            {m === "day" ? "Día" : "Semana"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DayTimeline({
+  events,
+  tasks,
+  onEmpty,
+  onTaskTap,
+  onEventTap,
+}: {
+  events: CalendarEvent[];
+  tasks: Todo[];
+  onEmpty: (hour: number) => void;
+  onTaskTap: (t: Todo) => void;
+  onEventTap: (e: CalendarEvent) => void;
+}) {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const toY = (min: number) => ((min - 6 * 60) / 60) * HOUR_H;
+
+  const eventsWithMin = events
+    .filter((e) => e.start)
+    .map((e) => {
+      const [h, m] = e.start!.split(":").map(Number);
+      const min = h * 60 + m;
+      let dur = 60;
+      if (e.end) {
+        const [eh, em] = e.end.split(":").map(Number);
+        dur = Math.max(30, eh * 60 + em - min);
+      }
+      return { ...e, min, dur };
+    })
+    .filter((e) => e.min >= 6 * 60 && e.min < 22 * 60);
+
+  const tasksWithMin = tasks
+    .filter((t) => t.time && !t.done)
+    .map((t) => {
+      const [h, m] = t.time!.split(":").map(Number);
+      return { ...t, min: h * 60 + m };
+    })
+    .filter((t) => t.min >= 6 * 60 && t.min < 22 * 60);
+
+  return (
+    <div
+      className="relative rounded-[16px] overflow-hidden"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        height: DAY_HOURS.length * HOUR_H + 12,
+      }}
+    >
+      {DAY_HOURS.map((h, i) => (
+        <button
+          key={h}
+          type="button"
+          onClick={() => onEmpty(h)}
+          className="absolute left-0 right-0 flex items-start pl-[14px] active:bg-white/[0.02]"
+          style={{ top: i * HOUR_H + 6, height: HOUR_H }}
+        >
+          <span className="font-['Geist'] tabular-nums text-[10.5px] text-white/35 w-[36px] pt-[2px] text-left">
+            {String(h).padStart(2, "0")}:00
+          </span>
+          <span className="flex-1 h-[1px] mt-[8px]" style={{ background: "rgba(255,255,255,0.05)" }} />
+        </button>
+      ))}
+
+      {eventsWithMin.map((e) => (
+        <button
+          key={e.id}
+          type="button"
+          onClick={() => onEventTap(e)}
+          className="absolute left-[56px] right-[10px] rounded-[10px] px-[10px] py-[6px] text-left flex flex-col active:opacity-80"
+          style={{
+            top: toY(e.min) + 6,
+            height: Math.max(32, (e.dur / 60) * HOUR_H - 4),
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.18)",
+          }}
+        >
+          <span className="font-['Geist'] text-[12.5px] font-medium text-white truncate">{e.title}</span>
+          <span className="font-['Geist'] text-[10.5px] text-white/50 tabular-nums truncate">
+            {e.start}
+            {e.end ? ` – ${e.end}` : ""}
+            {e.place ? ` · ${e.place}` : ""}
+          </span>
+        </button>
+      ))}
+
+      {tasksWithMin.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => onTaskTap(t)}
+          className="absolute left-[56px] right-[10px] flex items-center gap-[8px] h-[26px] pl-[8px] pr-[10px] rounded-[8px] active:opacity-80"
+          style={{ top: toY(t.min) + 6, background: "rgba(255,255,255,0.03)" }}
+        >
+          <span className="h-[7px] w-[7px] rounded-full shrink-0" style={{ background: PRIO[t.priority].color }} />
+          <span className="font-['Geist'] text-[12.5px] text-white/90 truncate">{t.title}</span>
+        </button>
+      ))}
+
+      {nowMin >= 6 * 60 && nowMin <= 22 * 60 && (
+        <div
+          className="absolute left-[46px] right-[8px] flex items-center gap-[6px] pointer-events-none"
+          style={{ top: toY(nowMin) + 6 }}
+        >
+          <span className="h-[6px] w-[6px] rounded-full bg-[#F87171]" />
+          <span className="flex-1 h-[1px] bg-[#F87171]/60" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WeekGantt({
+  events,
+  tasks,
+  projects,
+  onTaskTap,
+  onEventTap,
+  onProjectTap,
+}: {
+  events: CalendarEvent[];
+  tasks: Todo[];
+  projects: Project[];
+  onTaskTap: (t: Todo) => void;
+  onEventTap: (e: CalendarEvent) => void;
+  onProjectTap: (p: Project) => void;
+}) {
+  const today = new Date();
+  const start = new Date(today);
+  start.setHours(0, 0, 0, 0);
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return d;
+  });
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const label = (d: Date) =>
+    d.toLocaleDateString("es-PE", { weekday: "short" }).replace(".", "").toUpperCase();
+
+  const rows: {
+    kind: "event" | "task" | "project";
+    id: string;
+    title: string;
+    color: string;
+    dayIndex: number;
+    span: number;
+    onTap: () => void;
+  }[] = [];
+
+  events.forEach((e) => {
+    const idx = days.findIndex((d) => iso(d) === e.date);
+    if (idx >= 0) {
+      rows.push({
+        kind: "event",
+        id: `e-${e.id}`,
+        title: e.title,
+        color: "#FFFFFF",
+        dayIndex: idx,
+        span: 1,
+        onTap: () => onEventTap(e),
+      });
+    }
+  });
+  tasks.forEach((t) => {
+    if (!t.due || t.done) return;
+    if (t.due === "Hoy") {
+      rows.push({
+        kind: "task",
+        id: `t-${t.id}`,
+        title: t.title,
+        color: PRIO[t.priority].color,
+        dayIndex: 0,
+        span: 1,
+        onTap: () => onTaskTap(t),
+      });
+      return;
+    }
+    const idx = days.findIndex((d) => iso(d) === t.due);
+    if (idx >= 0) {
+      rows.push({
+        kind: "task",
+        id: `t-${t.id}`,
+        title: t.title,
+        color: PRIO[t.priority].color,
+        dayIndex: idx,
+        span: 1,
+        onTap: () => onTaskTap(t),
+      });
+    }
+  });
+  projects.forEach((p) => {
+    if (!p.dueDate) return;
+    const startIdx = 0;
+    const endIdx = days.findIndex((d) => iso(d) === p.dueDate);
+    if (endIdx < 0) return;
+    rows.push({
+      kind: "project",
+      id: `p-${p.id}`,
+      title: p.name,
+      color: PROJECT_STATUS[p.status].color,
+      dayIndex: startIdx,
+      span: Math.max(1, endIdx - startIdx + 1),
+      onTap: () => onProjectTap(p),
+    });
+  });
+
+  const COL_W = `minmax(0, 1fr)`;
+  return (
+    <div
+      className="rounded-[16px] overflow-hidden"
+      style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <div
+        className="grid px-[8px] pt-[10px] pb-[8px]"
+        style={{ gridTemplateColumns: `repeat(7, ${COL_W})`, borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        {days.map((d, i) => (
+          <div key={i} className="flex flex-col items-center gap-[2px]">
+            <span className="font-['Geist'] text-[9.5px] uppercase tracking-[1.4px] text-white/40">
+              {label(d)}
+            </span>
+            <span
+              className="font-['Bai_Jamjuree'] tabular-nums text-[14px] font-semibold"
+              style={{ color: i === 0 ? "#fff" : "rgba(255,255,255,0.7)" }}
+            >
+              {d.getDate()}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="p-[10px] flex flex-col gap-[6px] min-h-[140px]">
+        {rows.length === 0 ? (
+          <span className="font-['Geist'] text-[12px] text-white/40 text-center py-[24px]">
+            Nada programado esta semana.
+          </span>
+        ) : (
+          rows.slice(0, 12).map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={r.onTap}
+              className="grid gap-[2px] w-full active:opacity-80"
+              style={{ gridTemplateColumns: `repeat(7, ${COL_W})` }}
+            >
+              {Array.from({ length: 7 }).map((_, i) => {
+                const inRange = i >= r.dayIndex && i < r.dayIndex + r.span;
+                if (!inRange) return <span key={i} />;
+                const isStart = i === r.dayIndex;
+                return (
+                  <span
+                    key={i}
+                    className="h-[24px] flex items-center px-[6px] overflow-hidden"
+                    style={{
+                      background: `${r.color}22`,
+                      borderTop: `1px solid ${r.color}55`,
+                      borderBottom: `1px solid ${r.color}55`,
+                      borderLeft: isStart ? `1px solid ${r.color}55` : "none",
+                      borderRight: i === r.dayIndex + r.span - 1 ? `1px solid ${r.color}55` : "none",
+                      borderRadius:
+                        isStart && i === r.dayIndex + r.span - 1
+                          ? 6
+                          : isStart
+                            ? "6px 0 0 6px"
+                            : i === r.dayIndex + r.span - 1
+                              ? "0 6px 6px 0"
+                              : 0,
+                    }}
+                  >
+                    {isStart && (
+                      <span className="font-['Geist'] text-[10.5px] font-medium text-white truncate">
+                        {r.title}
+                      </span>
+                    )}
+                  </span>
+                );
+              })}
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TaskInboxRow({
+  todo,
+  index,
+  onToggle,
+  onTap,
+}: {
+  todo: Todo;
+  index: number;
+  onToggle: () => void;
+  onTap: () => void;
+}) {
+  const dueLabel = todo.due === "Hoy" || todo.due === "Mañana" ? todo.due : formatDueLabel(todo.due);
+  return (
+    <div
+      className="flex items-center gap-[10px] pl-[8px] pr-[10px] h-[44px]"
+      style={{ borderTop: index === 0 ? "none" : "1px solid rgba(255,255,255,0.05)" }}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="h-[24px] w-[24px] grid place-items-center rounded-full active:bg-white/[0.06]"
+      >
+        {todo.done ? (
+          <CheckCircle2 className="h-[16px] w-[16px] text-[#4ADE80]" strokeWidth={2} />
+        ) : (
+          <Circle className="h-[15px] w-[15px] text-white/40" strokeWidth={1.6} />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={onTap}
+        className="flex-1 min-w-0 flex items-center gap-[10px] text-left active:opacity-80"
+      >
+        <span className="font-['Geist'] tabular-nums text-[10.5px] text-white/35 shrink-0">
+          TRX-{todo.id.slice(-3).toUpperCase()}
+        </span>
+        <span
+          className={`font-['Geist'] text-[13.5px] truncate ${todo.done ? "line-through text-white/35" : "text-white/90"}`}
+        >
+          {todo.title}
+        </span>
+      </button>
+      <span
+        className="shrink-0 h-[20px] px-[7px] rounded-full font-['Geist'] text-[10px] font-semibold uppercase tracking-[0.6px] flex items-center"
+        style={{ background: `${PRIO[todo.priority].color}18`, color: PRIO[todo.priority].color }}
+      >
+        {todo.priority === "urgent" ? "P0" : todo.priority === "high" ? "P1" : todo.priority === "normal" ? "P2" : "P3"}
+      </span>
+      {dueLabel && (
+        <span className="shrink-0 font-['Geist'] tabular-nums text-[11px] text-white/45 w-[52px] text-right truncate">
+          {dueLabel}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function DeliverableRow({
+  project,
+  index,
+  onTap,
+}: {
+  project: Project;
+  index: number;
+  onTap: () => void;
+}) {
+  const st = PROJECT_STATUS[project.status];
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="flex items-center gap-[10px] pl-[10px] pr-[12px] h-[50px] w-full text-left active:bg-white/[0.02]"
+      style={{ borderTop: index === 0 ? "none" : "1px solid rgba(255,255,255,0.05)" }}
+    >
+      <span className="h-[8px] w-[8px] rounded-full shrink-0" style={{ background: st.color }} />
+      <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
+        <span className="font-['Geist'] text-[13.5px] font-medium text-white/90 truncate">{project.name}</span>
+        <div className="flex items-center gap-[8px]">
+          <span className="font-['Geist'] text-[10.5px] text-white/45">{st.label}</span>
+          {project.dueDate && (
+            <span className="font-['Geist'] tabular-nums text-[10.5px] text-white/35">
+              · {formatDueLabel(project.dueDate)}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="w-[68px] flex flex-col gap-[3px] shrink-0">
+        <div className="h-[3px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+          <div className="h-full" style={{ width: `${project.progress}%`, background: st.color }} />
+        </div>
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[11px] text-white/70 text-right">
+          {project.progress}%
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function GoalRow({ goal, index, onTap }: { goal: Goal; index: number; onTap: () => void }) {
+  const pct = goal.target > 0 ? Math.min(100, Math.round((goal.current / goal.target) * 100)) : 0;
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="flex flex-col gap-[6px] px-[12px] py-[12px] w-full text-left active:bg-white/[0.02]"
+      style={{ borderTop: index === 0 ? "none" : "1px solid rgba(255,255,255,0.05)" }}
+    >
+      <div className="flex items-center justify-between gap-[10px]">
+        <span className="font-['Geist'] text-[13.5px] font-medium text-white/90 truncate">{goal.label}</span>
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[13px] text-white shrink-0">
+          {goal.unit} {goal.current.toLocaleString("es-PE")} / {goal.target.toLocaleString("es-PE")}
+        </span>
+      </div>
+      <div className="flex items-center gap-[8px]">
+        <div className="flex-1 h-[3px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+          <div className="h-full bg-white" style={{ width: `${pct}%` }} />
+        </div>
+        <span className="font-['Geist'] tabular-nums text-[11px] text-white/60 w-[36px] text-right">
+          {pct}%
+        </span>
+      </div>
+    </button>
+  );
+}
+
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
-  const [view, setView] = useState<View>("hub");
+  const [learnOpen, setLearnOpen] = useState(false);
+  const [mode, setMode] = useState<"day" | "week">("day");
+  const [taskSheet, setTaskSheet] = useState<{ open: boolean; initial?: Todo }>({ open: false });
+  const [eventSheet, setEventSheet] = useState<{ open: boolean; date: string }>({
+    open: false,
+    date: todayISO(),
+  });
+  const [projectSheet, setProjectSheet] = useState<{ open: boolean; initial?: Project }>({ open: false });
+  const [goalSheet, setGoalSheet] = useState<{ open: boolean; initial?: Goal }>({ open: false });
+  const [inboxFilter, setInboxFilter] = useState<"today" | "overdue" | "week">("today");
+
   const {
     name,
     todos,
     goals,
     projects,
+    events,
     recommendations,
     todayDone,
-    todayTotal,
     highPriorityToday,
-    nextEvent,
-    activeProjects,
-    lateProjects,
+    addTodo,
+    updateTodo,
+    toggleTodo,
+    addEvent,
+    addProject,
+    updateProject,
+    addGoal,
+    updateGoal,
+    dismissRecommendation,
   } = useMe();
+
   const finance = useFinance();
   const inventory = useInventory();
-  const back = () => setView("hub");
 
-  const pendingTasks = todos.filter((t) => !t.done).length;
-  const urgentAlerts =
+  const today = todayISO();
+  const todaysEvents = useMemo(() => events.filter((e) => e.date === today), [events, today]);
+  const todaysTasks = useMemo(() => todos.filter((t) => t.due === "Hoy" || t.due === today), [todos, today]);
+
+  const pending = todos.filter((t) => !t.done).length;
+  const atRisk =
     (inventory.lowStock?.length ?? 0) +
     (finance.fiadosOverdue > 0 ? 1 : 0) +
     highPriorityToday;
 
+  const inboxTasks = useMemo(() => {
+    const now = today;
+    if (inboxFilter === "today") {
+      return todos.filter((t) => !t.done && (t.due === "Hoy" || t.due === now));
+    }
+    if (inboxFilter === "overdue") {
+      return todos.filter((t) => !t.done && t.due && isISODate(t.due) && t.due < now);
+    }
+    // week
+    const end = new Date();
+    end.setDate(end.getDate() + 7);
+    const endIso = end.toISOString().slice(0, 10);
+    return todos.filter(
+      (t) =>
+        !t.done &&
+        (t.due === "Hoy" || (t.due && isISODate(t.due) && t.due >= now && t.due <= endIso)),
+    );
+  }, [todos, inboxFilter, today]);
+
+  const activeRecos = recommendations.filter((r) => !r.dismissed);
+
+  const dateLabel = new Date().toLocaleDateString("es-PE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
+  const handleQuickAdd = (k: "task" | "event" | "project" | "goal") => {
+    if (k === "task") setTaskSheet({ open: true });
+    if (k === "event") setEventSheet({ open: true, date: today });
+    if (k === "project") setProjectSheet({ open: true });
+    if (k === "goal") setGoalSheet({ open: true });
+  };
+
+  if (learnOpen) {
+    return <LearnView onBack={() => setLearnOpen(false)} />;
+  }
+
   return (
-    <div className="relative w-full">
-      <AnimatePresence mode="wait" initial={false}>
-        {view === "hub" && (
-          <motion.div
-            key="hub"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
-            className="relative min-h-[100dvh] overflow-hidden"
+    <div className="relative w-full min-h-[100dvh] bg-black">
+      {onClose && (
+        <div className="absolute top-[22px] right-[20px] z-20">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-[36px] w-[36px] rounded-full flex items-center justify-center active:bg-white/[0.05]"
           >
-            <AuroraBg />
+            <X className="h-[16px] w-[16px] text-white/55" strokeWidth={1.6} />
+          </button>
+        </div>
+      )}
 
-            {onClose && (
-              <div className="absolute top-[22px] right-[20px] z-20">
+      <div className="relative z-10 pb-[180px]">
+        {/* Header vivo */}
+        <div className="px-[20px] pt-[64px] pb-[8px]">
+          <div className="flex flex-col gap-[6px]">
+            <span className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.6px] text-white/40">
+              Productividad
+            </span>
+            <h1 className="font-['Bai_Jamjuree'] font-semibold text-[28px] leading-[32px] text-white tracking-[-0.6px]">
+              Hola, {name}
+            </h1>
+            <span className="font-['Geist'] text-[12.5px] text-white/45 capitalize">{dateLabel}</span>
+          </div>
+        </div>
+
+        {/* Focus ribbon */}
+        <div className="px-[20px] mt-[18px]">
+          <FocusRibbon pending={pending} atRisk={atRisk} done={todayDone} />
+        </div>
+
+        {/* Command bar */}
+        <div className="px-[20px] mt-[14px]">
+          <CommandBar onAdd={handleQuickAdd} mode={mode} setMode={setMode} />
+        </div>
+
+        {/* Cronograma */}
+        <div className="px-[20px] mt-[26px]">
+          <div className="flex items-end justify-between pb-[10px]">
+            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
+              {mode === "day" ? "Cronograma de hoy" : "Semana"}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setEventSheet({ open: true, date: today })}
+              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+            >
+              <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Evento
+            </button>
+          </div>
+          {mode === "day" ? (
+            <DayTimeline
+              events={todaysEvents}
+              tasks={todaysTasks}
+              onEmpty={(h) => setEventSheet({ open: true, date: today })}
+              onTaskTap={(t) => setTaskSheet({ open: true, initial: t })}
+              onEventTap={() => {
+                /* editar evento inline en próxima iteración */
+              }}
+            />
+          ) : (
+            <WeekGantt
+              events={events}
+              tasks={todos}
+              projects={projects}
+              onTaskTap={(t) => setTaskSheet({ open: true, initial: t })}
+              onEventTap={() => {}}
+              onProjectTap={(p) => setProjectSheet({ open: true, initial: p })}
+            />
+          )}
+        </div>
+
+        {/* Inbox / Prioridades */}
+        <div className="px-[20px] mt-[28px]">
+          <div className="flex items-end justify-between pb-[10px]">
+            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
+              Inbox
+            </h3>
+            <div className="flex gap-[4px]">
+              {(["today", "overdue", "week"] as const).map((f) => (
                 <button
+                  key={f}
                   type="button"
-                  onClick={onClose}
-                  className="h-[36px] w-[36px] rounded-full flex items-center justify-center active:bg-white/[0.05]"
+                  onClick={() => setInboxFilter(f)}
+                  className="h-[24px] px-[10px] rounded-full font-['Geist'] text-[10.5px] font-medium uppercase tracking-[0.8px]"
+                  style={{
+                    background: inboxFilter === f ? "rgba(255,255,255,0.10)" : "transparent",
+                    color: inboxFilter === f ? "#fff" : "rgba(255,255,255,0.45)",
+                    border: `1px solid ${inboxFilter === f ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.06)"}`,
+                  }}
                 >
-                  <X className="h-[16px] w-[16px] text-white/55" strokeWidth={1.6} />
+                  {f === "today" ? "Hoy" : f === "overdue" ? "Vencidas" : "Semana"}
                 </button>
-              </div>
-            )}
-
-            <div className="relative z-10">
-              <PageHeader eyebrow="Productividad" title={`Hola, ${name}`} />
-
-              <ProductivityScroll className="pt-[16px] flex flex-col">
-                {/* Estado del negocio hoy — reemplaza racha */}
-                <div className="px-[20px] pt-[6px] pb-[4px]">
-                  <TodayStatus
-                    name={name}
-                    tasksDone={todayDone}
-                    tasksTotal={todayTotal}
-                    salesToday={finance.todayIncome}
-                    alerts={urgentAlerts}
-                    lowStock={inventory.lowStock?.length ?? 0}
-                    fiadosOverdue={finance.fiadosOverdue}
-                  />
-                </div>
-
-                {/* HOY — bento grid */}
-                <div className="mt-[26px] px-[20px]">
-                  <div className="pb-[12px] flex items-center gap-[8px]">
-                    <div className="h-[4px] w-[4px] rounded-full bg-[#60A5FA]" />
-                    <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">
-                      Hoy
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-[10px] auto-rows-min">
-                    <BentoTile
-                      Icon={ListChecks}
-                      label="Prioridades"
-                      meta={
-                        todayTotal === 0
-                          ? "Sin tareas todavía"
-                          : `${pendingTasks} pendiente${pendingTasks === 1 ? "" : "s"}${highPriorityToday > 0 ? ` · ${highPriorityToday} de alta prioridad` : ""}`
-                      }
-                      onClick={() => setView("priorities")}
-                      accent="#3B82F6"
-                      span={pendingTasks > 0 ? 2 : 1}
-                      minH={pendingTasks > 0 ? 128 : 118}
-                    />
-
-                    <BentoTile
-                      Icon={CalendarDays}
-                      label="Calendario"
-                      meta={
-                        nextEvent
-                          ? `${nextEvent.title}${nextEvent.start ? ` · ${nextEvent.start}` : ""}`
-                          : "Sin eventos"
-                      }
-                      onClick={() => setView("calendar")}
-                      accent="#2563EB"
-                      minH={132}
-                    />
-
-                    <BentoTile
-                      Icon={FolderKanban}
-                      label="Proyectos"
-                      meta={
-                        projects.length === 0
-                          ? "Aún sin proyectos"
-                          : `${activeProjects} activo${activeProjects === 1 ? "" : "s"}${lateProjects > 0 ? ` · ${lateProjects} retrasado${lateProjects > 1 ? "s" : ""}` : ""}`
-                      }
-                      onClick={() => setView("projects")}
-                      accent="#1D4ED8"
-                      minH={132}
-                    />
-                  </div>
-                </div>
-
-                {/* CRECE — bento grid separado */}
-                <div className="mt-[28px] px-[20px]">
-                  <div className="pb-[12px] flex items-center gap-[8px]">
-                    <div className="h-[4px] w-[4px] rounded-full bg-[#A78BFA]" />
-                    <span className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.8px] text-[#C4B5FD]/80">
-                      Crece
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-[10px] auto-rows-min">
-                    <BentoTile
-                      Icon={Target}
-                      label="Metas"
-                      meta={goals.length === 0 ? "Define tu primera meta" : `${goals.length} activa${goals.length > 1 ? "s" : ""}`}
-                      onClick={() => setView("goals")}
-                      accent="#6366F1"
-                      span={2}
-                      minH={128}
-                    />
-                    <BentoTile
-                      Icon={BookOpen}
-                      label="Aprender"
-                      meta="Crece tu negocio"
-                      onClick={() => setView("learn")}
-                      accent="#2563EB"
-                      minH={128}
-                    />
-                    <BentoTile
-                      Icon={BrainCircuit}
-                      label="Recos IA"
-                      meta={
-                        recommendations.length === 0
-                          ? "Sin sugerencias"
-                          : `${recommendations.length} para ti`
-                      }
-                      onClick={() => setView("recos")}
-                      accent="#8B5CF6"
-                      minH={128}
-                    />
-                  </div>
-
-                </div>
-
-                <div className="mt-[24px] px-[20px] font-['Geist'] text-[11.5px] text-[#93C5FD]/50 text-center">
-                  {todayDone} de {todayTotal} tareas completadas hoy
-                </div>
-
-                <FooterMark>Tu negocio crece contigo</FooterMark>
-              </ProductivityScroll>
+              ))}
             </div>
-          </motion.div>
+          </div>
+          <div
+            className="rounded-[16px] overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            {inboxTasks.length === 0 ? (
+              <div className="px-[14px] py-[22px] text-center">
+                <span className="font-['Geist'] text-[12.5px] text-white/40">
+                  Nada pendiente aquí. Bien hecho.
+                </span>
+              </div>
+            ) : (
+              inboxTasks.slice(0, 8).map((t, i) => (
+                <TaskInboxRow
+                  key={t.id}
+                  todo={t}
+                  index={i}
+                  onToggle={() => toggleTodo(t.id)}
+                  onTap={() => setTaskSheet({ open: true, initial: t })}
+                />
+              ))
+            )}
+            <button
+              type="button"
+              onClick={() => setTaskSheet({ open: true })}
+              className="w-full h-[42px] px-[14px] flex items-center gap-[10px] text-left active:bg-white/[0.03]"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+            >
+              <Plus className="h-[13px] w-[13px] text-white/40" strokeWidth={2} />
+              <span className="font-['Geist'] text-[12.5px] text-white/45">Añadir tarea</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Entregables */}
+        <div className="px-[20px] mt-[28px]">
+          <div className="flex items-end justify-between pb-[10px]">
+            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
+              Entregables
+            </h3>
+            <button
+              type="button"
+              onClick={() => setProjectSheet({ open: true })}
+              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+            >
+              <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Nuevo
+            </button>
+          </div>
+          <div
+            className="rounded-[16px] overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            {projects.length === 0 ? (
+              <div className="px-[14px] py-[22px] text-center">
+                <span className="font-['Geist'] text-[12.5px] text-white/40">
+                  Sin entregables. Crea uno para dividir tu trabajo.
+                </span>
+              </div>
+            ) : (
+              projects
+                .slice(0, 6)
+                .map((p, i) => (
+                  <DeliverableRow
+                    key={p.id}
+                    project={p}
+                    index={i}
+                    onTap={() => setProjectSheet({ open: true, initial: p })}
+                  />
+                ))
+            )}
+          </div>
+        </div>
+
+        {/* Metas */}
+        <div className="px-[20px] mt-[28px]">
+          <div className="flex items-end justify-between pb-[10px]">
+            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
+              Metas
+            </h3>
+            <button
+              type="button"
+              onClick={() => setGoalSheet({ open: true })}
+              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+            >
+              <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Meta
+            </button>
+          </div>
+          <div
+            className="rounded-[16px] overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            {goals.length === 0 ? (
+              <div className="px-[14px] py-[22px] text-center">
+                <span className="font-['Geist'] text-[12.5px] text-white/40">
+                  Define tu primera meta trimestral.
+                </span>
+              </div>
+            ) : (
+              goals.map((g, i) => (
+                <GoalRow key={g.id} goal={g} index={i} onTap={() => setGoalSheet({ open: true, initial: g })} />
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Aprender */}
+        <div className="px-[20px] mt-[28px]">
+          <div className="flex items-end justify-between pb-[10px]">
+            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
+              Aprender
+            </h3>
+            <button
+              type="button"
+              onClick={() => setLearnOpen(true)}
+              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+            >
+              Ver rutas <ArrowRight className="h-[11px] w-[11px]" strokeWidth={2} />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setLearnOpen(true)}
+            className="w-full rounded-[16px] p-[16px] text-left flex items-center gap-[14px] active:opacity-90"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+          >
+            <div
+              className="h-[42px] w-[42px] rounded-[12px] grid place-items-center shrink-0"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <GraduationCap className="h-[18px] w-[18px] text-white/80" strokeWidth={1.6} />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
+              <span className="font-['Geist'] text-[13.5px] font-medium text-white/90">
+                Centro de aprendizaje
+              </span>
+              <span className="font-['Geist'] text-[11.5px] text-white/45">
+                Rutas cortas, sesiones IA y quiz para crecer tu negocio.
+              </span>
+            </div>
+            <ArrowRight className="h-[14px] w-[14px] text-white/40 shrink-0" strokeWidth={1.6} />
+          </button>
+        </div>
+
+        {/* Recos IA */}
+        {activeRecos.length > 0 && (
+          <div className="mt-[28px]">
+            <div className="px-[20px] pb-[10px]">
+              <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
+                Recos IA
+              </h3>
+            </div>
+            <div className="-mx-[0] px-[20px] flex gap-[10px] overflow-x-auto no-scrollbar">
+              {activeRecos.slice(0, 8).map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => dismissRecommendation(r.id)}
+                  className="shrink-0 max-w-[240px] rounded-[12px] px-[12px] py-[10px] text-left flex flex-col gap-[4px] active:opacity-80"
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <span
+                    className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1px]"
+                    style={{
+                      color:
+                        r.level === "urgent"
+                          ? "#F87171"
+                          : r.level === "warn"
+                            ? "#F5B944"
+                            : r.level === "success"
+                              ? "#4ADE80"
+                              : "rgba(255,255,255,0.5)",
+                    }}
+                  >
+                    {r.level === "urgent"
+                      ? "Urgente"
+                      : r.level === "warn"
+                        ? "Atención"
+                        : r.level === "success"
+                          ? "Buena"
+                          : "Nota"}
+                  </span>
+                  <span className="font-['Geist'] text-[12.5px] font-medium text-white/90 line-clamp-2">
+                    {r.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
-        {view === "priorities" && <PrioritiesView key="pv" onBack={back} />}
-        {view === "calendar" && <CalendarView key="cv" onBack={back} />}
-        
-        {view === "projects" && <ProjectsView key="prv" onBack={back} />}
-        {view === "goals" && <GoalsView key="gv" onBack={back} />}
-        {view === "learn" && <LearnView key="lv" onBack={back} />}
-        {view === "recos" && <RecosView key="rec" onBack={back} goTo={setView} />}
-      </AnimatePresence>
+        <div className="mt-[24px] px-[20px]">
+          <FooterMark>Tu negocio crece contigo</FooterMark>
+        </div>
+      </div>
+
+      {/* Sheets */}
+      <TaskSheet
+        open={taskSheet.open}
+        initial={taskSheet.initial}
+        projects={projects}
+        goals={goals}
+        onClose={() => setTaskSheet({ open: false })}
+        onSave={(patch) => {
+          if (taskSheet.initial) {
+            updateTodo(taskSheet.initial.id, patch);
+          } else {
+            addTodo({
+              title: patch.title ?? "Nueva tarea",
+              description: patch.description,
+              priority: patch.priority ?? "normal",
+              due: patch.due,
+              time: patch.time,
+              tag: patch.tag,
+              projectId: patch.projectId,
+              goalId: patch.goalId,
+            });
+          }
+          setTaskSheet({ open: false });
+        }}
+      />
+
+      <EventSheet
+        open={eventSheet.open}
+        defaultDate={eventSheet.date}
+        onClose={() => setEventSheet({ open: false, date: today })}
+        onSave={(e) => {
+          addEvent(e);
+          setEventSheet({ open: false, date: today });
+        }}
+      />
+
+      <ProjectSheet
+        open={projectSheet.open}
+        initial={projectSheet.initial}
+        goals={goals}
+        onClose={() => setProjectSheet({ open: false })}
+        onSave={(patch) => {
+          if (projectSheet.initial) {
+            updateProject(projectSheet.initial.id, patch);
+          } else {
+            addProject({
+              name: patch.name ?? "Nuevo entregable",
+              description: patch.description,
+              owner: patch.owner,
+              startDate: patch.startDate,
+              dueDate: patch.dueDate,
+              priority: patch.priority ?? "normal",
+              status: patch.status,
+              progress: patch.progress,
+              goalId: patch.goalId,
+              notes: patch.notes,
+            });
+          }
+          setProjectSheet({ open: false });
+        }}
+      />
+
+      <GoalSheet
+        open={goalSheet.open}
+        initial={goalSheet.initial}
+        onClose={() => setGoalSheet({ open: false })}
+        onSave={(patch) => {
+          if (goalSheet.initial) {
+            updateGoal(goalSheet.initial.id, patch);
+          } else {
+            addGoal({
+              label: patch.label ?? "Nueva meta",
+              description: patch.description,
+              target: patch.target ?? 0,
+              unit: patch.unit ?? "S/",
+              category: patch.category,
+              due: patch.due,
+            });
+          }
+          setGoalSheet({ open: false });
+        }}
+      />
     </div>
   );
 }
