@@ -50,13 +50,12 @@ export default function AuthScreen() {
             boxShadow: "0 20px 60px -30px rgba(0,0,0,0.8)",
           }}
         >
-          <AnimatePresence mode="wait" initial={false} custom={direction}>
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={view}
-              custom={direction}
-              initial={(dir: 1 | -1) => ({ opacity: 0, x: dir * 24 })}
+              initial={{ opacity: 0, x: direction * 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={(dir: 1 | -1) => ({ opacity: 0, x: dir * -24 })}
+              exit={{ opacity: 0, x: direction * -24 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             >
               {view === "signin" && (
@@ -69,6 +68,7 @@ export default function AuthScreen() {
               {view === "forgot" && <ForgotPasswordView onBack={() => go("signin")} />}
             </motion.div>
           </AnimatePresence>
+
         </div>
 
         <p className="mt-[20px] text-[11.5px] text-white/35 font-['Geist'] text-center">
