@@ -951,18 +951,14 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
           </ListGroup>
         )}
 
-        <div className="mt-[8px] rounded-[16px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</div>
-          <div className="mt-[8px] flex items-baseline justify-between">
-            <span className="font-['Bai_Jamjuree'] text-[28px] font-semibold text-white tabular-nums">{pct}%</span>
-            <span className="font-['Geist'] text-[12.5px] text-white/45 tabular-nums">
+        {total > 0 && (
+          <div className="mt-[8px] rounded-[16px] p-[14px] flex items-baseline justify-between" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <span className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</span>
+            <span className="font-['Geist'] text-[13px] text-white/70 tabular-nums">
               {done} de {total} completadas
             </span>
           </div>
-          <div className="mt-[10px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-            <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
-          </div>
-        </div>
+        )}
       </ProductivityScroll>
 
       <TaskSheet
@@ -3196,7 +3192,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
       bg: "linear-gradient(135deg, rgba(37,99,235,0.18), rgba(15,23,42,0.55))",
       border: "1px solid rgba(96,165,250,0.28)",
       iconBg: "linear-gradient(135deg,#3B82F6,#1D4ED8)",
-      icon: <Info className="h-[16px] w-[16px] text-white" strokeWidth={1.9} />,
+      icon: <Lightbulb className="h-[16px] w-[16px] text-white" strokeWidth={1.9} />,
       label: "Sugerencia",
       cta: "Revisar",
     },
@@ -5353,6 +5349,19 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           <span className="flex items-center gap-[6px] font-['Geist'] text-[10px] font-medium text-white/50">
             <span className="h-[6px] w-[6px] rounded-full bg-white/40" /> día productivo
           </span>
+        </div>
+
+        {/* Estado del negocio hoy */}
+        <div className="px-[20px] mt-[26px]">
+          <TodayStatus
+            name={name}
+            tasksDone={todayDone}
+            tasksTotal={todaysTasks.length}
+            salesToday={finance.todayIncome}
+            alerts={(inventory.lowStock?.length ?? 0) + (finance.fiadosOverdue ?? 0)}
+            lowStock={inventory.lowStock?.length ?? 0}
+            fiadosOverdue={finance.fiadosOverdue ?? 0}
+          />
         </div>
 
         {/* socIA Whisper */}

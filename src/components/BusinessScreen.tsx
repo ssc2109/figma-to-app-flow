@@ -110,7 +110,7 @@ export default function BusinessScreen({
 
         {view === "inventory" && <InventoryView key="inventory" onBack={back} />}
         {view === "payments" && <PaymentsView key="payments" onBack={back} />}
-        {view === "info" && <InfoView key="info" onBack={back} />}
+        {view === "info" && <InfoView key="info" onBack={back} onOpenPlans={onOpenPlans} />}
         {view === "clients" && <ClientsView key="clients" onBack={back} />}
         {view === "receivables" && <DebtsView key="receivables" onBack={back} initialKind="cobrar" lockKind />}
         {view === "payables" && <DebtsView key="payables" onBack={back} initialKind="pagar" lockKind />}

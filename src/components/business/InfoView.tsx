@@ -206,12 +206,13 @@ function EditableRow({
   );
 }
 
-export default function InfoView({ onBack }: { onBack: () => void }) {
+export default function InfoView({ onBack, onOpenPlans }: { onBack: () => void; onOpenPlans?: () => void }) {
   const { profile, refreshProfile } = useAuth();
   const { plan } = usePlan();
   const isAvanzado = plan === "avanzado" || plan === "trial";
   const [edit, setEdit] = useState<FieldKey | null>(null);
   const [advanced, setAdvanced] = useState(false);
+  const [gate, setGate] = useState(false);
 
   const get = (k: FieldKey) => {
     const v = (profile as any)?.[k];
@@ -267,13 +268,7 @@ export default function InfoView({ onBack }: { onBack: () => void }) {
         <div>
           <SectionLabel>Opciones avanzadas</SectionLabel>
           <button
-            onClick={() => {
-              if (!isAvanzado) {
-                toast.info("Opciones avanzadas es exclusivo del plan Avanzado");
-                return;
-              }
-              setAdvanced(true);
-            }}
+            onClick={() => (isAvanzado ? setAdvanced(true) : setGate(true))}
             className="relative w-full flex items-center gap-[12px] px-[16px] py-[14px] rounded-[18px] text-left active:bg-white/[0.04] transition-colors overflow-hidden"
             style={{ background: "rgba(17,17,17,0.85)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
@@ -316,8 +311,71 @@ export default function InfoView({ onBack }: { onBack: () => void }) {
           />
         )}
         {advanced && <AdvancedSheet onClose={() => setAdvanced(false)} />}
+        {gate && (
+          <AdvancedGate
+            onClose={() => setGate(false)}
+            onUpgrade={onOpenPlans ? () => { setGate(false); onOpenPlans(); } : undefined}
+          />
+        )}
       </AnimatePresence>
     </SubScreen>
+  );
+}
+
+function AdvancedGate({ onClose, onUpgrade }: { onClose: () => void; onUpgrade?: () => void }) {
+  return createPortal(
+    <motion.div
+      className="fixed inset-0 z-[80] flex items-center justify-center px-[16px]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 20, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 340, damping: 32 }}
+        className="relative w-full max-w-[398px] rounded-[28px] pt-[28px] pb-[24px] px-[22px] flex flex-col items-center text-center"
+        style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        <div
+          className="h-[64px] w-[64px] rounded-[20px] grid place-items-center mb-[16px]"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
+        >
+          <Lock className="h-[24px] w-[24px] text-white/70" strokeWidth={1.6} />
+        </div>
+        <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-white/45 mb-[6px]">
+          Función exclusiva
+        </div>
+        <h3 className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white tracking-[-0.3px] mb-[8px]">
+          Disponible en Avanzado
+        </h3>
+        <p className="font-['Geist'] text-[13px] text-white/60 leading-[1.55] mb-[20px]">
+          Datos fiscales, reportes exportables e integraciones con SUNAT y facturación electrónica.
+          Sube al plan Avanzado para desbloquear todo.
+        </p>
+        <div className="w-full flex flex-col gap-[8px]">
+          {onUpgrade && (
+            <button
+              onClick={onUpgrade}
+              className="h-[48px] rounded-full bg-white text-black font-['Geist'] text-[14px] font-semibold flex items-center justify-center gap-[8px] active:scale-95"
+            >
+              <Sparkles className="h-[14px] w-[14px]" strokeWidth={2} />
+              Ver planes
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="h-[46px] rounded-full font-['Geist'] text-[13.5px] text-white/70 active:text-white"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            Volver
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
 
