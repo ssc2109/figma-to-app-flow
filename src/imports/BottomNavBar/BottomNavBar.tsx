@@ -31,7 +31,7 @@ function Tab({ active, onClick, Icon, label }: TabProps) {
             className="absolute h-[40px] w-[40px] rounded-full"
             style={{
               background:
-                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.24) 0%, transparent 70%)",
+                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%)",
             }}
           />
         )}
