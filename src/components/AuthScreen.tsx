@@ -30,8 +30,7 @@ export default function AuthScreen() {
         loop
         muted
         playsInline
-        // @ts-expect-error iOS legacy attr
-        webkit-playsinline="true"
+        {...({ "webkit-playsinline": "true" } as Record<string, string>)}
         preload="auto"
         disableRemotePlayback
         className="absolute inset-0 w-full h-full object-cover z-0"
