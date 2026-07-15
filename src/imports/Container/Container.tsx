@@ -536,62 +536,11 @@ function SociaHero({
           className={reduce ? "" : "socia-fade"}
           style={{ marginTop: 16, animationDelay: reduce ? "0s" : `${footerDelay}s` }}
         >
-          {action ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <button
-                type="button"
-                onClick={() => onIntent(action.intent)}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "11px 18px 11px 14px",
-                  borderRadius: 999,
-                  cursor: "pointer",
-                  background: "rgba(124,195,255,0.08)",
-                  border: "1px solid rgba(124,195,255,0.28)",
-                }}
-              >
-                <action.Icon size={17} color={SOCIA} strokeWidth={2} />
-                <span
-                  style={{
-                    fontFamily: G,
-                    fontSize: 14.5,
-                    fontWeight: 500,
-                    color: "#fff",
-                    letterSpacing: "-0.1px",
-                  }}
-                >
-                  {action.label}
-                </span>
-                <ArrowRight size={15} color={SOCIA} strokeWidth={2.3} />
-              </button>
-              <button
-                type="button"
-                aria-label="Conversar con socIA"
-                onClick={() => onIntent({ kind: "chat", prompt: text })}
-                style={{
-                  height: 42,
-                  width: 42,
-                  borderRadius: 999,
-                  display: "grid",
-                  placeItems: "center",
-                  flex: "none",
-                  cursor: "pointer",
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                }}
-              >
-                <MessageCircle size={17} color="rgba(255,255,255,0.75)" strokeWidth={1.8} />
-              </button>
-            </div>
-          ) : (
-            <SociaAskBar
-              prompts={briefing?.quickPrompts ?? []}
-              onIntent={onIntent}
-              reduce={reduce}
-            />
-          )}
+          <SociaAskBar
+            prompts={briefing?.quickPrompts ?? []}
+            onIntent={onIntent}
+            reduce={reduce}
+          />
         </div>
       )}
     </div>
