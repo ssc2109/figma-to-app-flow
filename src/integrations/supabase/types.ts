@@ -323,6 +323,7 @@ export type Database = {
           open_time: string | null
           owner_name: string
           phone: string | null
+          preferences: Json
           razon_social: string | null
           regimen: string | null
           ruc: string | null
@@ -347,6 +348,7 @@ export type Database = {
           open_time?: string | null
           owner_name?: string
           phone?: string | null
+          preferences?: Json
           razon_social?: string | null
           regimen?: string | null
           ruc?: string | null
@@ -371,6 +373,7 @@ export type Database = {
           open_time?: string | null
           owner_name?: string
           phone?: string | null
+          preferences?: Json
           razon_social?: string | null
           regimen?: string | null
           ruc?: string | null
