@@ -461,7 +461,7 @@ function StreakAurora({ streak, name }: { streak: number; name: string }) {
 }
 
 /* Animated count-up number for stat cards */
-function CountUpDeck({
+function CountUp({
   value,
   suffix = "",
   className,
@@ -3901,7 +3901,7 @@ function GoalRow({ goal, index, onTap }: { goal: Goal; index: number; onTap: () 
 
 /* ============ Productividad 3.0 — Command Deck ============ */
 
-function CountUpDeck({ value, className, duration = 700 }: { value: number; className?: string; duration?: number }) {
+function CountUpMini({ value, className, duration = 700 }: { value: number; className?: string; duration?: number }) {
   const [n, setN] = useState(0);
   useEffect(() => {
     const start = performance.now();
@@ -4083,7 +4083,7 @@ function MomentumStrip({
           <span className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.3px] text-white/40">
             {it.label}
           </span>
-          <CountUpDeck
+          <CountUpMini
             value={it.value}
             className="font-['Bai_Jamjuree'] tabular-nums text-[24px] leading-[26px] font-semibold"
           />
