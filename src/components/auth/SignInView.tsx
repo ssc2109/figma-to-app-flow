@@ -44,31 +44,14 @@ export default function SignInView({
   };
 
   return (
-    <div className="flex flex-col gap-[24px]">
-      <div>
-        <h1 className="font-['Bai_Jamjuree'] text-[26px] font-medium text-white tracking-tight leading-none">
+    <div className="flex flex-col gap-[20px]">
+      <div className="text-center">
+        <h1 className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white tracking-tight leading-none">
           Bienvenido
         </h1>
-        <p className="mt-[10px] text-white/45 text-[14px] font-['Geist']">
+        <p className="mt-[8px] text-white/50 text-[13px] font-['Geist']">
           Entra a tu negocio
         </p>
-      </div>
-
-      <div className="flex flex-col gap-[10px]">
-        <SocialButton icon={<GoogleIcon />} onClick={() => handleOAuth("google")} disabled={loading}>
-          Continuar con Google
-        </SocialButton>
-        {isApple && (
-          <SocialButton icon={<AppleIcon />} onClick={() => handleOAuth("apple")} disabled={loading}>
-            Continuar con Apple
-          </SocialButton>
-        )}
-      </div>
-
-      <div className="flex items-center gap-[12px]">
-        <div className="h-px flex-1 bg-white/10" />
-        <span className="text-[11px] text-white/35 font-['Geist']">o con correo</span>
-        <div className="h-px flex-1 bg-white/10" />
       </div>
 
       <form onSubmit={handleEmail} className="flex flex-col gap-[10px]">
@@ -80,11 +63,11 @@ export default function SignInView({
           type="password"
           autoComplete="current-password"
         />
-        <div className="flex justify-end -mt-[2px]">
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={onGoToForgot}
-            className="text-[12.5px] text-white/50 font-['Geist'] active:text-white/90 py-[4px]"
+            className="text-[12px] text-white/50 font-['Geist'] active:text-white/90 py-[2px]"
           >
             ¿Olvidaste tu contraseña?
           </button>
@@ -94,10 +77,35 @@ export default function SignInView({
         </PrimaryButton>
       </form>
 
+      <div className="text-center text-[11.5px] text-white/40 font-['Geist']">O continúa con</div>
+
+      <div className="flex items-center justify-center gap-[14px]">
+        <button
+          type="button"
+          onClick={() => handleOAuth("google")}
+          disabled={loading}
+          aria-label="Google"
+          className="h-[44px] w-[44px] rounded-full border border-white/10 bg-white/[0.04] flex items-center justify-center active:bg-white/[0.08] disabled:opacity-50"
+        >
+          <GoogleIcon />
+        </button>
+        {isApple && (
+          <button
+            type="button"
+            onClick={() => handleOAuth("apple")}
+            disabled={loading}
+            aria-label="Apple"
+            className="h-[44px] w-[44px] rounded-full border border-white/10 bg-white/[0.04] flex items-center justify-center active:bg-white/[0.08] disabled:opacity-50"
+          >
+            <AppleIcon />
+          </button>
+        )}
+      </div>
+
       <button
         type="button"
         onClick={onGoToSignUp}
-        className="text-[13px] text-white/55 font-['Geist'] active:text-white text-center pt-[6px]"
+        className="text-[13px] text-white/55 font-['Geist'] active:text-white text-center"
       >
         ¿Nuevo aquí? <span className="text-white">Crear cuenta</span>
       </button>
