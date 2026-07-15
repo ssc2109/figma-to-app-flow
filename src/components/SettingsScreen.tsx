@@ -23,9 +23,11 @@ import { DataPrivacyScreen, SupportLegalScreen } from "./settings/SystemScreens"
 export default function SettingsScreen({
   onBack,
   onOpenPlans,
+  onOpenSocia,
 }: {
   onBack: () => void;
   onOpenPlans?: () => void;
+  onOpenSocia?: () => void;
 }) {
   const { signOut } = useAuth();
   const [route, setRoute] = useState<SettingsRoute | null>(null);
@@ -61,7 +63,7 @@ export default function SettingsScreen({
       case "notifications":
         return <NotificationsScreen onBack={goHub} />;
       case "socia":
-        return <SociaSettingsScreen onBack={goHub} />;
+        return <SociaSettingsScreen onBack={goHub} openThreads={onOpenSocia} />;
       case "data":
         return <DataPrivacyScreen onBack={goHub} />;
       case "help":
@@ -70,6 +72,7 @@ export default function SettingsScreen({
         return null;
     }
   };
+
 
   return (
     <div className="relative w-full">

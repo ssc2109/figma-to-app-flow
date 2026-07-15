@@ -155,7 +155,7 @@ export default function SociaScreen({ initialPrompt, initialShowHistory }: { ini
   const threads = threadsData?.threads ?? [];
 
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(!!initialShowHistory);
   const [voiceCfgOpen, setVoiceCfgOpen] = useState(false);
   const [voiceCfg, setVoiceCfg] = useState<VoiceConfig>(() => loadVoiceCfg());
   useEffect(() => {
