@@ -299,23 +299,131 @@ function insightToAction(ins: Briefing["insights"][number]): SociaAction | null 
 /* ---------- SociaAskBar (barra "Pregúntale a socIA") ---------- */
 function SociaAskBar({
   prompts,
+  briefing,
   onIntent,
   reduce,
 }: {
   prompts: string[];
+  briefing: Briefing | undefined;
   onIntent: (i: HomeNavIntent) => void;
   reduce: boolean;
 }) {
+  // Prioridad: primer insight accionable con CTA → reemplaza la barra de "Preguntar".
+  const primary = briefing?.insights?.find((ins) => ins.cta) ?? null;
+  const primaryAction = primary ? insightToAction(primary) : null;
+
   const options = prompts.length > 0 ? prompts : ["Pregúntale a socIA"];
   const [idx, setIdx] = useState(0);
   useEffect(() => {
-    if (reduce || options.length <= 1) return;
+    if (reduce || options.length <= 1 || primaryAction) return;
     const id = setInterval(() => setIdx((i) => (i + 1) % options.length), 4200);
     return () => clearInterval(id);
-  }, [reduce, options.length]);
+  }, [reduce, options.length, primaryAction]);
 
   const current = options[idx] ?? options[0];
 
+  // CTA MODE — un único botón compacto en el lugar de la barra.
+  if (primaryAction && primary) {
+    const CtaIcon = primaryAction.Icon;
+    return (
+      <button
+        type="button"
+        onClick={() => onIntent(primaryAction.intent)}
+        style={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          width: "100%",
+          padding: "12px 14px 12px 14px",
+          borderRadius: 999,
+          cursor: "pointer",
+          background:
+            "linear-gradient(180deg, rgba(124,195,255,0.10) 0%, rgba(124,195,255,0.05) 100%)",
+          border: "1px solid rgba(124,195,255,0.28)",
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 20px -14px rgba(124,195,255,0.45)",
+          overflow: "hidden",
+          textAlign: "left",
+        }}
+      >
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            left: -20,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 90,
+            height: 90,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(closest-side, rgba(124,195,255,0.22), transparent 70%)",
+            filter: "blur(4px)",
+            pointerEvents: "none",
+          }}
+        />
+        <span
+          style={{
+            position: "relative",
+            height: 22,
+            width: 22,
+            borderRadius: "50%",
+            display: "grid",
+            placeItems: "center",
+            flex: "none",
+            background: "rgba(124,195,255,0.18)",
+            border: "1px solid rgba(124,195,255,0.36)",
+          }}
+        >
+          <CtaIcon size={12} color={SOCIA} strokeWidth={2} />
+        </span>
+        <span
+          style={{
+            position: "relative",
+            flex: 1,
+            minWidth: 0,
+            fontFamily: G,
+            fontSize: 13.5,
+            fontWeight: 500,
+            color: "rgba(255,255,255,0.92)",
+            letterSpacing: "-0.05px",
+            lineHeight: "20px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {primary.text}
+        </span>
+        <span
+          aria-hidden
+          style={{
+            position: "relative",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            fontFamily: G,
+            fontSize: 10.5,
+            fontWeight: 600,
+            letterSpacing: "1.2px",
+            textTransform: "uppercase",
+            color: SOCIA,
+            padding: "4px 9px",
+            borderRadius: 999,
+            background: "rgba(124,195,255,0.14)",
+            border: "1px solid rgba(124,195,255,0.32)",
+            flex: "none",
+          }}
+        >
+          {primary.cta!.label}
+          <ArrowRight size={11} color={SOCIA} strokeWidth={2.4} />
+        </span>
+      </button>
+    );
+  }
+
+  // ASK MODE — barra de preguntas cíclicas.
   return (
     <button
       type="button"
@@ -342,7 +450,6 @@ function SociaAskBar({
         overflow: "hidden",
       }}
     >
-      {/* halo suave a la izquierda */}
       <span
         aria-hidden
         style={{
