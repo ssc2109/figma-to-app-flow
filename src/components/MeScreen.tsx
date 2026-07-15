@@ -3192,7 +3192,7 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
       bg: "linear-gradient(135deg, rgba(37,99,235,0.18), rgba(15,23,42,0.55))",
       border: "1px solid rgba(96,165,250,0.28)",
       iconBg: "linear-gradient(135deg,#3B82F6,#1D4ED8)",
-      icon: <Info className="h-[16px] w-[16px] text-white" strokeWidth={1.9} />,
+      icon: <Lightbulb className="h-[16px] w-[16px] text-white" strokeWidth={1.9} />,
       label: "Sugerencia",
       cta: "Revisar",
     },
