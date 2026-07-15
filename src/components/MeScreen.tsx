@@ -3899,6 +3899,552 @@ function GoalRow({ goal, index, onTap }: { goal: Goal; index: number; onTap: () 
   );
 }
 
+/* ============ Productividad 3.0 — Command Deck ============ */
+
+function CountUpMini({ value, className, duration = 700 }: { value: number; className?: string; duration?: number }) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    const start = performance.now();
+    const from = 0;
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setN(Math.round(from + (value - from) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration]);
+  return <span className={className}>{n}</span>;
+}
+
+function DayRing({ done, pending }: { done: number; pending: number }) {
+  const total = done + pending;
+  const pct = total === 0 ? 0 : done / total;
+  const size = 60;
+  const stroke = 5;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="rotate-[-90deg]">
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} fill="none" />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke={pct >= 1 ? "#4ADE80" : "#FFFFFF"}
+          strokeWidth={stroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          initial={{ strokeDashoffset: c }}
+          animate={{ strokeDashoffset: c * (1 - pct) }}
+          transition={{ type: "spring", stiffness: 60, damping: 16 }}
+        />
+      </svg>
+      <div className="absolute inset-0 grid place-items-center">
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[15px] font-semibold text-white leading-none">
+          {Math.round(pct * 100)}
+          <span className="text-[9px] text-white/40">%</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function NextMoveHero({
+  candidate,
+  onDone,
+  onSnooze,
+  onTap,
+}: {
+  candidate: null | {
+    kind: "event" | "task";
+    title: string;
+    subtitle: string;
+    accent: string;
+    countdown?: string;
+    urgent?: boolean;
+  };
+  onDone: () => void;
+  onSnooze: () => void;
+  onTap: () => void;
+}) {
+  if (!candidate) {
+    return (
+      <div
+        className="relative rounded-[22px] overflow-hidden px-[18px] py-[22px]"
+        style={{
+          background:
+            "radial-gradient(circle at top left, rgba(255,255,255,0.06), rgba(255,255,255,0.015) 60%)",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <span className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[1.6px] text-white/40">
+          Siguiente movimiento
+        </span>
+        <div className="mt-[8px] font-['Bai_Jamjuree'] font-semibold text-[20px] leading-[1.2] text-white">
+          Todo despejado. Captura tu próxima acción.
+        </div>
+        <button
+          type="button"
+          onClick={onTap}
+          className="mt-[14px] h-[42px] px-[16px] rounded-[12px] flex items-center gap-[8px] font-['Geist'] text-[13px] font-semibold text-black"
+          style={{ background: "#fff" }}
+        >
+          <Plus className="h-[14px] w-[14px]" strokeWidth={2.4} /> Añadir tarea
+        </button>
+      </div>
+    );
+  }
+  return (
+    <motion.div
+      key={candidate.title}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="relative rounded-[22px] overflow-hidden px-[18px] py-[18px]"
+      style={{
+        background:
+          "radial-gradient(circle at top left, rgba(255,255,255,0.08), rgba(255,255,255,0.02) 55%)",
+        border: `1px solid ${candidate.urgent ? "rgba(248,113,113,0.35)" : "rgba(255,255,255,0.10)"}`,
+      }}
+    >
+      <div className="flex items-center gap-[8px]">
+        <span
+          className="h-[6px] w-[6px] rounded-full"
+          style={{ background: candidate.accent, boxShadow: `0 0 10px ${candidate.accent}` }}
+        />
+        <span className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[1.6px] text-white/50">
+          {candidate.kind === "event" ? "Próximo evento" : "Siguiente misión"}
+        </span>
+        {candidate.countdown && (
+          <span className="ml-auto font-['Bai_Jamjuree'] tabular-nums text-[11px] font-semibold text-white/70">
+            {candidate.countdown}
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onTap}
+        className="mt-[10px] text-left w-full"
+      >
+        <div className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[1.15] text-white line-clamp-2">
+          {candidate.title}
+        </div>
+        <div className="mt-[4px] font-['Geist'] text-[12px] text-white/50">{candidate.subtitle}</div>
+      </button>
+      <div className="mt-[16px] flex items-center gap-[8px]">
+        <button
+          type="button"
+          onClick={onDone}
+          className="flex-1 h-[44px] rounded-[12px] flex items-center justify-center gap-[8px] font-['Geist'] text-[13.5px] font-semibold"
+          style={{ background: "#4ADE80", color: "#04150A" }}
+        >
+          <Check className="h-[16px] w-[16px]" strokeWidth={2.6} /> Hecho
+        </button>
+        <button
+          type="button"
+          onClick={onSnooze}
+          className="h-[44px] px-[16px] rounded-[12px] flex items-center gap-[6px] font-['Geist'] text-[12.5px] font-medium text-white/75"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <Clock className="h-[13px] w-[13px]" strokeWidth={1.8} /> +15m
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+function MomentumStrip({
+  done,
+  xp,
+  focusMin,
+}: {
+  done: number;
+  xp: number;
+  focusMin: number;
+}) {
+  const items = [
+    { label: "Hechas hoy", value: done, color: "#4ADE80" },
+    { label: "XP", value: xp, color: "#FFFFFF" },
+    { label: "Foco (min)", value: focusMin, color: "#F5B944" },
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-[8px]">
+      {items.map((it) => (
+        <div
+          key={it.label}
+          className="rounded-[14px] px-[12px] py-[12px] flex flex-col gap-[4px]"
+          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <span className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.3px] text-white/40">
+            {it.label}
+          </span>
+          <CountUpMini
+            value={it.value}
+            className="font-['Bai_Jamjuree'] tabular-nums text-[24px] leading-[26px] font-semibold"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HorizontalTimeline({
+  events,
+  tasks,
+  onEmpty,
+  onTaskTap,
+  onEventTap,
+}: {
+  events: CalendarEvent[];
+  tasks: Todo[];
+  onEmpty: (hour: number) => void;
+  onTaskTap: (t: Todo) => void;
+  onEventTap: (e: CalendarEvent) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const HOUR_W = 88;
+  const START_H = 6;
+  const END_H = 23;
+  const hours = Array.from({ length: END_H - START_H }, (_, i) => i + START_H);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const x = ((nowMin - START_H * 60) / 60) * HOUR_W - el.clientWidth / 2 + HOUR_W / 2;
+    el.scrollTo({ left: Math.max(0, x), behavior: "smooth" });
+  }, [nowMin]);
+
+  const evs = events
+    .filter((e) => e.start)
+    .map((e) => {
+      const [h, m] = e.start!.split(":").map(Number);
+      const min = h * 60 + m;
+      let dur = 45;
+      if (e.end) {
+        const [eh, em] = e.end.split(":").map(Number);
+        dur = Math.max(30, eh * 60 + em - min);
+      }
+      return { ...e, min, dur };
+    })
+    .filter((e) => e.min >= START_H * 60 && e.min < END_H * 60);
+
+  const tks = tasks
+    .filter((t) => t.time && !t.done)
+    .map((t) => {
+      const [h, m] = t.time!.split(":").map(Number);
+      return { ...t, min: h * 60 + m };
+    })
+    .filter((t) => t.min >= START_H * 60 && t.min < END_H * 60);
+
+  const totalW = hours.length * HOUR_W;
+  const xFor = (min: number) => ((min - START_H * 60) / 60) * HOUR_W;
+
+  return (
+    <div
+      ref={scrollRef}
+      className="relative rounded-[16px] overflow-x-auto overflow-y-hidden no-scrollbar"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        height: 118,
+      }}
+    >
+      <div className="relative" style={{ width: totalW, height: "100%" }}>
+        {/* Hour ticks */}
+        {hours.map((h, i) => (
+          <button
+            key={h}
+            type="button"
+            onClick={() => onEmpty(h)}
+            className="absolute top-0 bottom-0 flex flex-col items-start pt-[8px] pl-[8px] active:bg-white/[0.02]"
+            style={{ left: i * HOUR_W, width: HOUR_W, borderLeft: "1px solid rgba(255,255,255,0.04)" }}
+          >
+            <span className="font-['Geist'] tabular-nums text-[10px] text-white/35">
+              {String(h).padStart(2, "0")}:00
+            </span>
+          </button>
+        ))}
+
+        {/* Events */}
+        {evs.map((e) => {
+          const w = Math.max(48, (e.dur / 60) * HOUR_W - 4);
+          return (
+            <button
+              key={e.id}
+              type="button"
+              onClick={() => onEventTap(e)}
+              className="absolute rounded-[10px] px-[8px] py-[6px] text-left flex flex-col active:opacity-80"
+              style={{
+                left: xFor(e.min) + 2,
+                top: 30,
+                width: w,
+                height: 56,
+                background: "rgba(255,255,255,0.07)",
+                border: "1px solid rgba(255,255,255,0.22)",
+              }}
+            >
+              <span className="font-['Geist'] text-[11.5px] font-medium text-white truncate">{e.title}</span>
+              <span className="font-['Geist'] tabular-nums text-[10px] text-white/50 truncate">
+                {e.start}
+                {e.end ? `–${e.end}` : ""}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* Task dots */}
+        {tks.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => onTaskTap(t)}
+            className="absolute flex flex-col items-center gap-[3px] active:opacity-70"
+            style={{ left: xFor(t.min) - 6, bottom: 8, width: 92 }}
+          >
+            <span
+              className="h-[9px] w-[9px] rounded-full"
+              style={{ background: PRIO[t.priority].color, boxShadow: `0 0 8px ${PRIO[t.priority].color}88` }}
+            />
+            <span className="font-['Geist'] text-[9.5px] text-white/60 truncate max-w-[80px]">
+              {t.title}
+            </span>
+          </button>
+        ))}
+
+        {/* Now indicator */}
+        {nowMin >= START_H * 60 && nowMin <= END_H * 60 && (
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none"
+            style={{ left: xFor(nowMin), width: 1, background: "#F87171", boxShadow: "0 0 12px #F87171" }}
+          >
+            <div
+              className="absolute -top-[1px] -left-[16px] px-[6px] h-[16px] rounded-[4px] flex items-center font-['Bai_Jamjuree'] tabular-nums text-[9.5px] font-semibold text-white"
+              style={{ background: "#F87171" }}
+            >
+              {String(now.getHours()).padStart(2, "0")}:{String(now.getMinutes()).padStart(2, "0")}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MissionCard({
+  todo,
+  onToggle,
+  onTap,
+}: {
+  todo: Todo;
+  onToggle: () => void;
+  onTap: () => void;
+}) {
+  const xpMap = { urgent: 30, high: 20, normal: 10, low: 5 } as const;
+  const xp = xpMap[todo.priority];
+  const barColor =
+    todo.priority === "urgent"
+      ? "#F87171"
+      : todo.priority === "high"
+        ? "#F5B944"
+        : "#FFFFFF";
+  const dueLabel =
+    todo.due === "Hoy" || todo.due === "Mañana" ? todo.due : formatDueLabel(todo.due);
+  return (
+    <div
+      className="relative rounded-[14px] overflow-hidden flex items-center gap-[10px] pl-[14px] pr-[12px] py-[12px]"
+      style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <span
+        className="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-[3px]"
+        style={{ background: barColor, boxShadow: `0 0 10px ${barColor}66` }}
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="h-[26px] w-[26px] grid place-items-center rounded-full active:bg-white/[0.06] shrink-0"
+      >
+        {todo.done ? (
+          <CheckCircle2 className="h-[18px] w-[18px] text-[#4ADE80]" strokeWidth={2} />
+        ) : (
+          <Circle className="h-[17px] w-[17px] text-white/40" strokeWidth={1.6} />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={onTap}
+        className="flex-1 min-w-0 flex flex-col gap-[2px] text-left active:opacity-80"
+      >
+        <span
+          className={`font-['Geist'] text-[13.5px] font-medium truncate ${todo.done ? "line-through text-white/35" : "text-white/95"}`}
+        >
+          {todo.title}
+        </span>
+        <div className="flex items-center gap-[8px]">
+          {dueLabel && (
+            <span className="font-['Bai_Jamjuree'] tabular-nums text-[10.5px] text-white/50">
+              {dueLabel}
+              {todo.time ? ` · ${todo.time}` : ""}
+            </span>
+          )}
+          <span
+            className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[0.9px]"
+            style={{ color: barColor }}
+          >
+            {todo.priority === "urgent"
+              ? "P0"
+              : todo.priority === "high"
+                ? "P1"
+                : todo.priority === "normal"
+                  ? "P2"
+                  : "P3"}
+          </span>
+        </div>
+      </button>
+      <div className="shrink-0 flex flex-col items-end gap-[2px]">
+        <span
+          className="font-['Bai_Jamjuree'] tabular-nums text-[12px] font-semibold"
+          style={{ color: barColor }}
+        >
+          +{xp}
+        </span>
+        <span className="font-['Geist'] text-[8.5px] uppercase tracking-[1px] text-white/35">XP</span>
+      </div>
+    </div>
+  );
+}
+
+function ProjectFlightCard({
+  project,
+  onTap,
+}: {
+  project: Project;
+  onTap: () => void;
+}) {
+  const st = PROJECT_STATUS[project.status];
+  const daysLeft = (() => {
+    if (!project.dueDate || !isISODate(project.dueDate)) return null;
+    const [y, m, d] = project.dueDate.split("-").map(Number);
+    const target = new Date(y, m - 1, d);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return Math.round((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  })();
+  const risk = project.status === "late" || (daysLeft !== null && daysLeft <= 3 && project.progress < 80);
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="w-full rounded-[16px] p-[14px] text-left flex flex-col gap-[10px] active:opacity-90"
+      style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)" }}
+    >
+      <div className="flex items-center gap-[10px]">
+        <span className="relative flex h-[8px] w-[8px] shrink-0">
+          {risk && (
+            <span
+              className="absolute inline-flex h-full w-full rounded-full opacity-70 animate-ping"
+              style={{ background: st.color }}
+            />
+          )}
+          <span className="relative inline-flex rounded-full h-[8px] w-[8px]" style={{ background: st.color }} />
+        </span>
+        <span className="font-['Geist'] text-[13.5px] font-semibold text-white/95 truncate flex-1 min-w-0">
+          {project.name}
+        </span>
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[18px] font-semibold text-white leading-none">
+          {project.progress}
+          <span className="text-[10px] text-white/40">%</span>
+        </span>
+      </div>
+      <div className="h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${project.progress}%` }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="h-full"
+          style={{
+            background: `linear-gradient(90deg, ${st.color}, ${st.color === "#4ADE80" ? "#A7F3D0" : "#FFFFFF"})`,
+          }}
+        />
+      </div>
+      <div className="flex items-center gap-[8px]">
+        <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.1px] text-white/45">
+          {st.label}
+        </span>
+        {daysLeft !== null && (
+          <span
+            className="font-['Bai_Jamjuree'] tabular-nums text-[10.5px] font-semibold ml-auto"
+            style={{ color: daysLeft < 3 ? "#F87171" : daysLeft < 7 ? "#F5B944" : "rgba(255,255,255,0.55)" }}
+          >
+            {daysLeft < 0 ? `${Math.abs(daysLeft)}d de retraso` : daysLeft === 0 ? "Hoy vence" : `${daysLeft}d restantes`}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+function GoalRing({ goal, onTap }: { goal: Goal; onTap: () => void }) {
+  const pct = goal.target > 0 ? Math.min(1, goal.current / goal.target) : 0;
+  const size = 72;
+  const stroke = 6;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const color = pct >= 1 ? "#4ADE80" : pct >= 0.66 ? "#FFFFFF" : pct >= 0.33 ? "#F5B944" : "#F87171";
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="rounded-[16px] p-[14px] flex flex-col items-center gap-[10px] active:opacity-90"
+      style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="rotate-[-90deg]">
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} fill="none" />
+          <motion.circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke={color}
+            strokeWidth={stroke}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            initial={{ strokeDashoffset: c }}
+            animate={{ strokeDashoffset: c * (1 - pct) }}
+            transition={{ type: "spring", stiffness: 55, damping: 15 }}
+            style={{ filter: `drop-shadow(0 0 6px ${color}66)` }}
+          />
+        </svg>
+        <div className="absolute inset-0 grid place-items-center">
+          <span className="font-['Bai_Jamjuree'] tabular-nums text-[16px] font-semibold text-white leading-none">
+            {Math.round(pct * 100)}
+            <span className="text-[9px] text-white/40">%</span>
+          </span>
+        </div>
+      </div>
+      <div className="w-full flex flex-col items-center gap-[2px] min-w-0">
+        <span className="font-['Geist'] text-[11.5px] font-medium text-white/85 truncate max-w-full">
+          {goal.label}
+        </span>
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[10px] text-white/45">
+          {goal.unit === "S/" ? "S/ " : ""}
+          {goal.current}
+          {goal.unit !== "S/" ? goal.unit : ""} / {goal.unit === "S/" ? "S/ " : ""}
+          {goal.target}
+          {goal.unit !== "S/" ? goal.unit : ""}
+        </span>
+      </div>
+    </button>
+  );
+}
+
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [learnOpen, setLearnOpen] = useState(false);
   const [mode, setMode] = useState<"day" | "week">("day");
@@ -3997,52 +4543,182 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
       )}
 
       <div className="relative z-10 pb-[180px]">
-        {/* Header vivo */}
+        {/* Header + Day Ring */}
         <div className="px-[20px] pt-[64px] pb-[8px]">
-          <div className="flex flex-col gap-[6px]">
-            <span className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.6px] text-white/40">
-              Productividad
-            </span>
-            <h1 className="font-['Bai_Jamjuree'] font-semibold text-[28px] leading-[32px] text-white tracking-[-0.6px]">
-              Hola, {name}
-            </h1>
-            <span className="font-['Geist'] text-[12.5px] text-white/45 capitalize">{dateLabel}</span>
+          <div className="flex items-center gap-[14px]">
+            <div className="flex-1 min-w-0 flex flex-col gap-[4px]">
+              <span className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.6px] text-white/40">
+                Command Deck
+              </span>
+              <h1 className="font-['Bai_Jamjuree'] font-semibold text-[26px] leading-[30px] text-white tracking-[-0.6px] truncate">
+                Hola, {name}
+              </h1>
+              <span className="font-['Geist'] text-[11.5px] text-white/45 capitalize">{dateLabel}</span>
+            </div>
+            <DayRing done={todayDone} pending={pending} />
           </div>
         </div>
 
-        {/* Focus ribbon */}
+        {/* Next Move Hero */}
         <div className="px-[20px] mt-[18px]">
-          <FocusRibbon pending={pending} atRisk={atRisk} done={todayDone} />
+          {(() => {
+            const now = new Date();
+            const nowMin = now.getHours() * 60 + now.getMinutes();
+            let candidate: React.ComponentProps<typeof NextMoveHero>["candidate"] = null;
+            let heroTask: Todo | null = null;
+            let heroEvent: CalendarEvent | null = null;
+
+            // 1. Evento en <60 min
+            const soonEvent = [...todaysEvents]
+              .filter((e) => e.start)
+              .map((e) => {
+                const [h, m] = e.start!.split(":").map(Number);
+                return { e, diff: h * 60 + m - nowMin };
+              })
+              .filter((x) => x.diff >= -30 && x.diff <= 60)
+              .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))[0];
+            if (soonEvent) {
+              heroEvent = soonEvent.e;
+              const diff = soonEvent.diff;
+              candidate = {
+                kind: "event",
+                title: soonEvent.e.title,
+                subtitle: `${soonEvent.e.start}${soonEvent.e.place ? ` · ${soonEvent.e.place}` : ""}`,
+                accent: "#FFFFFF",
+                countdown:
+                  diff <= 0 ? "ahora" : diff < 60 ? `en ${diff} min` : `en ${Math.round(diff / 60)}h`,
+                urgent: diff <= 15 && diff >= -5,
+              };
+            } else {
+              // 2. Tarea P0 vencida
+              const p0Overdue = todos.find(
+                (t) => !t.done && t.priority === "urgent" && t.due && isISODate(t.due) && t.due < today,
+              );
+              // 3. Tarea P0 hoy
+              const p0Today = todos.find(
+                (t) => !t.done && t.priority === "urgent" && (t.due === "Hoy" || t.due === today),
+              );
+              // 4. Tarea con hora más próxima
+              const timed = todaysTasks
+                .filter((t) => t.time && !t.done)
+                .map((t) => {
+                  const [h, m] = t.time!.split(":").map(Number);
+                  return { t, min: h * 60 + m };
+                })
+                .filter((x) => x.min >= nowMin - 30)
+                .sort((a, b) => a.min - b.min)[0];
+              // 5. Tarea P1 sin hora
+              const p1 = todos.find(
+                (t) => !t.done && t.priority === "high" && (t.due === "Hoy" || t.due === today || !t.due),
+              );
+              const pick = p0Overdue ?? p0Today ?? timed?.t ?? p1 ?? null;
+              if (pick) {
+                heroTask = pick;
+                const dueTxt =
+                  pick.due === "Hoy" || pick.due === today
+                    ? pick.time
+                      ? `hoy ${pick.time}`
+                      : "hoy"
+                    : pick.due && isISODate(pick.due) && pick.due < today
+                      ? "vencida"
+                      : pick.due
+                        ? formatDueLabel(pick.due)
+                        : "sin fecha";
+                candidate = {
+                  kind: "task",
+                  title: pick.title,
+                  subtitle: `${PRIO[pick.priority].label} · ${dueTxt}`,
+                  accent: PRIO[pick.priority].color,
+                  urgent: pick.priority === "urgent",
+                };
+              }
+            }
+
+            return (
+              <NextMoveHero
+                candidate={candidate}
+                onDone={() => {
+                  if (heroTask) toggleTodo(heroTask.id);
+                }}
+                onSnooze={() => {
+                  if (heroTask && heroTask.time) {
+                    const [h, m] = heroTask.time.split(":").map(Number);
+                    const total = h * 60 + m + 15;
+                    const nh = Math.min(23, Math.floor(total / 60));
+                    const nm = total % 60;
+                    updateTodo(heroTask.id, {
+                      time: `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`,
+                    });
+                  } else if (heroTask) {
+                    setTaskSheet({ open: true, initial: heroTask });
+                  }
+                }}
+                onTap={() => {
+                  if (heroTask) setTaskSheet({ open: true, initial: heroTask });
+                  else if (heroEvent) setEventSheet({ open: true, date: heroEvent.date });
+                  else setTaskSheet({ open: true });
+                }}
+              />
+            );
+          })()}
         </div>
 
-        {/* Command bar */}
+        {/* Momentum Strip */}
         <div className="px-[20px] mt-[14px]">
-          <CommandBar onAdd={handleQuickAdd} mode={mode} setMode={setMode} />
+          {(() => {
+            const xpMap = { urgent: 30, high: 20, normal: 10, low: 5 } as const;
+            const xp = todos
+              .filter((t) => t.done && (t.due === "Hoy" || t.due === today))
+              .reduce((s, t) => s + xpMap[t.priority], 0);
+            const focusMin = todos
+              .filter((t) => t.done && (t.due === "Hoy" || t.due === today) && t.time)
+              .reduce((s) => s + 25, 0);
+            return <MomentumStrip done={todayDone} xp={xp} focusMin={focusMin} />;
+          })()}
         </div>
 
-        {/* Cronograma */}
-        <div className="px-[20px] mt-[26px]">
+        {/* Timeline horizontal */}
+        <div className="px-[20px] mt-[22px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              {mode === "day" ? "Cronograma de hoy" : "Semana"}
+              {mode === "day" ? "Franja de hoy" : "Semana"}
             </h3>
-            <button
-              type="button"
-              onClick={() => setEventSheet({ open: true, date: today })}
-              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
-            >
-              <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Evento
-            </button>
+            <div className="flex items-center gap-[8px]">
+              <div
+                className="flex rounded-[10px] p-[2px]"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                {(["day", "week"] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setMode(m)}
+                    className="h-[26px] px-[10px] rounded-[8px] font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[0.8px]"
+                    style={{
+                      background: mode === m ? "rgba(255,255,255,0.12)" : "transparent",
+                      color: mode === m ? "#fff" : "rgba(255,255,255,0.5)",
+                    }}
+                  >
+                    {m === "day" ? "Día" : "Semana"}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setEventSheet({ open: true, date: today })}
+                className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
+              >
+                <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Evento
+              </button>
+            </div>
           </div>
           {mode === "day" ? (
-            <DayTimeline
+            <HorizontalTimeline
               events={todaysEvents}
               tasks={todaysTasks}
-              onEmpty={(h) => setEventSheet({ open: true, date: today })}
+              onEmpty={() => setEventSheet({ open: true, date: today })}
               onTaskTap={(t) => setTaskSheet({ open: true, initial: t })}
-              onEventTap={() => {
-                /* editar evento inline en próxima iteración */
-              }}
+              onEventTap={() => setEventSheet({ open: true, date: today })}
             />
           ) : (
             <WeekGantt
@@ -4056,11 +4732,16 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           )}
         </div>
 
-        {/* Inbox / Prioridades */}
-        <div className="px-[20px] mt-[28px]">
+        {/* Command bar compacto */}
+        <div className="px-[20px] mt-[14px]">
+          <CommandBar onAdd={handleQuickAdd} mode={mode} setMode={setMode} />
+        </div>
+
+        {/* Missions */}
+        <div className="px-[20px] mt-[26px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Inbox
+              Misiones
             </h3>
             <div className="flex gap-[4px]">
               {(["today", "overdue", "week"] as const).map((f) => (
@@ -4068,7 +4749,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
                   key={f}
                   type="button"
                   onClick={() => setInboxFilter(f)}
-                  className="h-[24px] px-[10px] rounded-full font-['Geist'] text-[10.5px] font-medium uppercase tracking-[0.8px]"
+                  className="h-[22px] px-[9px] rounded-full font-['Geist'] text-[10px] font-semibold uppercase tracking-[0.7px]"
                   style={{
                     background: inboxFilter === f ? "rgba(255,255,255,0.10)" : "transparent",
                     color: inboxFilter === f ? "#fff" : "rgba(255,255,255,0.45)",
@@ -4080,80 +4761,96 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
               ))}
             </div>
           </div>
-          <div
-            className="rounded-[16px] overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            {inboxTasks.length === 0 ? (
-              <div className="px-[14px] py-[22px] text-center">
-                <span className="font-['Geist'] text-[12.5px] text-white/40">
-                  Nada pendiente aquí. Bien hecho.
-                </span>
-              </div>
-            ) : (
-              inboxTasks.slice(0, 8).map((t, i) => (
-                <TaskInboxRow
-                  key={t.id}
-                  todo={t}
-                  index={i}
-                  onToggle={() => toggleTodo(t.id)}
-                  onTap={() => setTaskSheet({ open: true, initial: t })}
-                />
-              ))
-            )}
+          {inboxTasks.length === 0 ? (
             <button
               type="button"
               onClick={() => setTaskSheet({ open: true })}
-              className="w-full h-[42px] px-[14px] flex items-center gap-[10px] text-left active:bg-white/[0.03]"
-              style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
+              style={{
+                background:
+                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                border: "1px dashed rgba(255,255,255,0.10)",
+              }}
             >
-              <Plus className="h-[13px] w-[13px] text-white/40" strokeWidth={2} />
-              <span className="font-['Geist'] text-[12.5px] text-white/45">Añadir tarea</span>
+              <Rocket className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
+              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
+                Lanza tu primera misión
+              </span>
+              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
+                Captura una tarea y súmala al día.
+              </span>
             </button>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-[8px]">
+              {inboxTasks.slice(0, 8).map((t) => (
+                <MissionCard
+                  key={t.id}
+                  todo={t}
+                  onToggle={() => toggleTodo(t.id)}
+                  onTap={() => setTaskSheet({ open: true, initial: t })}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={() => setTaskSheet({ open: true })}
+                className="h-[38px] rounded-[12px] flex items-center justify-center gap-[6px] active:bg-white/[0.03]"
+                style={{ border: "1px dashed rgba(255,255,255,0.10)" }}
+              >
+                <Plus className="h-[12px] w-[12px] text-white/50" strokeWidth={2} />
+                <span className="font-['Geist'] text-[12px] text-white/55">Añadir misión</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Entregables */}
-        <div className="px-[20px] mt-[28px]">
+        {/* Proyectos en vuelo */}
+        <div className="px-[20px] mt-[26px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Entregables
+              Proyectos en vuelo
             </h3>
             <button
               type="button"
               onClick={() => setProjectSheet({ open: true })}
-              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
             >
               <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Nuevo
             </button>
           </div>
-          <div
-            className="rounded-[16px] overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            {projects.length === 0 ? (
-              <div className="px-[14px] py-[22px] text-center">
-                <span className="font-['Geist'] text-[12.5px] text-white/40">
-                  Sin entregables. Crea uno para dividir tu trabajo.
-                </span>
-              </div>
-            ) : (
-              projects
-                .slice(0, 6)
-                .map((p, i) => (
-                  <DeliverableRow
-                    key={p.id}
-                    project={p}
-                    index={i}
-                    onTap={() => setProjectSheet({ open: true, initial: p })}
-                  />
-                ))
-            )}
-          </div>
+          {projects.length === 0 ? (
+            <button
+              type="button"
+              onClick={() => setProjectSheet({ open: true })}
+              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
+              style={{
+                background:
+                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                border: "1px dashed rgba(255,255,255,0.10)",
+              }}
+            >
+              <FolderKanban className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
+              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
+                Divide un proyecto grande
+              </span>
+              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
+                Los entregables te dan pista de despegue.
+              </span>
+            </button>
+          ) : (
+            <div className="flex flex-col gap-[10px]">
+              {projects.slice(0, 3).map((p) => (
+                <ProjectFlightCard
+                  key={p.id}
+                  project={p}
+                  onTap={() => setProjectSheet({ open: true, initial: p })}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Metas */}
-        <div className="px-[20px] mt-[28px]">
+        {/* Metas — anillos */}
+        <div className="px-[20px] mt-[26px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
               Metas
@@ -4161,31 +4858,41 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             <button
               type="button"
               onClick={() => setGoalSheet({ open: true })}
-              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
             >
               <Plus className="h-[11px] w-[11px]" strokeWidth={2} /> Meta
             </button>
           </div>
-          <div
-            className="rounded-[16px] overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            {goals.length === 0 ? (
-              <div className="px-[14px] py-[22px] text-center">
-                <span className="font-['Geist'] text-[12.5px] text-white/40">
-                  Define tu primera meta trimestral.
-                </span>
-              </div>
-            ) : (
-              goals.map((g, i) => (
-                <GoalRow key={g.id} goal={g} index={i} onTap={() => setGoalSheet({ open: true, initial: g })} />
-              ))
-            )}
-          </div>
+          {goals.length === 0 ? (
+            <button
+              type="button"
+              onClick={() => setGoalSheet({ open: true })}
+              className="w-full rounded-[16px] p-[18px] text-left flex flex-col items-center gap-[8px] active:opacity-90"
+              style={{
+                background:
+                  "radial-gradient(circle at top, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                border: "1px dashed rgba(255,255,255,0.10)",
+              }}
+            >
+              <Target className="h-[22px] w-[22px] text-white/50" strokeWidth={1.6} />
+              <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
+                Define tu primera meta
+              </span>
+              <span className="font-['Geist'] text-[11.5px] text-white/45 text-center">
+                Sin norte no hay velocidad.
+              </span>
+            </button>
+          ) : (
+            <div className="grid grid-cols-2 gap-[10px]">
+              {goals.slice(0, 6).map((g) => (
+                <GoalRing key={g.id} goal={g} onTap={() => setGoalSheet({ open: true, initial: g })} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Aprender */}
-        <div className="px-[20px] mt-[28px]">
+        <div className="px-[20px] mt-[26px]">
           <div className="flex items-end justify-between pb-[10px]">
             <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
               Aprender
@@ -4193,7 +4900,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             <button
               type="button"
               onClick={() => setLearnOpen(true)}
-              className="font-['Geist'] text-[11px] font-medium uppercase tracking-[1.2px] text-white/50 active:text-white/80 flex items-center gap-[4px]"
+              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/50 active:text-white/80 flex items-center gap-[3px]"
             >
               Ver rutas <ArrowRight className="h-[11px] w-[11px]" strokeWidth={2} />
             </button>
@@ -4222,52 +4929,55 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           </button>
         </div>
 
-        {/* Recos IA */}
+        {/* Coach IA */}
         {activeRecos.length > 0 && (
-          <div className="mt-[28px]">
-            <div className="px-[20px] pb-[10px]">
+          <div className="mt-[26px]">
+            <div className="px-[20px] pb-[10px] flex items-center gap-[6px]">
+              <Sparkles className="h-[13px] w-[13px] text-white/60" strokeWidth={1.8} />
               <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-                Recos IA
+                Coach IA
               </h3>
             </div>
-            <div className="-mx-[0] px-[20px] flex gap-[10px] overflow-x-auto no-scrollbar">
-              {activeRecos.slice(0, 8).map((r) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => dismissRecommendation(r.id)}
-                  className="shrink-0 max-w-[240px] rounded-[12px] px-[12px] py-[10px] text-left flex flex-col gap-[4px] active:opacity-80"
-                  style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <span
-                    className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1px]"
+            <div className="px-[20px] flex gap-[10px] overflow-x-auto no-scrollbar">
+              {activeRecos.slice(0, 8).map((r) => {
+                const c =
+                  r.level === "urgent"
+                    ? "#F87171"
+                    : r.level === "warn"
+                      ? "#F5B944"
+                      : r.level === "success"
+                        ? "#4ADE80"
+                        : "#FFFFFF";
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => dismissRecommendation(r.id)}
+                    className="shrink-0 max-w-[260px] rounded-[14px] px-[14px] py-[12px] text-left flex flex-col gap-[6px] active:opacity-80"
                     style={{
-                      color:
-                        r.level === "urgent"
-                          ? "#F87171"
-                          : r.level === "warn"
-                            ? "#F5B944"
-                            : r.level === "success"
-                              ? "#4ADE80"
-                              : "rgba(255,255,255,0.5)",
+                      background:
+                        "radial-gradient(circle at top left, rgba(255,255,255,0.05), rgba(255,255,255,0.015))",
+                      border: `1px solid ${c}30`,
                     }}
                   >
-                    {r.level === "urgent"
-                      ? "Urgente"
-                      : r.level === "warn"
-                        ? "Atención"
-                        : r.level === "success"
-                          ? "Buena"
-                          : "Nota"}
-                  </span>
-                  <span className="font-['Geist'] text-[12.5px] font-medium text-white/90 line-clamp-2">
-                    {r.title}
-                  </span>
-                </button>
-              ))}
+                    <span
+                      className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1px]"
+                      style={{ color: c }}
+                    >
+                      {r.level === "urgent"
+                        ? "Actúa ya"
+                        : r.level === "warn"
+                          ? "Atención"
+                          : r.level === "success"
+                            ? "Buen ritmo"
+                            : "Sugerencia"}
+                    </span>
+                    <span className="font-['Geist'] text-[12.5px] font-medium text-white/95 line-clamp-3">
+                      {r.title}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -4276,6 +4986,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
           <FooterMark>Tu negocio crece contigo</FooterMark>
         </div>
       </div>
+
 
       {/* Sheets */}
       <TaskSheet
