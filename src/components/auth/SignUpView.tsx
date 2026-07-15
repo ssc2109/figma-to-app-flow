@@ -2,17 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
-import {
-  AppleIcon,
-  BackArrow,
-  Divider,
-  Field,
-  GoogleIcon,
-  PhoneIcon,
-  PrimaryButton,
-  SocialButton,
-  useIsAppleDevice,
-} from "./shared";
+import { AppleIcon, Field, GoogleIcon, PrimaryButton, SocialButton, useIsAppleDevice } from "./shared";
 
 export default function SignUpView({ onBack }: { onBack: () => void }) {
   const isApple = useIsAppleDevice();
@@ -31,15 +21,12 @@ export default function SignUpView({ onBack }: { onBack: () => void }) {
       const { error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        },
+        options: { emailRedirectTo: `${window.location.origin}/` },
       });
       if (error) throw error;
       toast.success("¡Casi listo! Revisa tu correo para confirmar tu cuenta");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "No pudimos crear tu cuenta";
-      toast.error(msg);
+      toast.error(err instanceof Error ? err.message : "No pudimos crear tu cuenta");
     } finally {
       setLoading(false);
     }
@@ -48,81 +35,51 @@ export default function SignUpView({ onBack }: { onBack: () => void }) {
   const handleOAuth = async (provider: "google" | "apple") => {
     setLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin,
-      });
+      const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: window.location.origin });
       if (result.error) {
-        toast.error(result.error.message ?? "No se pudo continuar con " + provider);
+        toast.error(result.error.message ?? "No se pudo continuar");
         setLoading(false);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Algo salió mal";
-      toast.error(msg);
+      toast.error(err instanceof Error ? err.message : "Algo salió mal");
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col gap-[18px]">
-      <div className="flex items-center gap-[10px] -mt-[4px]">
-        <button
-          type="button"
-          onClick={onBack}
-          className="w-[36px] h-[36px] rounded-full flex items-center justify-center text-white/70 active:text-white active:bg-white/[0.05] transition"
-          aria-label="Volver"
-        >
-          <BackArrow />
-        </button>
-        <span className="text-[13px] text-white/55 font-['Geist']">Volver</span>
-      </div>
-
-      <div className="text-center mb-[4px]">
-        <h1 className="font-['Bai_Jamjuree'] text-[24px] font-medium text-white tracking-tight leading-none">
+    <div className="flex flex-col gap-[24px]">
+      <div>
+        <h1 className="font-['Bai_Jamjuree'] text-[26px] font-medium text-white tracking-tight leading-none">
           Crea tu cuenta
         </h1>
-        <p className="mt-[8px] text-white/50 text-[13.5px] font-['Geist']">
-          Empieza a ordenar tu negocio en minutos
+        <p className="mt-[10px] text-white/45 text-[14px] font-['Geist']">
+          Ordena tu negocio en minutos
         </p>
       </div>
 
       <div className="flex flex-col gap-[10px]">
+        <SocialButton icon={<GoogleIcon />} onClick={() => handleOAuth("google")} disabled={loading}>
+          Continuar con Google
+        </SocialButton>
         {isApple && (
           <SocialButton icon={<AppleIcon />} onClick={() => handleOAuth("apple")} disabled={loading}>
-            Registrarme con Apple
+            Continuar con Apple
           </SocialButton>
         )}
-        <SocialButton icon={<GoogleIcon />} onClick={() => handleOAuth("google")} disabled={loading}>
-          Registrarme con Google
-        </SocialButton>
-        <SocialButton
-          icon={<PhoneIcon />}
-          disabled
-          suffix={
-            <span className="ml-[4px] text-[10px] uppercase tracking-wider text-white/40 font-medium">
-              Muy pronto
-            </span>
-          }
-        >
-          <span className="text-white/60">Registrarme con SMS</span>
-        </SocialButton>
       </div>
 
-      <Divider label="o con correo" />
+      <div className="flex items-center gap-[12px]">
+        <div className="h-px flex-1 bg-white/10" />
+        <span className="text-[11px] text-white/35 font-['Geist']">o con correo</span>
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
 
-      <form onSubmit={handleSignUp} className="flex flex-col gap-[12px]">
+      <form onSubmit={handleSignUp} className="flex flex-col gap-[10px]">
+        <Field value={email} onChange={setEmail} placeholder="Correo" type="email" autoComplete="email" />
         <Field
-          label="Correo"
-          value={email}
-          onChange={setEmail}
-          placeholder="tu@correo.com"
-          type="email"
-          autoComplete="email"
-        />
-        <Field
-          label="Contraseña"
           value={password}
           onChange={setPassword}
-          placeholder="Mínimo 8 caracteres"
+          placeholder="Contraseña (mín. 8)"
           type="password"
           autoComplete="new-password"
         />
@@ -131,21 +88,18 @@ export default function SignUpView({ onBack }: { onBack: () => void }) {
         </PrimaryButton>
       </form>
 
-      <p className="text-[11px] text-white/40 font-['Geist'] text-center leading-relaxed px-[8px]">
-        Al crear una cuenta aceptas los{" "}
-        <span className="text-white/60 underline underline-offset-2">Términos</span> y la{" "}
-        <span className="text-white/60 underline underline-offset-2">Política de Privacidad</span>{" "}
-        de Trax.
+      <p className="text-[11px] text-white/35 font-['Geist'] text-center leading-relaxed">
+        Al continuar aceptas los{" "}
+        <span className="text-white/55 underline underline-offset-2">Términos</span> y la{" "}
+        <span className="text-white/55 underline underline-offset-2">Privacidad</span> de Trax.
       </p>
-
-      <div className="h-px bg-white/[0.07]" />
 
       <button
         type="button"
         onClick={onBack}
-        className="text-[13.5px] text-white/75 font-['Geist'] active:text-white text-center"
+        className="text-[13px] text-white/55 font-['Geist'] active:text-white text-center pt-[4px]"
       >
-        ¿Ya tienes cuenta? <span className="text-white font-medium">Entrar →</span>
+        ¿Ya tienes cuenta? <span className="text-white">Entrar</span>
       </button>
     </div>
   );
