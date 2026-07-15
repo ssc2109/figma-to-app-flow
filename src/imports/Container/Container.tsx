@@ -264,39 +264,53 @@ function Header({
 }
 
 /* ---------- SociaHero ---------- */
-type SociaAction = { label: string; Icon: typeof Package; intent: HomeNavIntent };
+type SociaAction = { label: string; title: string; Icon: typeof Package; intent: HomeNavIntent };
+
+function actionTitle(action: NonNullable<Briefing["insights"][number]["cta"]>["action"]) {
+  if (action === "reponer") return "Abrir inventario";
+  if (action === "cobrar_fiado") return "Revisar fiados";
+  if (action === "ventas") return "Registrar venta";
+  if (action === "finanzas") return "Ver finanzas";
+  if (action === "promo") return "Crear promoción";
+  return "Abrir socIA";
+}
 
 function insightToAction(ins: Briefing["insights"][number]): SociaAction | null {
   if (!ins.cta) return null;
   const a = ins.cta.action;
   const label = getDistinctCtaLabel(ins.cta.label, a, ins.text);
+  const title = actionTitle(a);
   if (a === "reponer")
     return {
       label,
+      title,
       Icon: Package,
       intent: { kind: "reponer", productHint: ins.cta.payload },
     };
   if (a === "cobrar_fiado")
     return {
       label,
+      title,
       Icon: HandCoins,
       intent: { kind: "screen", screen: "negocio" },
     };
   if (a === "ventas")
-    return { label, Icon: PackagePlus, intent: { kind: "sales" } };
+    return { label, title, Icon: PackagePlus, intent: { kind: "sales" } };
   if (a === "finanzas")
     return {
       label,
+      title,
       Icon: Receipt,
       intent: { kind: "screen", screen: "negocio", subview: "finanzas" },
     };
   if (a === "promo")
     return {
       label,
+      title,
       Icon: Sparkles,
       intent: { kind: "screen", screen: "crecer" },
     };
-  return { label, Icon: MessageCircle, intent: { kind: "chat", prompt: ins.text } };
+  return { label, title, Icon: MessageCircle, intent: { kind: "chat", prompt: ins.text } };
 }
 
 /* ---------- SociaAskBar (barra "Pregúntale a socIA") ---------- */
@@ -398,7 +412,7 @@ function SociaAskBar({
             textOverflow: "ellipsis",
           }}
         >
-          {primary.text}
+          {primaryAction.title}
         </span>
         <span
           aria-hidden
