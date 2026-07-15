@@ -12,7 +12,6 @@ export default function SignInView({
   onGoToForgot: () => void;
 }) {
   const isApple = useIsAppleDevice();
-  const [showEmail, setShowEmail] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,70 +44,60 @@ export default function SignInView({
   };
 
   return (
-    <div className="flex flex-col gap-[28px]">
-      <div className="text-center">
+    <div className="flex flex-col gap-[24px]">
+      <div>
         <h1 className="font-['Bai_Jamjuree'] text-[26px] font-medium text-white tracking-tight leading-none">
-          Hola de nuevo
+          Bienvenido
         </h1>
-        <p className="mt-[10px] text-white/45 text-[13.5px] font-['Geist']">
+        <p className="mt-[10px] text-white/45 text-[14px] font-['Geist']">
           Entra a tu negocio
         </p>
       </div>
 
-      {!showEmail ? (
-        <div className="flex flex-col gap-[10px]">
-          <SocialButton icon={<GoogleIcon />} onClick={() => handleOAuth("google")} disabled={loading}>
-            Continuar con Google
+      <div className="flex flex-col gap-[10px]">
+        <SocialButton icon={<GoogleIcon />} onClick={() => handleOAuth("google")} disabled={loading}>
+          Continuar con Google
+        </SocialButton>
+        {isApple && (
+          <SocialButton icon={<AppleIcon />} onClick={() => handleOAuth("apple")} disabled={loading}>
+            Continuar con Apple
           </SocialButton>
-          {isApple && (
-            <SocialButton icon={<AppleIcon />} onClick={() => handleOAuth("apple")} disabled={loading}>
-              Continuar con Apple
-            </SocialButton>
-          )}
+        )}
+      </div>
+
+      <div className="flex items-center gap-[12px]">
+        <div className="h-px flex-1 bg-white/10" />
+        <span className="text-[11px] text-white/35 font-['Geist']">o con correo</span>
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
+
+      <form onSubmit={handleEmail} className="flex flex-col gap-[10px]">
+        <Field value={email} onChange={setEmail} placeholder="Correo" type="email" autoComplete="email" />
+        <Field
+          value={password}
+          onChange={setPassword}
+          placeholder="Contraseña"
+          type="password"
+          autoComplete="current-password"
+        />
+        <div className="flex justify-end -mt-[2px]">
           <button
             type="button"
-            onClick={() => setShowEmail(true)}
-            className="mt-[6px] text-[13px] text-white/50 font-['Geist'] active:text-white/90 self-center py-[8px]"
+            onClick={onGoToForgot}
+            className="text-[12.5px] text-white/50 font-['Geist'] active:text-white/90 py-[4px]"
           >
-            Usar correo y contraseña
+            ¿Olvidaste tu contraseña?
           </button>
         </div>
-      ) : (
-        <form onSubmit={handleEmail} className="flex flex-col gap-[12px]">
-          <Field value={email} onChange={setEmail} placeholder="Correo" type="email" autoComplete="email" />
-          <Field
-            value={password}
-            onChange={setPassword}
-            placeholder="Contraseña"
-            type="password"
-            autoComplete="current-password"
-          />
-          <PrimaryButton type="submit" loading={loading} disabled={!email || !password}>
-            Entrar
-          </PrimaryButton>
-          <div className="flex items-center justify-between mt-[2px]">
-            <button
-              type="button"
-              onClick={() => setShowEmail(false)}
-              className="text-[12.5px] text-white/45 font-['Geist'] active:text-white/90"
-            >
-              ← Volver
-            </button>
-            <button
-              type="button"
-              onClick={onGoToForgot}
-              className="text-[12.5px] text-white/45 font-['Geist'] active:text-white/90"
-            >
-              ¿Olvidaste tu contraseña?
-            </button>
-          </div>
-        </form>
-      )}
+        <PrimaryButton type="submit" loading={loading} disabled={!email || !password}>
+          Entrar
+        </PrimaryButton>
+      </form>
 
       <button
         type="button"
         onClick={onGoToSignUp}
-        className="text-[13px] text-white/55 font-['Geist'] active:text-white text-center pt-[10px]"
+        className="text-[13px] text-white/55 font-['Geist'] active:text-white text-center pt-[6px]"
       >
         ¿Nuevo aquí? <span className="text-white">Crear cuenta</span>
       </button>
