@@ -1,143 +1,159 @@
 
-# Productividad 3.0 — "Command Deck"
+# Productividad 4.0 — "Living Command"
 
-Fuera la sensación de libreta Notion. Entra una **central ejecutiva viva** donde cada elemento empuja al usuario a moverse: números que laten, progreso que avanza a la vista, cronograma comprimido a una franja, y un "próximo movimiento" siempre destacado.
+## Diagnóstico honesto de lo actual
+Lo que hay ahora es una plantilla Notion+Linear rediseñada. Bloques apilados: hero → 3 stats → franja → misiones → proyectos → metas → aprender → coach. Aunque esté con acentos vivos, la estructura sigue siendo **lista sobre lista** — por eso se siente calculadora. Además:
+- La franja horizontal muestra HORAS (06:00, 07:00…) → sensación de agenda vacía.
+- Botón "+ evento" fijo en el header → estorba y grita "formulario".
+- socIA no aparece. Es "productividad personal" desacoplado de Trax.
+- Sin insights: no dice nada sobre tu negocio, solo lista lo que TÚ metiste.
 
-## Diagnóstico de lo actual
-- El cronograma vertical 06:00–22:00 se come 60% del scroll y está vacío el 90% del tiempo → muerto visual.
-- Todo son bloques grises con títulos y "+" → estética de plantilla.
-- No hay jerarquía: pendientes, entregables, metas y aprender pesan igual → nada llama a actuar.
-- Cero feedback de progreso, momentum o recompensa.
+## Cambio mental
+La pantalla deja de ser "gestor de tareas" y pasa a ser **la conciencia productiva del negocio**. socIA vive aquí. Las tareas y metas son consecuencia de insights, no listas huérfanas. La estructura se rompe: menos filas, más composición.
 
-## Principios nuevos
-1. **Un héroe, no diez tarjetas.** Arriba un único bloque grande que responde "¿qué hago AHORA?".
-2. **Cronograma = franja, no columna.** Timeline horizontal de 1 sola fila (~110px alto), scrolleable, con la hora actual centrada.
-3. **Momentum visible.** Barras de progreso, ring de día, contadores que animan, chips de racha de acción.
-4. **Densidad con energía.** Fondo negro puro, pero acentos vivos: verde momentum, ámbar riesgo, rojo urgencia, blanco foco. Micro-gradientes sutiles solo en el héroe y en el ring del día.
-5. **Cero estados vacíos aburridos.** Cada bloque vacío = CTA visual con ilustración tipográfica y verbo de acción ("Lanza tu primera meta", "Captura la primera tarea del día").
-
-## Estructura nueva (top → bottom)
+## Estructura nueva (una sola pieza viva, no bloques apilados)
 
 ```text
 ┌────────────────────────────────────────┐
-│ HEADER compacto: fecha · saludo · ring │  ← ring circular = % del día productivo
+│ AMBIENT HEADER                         │
+│ "Miércoles · semana 3 de julio"        │
+│ Frase viva de socIA (rota c/insight)   │
 ├────────────────────────────────────────┤
-│ NEXT MOVE  (HERO)                      │
-│  ▸ Tarea/evento inmediato, grande      │
-│  ▸ Botón "Hecho" gigante + "Posponer"  │
-│  ▸ Contador "en 12 min" en Bai Jamjuree│
+│ PULSE — canvas circular grande         │
+│  ● Anillo exterior: avance de la       │
+│    meta principal del negocio          │
+│  ● Anillo interior: día productivo     │
+│  ● Centro: número clave con contexto   │
+│    (ej. "S/ 1,240 hoy · +18%")         │
+│  Sin listas. Todo condensado en 1 obj. │
 ├────────────────────────────────────────┤
-│ MOMENTUM STRIP (3 stats vivos)         │
-│  Hechas hoy · Racha · Foco (min)       │
-│  Números grandes + sparkline mini      │
+│ SOCIA WHISPER (integrada, no card)     │
+│ Franja horizontal sutil con la voz de  │
+│ socIA: 1 insight accionable a la vez,  │
+│ swipeable. Ejemplo:                    │
+│  "Tu meta de ventas va 62%. Cierra la  │
+│   cotización de Ana hoy y saltas a 78%"│
+│  → botón fantasma "hazlo"              │
 ├────────────────────────────────────────┤
-│ TIMELINE HORIZONTAL (110px)            │
-│  ── 08 09 [10●] 11 12 13 14 15 ──      │
-│  scroll horizontal, "ahora" centrado   │
+│ HORIZONTE — franja de MESES/SEMANAS    │
+│ Vista mediano plazo (default: 8 sem)   │
+│ Cada semana = columna con densidad de  │
+│ color según carga+cumplimiento.        │
+│ Puntos flotantes = hitos, deadlines,   │
+│ metas venciendo. Tap semana → detalle. │
+│ (Sin "+ evento". Añadir vive dentro    │
+│  del detalle de esa semana.)           │
 ├────────────────────────────────────────┤
-│ COMMAND BAR sticky (compacta)          │
-│  + Añadir…  ⌘K                         │
+│ FOCUS ORB — el "ahora"                 │
+│ Un solo objeto grande, no lista:       │
+│ La acción que MÁS mueve la aguja hoy   │
+│ elegida por socIA cruzando tareas,     │
+│ metas y datos del negocio. Con         │
+│ contexto ("esto sube tu Trax Score").  │
+│ Acciones: hecho · después · no aplica. │
 ├────────────────────────────────────────┤
-│ MISSIONS (Prioridades reimaginadas)    │
-│  Cards tipo "misión" con XP visual,   │
-│  P0/P1 en color, swipe-hecho           │
+│ CONSTELACIÓN DE METAS                  │
+│ Grid orgánico (no grid rígido) de      │
+│ orbes SVG. Tamaño = ambición,          │
+│ opacidad = distancia al target,        │
+│ pulso = actividad reciente. Tap = det. │
+│ Metas del negocio y personales mezcl.  │
 ├────────────────────────────────────────┤
-│ PROYECTOS EN VUELO (max 3, cards)      │
-│  Barra progreso gruesa + días restantes│
-│  Estado con dot pulsante si en riesgo  │
+│ PROYECTOS EN VUELO — tarjetas ancho    │
+│ completo tipo "carta" con progreso     │
+│ como línea de aterrizaje horizontal,   │
+│ no barras. Máx 2 visibles, resto swipe.│
 ├────────────────────────────────────────┤
-│ METAS · anillo compacto por meta       │
-│  Grid 2 col, ring SVG + % + trend      │
-├────────────────────────────────────────┤
-│ APRENDER (intacto, entrada editorial) │
-├────────────────────────────────────────┤
-│ COACH IA (chips proactivos)            │
+│ APRENDER — entrada editorial (intacto) │
 └────────────────────────────────────────┘
 ```
 
-## Bloques en detalle
+## Piezas en detalle
 
-### 1. Header + Day Ring
-- Fecha corta + saludo en 1 línea.
-- **Ring SVG** a la derecha (56px): % de día productivo = `hechas / (hechas + pendientes de hoy)`. Animado al montar.
-- Reemplaza el "ribbon" de 3 números frío.
+### 1. Ambient Header
+- Fecha larga humana ("Miércoles · semana 3 de julio").
+- Debajo, 1 línea de socIA que rota cada 6s con máx 3 mensajes contextuales generados desde `briefing` (ventas hoy, deuda pendiente, meta cercana).
+- Cero botones. Cero "%" flotante. Cero "+ evento".
 
-### 2. Next Move (héroe motivacional)
-- La única card grande de la pantalla (~160px alto).
-- Elige automáticamente: evento en <60 min > tarea P0 vencida > tarea P0 hoy > tarea con hora más próxima > tarea sin hora P1 > "Captura tu próxima acción".
-- Fondo con gradiente sutil `radial-gradient` blanco 4% desde arriba-izq.
-- Título 22px, meta info Bai Jamjuree ("en 12 min", "vence hoy 18:00").
-- **Botón primario grande** "Hecho ✓" (verde suave) + secundario "+15 min" (posponer).
-- Al marcar hecho: micro-animación de check + confeti mínimo + el bloque hace flip al siguiente.
+### 2. Pulse (reemplaza Day Ring + Momentum Strip + Next Move Hero)
+- Un solo canvas circular ~280px al centro.
+- **Anillo exterior grueso** = % de la meta de negocio prioritaria (viene de `goals` marcada como principal, o inferida por socIA si no hay).
+- **Anillo interior fino** = % de tareas hechas hoy.
+- **Centro dinámico**: rota entre 3 lecturas del negocio (ventas hoy vs ayer, stock crítico, deuda por cobrar) en Bai Jamjuree grande + delta con color.
+- Al tap → expande a mini-brief textual.
+- Reemplaza 3 componentes actuales (DayRing + MomentumStrip + NextMoveHero) por 1.
 
-### 3. Momentum Strip
-- 3 pills horizontales: **Hechas hoy** (número que anima con CountUp) · **Racha** (🔥 días seguidos con ≥1 tarea) · **Foco** (min acumulados en tareas con hora hoy).
-- Cada pill con sparkline de últimos 7 días (SVG mini).
+### 3. socIA Whisper
+- Franja sin card, borde superior/inferior hairline `rgba(255,255,255,0.06)`.
+- 1 insight visible, chip discreto "socIA" a la izq, texto en 1-2 líneas, botón fantasma "hazlo" a la derecha que crea tarea automática o dispara acción.
+- Insights vienen de: metas cerca de cumplirse, tareas vencidas, patrones de venta (día lento vs promedio), stock bajo cruzado con tarea "reponer".
+- Swipe horizontal para ver otros insights.
 
-### 4. Timeline horizontal (reemplaza el gigante vertical)
-- Franja 110px alto, scroll-x snap por hora.
-- Rango dinámico: primera hora con evento −1h hasta última +1h; default 07:00-20:00.
-- Bloques de eventos como pills coloreadas; tareas con hora como puntos.
-- Línea "ahora" vertical con label `HH:mm` fijo, centrada al montar.
-- Tap en hueco → crear evento a esa hora.
-- Toggle "Semana" pasa a mini-Gantt horizontal de 7 días (mantenido).
+### 4. Horizonte (reemplaza timeline horaria)
+- Grid horizontal de 8 semanas por defecto (toggle 4s / 8s / 12s discreto).
+- Cada columna = semana. Fondo con densidad `rgba(255,255,255,0.03 → 0.14)` según cuántas tareas/eventos hay ese periodo.
+- Puntos SVG flotantes = deadlines de proyecto, metas venciendo, eventos importantes. Color por tipo.
+- Línea vertical blanca fina marca "semana actual".
+- Tap columna → sheet con el detalle de esa semana (ahí sí aparece "+ añadir").
+- Sin horas. Sin "+ evento" en el header.
 
-### 5. Command Bar
-- Sticky bajo el timeline. Compacta (44px). Input + `+` menú (Tarea/Evento/Entregable/Meta).
+### 5. Focus Orb
+- No es card rectangular con "Hecho ✓". Es un objeto orgánico: circle background con glow sutil, título grande al centro, contexto abajo ("por qué importa").
+- socIA lo elige cruzando: tareas P0 vencidas > eventos hoy > tareas ligadas a la meta prioritaria > acción sugerida (ej. "Cotiza a Ana, tienes 3 pedidos suyos sin cerrar").
+- Acciones minimalistas: hecho (verde), después (ámbar sutil), no aplica (elimina la sugerencia y socIA aprende).
+- Si no hay nada: no muestra CTA de "captura tu primera tarea"; muestra una lectura del negocio ("Vas bien. Descansa o adelanta [X]").
 
-### 6. Missions (Prioridades)
-- Ya no filas Linear grises. Cards horizontales con:
-  - Barra vertical izquierda 3px de color por prioridad (rojo/ámbar/blanco).
-  - Título + due relativo Bai Jamjuree.
-  - "XP" implícito: chip con puntos (P0=30, P1=20, P2=10, P3=5) → suma al momentum del día.
-  - Swipe → hecho (confeti mini) / posponer.
-- Filtros chip Hoy · Vencidas · Semana en la esquina.
-- Vacío: card ilustrada "Sin misiones. Añade la primera y arranca el día."
+### 6. Constelación de Metas
+- No grid 2 columnas rígido. SVG absolute-positioned con orbes distribuidos orgánicamente en un lienzo ~340×220.
+- Tamaño = importancia (target absoluto normalizado).
+- Opacidad = qué tan lejos está del target (más lejos = más apagado).
+- Pulso lento en las que tuvieron actividad esta semana.
+- Tap orbe → sheet de meta.
+- Empty state: 1 orbe grande translúcido con "Define tu norte" (sin lista).
 
-### 7. Proyectos en vuelo
-- Máx 3 cards apiladas (el resto tras "Ver todos").
-- Barra progreso 8px con gradiente verde→blanco, número % Bai Jamjuree grande.
-- Deadline con badge días restantes, rojo si <3.
-- Dot pulsante ámbar si `status === 'late'` o en riesgo.
+### 7. Proyectos en Vuelo
+- Máx 2 cards visibles apiladas con leve overlap tipo naipes.
+- Progreso como pista de aterrizaje horizontal: línea fina con dot que avanza, no barra rellena.
+- Deadline en la esquina, sin badges duros.
+- Swipe lateral revela el resto.
 
-### 8. Metas — Anillos
-- Grid 2 columnas de mini-anillos SVG (60px), % dentro, label debajo.
-- Tap → sheet de edición existente.
-- Trend arrow (↑/↓) según semana anterior (placeholder si no hay data).
-
-### 9. Aprender
-- Se mantiene. Card editorial de entrada + carruseles al expandir. Sin cambios internos.
-
-### 10. Coach IA
-- Chips horizontales al final con recomendaciones proactivas + acción directa (crear tarea desde chip, abrir socIA).
-- Copy motivacional, no descriptivo ("Cierra tu P0 antes de las 12 y libera la tarde", no "Tienes 1 tarea urgente").
+### 8. Aprender
+- Intacto. Card editorial con arrow.
 
 ## Sistema visual
+- Fondo `#000` puro.
+- Cero franjas horarias. Cero botones "+" flotantes en headers.
+- Tipografía: Bai Jamjuree para todos los números/porcentajes/deltas; Geist para prosa.
+- Acentos: verde `#4ADE80` positivo, ámbar `#F5B944` atención, blanco puro foco. Rojo `#F87171` sólo emergencia real.
+- Único gradiente permitido: glow radial suave detrás del Pulse y del Focus Orb.
+- Micro-motion: pulso lento en orbes activos, spring en anillos al montar, transición cross-fade en la voz de socIA.
+- Densidad de scroll ~30% menor que la versión actual porque desaparecen 3 bloques de "listas".
 
-- Fondo: `#000` puro. Cero azul aurora.
-- **Acentos vivos** (reservados, no dispersos):
-  - Verde momentum `#4ADE80` — hechas, progreso positivo.
-  - Ámbar `#F5B944` — en riesgo, racha.
-  - Rojo `#F87171` — urgencia, vencidas.
-  - Blanco puro — foco, CTA primario.
-- Único gradiente permitido: `radial-gradient(circle at top left, rgba(255,255,255,0.06), transparent 60%)` en el héroe.
-- Tipografía: Bai Jamjuree para TODO número/tiempo/%; Geist para texto UI.
-- Radios 20px cards grandes, 14px cards secundarias, 999px pills.
-- Micro-animaciones con `framer-motion`: CountUp en Momentum, flip en Next Move al completar, spring en Ring y anillos de metas al montar.
+## Datos e integración con Trax (esto es lo que la aleja de "plantilla")
+Todo esto se lee vía hooks existentes (`useMe`, `useFinance`, `useInventory`) — sin migraciones nuevas.
+
+- **Pulse centro** ← `useFinance` (ventas hoy vs ayer), fallback inventory (stock crítico), fallback debts.
+- **Pulse anillo exterior** ← `goals` marcada `priority:'high'`, o la meta más cercana a target si no hay marca.
+- **socIA Whisper** ← genera insights client-side cruzando:
+  - `goals` con progreso ≥80% → "estás cerca".
+  - `products` con stock ≤ min → "repón X".
+  - `debts` con vencimiento próximo → "cobra a Y".
+  - `todos` con `due` vencido y `priority` urgent → "cierra Z".
+- **Horizonte densidad** ← count de `todos` + `events` + `projects.dueDate` por semana.
+- **Focus Orb** ← mismo motor de prioridad que `NextMoveHero` pero enriquecido con contexto de negocio ("mueve tu meta de ventas +6%").
+- **Constelación** ← `goals` mezcladas con métricas de negocio como pseudo-metas ("subir ticket promedio", "reducir stock muerto") generadas por socIA.
 
 ## Cambios técnicos
-
-- Archivo: `src/components/MeScreen.tsx` — reescritura del render principal + nuevos sub-componentes:
-  - `DayRing`, `NextMoveHero`, `MomentumStrip`, `HorizontalTimeline`, `MissionCard`, `ProjectFlightCard`, `GoalRing`, `CoachStrip`.
-- Se **elimina** el `DayTimeline` vertical actual y el `FocusRibbon`.
-- Se **conservan y reusan** todos los sheets existentes (TaskSheet, EventSheet, ProjectSheet, GoalSheet) y todos los hooks (`useMe`, `useFinance`, `useInventory`).
-- Se conservan `WeekGantt` (para toggle Semana) y todo `LearnView`.
-- Cero migraciones, cero cambios de backend, cero cambios fuera de MeScreen.
+- `src/components/MeScreen.tsx`: reescritura del render principal + nuevos sub-componentes:
+  - `AmbientHeader`, `PulseCanvas`, `SociaWhisper`, `HorizonteStrip`, `FocusOrb`, `GoalConstellation`, `FlightCards`.
+- **Eliminar**: `DayRing`, `NextMoveHero`, `MomentumStrip`, `HorizontalTimeline` (horaria), `CommandBar` en header, botón "+ Evento" del header, `MissionCard` como bloque separado, `GoalRing` grid.
+- **Conservar**: todos los sheets (TaskSheet, EventSheet, ProjectSheet, GoalSheet), `LearnView`, hooks, `WeekGantt` internamente (para el detalle de semana en Horizonte).
+- Sin migraciones. Sin cambios fuera de `MeScreen.tsx` salvo un helper puro `src/lib/productivity/insights.ts` para generar los whispers de socIA a partir de los hooks.
 
 ## Fuera de alcance
-- No toca Home, Negocio ni el interior de Aprender.
-- No añade tracking de tiempo real ("foco" se calcula desde tareas con hora completadas, no un timer).
-- La racha se calcula desde `todos` con `done` de días previos (client-side por ahora).
+- No toca Home, Negocio, ni interior de Aprender.
+- No mueve al backend nada nuevo — socIA en esta pantalla es reglas locales sobre datos existentes; cuando exista endpoint dedicado se enchufa fácil.
+- No añade timers ni tracking en vivo de foco.
 
 ## Resultado esperado
-Abres Productividad y ves inmediatamente: **qué hacer ahora** (héroe), **cuánto llevas** (momentum + ring), **qué viene en el día** (franja horizontal), y luego misiones, proyectos, metas y aprender apilados con densidad viva. Sensación de central ejecutiva, no de libreta.
+Abres Productividad y **no ves una lista**. Ves un pulso circular con el número que importa del negocio, una voz de socIA que te dice qué mover, un horizonte de semanas que respira según tu carga, un solo foco vivo al centro y tus metas como constelación. Trax, no una plantilla.
