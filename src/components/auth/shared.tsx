@@ -111,6 +111,37 @@ export function SocialButton({
   );
 }
 
+export function SocialCircle({
+  children,
+  onClick,
+  disabled,
+  label,
+  soon,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  label: string;
+  soon?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className="relative h-[46px] w-[46px] rounded-full border border-white/10 bg-white/[0.04] flex items-center justify-center active:bg-white/[0.08] disabled:opacity-50 transition"
+    >
+      <span className={soon ? "opacity-50" : ""}>{children}</span>
+      {soon && (
+        <span className="absolute -bottom-[14px] left-1/2 -translate-x-1/2 text-[8.5px] tracking-[0.06em] uppercase text-white/40 font-['Geist']">
+          Pronto
+        </span>
+      )}
+    </button>
+  );
+}
+
 export function Divider({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-[10px]">
@@ -140,6 +171,17 @@ export function AppleIcon() {
       <path
         fill="#fff"
         d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"
+      />
+    </svg>
+  );
+}
+
+export function FacebookIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+      <path
+        fill="#fff"
+        d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 4.99 3.66 9.13 8.44 9.88v-6.99H7.9v-2.89h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.77l-.44 2.89h-2.33V22c4.78-.75 8.44-4.89 8.44-9.94z"
       />
     </svg>
   );
