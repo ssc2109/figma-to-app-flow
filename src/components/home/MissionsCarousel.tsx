@@ -1,116 +1,105 @@
 import { motion } from "motion/react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { Briefing } from "@/lib/api/briefing.functions";
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
 
-const TONE_META: Record<
-  Briefing["insights"][number]["tone"],
-  { label: string; color: string; bg: string; category: string }
-> = {
-  warning: { label: "Crítico", color: "#F87171", bg: "rgba(248,113,113,0.12)", category: "Atención" },
-  opportunity: { label: "Oportunidad", color: "#FCD34D", bg: "rgba(252,211,77,0.12)", category: "Crecer" },
-  celebration: { label: "Logro", color: "#4ADE80", bg: "rgba(74,222,128,0.12)", category: "Hoy" },
-  info: { label: "Nota", color: "rgba(255,255,255,0.7)", bg: "rgba(255,255,255,0.08)", category: "General" },
+type GrowCard = {
+  tag: string;
+  title: string;
+  grad: string;
+  intent: HomeNavIntent;
 };
 
+const GROW: GrowCard[] = [
+  {
+    tag: "Promo",
+    title: "Crea una promo para el finde",
+    grad:
+      "radial-gradient(110% 110% at 20% 20%, #db9140 0%, transparent 50%), radial-gradient(120% 120% at 84% 26%, #ce4f82 0%, transparent 50%), linear-gradient(165deg, #2a1622 0%, #150b12 100%)",
+    intent: { kind: "chat", prompt: "Ayúdame a crear una promo para este fin de semana" },
+  },
+  {
+    tag: "Combo",
+    title: "Arma un combo y vende más",
+    grad:
+      "radial-gradient(110% 110% at 20% 14%, #6244b8 0%, transparent 52%), radial-gradient(120% 120% at 84% 30%, #9a57e0 0%, transparent 48%), linear-gradient(165deg, #1c1733 0%, #0d0a18 100%)",
+    intent: { kind: "chat", prompt: "Sugiéreme combos de productos para vender más" },
+  },
+  {
+    tag: "Idea",
+    title: "Comparte tu catálogo por WhatsApp",
+    grad:
+      "radial-gradient(110% 110% at 18% 16%, #1f7fc2 0%, transparent 52%), radial-gradient(120% 120% at 86% 26%, #2cc0d6 0%, transparent 50%), linear-gradient(165deg, #102a3f 0%, #0a1622 100%)",
+    intent: { kind: "screen", screen: "crecer" },
+  },
+];
+
 export default function MissionsCarousel({
-  briefing,
-  isLoading,
   onIntent,
 }: {
-  briefing: Briefing | undefined;
-  isLoading: boolean;
+  briefing?: Briefing | undefined;
+  isLoading?: boolean;
   onIntent: (i: HomeNavIntent) => void;
 }) {
-  const all = briefing?.insights ?? [];
-  const items = all.length <= 1 ? all : all.slice(1);
-
-  if (!isLoading && items.length === 0) return null;
-
-  const handle = (ins: Briefing["insights"][number]) => {
-    if (!ins.cta) {
-      onIntent({ kind: "chat", prompt: ins.text });
-      return;
-    }
-    const a = ins.cta.action;
-    if (a === "reponer") onIntent({ kind: "reponer", productHint: ins.cta.payload });
-    else if (a === "cobrar_fiado") onIntent({ kind: "screen", screen: "negocio" });
-    else if (a === "finanzas") onIntent({ kind: "screen", screen: "negocio", subview: "finanzas" });
-    else if (a === "ventas") onIntent({ kind: "sales" });
-    else if (a === "promo") onIntent({ kind: "screen", screen: "crecer" });
-    else onIntent({ kind: "chat", prompt: ins.text });
-  };
-
   return (
-    <div className="w-full flex flex-col gap-[12px]">
-      <div className="flex items-end justify-between">
-        <div className="flex flex-col gap-[4px]">
-          <span className="font-['Geist'] text-[10.5px] font-semibold tracking-[1.6px] uppercase text-[rgba(255,255,255,0.5)]">
-            Sugerido por socIA
-          </span>
-          <h2 className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[26px] text-white tracking-[-0.4px]">
-            Tus tareas
-          </h2>
-        </div>
-        <Sparkles className="h-[16px] w-[16px] text-[rgba(255,255,255,0.35)] mb-[6px]" strokeWidth={1.6} />
+    <div className="w-full flex flex-col gap-[14px]">
+      <div className="flex flex-col gap-[4px]">
+        <span className="font-['Geist'] text-[10.5px] font-semibold tracking-[1.6px] uppercase text-[rgba(255,255,255,0.5)]">
+          Ideas de socIA
+        </span>
+        <h2 className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[26px] text-white tracking-[-0.4px]">
+          Para crecer
+        </h2>
       </div>
 
-      <div className="-mx-[20px] px-[20px] flex gap-[12px] overflow-x-auto no-scrollbar pb-[4px] snap-x snap-mandatory">
-        {isLoading
-          ? Array.from({ length: 2 }).map((_, i) => (
+      <div className="-mx-[20px] px-[20px] flex gap-[14px] overflow-x-auto no-scrollbar pb-[4px]">
+        {GROW.map((c, i) => (
+          <motion.button
+            key={i}
+            type="button"
+            onClick={() => onIntent(c.intent)}
+            whileTap={{ scale: 0.985 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.06 }}
+            className="shrink-0 w-[66%] max-w-[250px] rounded-[22px] overflow-hidden text-left p-0"
+            style={{
+              background: "#0E0E12",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <div className="relative h-[132px]" style={{ background: c.grad }}>
               <div
-                key={i}
-                className="snap-start shrink-0 w-[78%] h-[170px] rounded-[22px] trax-skeleton"
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(to top, rgba(8,8,12,0.55) 0%, transparent 52%)",
+                }}
               />
-            ))
-          : items.map((ins, i) => {
-              const meta = TONE_META[ins.tone];
-              return (
-                <motion.button
-                  key={ins.id ?? i}
-                  type="button"
-                  onClick={() => handle(ins)}
-                  whileTap={{ scale: 0.985 }}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
-                  className="snap-start shrink-0 w-[78%] rounded-[22px] p-[18px] text-left flex flex-col gap-[14px]"
-                  style={{
-                    background: "#0F0F12",
-                    border: "1px solid rgba(255,255,255,0.07)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
-                  }}
-                >
-                  <div className="flex items-center gap-[8px]">
-                    <span
-                      className="px-[10px] py-[4px] rounded-full font-['Geist'] text-[10.5px] font-semibold tracking-[0.8px] uppercase"
-                      style={{ background: meta.bg, color: meta.color }}
-                    >
-                      {meta.label}
-                    </span>
-                    <span className="font-['Geist'] text-[10.5px] tracking-[0.8px] uppercase text-[rgba(255,255,255,0.45)]">
-                      {meta.category}
-                    </span>
-                  </div>
-
-                  <div className="flex-1">
-                    <p className="font-['Geist'] text-[15px] leading-[21px] text-white/95">
-                      {ins.text}
-                    </p>
-                  </div>
-
-                  {ins.cta && (
-                    <div className="flex items-center justify-between pt-[4px]">
-                      <span className="inline-flex items-center gap-[6px] font-['Geist'] text-[12.5px] font-medium text-white">
-                        {ins.cta.label}
-                        <ArrowRight className="h-[12px] w-[12px]" strokeWidth={2.2} />
-                      </span>
-                      <span className="text-[16px]">{ins.emoji}</span>
-                    </div>
-                  )}
-                </motion.button>
-              );
-            })}
+              <span
+                className="absolute left-[12px] bottom-[12px] px-[11px] py-[5px] rounded-full font-['Geist'] text-[10.5px] font-semibold tracking-[0.4px] text-white"
+                style={{
+                  background: "rgba(10,10,14,0.45)",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                }}
+              >
+                {c.tag}
+              </span>
+            </div>
+            <div className="px-[16px] pt-[14px] pb-[18px] flex items-center justify-between gap-[10px]">
+              <span className="font-['Geist'] text-[15.5px] font-semibold text-white tracking-[-0.2px] leading-[20px]">
+                {c.title}
+              </span>
+              <ArrowRight
+                size={16}
+                strokeWidth={2.2}
+                className="shrink-0 text-[rgba(255,255,255,0.4)]"
+              />
+            </div>
+          </motion.button>
+        ))}
       </div>
     </div>
   );
