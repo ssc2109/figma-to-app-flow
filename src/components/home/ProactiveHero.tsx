@@ -129,6 +129,44 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
     else onIntent({ kind: "chat", prompt: insight.text });
   };
 
+  // Etiqueta genérica por acción para evitar que la IA repita el texto del insight en el CTA.
+  const GENERIC_LABEL: Record<InsightAction, string> = {
+    reponer: "Reponer",
+    cobrar_fiado: "Cobrar",
+    finanzas: "Ver",
+    ventas: "Registrar",
+    promo: "Crear promo",
+    chat: "Ver",
+  };
+
+  const sanitizeCtaLabel = (
+    label: string,
+    action: InsightAction,
+    text: string,
+  ): string => {
+    const clean = label.trim();
+    // Muy largo o con más de 2 palabras → genérico
+    const words = clean.split(/\s+/).filter(Boolean);
+    if (words.length > 2 || clean.length > 14) return GENERIC_LABEL[action];
+    // Solapa con el texto del insight → genérico
+    const norm = (s: string) =>
+      s
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9\s]/g, " ");
+    const stop = new Set([
+      "a","al","de","del","el","la","los","las","un","una","y","o","en","para","por",
+      "que","con","es","le","lo","su","tu","mi","hoy","ver","ya","muy","mas","más",
+    ]);
+    const textTokens = new Set(
+      norm(text).split(/\s+/).filter((w) => w.length > 2 && !stop.has(w)),
+    );
+    const labelTokens = norm(clean).split(/\s+/).filter((w) => w.length > 2 && !stop.has(w));
+    if (labelTokens.some((w) => textTokens.has(w))) return GENERIC_LABEL[action];
+    return clean;
+  };
+
   const greeting =
     briefing?.greeting ??
     (hour < 12
