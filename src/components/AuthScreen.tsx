@@ -3,14 +3,15 @@ import { AnimatePresence, motion } from "motion/react";
 import SignInView from "./auth/SignInView";
 import SignUpView from "./auth/SignUpView";
 import ForgotPasswordView from "./auth/ForgotPasswordView";
+import PhoneAuthView from "./auth/PhoneAuthView";
 import { TraxWordmark } from "./auth/shared";
 import authBg from "@/assets/auth-bg.mp4.asset.json";
 import authBgPoster from "@/assets/auth-bg-poster.jpg.asset.json";
 
-type View = "signin" | "signup" | "forgot";
+type View = "signin" | "signup" | "forgot" | "phone";
 
 const dirFor = (from: View, to: View): 1 | -1 => {
-  const order: Record<View, number> = { signin: 0, signup: 1, forgot: 2 };
+  const order: Record<View, number> = { signin: 0, signup: 1, forgot: 2, phone: 3 };
   return order[to] > order[from] ? 1 : -1;
 };
 
@@ -92,10 +93,17 @@ export default function AuthScreen() {
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             >
               {view === "signin" && (
-                <SignInView onGoToSignUp={() => go("signup")} onGoToForgot={() => go("forgot")} />
+                <SignInView
+                  onGoToSignUp={() => go("signup")}
+                  onGoToForgot={() => go("forgot")}
+                  onGoToPhone={() => go("phone")}
+                />
               )}
-              {view === "signup" && <SignUpView onBack={() => go("signin")} />}
+              {view === "signup" && (
+                <SignUpView onBack={() => go("signin")} onGoToPhone={() => go("phone")} />
+              )}
               {view === "forgot" && <ForgotPasswordView onBack={() => go("signin")} />}
+              {view === "phone" && <PhoneAuthView onBack={() => go("signin")} />}
             </motion.div>
           </AnimatePresence>
         </div>

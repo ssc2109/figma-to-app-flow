@@ -16,9 +16,11 @@ import {
 export default function SignInView({
   onGoToSignUp,
   onGoToForgot,
+  onGoToPhone,
 }: {
   onGoToSignUp: () => void;
   onGoToForgot: () => void;
+  onGoToPhone: () => void;
 }) {
   void onGoToSignUp;
   const isApple = useIsAppleDevice();
@@ -105,11 +107,7 @@ export default function SignInView({
         >
           <FacebookIcon />
         </SocialCircle>
-        <SocialCircle
-          label="Teléfono"
-          onClick={() => toast.info("Ingreso por SMS estará disponible pronto")}
-          soon
-        >
+        <SocialCircle label="Teléfono" onClick={onGoToPhone} disabled={loading}>
           <PhoneIcon />
         </SocialCircle>
       </div>

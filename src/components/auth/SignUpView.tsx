@@ -13,7 +13,7 @@ import {
   useIsAppleDevice,
 } from "./shared";
 
-export default function SignUpView({ onBack }: { onBack: () => void }) {
+export default function SignUpView({ onBack, onGoToPhone }: { onBack: () => void; onGoToPhone: () => void }) {
   void onBack;
   const isApple = useIsAppleDevice();
   const [email, setEmail] = useState("");
@@ -99,11 +99,7 @@ export default function SignUpView({ onBack }: { onBack: () => void }) {
         >
           <FacebookIcon />
         </SocialCircle>
-        <SocialCircle
-          label="Teléfono"
-          onClick={() => toast.info("Ingreso por SMS estará disponible pronto")}
-          soon
-        >
+        <SocialCircle label="Teléfono" onClick={onGoToPhone} disabled={loading}>
           <PhoneIcon />
         </SocialCircle>
       </div>
