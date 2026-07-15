@@ -454,7 +454,7 @@ function SociaHero({
     firstInsight?.text ??
     briefing?.greeting.line2 ??
     "Buen momento para revisar tu día. Aquí estoy para lo que necesites.";
-  const action = firstInsight ? insightToAction(firstInsight) : null;
+  
 
   const bodyWords = text.split(" ").length;
   const bodyStart = 0.3;
