@@ -41,19 +41,29 @@ export default function AuthScreen() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[20px] py-[20px] relative overflow-hidden">
+      {/* Fallback gradient in case video can't play (iOS Low Power Mode, codec, etc.) */}
+      <div
+        aria-hidden
+        className="absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 30% 20%, #1a1f3a 0%, #0a0d1f 45%, #000 100%)",
+        }}
+      />
       {/* Background video */}
       <video
+        ref={videoRef}
+        src={authBg.url}
         autoPlay
         loop
         muted
         playsInline
-        {...({ "webkit-playsinline": "true" } as Record<string, string>)}
+        {...({ "webkit-playsinline": "true", "x5-playsinline": "true" } as Record<string, string>)}
         preload="auto"
         disableRemotePlayback
+        controls={false}
         className="absolute inset-0 w-full h-full object-cover z-0"
-      >
-        <source src={authBg.url} type="video/mp4" />
-      </video>
+      />
       {/* Dark overlay for legibility */}
       <div className="absolute inset-0 bg-black/55 z-0" />
 
