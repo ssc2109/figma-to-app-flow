@@ -13,10 +13,9 @@ interface TabProps {
   onClick?: () => void;
   Icon: React.ComponentType<{ className?: string; filled?: boolean }>;
   label: string;
-  glow?: boolean;
 }
 
-function Tab({ active, onClick, Icon, label, glow }: TabProps) {
+function Tab({ active, onClick, Icon, label }: TabProps) {
   return (
     <motion.button
       type="button"
@@ -27,12 +26,12 @@ function Tab({ active, onClick, Icon, label, glow }: TabProps) {
       className="relative flex items-center justify-center flex-1 h-[56px]"
     >
       <div className="relative flex items-center justify-center h-[40px] w-[52px]">
-        {glow && (
+        {active && (
           <span
-            className="absolute inset-0 rounded-full"
+            className="absolute h-[34px] w-[34px] rounded-full"
             style={{
               background:
-                "radial-gradient(60% 60% at 50% 50%, rgba(180,200,255,0.22) 0%, transparent 70%)",
+                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%)",
             }}
           />
         )}
