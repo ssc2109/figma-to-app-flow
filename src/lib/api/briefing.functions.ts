@@ -409,7 +409,7 @@ function fallbackBriefing(
       tone: "warning",
       emoji: "💰",
       text: `${f.name} debe S/ ${f.amount.toFixed(0)} vencido hace ${f.days} d.`,
-      cta: { label: `Cobrarle a ${f.name.split(" ")[0]}`, action: "cobrar_fiado" },
+      cta: { label: "Cobrar", action: "cobrar_fiado", payload: f.name },
     });
   }
   if (snap.lowStock[0]) {
