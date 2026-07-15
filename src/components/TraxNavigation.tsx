@@ -14,7 +14,9 @@ import AuthScreen from "@/components/AuthScreen";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import SettingsScreen from "@/components/SettingsScreen";
 import PlansScreen from "@/components/PlansScreen";
+import PreferencesEffects from "@/components/PreferencesEffects";
 import { InventoryProvider } from "@/data/inventory";
+
 import { FinanceProvider } from "@/data/finance";
 import { MeProvider } from "@/data/me";
 import { QuickActionsProvider, useQuickActions, type ActionId } from "@/data/quickActions";
