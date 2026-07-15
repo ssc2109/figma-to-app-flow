@@ -14,6 +14,7 @@ import {
 } from "./shared";
 
 export default function SignUpView({ onBack }: { onBack: () => void }) {
+  void onBack;
   const isApple = useIsAppleDevice();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
