@@ -21,24 +21,24 @@ function Tab({ active, onClick, Icon, label }: TabProps) {
       type="button"
       onClick={onClick}
       aria-label={label}
-      whileTap={{ scale: 0.86 }}
-      transition={{ type: "spring", stiffness: 500, damping: 28 }}
-      className="relative flex items-center justify-center flex-1 h-[56px]"
+      whileTap={{ scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 520, damping: 30 }}
+      className="relative flex items-center justify-center flex-1 h-[52px]"
     >
-      <div className="relative flex items-center justify-center h-[40px] w-[52px]">
+      <div className="relative flex items-center justify-center h-[32px] w-[44px]">
         {active && (
           <span
-            className="absolute h-[40px] w-[40px] rounded-full"
+            className="absolute h-[32px] w-[32px] rounded-full"
             style={{
               background:
-                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%)",
+                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.10) 0%, transparent 72%)",
             }}
           />
         )}
         <Icon
           filled={active}
-          className={`relative w-[24px] h-[24px] transition-colors duration-300 ${
-            active ? "text-white" : "text-white/55"
+          className={`relative w-[20px] h-[20px] transition-colors duration-300 ${
+            active ? "text-white" : "text-white/50"
           }`}
         />
       </div>
