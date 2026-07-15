@@ -3899,6 +3899,552 @@ function GoalRow({ goal, index, onTap }: { goal: Goal; index: number; onTap: () 
   );
 }
 
+/* ============ Productividad 3.0 — Command Deck ============ */
+
+function CountUp({ value, className, duration = 700 }: { value: number; className?: string; duration?: number }) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    const start = performance.now();
+    const from = 0;
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setN(Math.round(from + (value - from) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration]);
+  return <span className={className}>{n}</span>;
+}
+
+function DayRing({ done, pending }: { done: number; pending: number }) {
+  const total = done + pending;
+  const pct = total === 0 ? 0 : done / total;
+  const size = 60;
+  const stroke = 5;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="rotate-[-90deg]">
+        <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} fill="none" />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke={pct >= 1 ? "#4ADE80" : "#FFFFFF"}
+          strokeWidth={stroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          initial={{ strokeDashoffset: c }}
+          animate={{ strokeDashoffset: c * (1 - pct) }}
+          transition={{ type: "spring", stiffness: 60, damping: 16 }}
+        />
+      </svg>
+      <div className="absolute inset-0 grid place-items-center">
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[15px] font-semibold text-white leading-none">
+          {Math.round(pct * 100)}
+          <span className="text-[9px] text-white/40">%</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function NextMoveHero({
+  candidate,
+  onDone,
+  onSnooze,
+  onTap,
+}: {
+  candidate: null | {
+    kind: "event" | "task";
+    title: string;
+    subtitle: string;
+    accent: string;
+    countdown?: string;
+    urgent?: boolean;
+  };
+  onDone: () => void;
+  onSnooze: () => void;
+  onTap: () => void;
+}) {
+  if (!candidate) {
+    return (
+      <div
+        className="relative rounded-[22px] overflow-hidden px-[18px] py-[22px]"
+        style={{
+          background:
+            "radial-gradient(circle at top left, rgba(255,255,255,0.06), rgba(255,255,255,0.015) 60%)",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <span className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[1.6px] text-white/40">
+          Siguiente movimiento
+        </span>
+        <div className="mt-[8px] font-['Bai_Jamjuree'] font-semibold text-[20px] leading-[1.2] text-white">
+          Todo despejado. Captura tu próxima acción.
+        </div>
+        <button
+          type="button"
+          onClick={onTap}
+          className="mt-[14px] h-[42px] px-[16px] rounded-[12px] flex items-center gap-[8px] font-['Geist'] text-[13px] font-semibold text-black"
+          style={{ background: "#fff" }}
+        >
+          <Plus className="h-[14px] w-[14px]" strokeWidth={2.4} /> Añadir tarea
+        </button>
+      </div>
+    );
+  }
+  return (
+    <motion.div
+      key={candidate.title}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="relative rounded-[22px] overflow-hidden px-[18px] py-[18px]"
+      style={{
+        background:
+          "radial-gradient(circle at top left, rgba(255,255,255,0.08), rgba(255,255,255,0.02) 55%)",
+        border: `1px solid ${candidate.urgent ? "rgba(248,113,113,0.35)" : "rgba(255,255,255,0.10)"}`,
+      }}
+    >
+      <div className="flex items-center gap-[8px]">
+        <span
+          className="h-[6px] w-[6px] rounded-full"
+          style={{ background: candidate.accent, boxShadow: `0 0 10px ${candidate.accent}` }}
+        />
+        <span className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[1.6px] text-white/50">
+          {candidate.kind === "event" ? "Próximo evento" : "Siguiente misión"}
+        </span>
+        {candidate.countdown && (
+          <span className="ml-auto font-['Bai_Jamjuree'] tabular-nums text-[11px] font-semibold text-white/70">
+            {candidate.countdown}
+          </span>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onTap}
+        className="mt-[10px] text-left w-full"
+      >
+        <div className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[1.15] text-white line-clamp-2">
+          {candidate.title}
+        </div>
+        <div className="mt-[4px] font-['Geist'] text-[12px] text-white/50">{candidate.subtitle}</div>
+      </button>
+      <div className="mt-[16px] flex items-center gap-[8px]">
+        <button
+          type="button"
+          onClick={onDone}
+          className="flex-1 h-[44px] rounded-[12px] flex items-center justify-center gap-[8px] font-['Geist'] text-[13.5px] font-semibold"
+          style={{ background: "#4ADE80", color: "#04150A" }}
+        >
+          <Check className="h-[16px] w-[16px]" strokeWidth={2.6} /> Hecho
+        </button>
+        <button
+          type="button"
+          onClick={onSnooze}
+          className="h-[44px] px-[16px] rounded-[12px] flex items-center gap-[6px] font-['Geist'] text-[12.5px] font-medium text-white/75"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <Clock className="h-[13px] w-[13px]" strokeWidth={1.8} /> +15m
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+function MomentumStrip({
+  done,
+  xp,
+  focusMin,
+}: {
+  done: number;
+  xp: number;
+  focusMin: number;
+}) {
+  const items = [
+    { label: "Hechas hoy", value: done, color: "#4ADE80" },
+    { label: "XP", value: xp, color: "#FFFFFF" },
+    { label: "Foco (min)", value: focusMin, color: "#F5B944" },
+  ];
+  return (
+    <div className="grid grid-cols-3 gap-[8px]">
+      {items.map((it) => (
+        <div
+          key={it.label}
+          className="rounded-[14px] px-[12px] py-[12px] flex flex-col gap-[4px]"
+          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <span className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.3px] text-white/40">
+            {it.label}
+          </span>
+          <CountUp
+            value={it.value}
+            className="font-['Bai_Jamjuree'] tabular-nums text-[24px] leading-[26px] font-semibold"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HorizontalTimeline({
+  events,
+  tasks,
+  onEmpty,
+  onTaskTap,
+  onEventTap,
+}: {
+  events: CalendarEvent[];
+  tasks: Todo[];
+  onEmpty: (hour: number) => void;
+  onTaskTap: (t: Todo) => void;
+  onEventTap: (e: CalendarEvent) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const HOUR_W = 88;
+  const START_H = 6;
+  const END_H = 23;
+  const hours = Array.from({ length: END_H - START_H }, (_, i) => i + START_H);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const x = ((nowMin - START_H * 60) / 60) * HOUR_W - el.clientWidth / 2 + HOUR_W / 2;
+    el.scrollTo({ left: Math.max(0, x), behavior: "smooth" });
+  }, [nowMin]);
+
+  const evs = events
+    .filter((e) => e.start)
+    .map((e) => {
+      const [h, m] = e.start!.split(":").map(Number);
+      const min = h * 60 + m;
+      let dur = 45;
+      if (e.end) {
+        const [eh, em] = e.end.split(":").map(Number);
+        dur = Math.max(30, eh * 60 + em - min);
+      }
+      return { ...e, min, dur };
+    })
+    .filter((e) => e.min >= START_H * 60 && e.min < END_H * 60);
+
+  const tks = tasks
+    .filter((t) => t.time && !t.done)
+    .map((t) => {
+      const [h, m] = t.time!.split(":").map(Number);
+      return { ...t, min: h * 60 + m };
+    })
+    .filter((t) => t.min >= START_H * 60 && t.min < END_H * 60);
+
+  const totalW = hours.length * HOUR_W;
+  const xFor = (min: number) => ((min - START_H * 60) / 60) * HOUR_W;
+
+  return (
+    <div
+      ref={scrollRef}
+      className="relative rounded-[16px] overflow-x-auto overflow-y-hidden no-scrollbar"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        height: 118,
+      }}
+    >
+      <div className="relative" style={{ width: totalW, height: "100%" }}>
+        {/* Hour ticks */}
+        {hours.map((h, i) => (
+          <button
+            key={h}
+            type="button"
+            onClick={() => onEmpty(h)}
+            className="absolute top-0 bottom-0 flex flex-col items-start pt-[8px] pl-[8px] active:bg-white/[0.02]"
+            style={{ left: i * HOUR_W, width: HOUR_W, borderLeft: "1px solid rgba(255,255,255,0.04)" }}
+          >
+            <span className="font-['Geist'] tabular-nums text-[10px] text-white/35">
+              {String(h).padStart(2, "0")}:00
+            </span>
+          </button>
+        ))}
+
+        {/* Events */}
+        {evs.map((e) => {
+          const w = Math.max(48, (e.dur / 60) * HOUR_W - 4);
+          return (
+            <button
+              key={e.id}
+              type="button"
+              onClick={() => onEventTap(e)}
+              className="absolute rounded-[10px] px-[8px] py-[6px] text-left flex flex-col active:opacity-80"
+              style={{
+                left: xFor(e.min) + 2,
+                top: 30,
+                width: w,
+                height: 56,
+                background: "rgba(255,255,255,0.07)",
+                border: "1px solid rgba(255,255,255,0.22)",
+              }}
+            >
+              <span className="font-['Geist'] text-[11.5px] font-medium text-white truncate">{e.title}</span>
+              <span className="font-['Geist'] tabular-nums text-[10px] text-white/50 truncate">
+                {e.start}
+                {e.end ? `–${e.end}` : ""}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* Task dots */}
+        {tks.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => onTaskTap(t)}
+            className="absolute flex flex-col items-center gap-[3px] active:opacity-70"
+            style={{ left: xFor(t.min) - 6, bottom: 8, width: 92 }}
+          >
+            <span
+              className="h-[9px] w-[9px] rounded-full"
+              style={{ background: PRIO[t.priority].color, boxShadow: `0 0 8px ${PRIO[t.priority].color}88` }}
+            />
+            <span className="font-['Geist'] text-[9.5px] text-white/60 truncate max-w-[80px]">
+              {t.title}
+            </span>
+          </button>
+        ))}
+
+        {/* Now indicator */}
+        {nowMin >= START_H * 60 && nowMin <= END_H * 60 && (
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none"
+            style={{ left: xFor(nowMin), width: 1, background: "#F87171", boxShadow: "0 0 12px #F87171" }}
+          >
+            <div
+              className="absolute -top-[1px] -left-[16px] px-[6px] h-[16px] rounded-[4px] flex items-center font-['Bai_Jamjuree'] tabular-nums text-[9.5px] font-semibold text-white"
+              style={{ background: "#F87171" }}
+            >
+              {String(now.getHours()).padStart(2, "0")}:{String(now.getMinutes()).padStart(2, "0")}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MissionCard({
+  todo,
+  onToggle,
+  onTap,
+}: {
+  todo: Todo;
+  onToggle: () => void;
+  onTap: () => void;
+}) {
+  const xpMap = { urgent: 30, high: 20, normal: 10, low: 5 } as const;
+  const xp = xpMap[todo.priority];
+  const barColor =
+    todo.priority === "urgent"
+      ? "#F87171"
+      : todo.priority === "high"
+        ? "#F5B944"
+        : "#FFFFFF";
+  const dueLabel =
+    todo.due === "Hoy" || todo.due === "Mañana" ? todo.due : formatDueLabel(todo.due);
+  return (
+    <div
+      className="relative rounded-[14px] overflow-hidden flex items-center gap-[10px] pl-[14px] pr-[12px] py-[12px]"
+      style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <span
+        className="absolute left-0 top-[10px] bottom-[10px] w-[3px] rounded-r-[3px]"
+        style={{ background: barColor, boxShadow: `0 0 10px ${barColor}66` }}
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="h-[26px] w-[26px] grid place-items-center rounded-full active:bg-white/[0.06] shrink-0"
+      >
+        {todo.done ? (
+          <CheckCircle2 className="h-[18px] w-[18px] text-[#4ADE80]" strokeWidth={2} />
+        ) : (
+          <Circle className="h-[17px] w-[17px] text-white/40" strokeWidth={1.6} />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={onTap}
+        className="flex-1 min-w-0 flex flex-col gap-[2px] text-left active:opacity-80"
+      >
+        <span
+          className={`font-['Geist'] text-[13.5px] font-medium truncate ${todo.done ? "line-through text-white/35" : "text-white/95"}`}
+        >
+          {todo.title}
+        </span>
+        <div className="flex items-center gap-[8px]">
+          {dueLabel && (
+            <span className="font-['Bai_Jamjuree'] tabular-nums text-[10.5px] text-white/50">
+              {dueLabel}
+              {todo.time ? ` · ${todo.time}` : ""}
+            </span>
+          )}
+          <span
+            className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[0.9px]"
+            style={{ color: barColor }}
+          >
+            {todo.priority === "urgent"
+              ? "P0"
+              : todo.priority === "high"
+                ? "P1"
+                : todo.priority === "normal"
+                  ? "P2"
+                  : "P3"}
+          </span>
+        </div>
+      </button>
+      <div className="shrink-0 flex flex-col items-end gap-[2px]">
+        <span
+          className="font-['Bai_Jamjuree'] tabular-nums text-[12px] font-semibold"
+          style={{ color: barColor }}
+        >
+          +{xp}
+        </span>
+        <span className="font-['Geist'] text-[8.5px] uppercase tracking-[1px] text-white/35">XP</span>
+      </div>
+    </div>
+  );
+}
+
+function ProjectFlightCard({
+  project,
+  onTap,
+}: {
+  project: Project;
+  onTap: () => void;
+}) {
+  const st = PROJECT_STATUS[project.status];
+  const daysLeft = (() => {
+    if (!project.dueDate || !isISODate(project.dueDate)) return null;
+    const [y, m, d] = project.dueDate.split("-").map(Number);
+    const target = new Date(y, m - 1, d);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return Math.round((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  })();
+  const risk = project.status === "late" || (daysLeft !== null && daysLeft <= 3 && project.progress < 80);
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="w-full rounded-[16px] p-[14px] text-left flex flex-col gap-[10px] active:opacity-90"
+      style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)" }}
+    >
+      <div className="flex items-center gap-[10px]">
+        <span className="relative flex h-[8px] w-[8px] shrink-0">
+          {risk && (
+            <span
+              className="absolute inline-flex h-full w-full rounded-full opacity-70 animate-ping"
+              style={{ background: st.color }}
+            />
+          )}
+          <span className="relative inline-flex rounded-full h-[8px] w-[8px]" style={{ background: st.color }} />
+        </span>
+        <span className="font-['Geist'] text-[13.5px] font-semibold text-white/95 truncate flex-1 min-w-0">
+          {project.name}
+        </span>
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[18px] font-semibold text-white leading-none">
+          {project.progress}
+          <span className="text-[10px] text-white/40">%</span>
+        </span>
+      </div>
+      <div className="h-[6px] rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${project.progress}%` }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="h-full"
+          style={{
+            background: `linear-gradient(90deg, ${st.color}, ${st.color === "#4ADE80" ? "#A7F3D0" : "#FFFFFF"})`,
+          }}
+        />
+      </div>
+      <div className="flex items-center gap-[8px]">
+        <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.1px] text-white/45">
+          {st.label}
+        </span>
+        {daysLeft !== null && (
+          <span
+            className="font-['Bai_Jamjuree'] tabular-nums text-[10.5px] font-semibold ml-auto"
+            style={{ color: daysLeft < 3 ? "#F87171" : daysLeft < 7 ? "#F5B944" : "rgba(255,255,255,0.55)" }}
+          >
+            {daysLeft < 0 ? `${Math.abs(daysLeft)}d de retraso` : daysLeft === 0 ? "Hoy vence" : `${daysLeft}d restantes`}
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+function GoalRing({ goal, onTap }: { goal: Goal; onTap: () => void }) {
+  const pct = goal.target > 0 ? Math.min(1, goal.current / goal.target) : 0;
+  const size = 72;
+  const stroke = 6;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const color = pct >= 1 ? "#4ADE80" : pct >= 0.66 ? "#FFFFFF" : pct >= 0.33 ? "#F5B944" : "#F87171";
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="rounded-[16px] p-[14px] flex flex-col items-center gap-[10px] active:opacity-90"
+      style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.06)" }}
+    >
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="rotate-[-90deg]">
+          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} fill="none" />
+          <motion.circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke={color}
+            strokeWidth={stroke}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={c}
+            initial={{ strokeDashoffset: c }}
+            animate={{ strokeDashoffset: c * (1 - pct) }}
+            transition={{ type: "spring", stiffness: 55, damping: 15 }}
+            style={{ filter: `drop-shadow(0 0 6px ${color}66)` }}
+          />
+        </svg>
+        <div className="absolute inset-0 grid place-items-center">
+          <span className="font-['Bai_Jamjuree'] tabular-nums text-[16px] font-semibold text-white leading-none">
+            {Math.round(pct * 100)}
+            <span className="text-[9px] text-white/40">%</span>
+          </span>
+        </div>
+      </div>
+      <div className="w-full flex flex-col items-center gap-[2px] min-w-0">
+        <span className="font-['Geist'] text-[11.5px] font-medium text-white/85 truncate max-w-full">
+          {goal.label}
+        </span>
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[10px] text-white/45">
+          {goal.unit === "S/" ? "S/ " : ""}
+          {goal.current}
+          {goal.unit !== "S/" ? goal.unit : ""} / {goal.unit === "S/" ? "S/ " : ""}
+          {goal.target}
+          {goal.unit !== "S/" ? goal.unit : ""}
+        </span>
+      </div>
+    </button>
+  );
+}
+
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [learnOpen, setLearnOpen] = useState(false);
   const [mode, setMode] = useState<"day" | "week">("day");
