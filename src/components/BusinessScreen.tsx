@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Truck, Megaphone, FileBadge, UserCog } from "lucide-react";
+import { Truck, FileBadge, UserCog } from "lucide-react";
 import InventoryView from "./business/InventoryView";
 import PaymentsView from "./business/PaymentsView";
 import InfoView from "./business/InfoView";
