@@ -503,7 +503,14 @@ function SociaActions({
   onIntent: (i: HomeNavIntent) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const insights = briefing?.insights ?? [];
+  // Sólo mostramos como tareas los insights REALES accionables:
+  // - deben tener CTA (algo que hacer)
+  // - o tono warning / opportunity (algo que atender)
+  // Si no hay nada, la card entera no se renderiza.
+  const raw = briefing?.insights ?? [];
+  const insights = raw.filter(
+    (ins) => ins.cta != null || ins.tone === "warning" || ins.tone === "opportunity",
+  );
   if (insights.length === 0) return null;
 
   const items = insights.map((ins) => {
