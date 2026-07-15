@@ -155,34 +155,7 @@ export function NotificationsScreen({ onBack }: { onBack: () => void }) {
     await refreshProfile();
   };
 
-  const row = (
-    icon: typeof AlertTriangle,
-    key: keyof Prefs,
-    title: string,
-    desc: string,
-    defaultOn = true,
-    last = false,
-  ) => (
-    <>
-      <div className="flex items-center gap-[12px] px-[16px] py-[14px]">
-        <div className="h-[34px] w-[34px] rounded-[10px] grid place-items-center shrink-0 bg-white/[0.05] border border-white/[0.07]">
-          <icon.type className="h-[15px] w-[15px] text-white/70" strokeWidth={1.7} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-['Geist'] text-[14.5px] text-white">{title}</div>
-          <div className="font-['Geist'] text-[11.5px] text-white/40 mt-[2px]">{desc}</div>
-        </div>
-        <Toggle
-          value={master && (prefs[key] as boolean | undefined) !== false && ((prefs[key] as boolean | undefined) ?? defaultOn)}
-          onChange={(v) => update(key, v as never)}
-          disabled={!master}
-        />
-      </div>
-      {!last && <div className="h-px bg-white/[0.05] mx-[16px]" />}
-    </>
-  );
-
-  const rowStatic = (
+  // (helper `row` removido — usamos `rowStatic` para todas las filas)
     Icon: typeof AlertTriangle,
     key: keyof Prefs,
     title: string,
