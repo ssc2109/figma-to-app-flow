@@ -23,7 +23,7 @@ export default function AuthScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[24px] py-[32px] relative overflow-hidden">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[20px] py-[20px] relative overflow-hidden">
       {/* Background video */}
       <video
         autoPlay
@@ -46,14 +46,14 @@ export default function AuthScreen() {
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[380px] relative z-10"
       >
-        <div className="flex flex-col items-center gap-[14px] mb-[40px]">
-          <TraxWordmark className="h-[92px]" />
-          <p className="text-[13px] tracking-[0.04em] text-white/60 font-['Geist']">
+        <div className="flex flex-col items-center gap-[10px] mb-[22px]">
+          <TraxWordmark className="h-[68px]" />
+          <p className="text-[12.5px] tracking-[0.04em] text-white/60 font-['Geist']">
             Tu negocio, con dirección
           </p>
         </div>
 
-        <div className="rounded-[24px] border border-white/10 bg-white/[0.04] backdrop-blur-xl p-[24px] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
+        <div className="rounded-[22px] border border-white/10 bg-white/[0.04] backdrop-blur-xl p-[20px] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={view}
@@ -70,6 +70,28 @@ export default function AuthScreen() {
             </motion.div>
           </AnimatePresence>
         </div>
+
+        {view !== "forgot" && (
+          <div className="mt-[16px] text-center">
+            {view === "signin" ? (
+              <button
+                type="button"
+                onClick={() => go("signup")}
+                className="text-[13px] text-white/55 font-['Geist'] active:text-white"
+              >
+                ¿Nuevo aquí? <span className="text-white">Crear cuenta</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => go("signin")}
+                className="text-[13px] text-white/55 font-['Geist'] active:text-white"
+              >
+                ¿Ya tienes cuenta? <span className="text-white">Entrar</span>
+              </button>
+            )}
+          </div>
+        )}
       </motion.div>
     </div>
   );

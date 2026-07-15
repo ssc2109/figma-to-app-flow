@@ -14,6 +14,7 @@ import {
 } from "./shared";
 
 export default function SignUpView({ onBack }: { onBack: () => void }) {
+  void onBack;
   const isApple = useIsAppleDevice();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,17 +57,17 @@ export default function SignUpView({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="flex flex-col gap-[20px]">
+    <div className="flex flex-col gap-[14px]">
       <div className="text-center">
-        <h1 className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white tracking-tight leading-none">
+        <h1 className="font-['Bai_Jamjuree'] text-[20px] font-medium text-white tracking-tight leading-none">
           Crea tu cuenta
         </h1>
-        <p className="mt-[8px] text-white/50 text-[13px] font-['Geist']">
+        <p className="mt-[6px] text-white/50 text-[12.5px] font-['Geist']">
           Ordena tu negocio en minutos
         </p>
       </div>
 
-      <form onSubmit={handleSignUp} className="flex flex-col gap-[10px]">
+      <form onSubmit={handleSignUp} className="flex flex-col gap-[8px]">
         <Field value={email} onChange={setEmail} placeholder="Correo" type="email" autoComplete="email" />
         <Field
           value={password}
@@ -80,9 +81,9 @@ export default function SignUpView({ onBack }: { onBack: () => void }) {
         </PrimaryButton>
       </form>
 
-      <div className="text-center text-[11.5px] text-white/40 font-['Geist']">O continúa con</div>
+      <div className="text-center text-[11px] text-white/40 font-['Geist']">O continúa con</div>
 
-      <div className="flex items-center justify-center gap-[14px]">
+      <div className="flex items-center justify-center gap-[12px]">
         <SocialCircle label="Google" onClick={() => handleOAuth("google")} disabled={loading}>
           <GoogleIcon />
         </SocialCircle>
@@ -106,20 +107,7 @@ export default function SignUpView({ onBack }: { onBack: () => void }) {
           <PhoneIcon />
         </SocialCircle>
       </div>
-
-      <p className="text-[10.5px] text-white/35 font-['Geist'] text-center leading-relaxed">
-        Al continuar aceptas los{" "}
-        <span className="text-white/55 underline underline-offset-2">Términos</span> y la{" "}
-        <span className="text-white/55 underline underline-offset-2">Privacidad</span>.
-      </p>
-
-      <button
-        type="button"
-        onClick={onBack}
-        className="text-[13px] text-white/55 font-['Geist'] active:text-white text-center"
-      >
-        ¿Ya tienes cuenta? <span className="text-white">Entrar</span>
-      </button>
     </div>
   );
 }
+
