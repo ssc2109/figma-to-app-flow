@@ -455,34 +455,11 @@ function SociaHero({
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => onIntent({ kind: "chat", prompt: "" })}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 9,
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: 999,
-                cursor: "pointer",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <MessageCircle size={15} color="rgba(255,255,255,0.4)" strokeWidth={1.8} />
-              <span
-                style={{
-                  fontFamily: G,
-                  fontSize: 13,
-                  fontWeight: 400,
-                  color: "rgba(255,255,255,0.5)",
-                  letterSpacing: "-0.05px",
-                }}
-              >
-                Pregúntale a socIA
-              </span>
-            </button>
+            <SociaAskBar
+              prompts={briefing?.quickPrompts ?? []}
+              onIntent={onIntent}
+              reduce={reduce}
+            />
           )}
         </div>
       )}
