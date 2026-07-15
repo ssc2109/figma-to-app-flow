@@ -640,19 +640,20 @@ function SociaHero({
           )}
         </div>
       </div>
-      {!thinking && (
-        <div
-          className={reduce ? "" : "socia-fade"}
-          style={{ marginTop: 16, animationDelay: reduce ? "0s" : `${footerDelay}s` }}
-        >
-          <SociaAskBar
-            prompts={briefing?.quickPrompts ?? []}
-            briefing={briefing}
-            onIntent={onIntent}
-            reduce={reduce}
-          />
-        </div>
-      )}
+      {!thinking &&
+        briefing?.insights?.some((ins) => ins.cta && ins.tone === "warning") && (
+          <div
+            className={reduce ? "" : "socia-fade"}
+            style={{ marginTop: 16, animationDelay: reduce ? "0s" : `${footerDelay}s` }}
+          >
+            <SociaAskBar
+              prompts={briefing?.quickPrompts ?? []}
+              briefing={briefing}
+              onIntent={onIntent}
+              reduce={reduce}
+            />
+          </div>
+        )}
     </div>
   );
 }
