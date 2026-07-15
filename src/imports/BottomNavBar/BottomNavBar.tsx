@@ -13,10 +13,9 @@ interface TabProps {
   onClick?: () => void;
   Icon: React.ComponentType<{ className?: string; filled?: boolean }>;
   label: string;
-  glow?: boolean;
 }
 
-function Tab({ active, onClick, Icon, label, glow }: TabProps) {
+function Tab({ active, onClick, Icon, label }: TabProps) {
   return (
     <motion.button
       type="button"
@@ -27,12 +26,12 @@ function Tab({ active, onClick, Icon, label, glow }: TabProps) {
       className="relative flex items-center justify-center flex-1 h-[56px]"
     >
       <div className="relative flex items-center justify-center h-[40px] w-[52px]">
-        {glow && (
+        {active && (
           <span
-            className="absolute inset-0 rounded-full"
+            className="absolute h-[34px] w-[34px] rounded-full"
             style={{
               background:
-                "radial-gradient(60% 60% at 50% 50%, rgba(180,200,255,0.22) 0%, transparent 70%)",
+                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%)",
             }}
           />
         )}
@@ -61,7 +60,7 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
     >
       <Tab label="Inicio" Icon={HomeIcon} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
       <Tab label="Mi Negocio" Icon={BusinessIcon} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
-      <Tab label="socIA" Icon={SociaIcon} active={currentScreen === "socia"} onClick={() => go("socia")} glow />
+      <Tab label="socIA" Icon={SociaIcon} active={currentScreen === "socia"} onClick={() => go("socia")} />
       <Tab label="Yo" Icon={ProductivityIcon} active={currentScreen === "yo"} onClick={() => go("yo")} />
       <Tab label="Crecer" Icon={GrowIcon} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
