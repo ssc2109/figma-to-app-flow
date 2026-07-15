@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { useInventory } from "@/data/inventory";
 import { generateBriefing, type Briefing } from "@/lib/api/briefing.functions";
+import { getDistinctCtaLabel } from "@/lib/cta-labels";
 
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
 
@@ -183,7 +184,7 @@ function shortcutsFor(briefing: Briefing | undefined): ActionShortcut[] {
     seen.add(dedupe);
     out.push({
       key: ins.id,
-      label: ins.cta.label,
+      label: getDistinctCtaLabel(ins.cta.label, a, ins.text),
       hint,
       tone: ins.tone,
       icon: iconFor(a, ins.tone),
