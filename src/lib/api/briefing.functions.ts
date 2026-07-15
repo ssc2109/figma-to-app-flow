@@ -301,7 +301,7 @@ REGLAS DURAS:
   5) oportunidades reales: producto top de la semana, día bueno vs ayer (tone "opportunity" o "celebration").
 - Si el negocio está calmado y todo está al día, devuelve 0 insights. No inventes tareas.
 - Cada insight: máximo 18 palabras, conversacional, con número o nombre concreto de los datos.
-- CTAs concisas (1-3 palabras): "Reponer", "Cobrarle a X", "Ver detalle", "Registrar", "Crear promo".
+- CTA label: verbo de acción de 1-2 palabras, GENÉRICO. Permitidos exactamente: "Reponer", "Cobrar", "Ver", "Registrar", "Crear promo", "Abrir". PROHIBIDO repetir en el label el nombre del producto, cliente, monto, cantidad o cualquier palabra ya presente en el texto del insight (el label NO puede parafrasear ni resumir el texto). El contexto va en payload, nunca en label. Si no hay una acción clara distinta al mensaje, usa cta: null.
 - quickPrompts (3): sugerencias breves y CONTEXTUALES para preguntarle a socIA hoy, usando los datos reales (ej. "¿Cuánto gané esta semana?", "Sugiéreme una promo para ${'{'}producto real${'}'}").
 - salesNote: una línea corta comparando hoy vs ayer a esta hora, sólo si hay ventas de referencia. Si no, null.
 - Usuario sin datos aún: saludo de bienvenida, 0 insights, prompts de onboarding ("Registrar mi primer producto", "¿Cómo empiezo?").
