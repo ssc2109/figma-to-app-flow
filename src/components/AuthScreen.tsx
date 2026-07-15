@@ -22,23 +22,14 @@ export default function AuthScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[20px] py-[32px] relative overflow-hidden">
-      {/* Subtle radial ambience */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-60"
-        style={{
-          background:
-            "radial-gradient(60% 45% at 50% 10%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 70%)",
-        }}
-      />
-
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[24px] py-[32px] relative overflow-hidden">
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[380px] relative z-10"
       >
-        <div className="flex justify-center mb-[40px]">
+        <div className="flex justify-start mb-[48px]">
           <TraxWordmark />
         </div>
 
