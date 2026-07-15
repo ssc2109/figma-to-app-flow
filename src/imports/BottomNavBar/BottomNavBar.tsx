@@ -28,16 +28,16 @@ function Tab({ active, onClick, Icon, label }: TabProps) {
       <div className="relative flex items-center justify-center h-[40px] w-[52px]">
         {active && (
           <span
-            className="absolute h-[34px] w-[34px] rounded-full"
+            className="absolute h-[40px] w-[40px] rounded-full"
             style={{
               background:
-                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%)",
+                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.24) 0%, transparent 70%)",
             }}
           />
         )}
         <Icon
           filled={active}
-          className={`relative w-[22px] h-[22px] transition-colors duration-300 ${
+          className={`relative w-[24px] h-[24px] transition-colors duration-300 ${
             active ? "text-white" : "text-white/55"
           }`}
         />
