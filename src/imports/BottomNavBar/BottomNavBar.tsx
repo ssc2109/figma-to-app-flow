@@ -60,7 +60,7 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
     >
       <Tab label="Inicio" Icon={HomeIcon} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
       <Tab label="Mi Negocio" Icon={BusinessIcon} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
-      <Tab label="socIA" Icon={SociaIcon} active={currentScreen === "socia"} onClick={() => go("socia")} glow />
+      <Tab label="socIA" Icon={SociaIcon} active={currentScreen === "socia"} onClick={() => go("socia")} />
       <Tab label="Yo" Icon={ProductivityIcon} active={currentScreen === "yo"} onClick={() => go("yo")} />
       <Tab label="Crecer" Icon={GrowIcon} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
