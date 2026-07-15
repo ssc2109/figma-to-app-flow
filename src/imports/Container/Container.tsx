@@ -1599,7 +1599,6 @@ export default function Container({
           }
         />
         <QuickActionsRow onIntent={handleIntent} onSeeAll={handleSeeAllActions} />
-        <Grow briefing={briefing} onIntent={handleIntent} />
         <Activity onSeeAll={handleSeeAllActivity} />
       </div>
     </div>
