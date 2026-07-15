@@ -28,10 +28,10 @@ function Tab({ active, onClick, Icon, label }: TabProps) {
       <div className="relative flex items-center justify-center h-[40px] w-[52px]">
         {active && (
           <span
-            className="absolute h-[52px] w-[52px] rounded-full"
+            className="absolute h-[40px] w-[40px] rounded-full"
             style={{
               background:
-                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.42) 0%, rgba(255,255,255,0.10) 45%, transparent 80%)",
+                "radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,0.24) 0%, transparent 70%)",
             }}
           />
         )}
