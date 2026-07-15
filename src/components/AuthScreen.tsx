@@ -42,8 +42,11 @@ export default function AuthScreen() {
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[380px] relative z-10"
       >
-        <div className="flex justify-center mb-[40px]">
-          <TraxWordmark />
+        <div className="flex flex-col items-center gap-[14px] mb-[40px]">
+          <TraxWordmark className="h-[92px]" />
+          <p className="text-[13px] tracking-[0.04em] text-white/60 font-['Geist']">
+            Tu negocio, con dirección
+          </p>
         </div>
 
         <div className="rounded-[24px] border border-white/10 bg-white/[0.04] backdrop-blur-xl p-[24px] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
