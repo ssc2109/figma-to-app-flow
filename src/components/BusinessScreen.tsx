@@ -24,7 +24,6 @@ type View =
   | "receivables"
   | "payables"
   | "suppliers"
-  | "channels"
   | "documents"
   | "team"
   | "catalog"
@@ -45,12 +44,6 @@ const COMING: Record<
     icon: Truck,
     description: "Pronto podrás registrar a quién le compras, condiciones y comparar precios para mejorar tu margen.",
     bullets: ["Registrar proveedores y contactos", "Historial de compras", "Alertas de mejores precios"],
-  },
-  channels: {
-    title: "Canales de venta",
-    icon: Megaphone,
-    description: "Conecta tu tienda, delivery, redes y WhatsApp para centralizar pedidos en un solo lugar.",
-    bullets: ["Pedidos por WhatsApp", "Catálogo público compartible", "Integración con delivery"],
   },
   documents: {
     title: "Documentos",
@@ -103,7 +96,6 @@ export default function BusinessScreen({
               onReceivables={() => setView("receivables")}
               onPayables={() => setView("payables")}
               onSuppliers={() => setView("suppliers")}
-              onChannels={() => setView("channels")}
               onDocuments={() => setView("documents")}
               onTeam={() => setView("team")}
               onCatalog={() => setView("catalog")}
@@ -155,7 +147,7 @@ export default function BusinessScreen({
         )}
         {view === "cashHistory" && <CashActivityView key="cashHistory" onBack={back} />}
 
-        {(view === "suppliers" || view === "channels" || view === "documents" || view === "team") && (
+        {(view === "suppliers" || view === "documents" || view === "team") && (
           <ComingSoonView key={view} onBack={back} {...COMING[view]} />
         )}
       </AnimatePresence>
