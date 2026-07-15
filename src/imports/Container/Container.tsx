@@ -1478,12 +1478,6 @@ export default function Container({
           isLoading={isLoading}
           onIntent={handleIntent}
         />
-        <SociaActions
-          reduce={reduce}
-          delay={0.5}
-          briefing={briefing}
-          onIntent={handleIntent}
-        />
         <MoneyStrip
           reduce={reduce}
           todayNet={fin.todayNet}
