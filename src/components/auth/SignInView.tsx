@@ -2,8 +2,16 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
-import { AppleIcon, FacebookIcon, Field, GoogleIcon, PhoneIcon, PrimaryButton, SocialCircle, useIsAppleDevice } from "./shared";
-import { toast as sonner } from "sonner";
+import {
+  AppleIcon,
+  FacebookIcon,
+  Field,
+  GoogleIcon,
+  PhoneIcon,
+  PrimaryButton,
+  SocialCircle,
+  useIsAppleDevice,
+} from "./shared";
 
 export default function SignInView({
   onGoToSignUp,
@@ -12,6 +20,7 @@ export default function SignInView({
   onGoToSignUp: () => void;
   onGoToForgot: () => void;
 }) {
+  void onGoToSignUp;
   const isApple = useIsAppleDevice();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,17 +54,17 @@ export default function SignInView({
   };
 
   return (
-    <div className="flex flex-col gap-[20px]">
+    <div className="flex flex-col gap-[14px]">
       <div className="text-center">
-        <h1 className="font-['Bai_Jamjuree'] text-[22px] font-medium text-white tracking-tight leading-none">
+        <h1 className="font-['Bai_Jamjuree'] text-[20px] font-medium text-white tracking-tight leading-none">
           Bienvenido
         </h1>
-        <p className="mt-[8px] text-white/50 text-[13px] font-['Geist']">
+        <p className="mt-[6px] text-white/50 text-[12.5px] font-['Geist']">
           Entra a tu negocio
         </p>
       </div>
 
-      <form onSubmit={handleEmail} className="flex flex-col gap-[10px]">
+      <form onSubmit={handleEmail} className="flex flex-col gap-[8px]">
         <Field value={email} onChange={setEmail} placeholder="Correo" type="email" autoComplete="email" />
         <Field
           value={password}
@@ -78,9 +87,9 @@ export default function SignInView({
         </PrimaryButton>
       </form>
 
-      <div className="text-center text-[11.5px] text-white/40 font-['Geist']">O continúa con</div>
+      <div className="text-center text-[11px] text-white/40 font-['Geist']">O continúa con</div>
 
-      <div className="flex items-center justify-center gap-[14px]">
+      <div className="flex items-center justify-center gap-[12px]">
         <SocialCircle label="Google" onClick={() => handleOAuth("google")} disabled={loading}>
           <GoogleIcon />
         </SocialCircle>
@@ -91,27 +100,19 @@ export default function SignInView({
         )}
         <SocialCircle
           label="Facebook"
-          onClick={() => sonner.info("Facebook estará disponible pronto")}
+          onClick={() => toast.info("Facebook estará disponible pronto")}
           soon
         >
           <FacebookIcon />
         </SocialCircle>
         <SocialCircle
           label="Teléfono"
-          onClick={() => sonner.info("Ingreso por SMS estará disponible pronto")}
+          onClick={() => toast.info("Ingreso por SMS estará disponible pronto")}
           soon
         >
           <PhoneIcon />
         </SocialCircle>
       </div>
-
-      <button
-        type="button"
-        onClick={onGoToSignUp}
-        className="text-[13px] text-white/55 font-['Geist'] active:text-white text-center"
-      >
-        ¿Nuevo aquí? <span className="text-white">Crear cuenta</span>
-      </button>
     </div>
   );
 }
