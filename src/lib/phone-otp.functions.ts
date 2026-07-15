@@ -37,6 +37,24 @@ async function sendTwilioSms(to: string, body: string) {
   if (!res.ok) {
     const text = await res.text();
     console.error("Twilio error", res.status, text);
+
+    let twilioCode: number | undefined;
+    try {
+      twilioCode = JSON.parse(text)?.code;
+    } catch {
+      // Twilio sometimes returns non-JSON errors; keep the generic handling below.
+    }
+
+    if (res.status === 401 || twilioCode === 70051 || twilioCode === 20003) {
+      throw new Error(
+        "La configuración de SMS no está autorizada. Revisa que la API Key de Twilio sea Main/Standard o que tenga Messages: Create, y que el SID/Secret pertenezcan a la misma cuenta.",
+      );
+    }
+
+    if (twilioCode === 21408) {
+      throw new Error("Twilio no tiene habilitado el envío de SMS hacia este país.");
+    }
+
     throw new Error("No pudimos enviar el SMS. Revisa el número e intenta de nuevo.");
   }
 }
@@ -67,14 +85,25 @@ export const sendPhoneOtp = createServerFn({ method: "POST" })
     const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
     const expires = new Date(Date.now() + 5 * 60_000).toISOString();
 
-    const { error } = await supabaseAdmin.from("phone_otps").insert({
+    const { data: otpRow, error } = await supabaseAdmin
+      .from("phone_otps")
+      .insert({
       phone,
       code_hash: hashCode(phone, code),
       expires_at: expires,
-    });
+      })
+      .select("id")
+      .single();
     if (error) throw new Error(error.message);
 
-    await sendTwilioSms(phone, `Trax: tu código es ${code}. Vence en 5 min.`);
+    try {
+      await sendTwilioSms(phone, `Trax: tu código es ${code}. Vence en 5 min.`);
+    } catch (err) {
+      if (otpRow?.id) {
+        await supabaseAdmin.from("phone_otps").delete().eq("id", otpRow.id);
+      }
+      throw err;
+    }
     return { ok: true, phone };
   });
 
