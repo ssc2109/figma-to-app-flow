@@ -2,7 +2,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
-import { AppleIcon, Field, GoogleIcon, PrimaryButton, useIsAppleDevice } from "./shared";
+import { AppleIcon, FacebookIcon, Field, GoogleIcon, PhoneIcon, PrimaryButton, useIsAppleDevice } from "./shared";
+import { toast as sonner } from "sonner";
 
 export default function SignInView({
   onGoToSignUp,
