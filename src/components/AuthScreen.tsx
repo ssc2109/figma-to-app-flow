@@ -38,42 +38,25 @@ export default function AuthScreen() {
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="w-full max-w-[380px] relative z-10"
       >
-        <div className="flex justify-center mb-[28px]">
+        <div className="flex justify-center mb-[40px]">
           <TraxWordmark />
         </div>
 
-        <div
-          className="rounded-[26px] p-[22px] relative overflow-hidden"
-          style={{
-            background: "rgba(255,255,255,0.035)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow: "0 20px 60px -30px rgba(0,0,0,0.8)",
-          }}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={view}
-              initial={{ opacity: 0, x: direction * 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction * -24 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {view === "signin" && (
-                <SignInView
-                  onGoToSignUp={() => go("signup")}
-                  onGoToForgot={() => go("forgot")}
-                />
-              )}
-              {view === "signup" && <SignUpView onBack={() => go("signin")} />}
-              {view === "forgot" && <ForgotPasswordView onBack={() => go("signin")} />}
-            </motion.div>
-          </AnimatePresence>
-
-        </div>
-
-        <p className="mt-[20px] text-[11.5px] text-white/35 font-['Geist'] text-center">
-          Tu negocio, ordenado en un solo lugar
-        </p>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={view}
+            initial={{ opacity: 0, x: direction * 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: direction * -20 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {view === "signin" && (
+              <SignInView onGoToSignUp={() => go("signup")} onGoToForgot={() => go("forgot")} />
+            )}
+            {view === "signup" && <SignUpView onBack={() => go("signin")} />}
+            {view === "forgot" && <ForgotPasswordView onBack={() => go("signin")} />}
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
     </div>
   );
