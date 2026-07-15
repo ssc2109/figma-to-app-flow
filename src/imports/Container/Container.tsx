@@ -308,8 +308,9 @@ function SociaAskBar({
   onIntent: (i: HomeNavIntent) => void;
   reduce: boolean;
 }) {
-  // Prioridad: primer insight accionable con CTA → reemplaza la barra de "Preguntar".
-  const primary = briefing?.insights?.find((ins) => ins.cta) ?? null;
+  // Sólo mostramos CTA cuando hay algo real que hacer (warning accionable).
+  const primary =
+    briefing?.insights?.find((ins) => ins.cta && ins.tone === "warning") ?? null;
   const primaryAction = primary ? insightToAction(primary) : null;
 
   const options = prompts.length > 0 ? prompts : ["Pregúntale a socIA"];
@@ -322,7 +323,7 @@ function SociaAskBar({
 
   const current = options[idx] ?? options[0];
 
-  // CTA MODE — un único botón compacto en el lugar de la barra.
+  // CTA MODE — misma barra que "Preguntar", sólo cambian icono/texto/chip.
   if (primaryAction && primary) {
     const CtaIcon = primaryAction.Icon;
     return (
@@ -335,14 +336,14 @@ function SociaAskBar({
           alignItems: "center",
           gap: 10,
           width: "100%",
-          padding: "12px 14px 12px 14px",
+          padding: "12px 14px 12px 16px",
           borderRadius: 999,
           cursor: "pointer",
           background:
-            "linear-gradient(180deg, rgba(124,195,255,0.10) 0%, rgba(124,195,255,0.05) 100%)",
-          border: "1px solid rgba(124,195,255,0.28)",
+            "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.035) 100%)",
+          border: "1px solid rgba(255,255,255,0.10)",
           boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 20px -14px rgba(124,195,255,0.45)",
+            "inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 20px -14px rgba(124,195,255,0.35)",
           overflow: "hidden",
           textAlign: "left",
         }}
@@ -358,7 +359,7 @@ function SociaAskBar({
             height: 90,
             borderRadius: "50%",
             background:
-              "radial-gradient(closest-side, rgba(124,195,255,0.22), transparent 70%)",
+              "radial-gradient(closest-side, rgba(124,195,255,0.20), transparent 70%)",
             filter: "blur(4px)",
             pointerEvents: "none",
           }}
@@ -372,8 +373,8 @@ function SociaAskBar({
             display: "grid",
             placeItems: "center",
             flex: "none",
-            background: "rgba(124,195,255,0.18)",
-            border: "1px solid rgba(124,195,255,0.36)",
+            background: "rgba(124,195,255,0.14)",
+            border: "1px solid rgba(124,195,255,0.30)",
           }}
         >
           <CtaIcon size={12} color={SOCIA} strokeWidth={2} />
@@ -386,7 +387,7 @@ function SociaAskBar({
             fontFamily: G,
             fontSize: 13.5,
             fontWeight: 500,
-            color: "rgba(255,255,255,0.92)",
+            color: "rgba(255,255,255,0.86)",
             letterSpacing: "-0.05px",
             lineHeight: "20px",
             whiteSpace: "nowrap",
@@ -402,26 +403,27 @@ function SociaAskBar({
             position: "relative",
             display: "inline-flex",
             alignItems: "center",
-            gap: 4,
+            gap: 3,
             fontFamily: G,
             fontSize: 10.5,
             fontWeight: 600,
             letterSpacing: "1.2px",
             textTransform: "uppercase",
-            color: SOCIA,
-            padding: "4px 9px",
+            color: "rgba(124,195,255,0.85)",
+            padding: "4px 8px",
             borderRadius: 999,
-            background: "rgba(124,195,255,0.14)",
-            border: "1px solid rgba(124,195,255,0.32)",
+            background: "rgba(124,195,255,0.10)",
+            border: "1px solid rgba(124,195,255,0.22)",
             flex: "none",
           }}
         >
           {primary.cta!.label}
-          <ArrowRight size={11} color={SOCIA} strokeWidth={2.4} />
         </span>
       </button>
     );
   }
+
+
 
   // ASK MODE — barra de preguntas cíclicas.
   return (
