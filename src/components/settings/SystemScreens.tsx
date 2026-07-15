@@ -219,5 +219,4 @@ export function SupportLegalScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-/* Prevent unused imports warning if a screen removes an icon later */
-export const _unused = useEffect;
+/* end */
