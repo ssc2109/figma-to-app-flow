@@ -122,11 +122,12 @@ function ConsentPrompt({
     <main className="min-h-screen bg-black text-white flex items-center justify-center px-5 font-['Geist']">
       <div className="w-full max-w-[420px]">
         <div className="text-center mb-6">
-          <div className="font-['Bai_Jamjuree'] text-[40px] font-medium tracking-tight leading-none">
-            Trax
+          <div className="flex justify-center">
+            <TraxWordmark />
           </div>
-          <p className="mt-2 text-white/55 text-[13px]">Autorizar acceso</p>
+          <p className="mt-3 text-white/55 text-[13px]">Autorizar acceso</p>
         </div>
+
 
         <div
           className="rounded-[24px] p-5"
