@@ -266,7 +266,7 @@ function Header({
 /* ---------- SociaHero ---------- */
 type SociaAction = { label: string; title: string; Icon: typeof Package; intent: HomeNavIntent };
 
-function actionTitle(action: Briefing["insights"][number]["cta"]["action"]) {
+function actionTitle(action: NonNullable<Briefing["insights"][number]["cta"]>["action"]) {
   if (action === "reponer") return "Abrir inventario";
   if (action === "cobrar_fiado") return "Revisar fiados";
   if (action === "ventas") return "Registrar venta";
