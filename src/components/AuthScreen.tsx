@@ -93,10 +93,17 @@ export default function AuthScreen() {
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             >
               {view === "signin" && (
-                <SignInView onGoToSignUp={() => go("signup")} onGoToForgot={() => go("forgot")} />
+                <SignInView
+                  onGoToSignUp={() => go("signup")}
+                  onGoToForgot={() => go("forgot")}
+                  onGoToPhone={() => go("phone")}
+                />
               )}
-              {view === "signup" && <SignUpView onBack={() => go("signin")} />}
+              {view === "signup" && (
+                <SignUpView onBack={() => go("signin")} onGoToPhone={() => go("phone")} />
+              )}
               {view === "forgot" && <ForgotPasswordView onBack={() => go("signin")} />}
+              {view === "phone" && <PhoneAuthView onBack={() => go("signin")} />}
             </motion.div>
           </AnimatePresence>
         </div>
