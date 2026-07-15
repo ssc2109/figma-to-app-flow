@@ -23,6 +23,7 @@ export type Profile = {
   regimen: string | null;
   direccion_fiscal: string | null;
   actividad_economica: string | null;
+  preferences: Record<string, unknown> | null;
 };
 
 type Ctx = {

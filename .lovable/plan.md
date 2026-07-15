@@ -1,46 +1,140 @@
-## Alcance
 
-Dos tandas de trabajo, sin tocar identidad visual, paleta, tipografía, navegación general ni arquitectura. Todo el copy y componentes nuevos reutilizan tokens y patrones de `DESIGN.md`.
+# Upgrade total: Configuración profesional
 
-## Tanda A — Bugs críticos de flujo
+## Diagnóstico del estado actual
+`src/components/SettingsScreen.tsx` es una sola pantalla de 565 líneas con 5 secciones apiladas (Perfil, Operaciones, Preferencias, Suscripción, Cuenta). No hay búsqueda, no hay subpantallas, no hay categorías modernas (seguridad, sesiones, dispositivos, datos, facturación, equipo, apariencia, notificaciones granulares, ayuda, legales). Se siente a proyecto de estudiante: útil, pero plano.
 
-1. **Onboarding "Registra tu primera venta"**: el CTA del `ProactiveHero`/estado vacío del Home dispara la acción `venta` de `quickActions` (abre `SalesOverlay` completo). Hoy resuelve a `payments` → se reemplaza el handler.
-2. **Registrar venta / registrar movimiento no deben abrir "Métodos de pago"**: auditar `quickActions.tsx` y todos los CTAs que hoy hacen `setView("payments")` al invocar venta o movimiento. `PaymentsView` sólo se abre desde su tarjeta en `BusinessHub` o como paso final dentro del cobro.
-3. **Cobrar y Fiar dentro del flujo de venta**: en `SalesOverlay` el selector de método de pago pasa a incluir explícitamente `Efectivo · Yape · Plin · Tarjeta · Fiado`, y agrega botón secundario "Cobrar ahora" (marca `paid=true`) y "Registrar fiado" (fuerza `is_credit=true, paid=false`) para que no dependan del menú rápido.
-4. **Cliente en fiado**: al elegir Fiado, aparece un bloque con:
-   - selector "Elegir cliente" (busca en `customers` del user, ilike),
-   - o "Crear cliente rápido" (nombre + tel opcional → insert en `customers`),
-   - guarda `customer_id` y `customer_name` tanto en `sales` como en `fiados` (fila creada al cerrar la venta fiada).
+## Referencias del nicho
+- **Revolut / Wise**: Settings hub con avatar hero + tarjetas de categoría. Cada categoría abre subpantalla con push transition. Chevrons a la derecha. Estados y valores actuales visibles en la fila (right-aligned).
+- **Linear / Notion**: Búsqueda global de ajustes en el tope. Agrupación por dominio (Account · Workspace · Preferences · Billing · Advanced). Copy corto, con descripción secundaria bajo cada fila.
+- **Stripe Dashboard / Shopify Mobile**: sección de facturación con estado de plan como banner destacado, uso del ciclo actual, y "Danger zone" separada.
+- **Apple Settings**: fila con icono a color, título + valor actual truncado a la derecha, chevron. Nunca formularios inline en el hub — siempre subpantalla.
 
-## Tanda B — Módulos faltantes / incompletos (estructura + lógica mínima)
+## Arquitectura de navegación
+Un **hub** + **subpantallas** con transición push (usando el patrón `ScreenTransition` ya existente). El hub se ve como un índice, no como formulario.
 
-Todos siguen el patrón visual de `BusinessScreen` (hub → vista con header + back) y usan `shared.tsx`.
+```text
+Configuración (hub)
+├── Buscar en ajustes           (barra al tope, filtra filas de hub y subpantallas)
+├── [Card hero perfil]          Avatar + nombre + email + plan actual + edit
+│
+├── CUENTA
+│   ├── Perfil personal         (nombre, avatar, teléfono, idioma)
+│   ├── Correo y contraseña     (cambio de email/pw, verificación)
+│   └── Sesiones y dispositivos (cerrar sesión de otros dispositivos)
+│
+├── NEGOCIO
+│   ├── Ficha del negocio       (nombre, tipo, RUC, dirección, horario)
+│   ├── Moneda y formato        (moneda, separadores, zona horaria)
+│   ├── Metas y umbrales        (meta diaria, stock crítico, alerta fiados)
+│   └── Equipo                  (invitar, roles — placeholder "Próximamente" real)
+│
+├── APARIENCIA Y ACCESIBILIDAD
+│   ├── Tema                    (Oscuro / Auto — sistema)
+│   ├── Tamaño de texto         (Compacto / Normal / Grande)
+│   └── Reducir movimiento
+│
+├── NOTIFICACIONES
+│   ├── Push del dispositivo    (master switch + estado permiso)
+│   ├── Alertas de negocio      (stock, fiados vencidos, meta, resumen diario, backup)
+│   └── Correo                  (resumen semanal, cambios de plan)
+│
+├── SOCIA (IA)
+│   ├── Uso de créditos         (barra de consumo del ciclo, reset)
+│   ├── Tono de respuestas      (formal / cercano)
+│   └── Historial de chats      (limpiar, exportar)
+│
+├── FACTURACIÓN
+│   ├── [Banner plan actual]    Plan, precio, días de prueba/renovación
+│   ├── Cambiar plan            (abre PlansScreen existente)
+│   ├── Método de pago          (placeholder integrado con Culqi)
+│   └── Historial de facturas
+│
+├── DATOS
+│   ├── Exportar todo           (JSON + Excel — reusa lógica de InfoView Avanzado)
+│   ├── Importar productos      (CSV)
+│   └── Copia de seguridad      (info del último backup automático)
+│
+├── AYUDA Y SOPORTE
+│   ├── Centro de ayuda         (link externo)
+│   ├── Contactar soporte       (mailto/whatsapp)
+│   ├── Reportar un problema
+│   └── Novedades               (changelog)
+│
+├── LEGAL
+│   ├── Términos de servicio
+│   ├── Privacidad
+│   └── Licencias open source
+│
+├── ACERCA DE
+│   ├── Versión de la app
+│   └── Estado del sistema
+│
+└── ZONA DE PELIGRO             (visualmente separada, borde tenue rojo)
+    ├── Cerrar sesión
+    └── Eliminar cuenta         (con confirmación por texto)
+```
 
-5. **RUC real**: `InfoView` se divide en dos secciones:
-   - "Datos del negocio" (lo actual).
-   - Nueva "Información tributaria": campos `ruc`, `razon_social`, `regimen` (NRUS/RER/MYPE/General), `direccion_fiscal`, `actividad_economica`. Persisten en `profiles` (columnas nuevas). Botón "Opciones avanzadas" abre un panel con: exportar datos tributarios (JSON descargable), copiar RUC, y placeholder "Consultar SUNAT (próximamente)".
-6. **Catálogo ≠ Inventario**: se crea `CatalogView` independiente. Inventario mantiene stock/costos. Catálogo muestra los mismos productos en modo "vitrina" (grid con imagen, nombre, precio público, categoría, badge disponible/agotado), con acciones "compartir catálogo" (copia enlace placeholder) y "editar precios en lote" (modal simple que actualiza `price` en batch). Sin duplicar la UI de stock.
-7. **Compras**: nuevo `PurchasesView` + tabla `purchases` (id, user_id, supplier_name, total, note, created_at) y `purchase_items` (purchase_id, product_id, name, qty, unit_cost). Flujo mínimo: registrar compra con proveedor + items; al guardar, suma stock a los productos y guarda costo. Lista las últimas compras.
-8. **Calendario**: nuevo `CalendarView` + tabla `calendar_events` (id, user_id, title, notes, event_date, kind: recordatorio/pago/servicio, done). Vista mensual simple con `Calendar` shadcn + lista de eventos del día seleccionado + crear/completar/eliminar evento.
-9. **Escanear**: la acción `escanear` del quick menu abre una pantalla dedicada `ScanScreen` con estado "Preparando escáner" y un input manual "Ingresar código" que busca en `products` por `sku`/`name`. No queda muerta.
-10. **Auditoría de navegación**: recorro `BusinessHub`, `TraxNavigation`, `MeScreen`, `SettingsScreen`, `QuickActions` y me aseguro de que cada entrada abra una vista real. Las que aún no tienen lógica quedan en `ComingSoonView` con copy específico (ya existe el componente) — no se dejan links muertos ni redirects a la vista equivocada.
+## Diseño visual (respetando DESIGN.md)
+- **Superficies**: `rgba(255,255,255,0.04)` con hairline `rgba(255,255,255,0.06)`, radio 20px. Sin sombras.
+- **Tipografía**: Geist para labels y descripciones, Bai Jamjuree para valores numéricos y títulos de sección.
+- **Iconos**: `lucide-react`, stroke 1.7, en cuadrado 34px con fondo `rgba(255,255,255,0.05)`. Solo la "zona de peligro" usa tint `#F87171`.
+- **Fila hub estándar**: `[icon 34] [title + descripción 12px/40 opacidad] [valor actual truncado, right-aligned, tabular-nums cuando sea número] [chevron 14px/30 opacidad]`.
+- **Card hero de perfil**: avatar 72px, nombre en Bai Jamjuree 20px, email 12.5px/45, y chip del plan actual (Gratis/Pro/Avanzado) con `usePlan`.
+- **Banner de plan** en Facturación: full-width, con progreso de créditos socIA cuando aplica, CTA sutil "Cambiar plan".
+- **Search bar** sticky bajo el header: filtra tanto títulos de fila como palabras clave (aliases: "clave" → contraseña, "backup" → copia de seguridad, etc.).
+- **Transiciones**: reusar `ScreenTransition` con dirección `push`. Header de subpantalla con `ArrowLeft`, título en Bai Jamjuree 18px, breadcrumb corto "Ajustes · Cuenta".
+- **Guardado**: en subpantallas, footer sticky con "Cancelar" y "Guardar cambios" (mismo patrón que `InfoView`). Autosave silencioso para toggles.
+- **Estados vacíos y disabled**: filas con "Próximamente" en 11px uppercase, opacidad 40, sin chevron.
 
-## Cambios en la base de datos
+## Estructura de archivos
+```text
+src/components/settings/
+├── SettingsHub.tsx              (nuevo, reemplaza SettingsScreen)
+├── SettingsSearch.tsx           (barra + índice indexable)
+├── shared/
+│   ├── SettingsShell.tsx        (header + footer sticky reutilizable)
+│   ├── SettingsRow.tsx          (fila estándar con valor + chevron)
+│   ├── SettingsSection.tsx      (título uppercase + card)
+│   ├── DangerRow.tsx
+│   └── PlanChip.tsx
+├── screens/
+│   ├── ProfileScreen.tsx
+│   ├── EmailPasswordScreen.tsx
+│   ├── SessionsScreen.tsx
+│   ├── BusinessInfoScreen.tsx
+│   ├── CurrencyFormatScreen.tsx
+│   ├── GoalsThresholdsScreen.tsx
+│   ├── TeamScreen.tsx
+│   ├── AppearanceScreen.tsx
+│   ├── NotificationsScreen.tsx
+│   ├── SociaSettingsScreen.tsx
+│   ├── BillingScreen.tsx
+│   ├── DataScreen.tsx
+│   ├── SupportScreen.tsx
+│   ├── LegalScreen.tsx
+│   ├── AboutScreen.tsx
+│   └── DangerZoneScreen.tsx
+└── index.ts
+```
+`SettingsScreen.tsx` original se convierte en un shim que renderiza `SettingsHub` para no romper imports de `Container.tsx` / `TraxNavigation.tsx`.
 
-Una sola migración con:
-- `profiles`: `ruc text`, `razon_social text`, `regimen text`, `direccion_fiscal text`, `actividad_economica text`.
-- `sales`: `customer_id uuid references customers(id) on delete set null` (si no existe ya).
-- `purchases` + `purchase_items` con RLS por `user_id` y GRANTs (`authenticated`, `service_role`).
-- `calendar_events` con RLS por `user_id` y GRANTs.
+## Estado y persistencia
+- Se reusa `useAuth` + `profiles`, `useInventory`, `usePlan`, `useSubscription`, `useUsageCounters`.
+- Nuevas preferencias (tema, tamaño de texto, reducir movimiento, tono socIA, notificaciones granulares) se guardan como JSON en columna `preferences` de `profiles`. Migración: `ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS preferences jsonb NOT NULL DEFAULT '{}'::jsonb;` con GRANTs ya existentes de profiles.
+- Cambio de email/contraseña: `supabase.auth.updateUser`. Cerrar otras sesiones: `supabase.auth.signOut({ scope: 'others' })`.
+- Exportar: reusa las funciones de export ya construidas en `InfoView`; se mueven a `src/lib/api/data-export.functions.ts` para compartirse.
+- Eliminar cuenta: server function con `requireSupabaseAuth` que borra profile + subscripciones + llama a `supabaseAdmin.auth.admin.deleteUser(userId)`. Confirmación por escritura del nombre del negocio.
 
-Sin cambios en tablas existentes fuera de las columnas listadas.
-
-## Fuera de alcance en este cambio
-
-- Rediseño de socIA / reparación del chat (Grupo 2).
-- Reconstrucción de la sección Actividad del Home (Grupo 4).
-- Integración real con SUNAT, escáner de cámara nativo, compartir catálogo público real, notificaciones de calendario.
+## Fuera de alcance (no tocar)
+- Identidad visual global, tokens de color, tipografía base.
+- Lógica de negocio de ventas, socIA, aprender, planes.
+- Nada del hub Home / MeScreen / SociaScreen.
 
 ## Verificación
+1. Build limpio (`tsgo`).
+2. Playwright: capturas de hub, subpantalla Perfil, subpantalla Facturación, búsqueda con "contraseña", zona de peligro con confirmación abierta.
+3. Verificar en 390x844 que no haya overflow horizontal y que el footer sticky no tape contenido con la barra de navegación inferior (usar 180px de safe-area).
 
-Al terminar cada tanda: build limpio, y prueba manual con Playwright de: crear venta contado, crear venta fiada con cliente nuevo, abrir cada tarjeta del hub de negocio, abrir cada quick action, entrar a RUC y ver bloque tributario, registrar una compra y ver stock actualizado, crear un evento de calendario.
+---
+**Nota técnica**: la navegación entre hub y subpantallas se maneja con estado local + `ScreenTransition` para mantener el patrón mobile-first existente y no añadir rutas nuevas al router.

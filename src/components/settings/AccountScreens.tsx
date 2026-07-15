@@ -1,0 +1,319 @@
+import { useEffect, useRef, useState } from "react";
+import { Camera, User, Phone, Globe2, Loader2, Mail, KeyRound, ShieldCheck, LogOut, Monitor } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import {
+  SettingsShell,
+  Section,
+  FormRow,
+  TextInput,
+  SaveButton,
+  NavRow,
+  SegmentedControl,
+  ICON_TILE,
+} from "./shared";
+
+/* ----------------------------- Perfil personal ----------------------------- */
+export function ProfileScreen({ onBack }: { onBack: () => void }) {
+  const { user, profile, refreshProfile } = useAuth();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    owner_name: "",
+    phone: "",
+    language: "es",
+    avatar_url: null as string | null,
+  });
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (!profile) return;
+    setForm({
+      owner_name: profile.owner_name ?? "",
+      phone: profile.phone ?? "",
+      language: (profile.preferences as { language?: string } | null)?.language ?? "es",
+      avatar_url: profile.avatar_url ?? null,
+    });
+    setDirty(false);
+  }, [profile]);
+
+  const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setDirty(true);
+  };
+
+  const handleAvatar = async (file: File) => {
+    if (!user) return;
+    setUploading(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) {
+      toast.error("No se pudo subir la foto.");
+      setUploading(false);
+      return;
+    }
+    const { data: signed } = await supabase.storage
+      .from("avatars")
+      .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+    const url = signed?.signedUrl ?? null;
+    await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+    setForm((f) => ({ ...f, avatar_url: url }));
+    await refreshProfile();
+    toast.success("Foto actualizada");
+    setUploading(false);
+  };
+
+  const save = async () => {
+    if (!user) return;
+    setSaving(true);
+    const prevPrefs = (profile?.preferences as Record<string, unknown> | null) ?? {};
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        owner_name: form.owner_name.trim() || "Tú",
+        phone: form.phone || null,
+        preferences: { ...prevPrefs, language: form.language },
+      })
+      .eq("id", user.id);
+    setSaving(false);
+    if (error) {
+      toast.error("No se pudo guardar.");
+      return;
+    }
+    await refreshProfile();
+    setDirty(false);
+    toast.success("Perfil actualizado");
+  };
+
+  const initials =
+    (form.owner_name || "TU")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join("") || "TU";
+
+  return (
+    <SettingsShell
+      title="Perfil personal"
+      eyebrow="Ajustes · Cuenta"
+      onBack={onBack}
+      right={dirty ? <SaveButton onClick={save} saving={saving} /> : null}
+    >
+      <div className="flex flex-col items-center pt-[28px] pb-[12px]">
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="relative h-[104px] w-[104px] rounded-full overflow-hidden grid place-items-center"
+          style={{
+            background:
+              "radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 60%)",
+            border: "1px solid rgba(255,255,255,0.12)",
+          }}
+        >
+          {form.avatar_url ? (
+            <img src={form.avatar_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          ) : (
+            <span className="font-['Bai_Jamjuree'] text-[36px] font-bold tracking-[-0.5px]">
+              {initials}
+            </span>
+          )}
+          <div className="absolute bottom-[-2px] right-[-2px] h-[34px] w-[34px] rounded-full bg-white text-black grid place-items-center border-2 border-black">
+            {uploading ? (
+              <Loader2 className="h-[14px] w-[14px] animate-spin" />
+            ) : (
+              <Camera className="h-[14px] w-[14px]" strokeWidth={2} />
+            )}
+          </div>
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleAvatar(f);
+            e.target.value = "";
+          }}
+        />
+        <p className="mt-[12px] font-['Geist'] text-[12.5px] text-white/45">Toca la foto para cambiarla</p>
+      </div>
+
+      <Section title="Identidad">
+        <FormRow icon={User} label="Tu nombre">
+          <TextInput
+            value={form.owner_name}
+            onChange={(v) => update("owner_name", v)}
+            placeholder="Cómo te llamas"
+          />
+        </FormRow>
+        <FormRow icon={Phone} label="Teléfono">
+          <TextInput
+            value={form.phone}
+            onChange={(v) => update("phone", v)}
+            placeholder="+51 999 999 999"
+            type="tel"
+          />
+        </FormRow>
+        <FormRow icon={Globe2} label="Idioma" last>
+          <SegmentedControl
+            value={form.language}
+            onChange={(v) => update("language", v)}
+            options={[
+              { value: "es", label: "Español" },
+              { value: "en", label: "English" },
+              { value: "pt", label: "Português" },
+            ]}
+          />
+        </FormRow>
+      </Section>
+    </SettingsShell>
+  );
+}
+
+/* --------------------------- Correo y contraseña -------------------------- */
+export function EmailPasswordScreen({ onBack }: { onBack: () => void }) {
+  const { user } = useAuth();
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [sending, setSending] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
+
+  const sendReset = async () => {
+    if (!user?.email) return;
+    setSending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/auth`,
+    });
+    setSending(false);
+    if (error) toast.error("No se pudo enviar el correo.");
+    else toast.success("Te enviamos un correo para restablecer tu contraseña.");
+  };
+
+  const changePassword = async () => {
+    if (pw.length < 8) return toast.error("Mínimo 8 caracteres.");
+    if (pw !== pw2) return toast.error("Las contraseñas no coinciden.");
+    setChangingPw(true);
+    const { error } = await supabase.auth.updateUser({ password: pw });
+    setChangingPw(false);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Contraseña actualizada");
+      setPw("");
+      setPw2("");
+    }
+  };
+
+  return (
+    <SettingsShell title="Correo y contraseña" eyebrow="Ajustes · Cuenta" onBack={onBack}>
+      <Section title="Correo">
+        <FormRow icon={Mail} label="Correo verificado" last>
+          <div className="font-['Geist'] text-[14.5px] text-white truncate">{user?.email}</div>
+        </FormRow>
+      </Section>
+
+      <Section title="Cambiar contraseña" hint="Mínimo 8 caracteres">
+        <FormRow icon={KeyRound} label="Nueva contraseña">
+          <TextInput value={pw} onChange={setPw} type="password" placeholder="••••••••" />
+        </FormRow>
+        <FormRow icon={KeyRound} label="Repetir contraseña" last>
+          <TextInput value={pw2} onChange={setPw2} type="password" placeholder="••••••••" />
+        </FormRow>
+      </Section>
+
+      <div className="px-[20px] mt-[16px]">
+        <button
+          type="button"
+          onClick={changePassword}
+          disabled={changingPw || !pw}
+          className="w-full h-[46px] rounded-full bg-white text-black font-['Geist'] text-[14px] font-semibold disabled:opacity-40 flex items-center justify-center gap-[8px]"
+        >
+          {changingPw && <Loader2 className="h-[14px] w-[14px] animate-spin" />}
+          Actualizar contraseña
+        </button>
+        <button
+          type="button"
+          onClick={sendReset}
+          disabled={sending}
+          className="w-full h-[42px] mt-[10px] rounded-full font-['Geist'] text-[13px] font-semibold text-white/70 border border-white/[0.08]"
+        >
+          {sending ? "Enviando…" : "Enviar link de restablecimiento"}
+        </button>
+      </div>
+    </SettingsShell>
+  );
+}
+
+/* --------------------------- Sesiones y dispositivos ---------------------- */
+export function SessionsScreen({ onBack }: { onBack: () => void }) {
+  const [loading, setLoading] = useState(false);
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+  const device = /iPhone|iPad/i.test(ua) ? "iPhone" : /Android/i.test(ua) ? "Android" : "Este dispositivo";
+
+  const closeOthers = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signOut({ scope: "others" });
+    setLoading(false);
+    if (error) toast.error("No se pudo cerrar las demás sesiones.");
+    else toast.success("Cerramos las sesiones en otros dispositivos.");
+  };
+
+  return (
+    <SettingsShell title="Sesiones y dispositivos" eyebrow="Ajustes · Cuenta" onBack={onBack}>
+      <Section title="Sesión actual">
+        <div className="flex items-center gap-[12px] px-[16px] py-[14px]">
+          <div className={`h-[34px] w-[34px] rounded-[10px] grid place-items-center shrink-0 ${ICON_TILE}`}>
+            <Monitor className="h-[15px] w-[15px] text-white/78" strokeWidth={1.7} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-['Geist'] text-[14.5px] text-white">{device}</div>
+            <div className="font-['Geist'] text-[11.5px] text-white/40 mt-[2px]">
+              Iniciada · sesión actual
+            </div>
+          </div>
+          <span className="font-['Geist'] text-[10.5px] uppercase tracking-[1.2px] text-[#4ADE80]">
+            Activa
+          </span>
+        </div>
+      </Section>
+
+      <Section title="Seguridad">
+        <NavRow
+          icon={ShieldCheck}
+          title="Cerrar sesión en otros dispositivos"
+          description="Solo mantiene la sesión actual"
+          onClick={closeOthers}
+          last
+          right={loading ? <Loader2 className="h-[14px] w-[14px] animate-spin text-white/50" /> : undefined}
+        />
+      </Section>
+
+      <div className="px-[20px] mt-[18px]">
+        <p className="font-['Geist'] text-[11.5px] text-white/35 leading-[1.55]">
+          Trax cifra tu sesión con tokens rotativos. Si perdiste un teléfono o cambiaste de equipo,
+          cerrar las otras sesiones garantiza que solo este dispositivo tenga acceso.
+        </p>
+      </div>
+
+      <div className="h-[8px]" />
+      <div className="px-[20px]">
+        <button
+          type="button"
+          onClick={async () => {
+            await supabase.auth.signOut();
+          }}
+          className="w-full h-[44px] rounded-full bg-white/[0.05] border border-white/[0.08] font-['Geist'] text-[13.5px] font-semibold text-white flex items-center justify-center gap-[8px]"
+        >
+          <LogOut className="h-[15px] w-[15px]" strokeWidth={1.7} />
+          Cerrar sesión en este dispositivo
+        </button>
+      </div>
+    </SettingsShell>
+  );
+}
