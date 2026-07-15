@@ -645,6 +645,7 @@ function SociaHero({
         >
           <SociaAskBar
             prompts={briefing?.quickPrompts ?? []}
+            briefing={briefing}
             onIntent={onIntent}
             reduce={reduce}
           />
