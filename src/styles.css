@@ -199,28 +199,23 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Visible, real scrollbar for Productividad and bottom-sheet content */
+/* Scrollable containers: allow scroll, hide scrollbar chrome */
 .trax-scroll {
-  overflow-y: scroll;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.38) rgba(255,255,255,0.055);
-  scrollbar-gutter: stable;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-gutter: auto;
 }
-.trax-scroll::-webkit-scrollbar { width: 8px; }
-.trax-scroll::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.055);
-  border-radius: 999px;
-}
-.trax-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.38);
-  border-radius: 999px;
-  border: 2px solid rgba(13,13,13,0.95);
-}
-.trax-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.52); }
+.trax-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .trax-productivity-scroll {
   max-height: calc(100dvh - 78px);
   padding-bottom: max(220px, calc(200px + env(safe-area-inset-bottom)));
 }
+
+/* Global: hide scrollbars everywhere while keeping scroll functional */
+*::-webkit-scrollbar { width: 0 !important; height: 0 !important; display: none !important; }
+* { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+
 
 .trax-fixed-textarea,
 textarea.trax-fixed-textarea {
