@@ -951,18 +951,14 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
           </ListGroup>
         )}
 
-        <div className="mt-[8px] rounded-[16px] p-[14px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</div>
-          <div className="mt-[8px] flex items-baseline justify-between">
-            <span className="font-['Bai_Jamjuree'] text-[28px] font-semibold text-white tabular-nums">{pct}%</span>
-            <span className="font-['Geist'] text-[12.5px] text-white/45 tabular-nums">
+        {total > 0 && (
+          <div className="mt-[8px] rounded-[16px] p-[14px] flex items-baseline justify-between" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+            <span className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</span>
+            <span className="font-['Geist'] text-[13px] text-white/70 tabular-nums">
               {done} de {total} completadas
             </span>
           </div>
-          <div className="mt-[10px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
-            <div className="h-full rounded-full bg-white" style={{ width: `${pct}%` }} />
-          </div>
-        </div>
+        )}
       </ProductivityScroll>
 
       <TaskSheet
