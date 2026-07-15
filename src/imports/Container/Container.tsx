@@ -1601,6 +1601,7 @@ export default function Container({
           }
         />
         <QuickActionsRow onIntent={handleIntent} onSeeAll={handleSeeAllActions} />
+        <MissionsCarousel briefing={briefing} isLoading={isLoading} onIntent={handleIntent} />
         <Activity onSeeAll={handleSeeAllActivity} />
       </div>
     </div>
