@@ -4445,6 +4445,547 @@ function GoalRing({ goal, onTap }: { goal: Goal; onTap: () => void }) {
   );
 }
 
+/* ============================================================
+   PRODUCTIVIDAD 4.0 — Living Command
+   Piezas: PulseCanvas, SociaWhisper, HorizonteStrip, FocusOrb,
+   GoalConstellation, FlightCard.
+   ============================================================ */
+
+function PulseCanvas({
+  goalPct,
+  dayPct,
+  centerValue,
+  centerLabel,
+  centerDelta,
+  onNext,
+  dotIdx,
+  dotCount,
+}: {
+  goalPct: number;
+  dayPct: number;
+  centerValue: string;
+  centerLabel: string;
+  centerDelta?: { v: string; pos: boolean };
+  onNext: () => void;
+  dotIdx: number;
+  dotCount: number;
+}) {
+  const size = 260;
+  const outerStroke = 12;
+  const gap = 8;
+  const innerStroke = 3;
+  const outerR = (size - outerStroke) / 2 - 2;
+  const innerR = outerR - outerStroke / 2 - gap - innerStroke / 2;
+  const cOuter = 2 * Math.PI * outerR;
+  const cInner = 2 * Math.PI * innerR;
+  return (
+    <div className="relative mx-auto" style={{ width: size, height: size }}>
+      <div
+        className="absolute inset-0 rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(255,255,255,0.07), rgba(255,255,255,0) 65%)",
+        }}
+      />
+      <svg width={size} height={size} className="rotate-[-90deg]">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={outerR}
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth={outerStroke}
+          fill="none"
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={outerR}
+          stroke={goalPct >= 1 ? "#4ADE80" : "#FFFFFF"}
+          strokeWidth={outerStroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={cOuter}
+          initial={{ strokeDashoffset: cOuter }}
+          animate={{ strokeDashoffset: cOuter * (1 - Math.min(1, goalPct)) }}
+          transition={{ type: "spring", stiffness: 40, damping: 18 }}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={innerR}
+          stroke="rgba(255,255,255,0.05)"
+          strokeWidth={innerStroke}
+          fill="none"
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={innerR}
+          stroke="rgba(255,255,255,0.6)"
+          strokeWidth={innerStroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={cInner}
+          initial={{ strokeDashoffset: cInner }}
+          animate={{ strokeDashoffset: cInner * (1 - Math.min(1, dayPct)) }}
+          transition={{ type: "spring", stiffness: 40, damping: 18, delay: 0.15 }}
+        />
+      </svg>
+      <button
+        type="button"
+        onClick={onNext}
+        className="absolute inset-0 grid place-items-center active:opacity-80"
+      >
+        <div className="flex flex-col items-center gap-[6px] px-[18px]">
+          <span className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.6px] text-white/40">
+            {centerLabel}
+          </span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={centerValue + centerLabel}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.32 }}
+              className="font-['Bai_Jamjuree'] tabular-nums text-[34px] leading-[36px] font-semibold text-white tracking-[-0.8px] text-center"
+            >
+              {centerValue}
+            </motion.span>
+          </AnimatePresence>
+          {centerDelta && (
+            <span
+              className="font-['Bai_Jamjuree'] tabular-nums text-[11px] font-semibold"
+              style={{ color: centerDelta.pos ? "#4ADE80" : "#F87171" }}
+            >
+              {centerDelta.v}
+            </span>
+          )}
+          <div className="mt-[6px] flex items-center gap-[4px]">
+            {Array.from({ length: dotCount }).map((_, i) => (
+              <span
+                key={i}
+                className="h-[3px] rounded-full transition-all"
+                style={{
+                  width: i === dotIdx ? 14 : 3,
+                  background: i === dotIdx ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+type Whisper = {
+  id: string;
+  chip: string;
+  text: string;
+  tone: "good" | "warn" | "urgent" | "info";
+  action?: string;
+  onAct?: () => void;
+};
+
+function SociaWhisper({ items }: { items: Whisper[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div
+      className="relative"
+      style={{
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar">
+        {items.map((w) => {
+          const c =
+            w.tone === "urgent"
+              ? "#F87171"
+              : w.tone === "warn"
+                ? "#F5B944"
+                : w.tone === "good"
+                  ? "#4ADE80"
+                  : "#FFFFFF";
+          return (
+            <div
+              key={w.id}
+              className="snap-start shrink-0 w-full flex items-center gap-[12px] px-[20px] py-[14px]"
+            >
+              <div className="flex items-center gap-[6px] shrink-0">
+                <Sparkles className="h-[11px] w-[11px]" style={{ color: c }} strokeWidth={2} />
+                <span
+                  className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.2px]"
+                  style={{ color: c }}
+                >
+                  {w.chip}
+                </span>
+              </div>
+              <p className="font-['Geist'] text-[12.5px] leading-[16px] text-white/85 flex-1 min-w-0">
+                {w.text}
+              </p>
+              {w.action && w.onAct && (
+                <button
+                  type="button"
+                  onClick={w.onAct}
+                  className="shrink-0 font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1px] text-white/85 active:text-white pl-[10px]"
+                  style={{ borderLeft: "1px solid rgba(255,255,255,0.10)" }}
+                >
+                  {w.action} →
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+type WeekBucket = {
+  start: Date;
+  label: string;
+  count: number;
+  done: number;
+  markers: { color: string; kind: string }[];
+};
+
+function HorizonteStrip({
+  weeks,
+  onWeek,
+}: {
+  weeks: WeekBucket[];
+  onWeek: (w: WeekBucket) => void;
+}) {
+  const maxCount = Math.max(1, ...weeks.map((w) => w.count));
+  const now = new Date();
+  const currentIdx = weeks.findIndex((w) => {
+    const end = new Date(w.start);
+    end.setDate(end.getDate() + 7);
+    return now >= w.start && now < end;
+  });
+  return (
+    <div className="flex gap-[6px] h-[110px]">
+      {weeks.map((w, i) => {
+        const density = 0.025 + 0.12 * (w.count / maxCount);
+        const isCurrent = i === currentIdx;
+        return (
+          <button
+            type="button"
+            key={i}
+            onClick={() => onWeek(w)}
+            className="relative flex-1 rounded-[10px] flex flex-col justify-end p-[6px] active:opacity-80"
+            style={{
+              background: `rgba(255,255,255,${density})`,
+              border: `1px solid ${isCurrent ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.05)"}`,
+            }}
+          >
+            {isCurrent && (
+              <span className="absolute top-[6px] left-1/2 -translate-x-1/2 h-[4px] w-[4px] rounded-full bg-white" />
+            )}
+            <div className="flex flex-col gap-[3px] items-center mb-[4px] min-h-[15px]">
+              {w.markers.slice(0, 3).map((m, mi) => (
+                <span
+                  key={mi}
+                  className="h-[4px] w-[4px] rounded-full"
+                  style={{ background: m.color }}
+                />
+              ))}
+            </div>
+            <span className="font-['Bai_Jamjuree'] tabular-nums text-[10px] font-semibold text-white/60 text-center leading-none">
+              {w.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function FocusOrb({
+  title,
+  context,
+  tone,
+  onDone,
+  onLater,
+  onDismiss,
+}: {
+  title: string;
+  context: string;
+  tone: "urgent" | "focus" | "calm";
+  onDone?: () => void;
+  onLater?: () => void;
+  onDismiss?: () => void;
+}) {
+  const c = tone === "urgent" ? "#F87171" : tone === "calm" ? "#4ADE80" : "#FFFFFF";
+  const chip = tone === "urgent" ? "Actúa ya" : tone === "calm" ? "Todo en orden" : "Foco ahora";
+  return (
+    <div
+      className="relative w-full rounded-[24px] overflow-hidden"
+      style={{
+        background: `radial-gradient(circle at 25% 20%, ${c}18, rgba(255,255,255,0.01) 62%), rgba(255,255,255,0.03)`,
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <motion.div
+        className="absolute -top-[50px] -right-[50px] h-[170px] w-[170px] rounded-full pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${c}22, transparent 70%)` }}
+        animate={{ scale: [1, 1.08, 1], opacity: [0.7, 0.4, 0.7] }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <div className="relative p-[20px] flex flex-col gap-[14px]">
+        <div className="flex items-center gap-[6px]">
+          <span
+            className="h-[6px] w-[6px] rounded-full animate-pulse"
+            style={{ background: c }}
+          />
+          <span
+            className="font-['Geist'] text-[9.5px] font-semibold uppercase tracking-[1.4px]"
+            style={{ color: c }}
+          >
+            {chip}
+          </span>
+        </div>
+        <h2 className="font-['Bai_Jamjuree'] font-semibold text-[22px] leading-[26px] text-white tracking-[-0.4px]">
+          {title}
+        </h2>
+        <p className="font-['Geist'] text-[12px] leading-[16px] text-white/55">{context}</p>
+        {(onDone || onLater || onDismiss) && (
+          <div className="flex items-center gap-[8px] pt-[4px]">
+            {onDone && (
+              <button
+                type="button"
+                onClick={onDone}
+                className="h-[36px] flex-1 rounded-[12px] font-['Geist'] text-[12.5px] font-semibold text-black active:opacity-90"
+                style={{ background: "#FFFFFF" }}
+              >
+                Hecho
+              </button>
+            )}
+            {onLater && (
+              <button
+                type="button"
+                onClick={onLater}
+                className="h-[36px] px-[14px] rounded-[12px] font-['Geist'] text-[12px] font-medium text-white/70 active:text-white"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                Después
+              </button>
+            )}
+            {onDismiss && (
+              <button
+                type="button"
+                onClick={onDismiss}
+                className="h-[36px] w-[36px] rounded-[12px] grid place-items-center text-white/45 active:text-white/80"
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <X className="h-[13px] w-[13px]" strokeWidth={1.8} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function GoalConstellation({
+  goals,
+  onTap,
+  onAdd,
+}: {
+  goals: Goal[];
+  onTap: (g: Goal) => void;
+  onAdd: () => void;
+}) {
+  if (goals.length === 0) {
+    return (
+      <button
+        type="button"
+        onClick={onAdd}
+        className="w-full h-[180px] rounded-[24px] grid place-items-center active:opacity-90"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(255,255,255,0.05), rgba(255,255,255,0.01) 65%)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div className="flex flex-col items-center gap-[8px]">
+          <motion.div
+            className="h-[54px] w-[54px] rounded-full grid place-items-center"
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.10)",
+            }}
+            animate={{ scale: [1, 1.06, 1], opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Compass className="h-[20px] w-[20px] text-white/70" strokeWidth={1.5} />
+          </motion.div>
+          <span className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/85">
+            Define tu norte
+          </span>
+          <span className="font-['Geist'] text-[11px] text-white/40">
+            Cada meta es una estrella en tu constelación.
+          </span>
+        </div>
+      </button>
+    );
+  }
+  const H = 200;
+  const positions = [
+    { x: 0.22, y: 0.35 },
+    { x: 0.55, y: 0.22 },
+    { x: 0.8, y: 0.55 },
+    { x: 0.3, y: 0.75 },
+    { x: 0.68, y: 0.75 },
+    { x: 0.1, y: 0.62 },
+  ];
+  const maxTarget = Math.max(1, ...goals.map((g) => g.target));
+  return (
+    <div
+      className="relative w-full rounded-[24px] overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.04), rgba(255,255,255,0.005) 70%)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        height: H,
+      }}
+    >
+      {goals.slice(0, 6).map((g, i) => {
+        const pos = positions[i];
+        const pct = g.target > 0 ? Math.min(1, g.current / g.target) : 0;
+        const size = 34 + (g.target / maxTarget) * 38;
+        const opacity = 0.4 + pct * 0.55;
+        const isClose = pct >= 0.8;
+        return (
+          <button
+            type="button"
+            key={g.id}
+            onClick={() => onTap(g)}
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full grid place-items-center active:scale-95 transition-transform"
+            style={{
+              left: `${pos.x * 100}%`,
+              top: `${pos.y * 100}%`,
+              width: size,
+              height: size,
+              background: `radial-gradient(circle, rgba(255,255,255,${opacity * 0.55}), rgba(255,255,255,0.02))`,
+              border: `1px solid rgba(255,255,255,${opacity * 0.4})`,
+              boxShadow: isClose ? `0 0 26px rgba(74,222,128,0.28)` : "none",
+            }}
+          >
+            {pct > 0.05 && (
+              <motion.span
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{ border: `1px solid rgba(255,255,255,${opacity * 0.3})` }}
+                animate={{ scale: [1, 1.12, 1], opacity: [0.55, 0.15, 0.55] }}
+                transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
+            <span className="font-['Bai_Jamjuree'] tabular-nums text-[11px] font-semibold text-white/95 leading-none">
+              {Math.round(pct * 100)}
+            </span>
+          </button>
+        );
+      })}
+      {goals.length < 6 && (
+        <button
+          type="button"
+          onClick={onAdd}
+          className="absolute bottom-[10px] right-[12px] h-[26px] px-[10px] rounded-full font-['Geist'] text-[10px] font-semibold uppercase tracking-[1px] text-white/55 active:text-white"
+          style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          + meta
+        </button>
+      )}
+    </div>
+  );
+}
+
+function FlightCard({ project, onTap }: { project: Project; onTap: () => void }) {
+  const pct = Math.min(100, Math.max(0, project.progress));
+  const daysLeft = project.dueDate
+    ? Math.ceil((new Date(project.dueDate).getTime() - Date.now()) / 86400000)
+    : null;
+  const dueColor =
+    daysLeft === null
+      ? "rgba(255,255,255,0.4)"
+      : daysLeft < 0
+        ? "#F87171"
+        : daysLeft <= 3
+          ? "#F5B944"
+          : "rgba(255,255,255,0.55)";
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      className="w-full rounded-[20px] p-[18px] text-left flex flex-col gap-[14px] active:opacity-90"
+      style={{
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="flex items-start justify-between gap-[10px]">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-['Bai_Jamjuree'] font-semibold text-[15px] text-white/95 truncate">
+            {project.name}
+          </h4>
+          {project.description && (
+            <p className="font-['Geist'] text-[11.5px] text-white/50 mt-[2px] line-clamp-1">
+              {project.description}
+            </p>
+          )}
+        </div>
+        <span
+          className="font-['Bai_Jamjuree'] tabular-nums text-[11px] font-semibold shrink-0"
+          style={{ color: dueColor }}
+        >
+          {daysLeft === null
+            ? "—"
+            : daysLeft < 0
+              ? `${-daysLeft}d atraso`
+              : daysLeft === 0
+                ? "hoy"
+                : `${daysLeft}d`}
+        </span>
+      </div>
+      <div
+        className="relative h-[3px] w-full rounded-full"
+        style={{ background: "rgba(255,255,255,0.06)" }}
+      >
+        <motion.div
+          className="absolute left-0 top-0 h-full rounded-full"
+          style={{ background: pct >= 100 ? "#4ADE80" : "#FFFFFF" }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ type: "spring", stiffness: 50, damping: 18 }}
+        />
+        <motion.div
+          className="absolute top-1/2 -translate-y-1/2 h-[8px] w-[8px] rounded-full"
+          style={{ background: "#FFFFFF", boxShadow: "0 0 8px rgba(255,255,255,0.6)" }}
+          initial={{ left: 0 }}
+          animate={{ left: `calc(${pct}% - 4px)` }}
+          transition={{ type: "spring", stiffness: 50, damping: 18 }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[1.1px] text-white/40">
+          {PROJECT_STATUS[project.status].label}
+        </span>
+        <span className="font-['Bai_Jamjuree'] tabular-nums text-[12px] font-semibold text-white/85">
+          {pct}%
+        </span>
+      </div>
+    </button>
+  );
+}
+
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [learnOpen, setLearnOpen] = useState(false);
   const [mode, setMode] = useState<"day" | "week">("day");
