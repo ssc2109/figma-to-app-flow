@@ -182,22 +182,15 @@ function Header({
         alignItems: "center",
         justifyContent: "space-between",
         gap: 12,
-        padding: "16px 20px 6px",
+        padding: "20px 20px 10px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-        <span
-          style={{
-            fontFamily: B,
-            fontWeight: 700,
-            fontSize: 20,
-            color: "#fff",
-            letterSpacing: "-0.6px",
-            lineHeight: 1,
-          }}
-        >
-          Trax
-        </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+        <img
+          src={traxLogo.url}
+          alt="Trax"
+          style={{ height: 22, width: "auto", display: "block", flex: "none" }}
+        />
         <span
           style={{
             fontFamily: G,
@@ -207,8 +200,8 @@ function Header({
             textTransform: "uppercase",
             color: "rgba(255,255,255,0.4)",
             borderLeft: "1px solid rgba(255,255,255,0.12)",
-            paddingLeft: 10,
-            maxWidth: 180,
+            paddingLeft: 12,
+            maxWidth: 160,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
