@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import SignInView from "./auth/SignInView";
 import SignUpView from "./auth/SignUpView";
@@ -16,27 +16,54 @@ const dirFor = (from: View, to: View): 1 | -1 => {
 export default function AuthScreen() {
   const [view, setView] = useState<View>("signin");
   const [direction, setDirection] = useState<1 | -1>(1);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const go = (next: View) => {
     setDirection(dirFor(view, next));
     setView(next);
   };
 
+  // iOS Safari won't autoplay unless muted+playsInline are set BEFORE the play() call,
+  // and often needs an explicit .play() attempt after mount.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    v.defaultMuted = true;
+    v.setAttribute("muted", "");
+    v.setAttribute("playsinline", "");
+    const tryPlay = () => v.play().catch(() => {});
+    tryPlay();
+    const onTouch = () => tryPlay();
+    document.addEventListener("touchstart", onTouch, { once: true, passive: true });
+    return () => document.removeEventListener("touchstart", onTouch);
+  }, []);
+
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center px-[20px] py-[20px] relative overflow-hidden">
+      {/* Fallback gradient in case video can't play (iOS Low Power Mode, codec, etc.) */}
+      <div
+        aria-hidden
+        className="absolute inset-0 z-0"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 30% 20%, #1a1f3a 0%, #0a0d1f 45%, #000 100%)",
+        }}
+      />
       {/* Background video */}
       <video
+        ref={videoRef}
+        src={authBg.url}
         autoPlay
         loop
         muted
         playsInline
-        {...({ "webkit-playsinline": "true" } as Record<string, string>)}
+        {...({ "webkit-playsinline": "true", "x5-playsinline": "true" } as Record<string, string>)}
         preload="auto"
         disableRemotePlayback
+        controls={false}
         className="absolute inset-0 w-full h-full object-cover z-0"
-      >
-        <source src={authBg.url} type="video/mp4" />
-      </video>
+      />
       {/* Dark overlay for legibility */}
       <div className="absolute inset-0 bg-black/55 z-0" />
 
