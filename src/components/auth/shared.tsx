@@ -23,7 +23,7 @@ export function Field({
   disabled,
   required = true,
 }: {
-  label: string;
+  label?: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
@@ -35,9 +35,11 @@ export function Field({
 }) {
   return (
     <label className="flex flex-col gap-[7px]">
-      <span className="text-[10.5px] uppercase tracking-[0.08em] text-white/45 font-['Geist'] font-medium">
-        {label}
-      </span>
+      {label && (
+        <span className="text-[10.5px] uppercase tracking-[0.08em] text-white/45 font-['Geist'] font-medium">
+          {label}
+        </span>
+      )}
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -47,7 +49,7 @@ export function Field({
         autoFocus={autoFocus}
         disabled={disabled}
         required={required}
-        className="h-[50px] rounded-[14px] px-[15px] bg-white/[0.03] border border-white/[0.08] text-white text-[15px] font-['Geist'] placeholder:text-white/25 outline-none focus:border-white/40 focus:bg-white/[0.05] transition-all disabled:opacity-40"
+        className="h-[52px] rounded-[14px] px-[16px] bg-white/[0.04] border border-white/[0.07] text-white text-[15px] font-['Geist'] placeholder:text-white/30 outline-none focus:border-white/30 focus:bg-white/[0.06] transition-all disabled:opacity-40"
       />
     </label>
   );
