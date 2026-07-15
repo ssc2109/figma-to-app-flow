@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { useBriefing, type Briefing } from "@/components/home/SociaInsightCard";
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
+import MissionsCarousel from "@/components/home/MissionsCarousel";
 import traxLogo from "@/assets/trax-logo.png.asset.json";
 
 const G = "'Geist', sans-serif";
@@ -640,19 +641,20 @@ function SociaHero({
           )}
         </div>
       </div>
-      {!thinking && (
-        <div
-          className={reduce ? "" : "socia-fade"}
-          style={{ marginTop: 16, animationDelay: reduce ? "0s" : `${footerDelay}s` }}
-        >
-          <SociaAskBar
-            prompts={briefing?.quickPrompts ?? []}
-            briefing={briefing}
-            onIntent={onIntent}
-            reduce={reduce}
-          />
-        </div>
-      )}
+      {!thinking &&
+        briefing?.insights?.some((ins) => ins.cta && ins.tone === "warning") && (
+          <div
+            className={reduce ? "" : "socia-fade"}
+            style={{ marginTop: 16, animationDelay: reduce ? "0s" : `${footerDelay}s` }}
+          >
+            <SociaAskBar
+              prompts={briefing?.quickPrompts ?? []}
+              briefing={briefing}
+              onIntent={onIntent}
+              reduce={reduce}
+            />
+          </div>
+        )}
     </div>
   );
 }
@@ -1599,6 +1601,7 @@ export default function Container({
           }
         />
         <QuickActionsRow onIntent={handleIntent} onSeeAll={handleSeeAllActions} />
+        <MissionsCarousel briefing={briefing} isLoading={isLoading} onIntent={handleIntent} />
         <Activity onSeeAll={handleSeeAllActivity} />
       </div>
     </div>
