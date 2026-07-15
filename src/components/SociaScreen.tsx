@@ -133,7 +133,7 @@ function uiMessageText(m: UIMessage): string {
     .join("");
 }
 
-export default function SociaScreen({ initialPrompt }: { initialPrompt?: string } = {}) {
+export default function SociaScreen({ initialPrompt, initialShowHistory }: { initialPrompt?: string; initialShowHistory?: boolean } = {}) {
   const inv = useInventory();
   const fin = useFinance();
   const qc = useQueryClient();
