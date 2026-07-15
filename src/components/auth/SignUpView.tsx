@@ -4,18 +4,15 @@ import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import {
   AppleIcon,
-  FacebookIcon,
   Field,
   GoogleIcon,
   PhoneIcon,
   PrimaryButton,
   SocialCircle,
-  useIsAppleDevice,
 } from "./shared";
 
 export default function SignUpView({ onBack, onGoToPhone }: { onBack: () => void; onGoToPhone: () => void }) {
   void onBack;
-  const isApple = useIsAppleDevice();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -87,17 +84,8 @@ export default function SignUpView({ onBack, onGoToPhone }: { onBack: () => void
         <SocialCircle label="Google" onClick={() => handleOAuth("google")} disabled={loading}>
           <GoogleIcon />
         </SocialCircle>
-        {isApple && (
-          <SocialCircle label="Apple" onClick={() => handleOAuth("apple")} disabled={loading}>
-            <AppleIcon />
-          </SocialCircle>
-        )}
-        <SocialCircle
-          label="Facebook"
-          onClick={() => toast.info("Facebook estará disponible pronto")}
-          soon
-        >
-          <FacebookIcon />
+        <SocialCircle label="Apple" onClick={() => handleOAuth("apple")} disabled={loading}>
+          <AppleIcon />
         </SocialCircle>
         <SocialCircle label="Teléfono" onClick={onGoToPhone} disabled={loading}>
           <PhoneIcon />
