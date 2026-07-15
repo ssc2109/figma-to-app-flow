@@ -1,87 +1,119 @@
-## Objetivo
 
-Que cada control de Ajustes **realmente cambie el comportamiento de Trax**, no solo lo guarde. Hoy Apariencia, Notificaciones, socIA e Idioma se persisten en `profiles.preferences` pero ninguna otra parte del código los lee. Este plan cierra ese hueco.
+# Productividad 2.0 — Notion × Linear, adaptado a Trax
 
-## Auditoría (qué funciona vs qué falta)
+Deja de ser un menú de tarjetas para entrar a submódulos. Pasa a ser **una sola pantalla-cockpit** donde todo se ve y se opera en línea: cronograma, entregables, tareas, metas, aprender. Menos clicks, más señal.
 
-| Pantalla | Guarda | Se aplica en la app |
-|---|---|---|
-| Perfil personal (nombre, foto, teléfono) | ✅ | ✅ |
-| Idioma | ✅ (`prefs.language`) | ❌ (nada lo lee) |
-| Correo y contraseña | ✅ | ✅ |
-| Sesiones (cerrar otras/actual) | ✅ | ✅ |
-| Ficha del negocio + horarios + datos fiscales | ✅ | ✅ |
-| Moneda | ✅ | ✅ (formatters ya la usan) |
-| Metas y umbrales | ✅ | ✅ |
-| Equipo | — | Placeholder deliberado |
-| **Apariencia** (tema, tamaño texto, reducir movimiento) | ✅ | ❌ |
-| **Notificaciones** (maestro + 4 tipos + correo) | ✅ | ❌ (nadie las consulta) |
-| **socIA** (tono, "ver conversaciones", borrar historial) | Parcial | Tono no viaja al servidor; "Ver conversaciones" no navega |
-| Datos y privacidad (exportar / eliminar) | ✅ | ✅ |
-| Ayuda y legal | ✅ | ✅ |
+## Principios
 
-## Cambios
+- **Densidad útil sin ruido.** Como Linear: filas compactas, tipografía Geist mono para IDs/fechas, estados con puntos de color pequeños, hairlines en vez de cards infladas.
+- **Bloques editoriales tipo Notion.** Cada sección es un "block" con título mínimo, contenido inline y acción rápida (+) a la derecha. Nada se abre en modal si puede editarse in-place.
+- **Fondo negro puro `#000`.** Fuera aurora azul, fuera degradados. Un solo acento blanco + puntos de color semántico (rojo urgencia, ámbar en riesgo, verde hecho). Sin morados ni azules eléctricos.
+- **Cronograma siempre visible.** No es un tile para entrar; es el corazón de la vista.
+- **Un solo scroll vertical.** Sin submódulos con back button (excepto Aprender, que se mantiene tal cual).
 
-### 1) Provider central de preferencias
-Nuevo `src/hooks/usePreferences.tsx` que lee `profile.preferences` y expone:
-`{ theme, textSize, reduceMotion, sociaTone, notifMaster, notifStock, notifDebts, notifGoal, notifSummary, notifEmailWeekly, language }`, ya con defaults.
+## Estructura de la pantalla (top → bottom)
 
-Nuevo `src/components/PreferencesEffects.tsx` (montado en `__root.tsx`) que aplica en tiempo real:
-- **Tema**: `dark` fuerza `.dark` en `<html>`; `auto` sigue `prefers-color-scheme`.
-- **Tamaño de texto**: setea `document.documentElement.style.fontSize` (compact 14.5px / normal 16px / large 17.5px) y una CSS var `--text-scale` para que Tailwind escale.
-- **Reducir movimiento**: añade clase `reduce-motion` en `<html>`; en `src/styles.css` esa clase corta `transition`/`animation`/duraciones a `0.01ms` y desactiva Framer `motion` vía `MotionConfig reducedMotion="always"` cuando esté activo.
+```text
+┌────────────────────────────────────────┐
+│ Header: "Hoy, mié 15 jul"  · nombre    │  ← eyebrow + fecha viva
+│ Ribbon de foco (3 números clave)       │  ← pendientes · en riesgo · hechas
+├────────────────────────────────────────┤
+│ ⌘ Command bar   [+ Añadir]  [Hoy ▾]   │  ← Linear-style quick add
+├────────────────────────────────────────┤
+│ CRONOGRAMA (timeline vertical de hoy) │  ← inline, siempre visible
+│  08 ─── (vacío)                       │
+│  09 ── ● Reunión proveedor  30m       │
+│  10 ── ● Reponer bebidas    tarea     │
+│  ...                                   │
+│  ahora ──────────────── línea viva     │
+├────────────────────────────────────────┤
+│ INBOX / PRIORIDADES (lista Linear)    │
+│  ● TRX-12  Cobrar fiado Juan   P1 hoy │
+│  ● TRX-13  Pedido harina       P2     │
+│  + Añadir tarea (inline)              │
+├────────────────────────────────────────┤
+│ ENTREGABLES (proyectos, tabla Notion) │
+│  ▸ Lanzar delivery      75% ▓▓▓▓░ 3d  │
+│  ▸ Rebranding local     20% ▓░░░░ 2s  │
+├────────────────────────────────────────┤
+│ METAS (OKRs compactos)                │
+│  Ventas jul   S/ 8.2k / 12k  68%      │
+├────────────────────────────────────────┤
+│ APRENDER (intacto, carruseles)        │
+├────────────────────────────────────────┤
+│ RECOS IA (chips inline, no card)      │
+└────────────────────────────────────────┘
+```
 
-### 2) Notificaciones que sí notifican
-Nuevo helper `src/lib/notify.ts` con `notifyBusiness({ kind: "stock"|"debts"|"goal"|"summary", title, body })` que:
-- Respeta el switch maestro (`notifications_enabled`) y el switch por tipo (`prefs.notif_*`).
-- Muestra `toast` (sonner) siempre que esté permitido.
-- Si el navegador soporta `Notification` y el usuario dio permiso, dispara también notificación nativa.
-- Añade botón "Activar notificaciones del sistema" en la pantalla de Notificaciones que llama a `Notification.requestPermission()`.
+## Bloques en detalle
 
-Puntos de llamada que se enganchan al helper (sustituyen `toast.*` sueltos):
-- **Stock crítico**: en `useInventory` cuando un producto baja de `low_stock_threshold` (ya existe la lógica, cambiamos su emisión).
-- **Fiado vencido**: en el fetch de fiados / briefing (`briefing.functions.ts` ya detecta vencidos → agregamos aviso al abrir Inicio).
-- **Meta diaria alcanzada**: en `useFinance` cuando `ventasHoy >= daily_goal`.
-- **Resumen del día**: al abrir Inicio si son ≥ 20:00 hora local y aún no se mostró hoy (flag en `localStorage`).
+### 1. Header vivo
+Fecha larga en Bai Jamjuree, saludo corto. Debajo, **ribbon de 3 métricas** en fila (Pendientes · En riesgo · Hechas hoy) con números Bai Jamjuree grandes y label Geist uppercase. Reemplaza el "TodayStatus" actual.
 
-### 3) socIA
-- `SettingsScreen` pasa `openThreads={() => { onBack(); onOpenSocia?.(); }}` a `SociaSettingsScreen`. `TraxNavigation` expone `onOpenSocia` que cambia la tab activa a `socia` y abre el panel de hilos.
-- El **tono** viaja al backend: en `AIChat` (o donde se llame `chatCompletion`) se lee `usePreferences().sociaTone` y se envía como campo `tone`. En `src/routes/api/chat.ts` se concatena al `SYSTEM_PROMPT` una línea:  
-  `cercano` → "Habla en tono cercano, cálido, con emojis moderados."  
-  `formal` → "Habla en tono profesional, sin emojis, frases breves."
+### 2. Command bar (Linear)
+Barra sticky con:
+- Input "Añadir tarea, evento o meta…" (parsea `mañana 9am`, `p1`, `#proyecto`).
+- Botón `+` que abre menú rápido: Tarea · Evento · Proyecto · Meta.
+- Selector de vista: Hoy · Semana · Todo.
 
-### 4) Idioma
-El selector de idioma solo cambia formateo regional (no traducción). `usePreferences` expone `locale` (`es-PE` / `en-US` / `pt-BR`) y los formatters (`src/lib/format.ts`) usan ese locale para números y fechas. Agrego nota inline: "Trax mostrará números y fechas con este formato."
+### 3. Cronograma inline (reemplaza el módulo Calendario)
+Timeline vertical de 06:00 → 22:00, hora a hora, con:
+- Línea "ahora" animada.
+- Bloques de eventos y tareas con `due` de hoy, coloreados por tipo (evento = borde blanco, tarea = punto de prioridad).
+- Tap en bloque → edición inline expandible (Notion-style), no modal.
+- Long-press vacío → crear evento en esa hora.
+- Toggle "Semana" cambia a mini-Gantt horizontal de 7 días (respeta preferencia del usuario por Gantt).
 
-### 5) Copy y microdetalles
-- Elimino la nota "opcional" engañosa donde el control ya se aplicaba.
-- El botón "Ayuda y legal → Acerca de Trax" abre modal con versión + build.
+### 4. Inbox / Prioridades (Linear)
+Lista densa de tareas no completadas:
+- Fila: `●` status · `TRX-###` id mono · título · pill prioridad P0-P3 · due relativo.
+- Swipe derecha = hecho, swipe izquierda = pospone 1 día.
+- `+ Añadir tarea` inline al final (sin modal).
+- Filtros chip: Hoy · Vencidas · Esta semana.
+
+### 5. Entregables / Proyectos (Notion tabla)
+Reemplaza Bento actual por **tabla-lista** compacta:
+- Nombre · barra progreso · deadline · estado (En curso / En riesgo / Bloqueado / Hecho).
+- Expandir fila → subtareas inline con checkbox.
+
+### 6. Metas (OKR)
+Una fila por meta: título · valor actual / target · barra · % · trend arrow. Sin submódulo.
+
+### 7. Aprender
+**Se mantiene igual** — LearnView completo (rutas, sesiones IA, quiz). Solo cambia el punto de entrada: pasa de tile bento a un bloque tipo Notion con título "Aprender" y los carruseles horizontales ya existentes embebidos, sin necesidad de entrar a otra pantalla. Botón "Ver todo" para el detalle profundo.
+
+### 8. Recos IA
+Chips horizontales scrollables al final. Tap → acción directa (crear tarea, abrir chat socIA).
+
+## Cambios visuales globales
+
+- **Elimino `AuroraBg`** y todo `bg-[#...]` azul/morado en esta pantalla.
+- Fondo: `#000`. Separadores: `rgba(255,255,255,0.06)` de 1px.
+- Cards → bloques con `bg: rgba(255,255,255,0.03)` + `border: rgba(255,255,255,0.06)`, radio 16.
+- Tipos:
+  - Números y fechas: Bai Jamjuree.
+  - Texto UI: Geist.
+  - IDs (TRX-12): Geist con `font-variant-numeric: tabular-nums`.
+- Puntos de color semánticos: `#F87171` urgente, `#F5B944` en riesgo, `#4ADE80` hecho, blanco = neutral. Nada más.
+- Bottom safe-area 180px (nav flotante).
+
+## Navegación y estado
+
+- `view` se elimina para todo lo que hoy es submódulo (priorities, calendar, projects, goals, recos). Todo vive en el hub.
+- Solo `learn` conserva su vista detallada (mantener rutas, sesiones, quiz).
+- Se conservan todos los hooks/datos existentes (`useMe`, `useFinance`, `useInventory`) y los sheets de edición (TaskSheet, ProjectSheet, GoalSheet, EventSheet) — se reusan disparados desde el hub.
 
 ## Detalles técnicos
 
-Archivos nuevos:
-- `src/hooks/usePreferences.tsx`
-- `src/components/PreferencesEffects.tsx`
-- `src/lib/notify.ts`
+- Archivo objetivo: `src/components/MeScreen.tsx` (reescritura del render principal + nuevos sub-componentes: `FocusRibbon`, `CommandBar`, `DayTimeline`, `WeekGantt`, `TaskInbox`, `DeliverablesTable`, `GoalsList`, `LearnBlock`, `RecosStrip`).
+- Se conservan (y se reutilizan) los sheets y componentes Learn existentes.
+- Se borra `AuroraBg` de uso; se puede dejar el `function` si otras vistas la usan (verificaré con `rg`).
+- Cero cambios de backend, cero migraciones.
 
-Archivos editados:
-- `src/routes/__root.tsx` — monta `<PreferencesEffects />` y `<MotionConfig>`.
-- `src/styles.css` — bloque `.reduce-motion *` y variables de tamaño.
-- `src/components/settings/PreferencesScreens.tsx` — botón permiso de notificaciones + fix cableo threads.
-- `src/components/SettingsScreen.tsx` — recibe `onOpenSocia`, lo propaga.
-- `src/components/TraxNavigation.tsx` — provee `onOpenSocia` (cambia tab + abre historial).
-- `src/components/SociaScreen.tsx` — acepta prop `initialPanel="threads"`.
-- `src/components/AIChat.tsx` — envía `tone` al backend.
-- `src/routes/api/chat.ts` — inyecta línea de tono en `SYSTEM_PROMPT`.
-- `src/data/inventory.ts`, `src/data/finance.ts`, `src/lib/api/briefing.functions.ts` — usan `notifyBusiness` para stock/meta/fiado/resumen.
-- `src/lib/format.ts` — usa `locale` del hook.
+## Fuera de alcance (por ahora)
+- No toca `Home`, `Negocio`, ni Aprender por dentro (solo su punto de entrada).
+- No añade colaboración multi-usuario (Linear-style asignaciones a equipo) — el módulo Empleados ya existe aparte.
+- No agrega drag & drop entre horas del cronograma en esta iteración (se puede añadir después).
 
-Sin cambios de base de datos: `preferences jsonb` ya existe con todo lo que necesitamos.
-
-## Verificación
-1. Cambiar tema a `auto` con el SO en claro → fondos no cambian (Trax es dark-first) pero se documenta.
-2. Tamaño `Grande` → todo el texto crece proporcionalmente sin romper layout.
-3. Reducir movimiento activo → transiciones de pantalla y aurora se pausan.
-4. Apagar switch maestro de notificaciones → no salen toasts de stock ni banners nativos.
-5. Cambiar tono a "Formal" → primera respuesta de socIA se nota más seca, sin emojis.
-6. "Ver mis conversaciones" desde Ajustes → abre socIA con el panel de hilos.
+## Resultado esperado
+Una sola pantalla negra, densa y viva. Abres Productividad y ves: qué toca ahora (cronograma), qué debes cerrar (inbox), qué está en marcha (entregables), a dónde vas (metas), y qué aprender. Cero navegación innecesaria. Sensación Notion + Linear, identidad Trax intacta.
