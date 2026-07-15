@@ -353,19 +353,18 @@ function SociaHero({
   );
 
   return (
-    <div className="trax-rise-home" style={{ position: "relative", padding: "18px 2px 4px" }}>
+    <div className="trax-rise-home" style={{ position: "relative", padding: "22px 2px 6px" }}>
       <h1
         style={{
           margin: 0,
           fontFamily: G,
-          fontSize: 27,
+          fontSize: 26,
           fontWeight: 300,
           lineHeight: "32px",
           letterSpacing: "-0.5px",
           color: "#fff",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
+          wordBreak: "break-word",
+          overflowWrap: "break-word",
         }}
       >
         <Stream text={greetingByHour()} reduce={reduce} start={0} step={0.05} />{" "}
@@ -376,7 +375,7 @@ function SociaHero({
           display: "flex",
           alignItems: "flex-start",
           gap: 13,
-          marginTop: 20,
+          marginTop: 24,
           minHeight: 30,
         }}
       >
