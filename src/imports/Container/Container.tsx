@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { useBriefing, type Briefing } from "@/components/home/SociaInsightCard";
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
+import traxLogo from "@/assets/trax-logo.png.asset.json";
 
 const G = "'Geist', sans-serif";
 const B = "'Bai Jamjuree', sans-serif";
@@ -181,22 +182,15 @@ function Header({
         alignItems: "center",
         justifyContent: "space-between",
         gap: 12,
-        padding: "16px 20px 6px",
+        padding: "20px 20px 10px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-        <span
-          style={{
-            fontFamily: B,
-            fontWeight: 700,
-            fontSize: 20,
-            color: "#fff",
-            letterSpacing: "-0.6px",
-            lineHeight: 1,
-          }}
-        >
-          Trax
-        </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+        <img
+          src={traxLogo.url}
+          alt="Trax"
+          style={{ height: 22, width: "auto", display: "block", flex: "none" }}
+        />
         <span
           style={{
             fontFamily: G,
@@ -206,8 +200,8 @@ function Header({
             textTransform: "uppercase",
             color: "rgba(255,255,255,0.4)",
             borderLeft: "1px solid rgba(255,255,255,0.12)",
-            paddingLeft: 10,
-            maxWidth: 180,
+            paddingLeft: 12,
+            maxWidth: 160,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -359,19 +353,18 @@ function SociaHero({
   );
 
   return (
-    <div className="trax-rise-home" style={{ position: "relative", padding: "18px 2px 4px" }}>
+    <div className="trax-rise-home" style={{ position: "relative", padding: "22px 2px 6px" }}>
       <h1
         style={{
           margin: 0,
           fontFamily: G,
-          fontSize: 27,
+          fontSize: 26,
           fontWeight: 300,
           lineHeight: "32px",
           letterSpacing: "-0.5px",
           color: "#fff",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
+          wordBreak: "break-word",
+          overflowWrap: "break-word",
         }}
       >
         <Stream text={greetingByHour()} reduce={reduce} start={0} step={0.05} />{" "}
@@ -382,7 +375,7 @@ function SociaHero({
           display: "flex",
           alignItems: "flex-start",
           gap: 13,
-          marginTop: 20,
+          marginTop: 24,
           minHeight: 30,
         }}
       >
@@ -1401,10 +1394,10 @@ export default function Container({
       />
       <div
         style={{
-          padding: "0 20px",
+          padding: "6px 20px 0",
           display: "flex",
           flexDirection: "column",
-          gap: 22,
+          gap: 30,
         }}
       >
         <SociaHero
