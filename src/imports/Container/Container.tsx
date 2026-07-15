@@ -296,6 +296,137 @@ function insightToAction(ins: Briefing["insights"][number]): SociaAction | null 
   return { label: ins.cta.label, Icon: MessageCircle, intent: { kind: "chat", prompt: ins.text } };
 }
 
+/* ---------- SociaAskBar (barra "Pregúntale a socIA") ---------- */
+function SociaAskBar({
+  prompts,
+  onIntent,
+  reduce,
+}: {
+  prompts: string[];
+  onIntent: (i: HomeNavIntent) => void;
+  reduce: boolean;
+}) {
+  const options = prompts.length > 0 ? prompts : ["Pregúntale a socIA"];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (reduce || options.length <= 1) return;
+    const id = setInterval(() => setIdx((i) => (i + 1) % options.length), 4200);
+    return () => clearInterval(id);
+  }, [reduce, options.length]);
+
+  const current = options[idx] ?? options[0];
+
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        onIntent({
+          kind: "chat",
+          prompt: prompts.length > 0 ? current : "",
+        })
+      }
+      style={{
+        position: "relative",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        width: "100%",
+        padding: "12px 14px 12px 16px",
+        borderRadius: 999,
+        cursor: "pointer",
+        background:
+          "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.035) 100%)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        boxShadow:
+          "inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 20px -14px rgba(124,195,255,0.35)",
+        overflow: "hidden",
+      }}
+    >
+      {/* halo suave a la izquierda */}
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          left: -20,
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: 90,
+          height: 90,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(closest-side, rgba(124,195,255,0.20), transparent 70%)",
+          filter: "blur(4px)",
+          pointerEvents: "none",
+        }}
+      />
+      <span
+        style={{
+          position: "relative",
+          height: 22,
+          width: 22,
+          borderRadius: "50%",
+          display: "grid",
+          placeItems: "center",
+          flex: "none",
+          background: "rgba(124,195,255,0.14)",
+          border: "1px solid rgba(124,195,255,0.30)",
+        }}
+      >
+        <Sparkles size={12} color={SOCIA} strokeWidth={2} />
+      </span>
+      <span
+        style={{
+          position: "relative",
+          flex: 1,
+          minWidth: 0,
+          height: 20,
+          overflow: "hidden",
+          display: "block",
+        }}
+      >
+        <span
+          key={current}
+          className={reduce ? "" : "socia-prompt-fade"}
+          style={{
+            display: "block",
+            fontFamily: G,
+            fontSize: 13.5,
+            fontWeight: 400,
+            color: "rgba(255,255,255,0.72)",
+            letterSpacing: "-0.05px",
+            lineHeight: "20px",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {prompts.length > 0 ? current : "Pregúntale a socIA"}
+        </span>
+      </span>
+      <span
+        aria-hidden
+        style={{
+          position: "relative",
+          fontFamily: G,
+          fontSize: 10.5,
+          fontWeight: 600,
+          letterSpacing: "1.2px",
+          textTransform: "uppercase",
+          color: "rgba(124,195,255,0.85)",
+          padding: "4px 8px",
+          borderRadius: 999,
+          background: "rgba(124,195,255,0.10)",
+          border: "1px solid rgba(124,195,255,0.22)",
+          flex: "none",
+        }}
+      >
+        Preguntar
+      </span>
+    </button>
+  );
+}
+
+
 function SociaHero({
   reduce,
   ownerFirst,
@@ -455,34 +586,11 @@ function SociaHero({
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => onIntent({ kind: "chat", prompt: "" })}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 9,
-                width: "100%",
-                padding: "10px 14px",
-                borderRadius: 999,
-                cursor: "pointer",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <MessageCircle size={15} color="rgba(255,255,255,0.4)" strokeWidth={1.8} />
-              <span
-                style={{
-                  fontFamily: G,
-                  fontSize: 13,
-                  fontWeight: 400,
-                  color: "rgba(255,255,255,0.5)",
-                  letterSpacing: "-0.05px",
-                }}
-              >
-                Pregúntale a socIA
-              </span>
-            </button>
+            <SociaAskBar
+              prompts={briefing?.quickPrompts ?? []}
+              onIntent={onIntent}
+              reduce={reduce}
+            />
           )}
         </div>
       )}
@@ -503,7 +611,14 @@ function SociaActions({
   onIntent: (i: HomeNavIntent) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const insights = briefing?.insights ?? [];
+  // Sólo mostramos como tareas los insights REALES accionables:
+  // - deben tener CTA (algo que hacer)
+  // - o tono warning / opportunity (algo que atender)
+  // Si no hay nada, la card entera no se renderiza.
+  const raw = briefing?.insights ?? [];
+  const insights = raw.filter(
+    (ins) => ins.cta != null || ins.tone === "warning" || ins.tone === "opportunity",
+  );
   if (insights.length === 0) return null;
 
   const items = insights.map((ins) => {

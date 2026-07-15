@@ -93,25 +93,17 @@ export function useBriefing() {
   const weekday = now.toLocaleDateString("es-PE", { weekday: "long" });
   const dateKey = now.toISOString().slice(0, 10);
 
-  const yesterdayIncome = useMemo(() => {
-    const y = new Date();
-    y.setDate(y.getDate() - 1);
-    return fin.tx
-      .filter(
-        (t) =>
-          t.kind === "ingreso" &&
-          new Date(t.date).toDateString() === y.toDateString(),
-      )
-      .reduce((s, t) => s + t.amount, 0);
-  }, [fin.tx]);
-
   const briefingFn = useServerFn(generateBriefing);
+  // Signals sólo para invalidar cache cuando cambia el estado del negocio.
+  // El servidor lee su propia data completa (ventas, gastos, productos, fiados,
+  // eventos, compras) directamente de Supabase.
   const keySig = [
     dateKey,
     Math.floor(hour / 3),
     inv.lowStock.length,
     bucket(fin.fiadosPending, 50),
     bucket(fin.todayIncome, 200),
+    fin.tx.length,
   ].join(":");
 
   return useQuery({
@@ -124,21 +116,12 @@ export function useBriefing() {
           businessType: profile?.business_type ?? null,
           hour,
           weekday,
-          todayIncome: fin.todayIncome,
-          yesterdayIncome,
-          monthIncome: fin.monthIncome,
-          fiadosPendingTotal: fin.fiadosPending,
-          fiadosPendingCount: fin.fiados.filter((f) => !f.settled).length,
-          fiadosOverdueTotal: fin.fiadosOverdue,
-          lowStock: inv.lowStock
-            .slice(0, 6)
-            .map((p) => ({ name: p.name, units: p.stock })),
-          newUser: fin.tx.length === 0 && inv.items.length === 0,
         },
       }),
     staleTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    enabled: !!profile?.id,
   });
 }
 

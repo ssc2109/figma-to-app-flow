@@ -415,11 +415,19 @@ textarea.trax-fixed-textarea::-webkit-resizer {
 @keyframes trax-rise-home { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .trax-rise-home { animation: trax-rise-home 0.5s cubic-bezier(0.22,1,0.36,1) both; }
 
+@keyframes socia-prompt-fade {
+  0% { opacity: 0; transform: translateY(6px); filter: blur(3px); }
+  15% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  85% { opacity: 1; transform: translateY(0); filter: blur(0); }
+  100% { opacity: 0; transform: translateY(-6px); filter: blur(3px); }
+}
+.socia-prompt-fade { animation: socia-prompt-fade 4.2s cubic-bezier(0.22,1,0.36,1) both; }
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .socia-orb-core, .socia-bloom-home, .socia-letter, .socia-word, .socia-fade,
-  .trax-rise-home, .trax-ping-home { animation: none !important; opacity: 1 !important; }
+  .socia-prompt-fade, .trax-rise-home, .trax-ping-home { animation: none !important; opacity: 1 !important; }
 }
 
