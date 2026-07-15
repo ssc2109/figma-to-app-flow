@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { useBriefing, type Briefing } from "@/components/home/SociaInsightCard";
 import type { HomeNavIntent } from "@/components/home/ProactiveHero";
+import traxLogo from "@/assets/trax-logo.png.asset.json";
 
 const G = "'Geist', sans-serif";
 const B = "'Bai Jamjuree', sans-serif";
