@@ -1110,30 +1110,23 @@ function MoneyStrip({
   );
 }
 
-/* ---------- QuickActions (compact 4x1) ---------- */
-type QAKey = "venta" | "pedir_proveedor" | "cobrar_fiado" | "ver_todo";
-function QuickActionsRow({
-  onIntent,
-  onSeeAll,
-}: {
-  onIntent: (i: HomeNavIntent) => void;
-  onSeeAll: () => void;
-}) {
+/* ---------- QuickActions (compact 3x1) ---------- */
+type QAKey = "venta" | "cobrar_fiado" | "pedir_proveedor";
+function QuickActionsRow({ onIntent }: { onIntent: (i: HomeNavIntent) => void }) {
   const actions: { key: QAKey; label: string; Icon: typeof PackagePlus; onTap: () => void }[] = [
     { key: "venta", label: "Vender", Icon: PackagePlus, onTap: () => onIntent({ kind: "sales" }) },
-    {
-      key: "pedir_proveedor",
-      label: "Proveedor",
-      Icon: Truck,
-      onTap: () => onIntent({ kind: "screen", screen: "crecer" }),
-    },
     {
       key: "cobrar_fiado",
       label: "Cobrar",
       Icon: CheckCircle2,
       onTap: () => onIntent({ kind: "screen", screen: "negocio", subview: "finanzas" }),
     },
-    { key: "ver_todo", label: "Ver todo", Icon: LayoutGrid, onTap: onSeeAll },
+    {
+      key: "pedir_proveedor",
+      label: "Proveedores",
+      Icon: Truck,
+      onTap: () => onIntent({ kind: "screen", screen: "negocio", subview: "suppliers" }),
+    },
   ];
   return (
     <div
@@ -1142,7 +1135,7 @@ function QuickActionsRow({
         animationDelay: "0.12s",
         width: "100%",
         display: "grid",
-        gridTemplateColumns: "repeat(4,1fr)",
+        gridTemplateColumns: "repeat(3,1fr)",
         gap: 12,
       }}
     >
@@ -1165,7 +1158,7 @@ function QuickActionsRow({
           <div
             style={{
               height: 58,
-              width: 58,
+              width: "100%",
               borderRadius: 18,
               display: "grid",
               placeItems: "center",
@@ -1540,12 +1533,10 @@ function Activity({ onSeeAll }: { onSeeAll: () => void }) {
 
 /* ---------- Container ---------- */
 export default function Container({
-  onSeeAllActions,
   onSeeAllActivity,
   onOpenSettings,
   onIntent,
 }: {
-  onSeeAllActions?: () => void;
   onSeeAllActivity?: () => void;
   onOpenSettings?: () => void;
   onIntent?: (i: HomeNavIntent) => void;
@@ -1579,9 +1570,13 @@ export default function Container({
   const yesterdayNet = yesterdayIncome - yesterdayExpense;
 
   const handleIntent = onIntent ?? (() => {});
-  const handleSeeAllActions = onSeeAllActions ?? (() => {});
   const handleSeeAllActivity = onSeeAllActivity ?? (() => {});
   const handleOpenSettings = onOpenSettings ?? (() => {});
+
+  const scrollToActivity = () => {
+    const el = document.getElementById("home-activity");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="w-full trax" style={{ background: "transparent" }}>
@@ -1612,13 +1607,13 @@ export default function Container({
           todayIncome={fin.todayIncome}
           todayExpense={fin.todayExpense}
           yesterdayNet={yesterdayNet}
-          onOpen={() =>
-            handleIntent({ kind: "screen", screen: "negocio", subview: "finanzas" })
-          }
+          onOpen={scrollToActivity}
         />
-        <QuickActionsRow onIntent={handleIntent} onSeeAll={handleSeeAllActions} />
+        <QuickActionsRow onIntent={handleIntent} />
         <MissionsCarousel briefing={briefing} isLoading={isLoading} onIntent={handleIntent} />
-        <Activity onSeeAll={handleSeeAllActivity} />
+        <div id="home-activity" style={{ scrollMarginTop: 20 }}>
+          <Activity onSeeAll={handleSeeAllActivity} />
+        </div>
       </div>
     </div>
   );

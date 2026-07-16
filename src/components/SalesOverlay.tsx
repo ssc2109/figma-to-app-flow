@@ -452,40 +452,50 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
                   )}
 
                   {mode === "fiar" && (
-                    <div className="mb-[12px] flex flex-col gap-[8px]">
-                      <input
-                        value={customer}
-                        onChange={(e) => {
-                          setCustomer(e.target.value);
-                          setCustomerId(null);
+                    <div className="mb-[12px] flex flex-col gap-[10px]">
+                      <div
+                        className="flex items-center gap-[10px] h-[46px] px-[14px] rounded-[14px]"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid rgba(255,255,255,0.10)",
                         }}
-                        placeholder="Cliente (obligatorio)"
-                        className="w-full h-[46px] px-[14px] rounded-[14px] bg-white/[0.04] border border-white/[0.10] outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30 focus:border-white/30 transition"
-                      />
+                      >
+                        <Search className="h-[15px] w-[15px] text-white/45 shrink-0" strokeWidth={1.8} />
+                        <input
+                          value={customer}
+                          onChange={(e) => {
+                            setCustomer(e.target.value);
+                            setCustomerId(null);
+                          }}
+                          placeholder="Buscar o crear cliente…"
+                          className="flex-1 bg-transparent outline-none font-['Geist'] text-[14px] text-white placeholder:text-white/30"
+                        />
+                        {customerId && (
+                          <span className="font-['Geist'] text-[11px] text-[#4ADE80] flex items-center gap-[4px] shrink-0">
+                            <Check className="h-[11px] w-[11px]" strokeWidth={2.4} />
+                            Seleccionado
+                          </span>
+                        )}
+                      </div>
                       {(() => {
                         const q = customer.trim().toLowerCase();
-                        const suggestions = q
-                          ? customers.filter((c) => c.name.toLowerCase().includes(q) && c.id !== customerId).slice(0, 4)
-                          : customers.slice(0, 4);
+                        const list = q
+                          ? customers.filter((c) => c.name.toLowerCase().includes(q))
+                          : customers;
                         const exact = customers.find(
                           (c) => c.name.trim().toLowerCase() === q,
                         );
                         return (
                           <>
-                            {customerId && (
-                              <div className="font-['Geist'] text-[11.5px] text-[#4ADE80] flex items-center gap-[6px]">
-                                <Check className="h-[12px] w-[12px]" strokeWidth={2.4} />
-                                Cliente asociado
-                              </div>
-                            )}
-                            {!customerId && q.length > 0 && !exact && (
-                              <div className="font-['Geist'] text-[11px] text-white/40">
-                                Se creará el cliente “{customer.trim()}” al confirmar el fiado.
-                              </div>
-                            )}
-                            {suggestions.length > 0 && !customerId && (
-                              <div className="flex flex-wrap gap-[6px]">
-                                {suggestions.map((c) => (
+                            {list.length > 0 && !customerId && (
+                              <div
+                                className="rounded-[12px] max-h-[180px] overflow-y-auto no-scrollbar"
+                                style={{
+                                  background: "rgba(255,255,255,0.03)",
+                                  border: "1px solid rgba(255,255,255,0.06)",
+                                }}
+                              >
+                                {list.slice(0, 8).map((c, i) => (
                                   <button
                                     key={c.id}
                                     type="button"
@@ -493,12 +503,31 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
                                       setCustomer(c.name);
                                       setCustomerId(c.id);
                                     }}
-                                    className="h-[30px] px-[10px] rounded-full font-['Geist'] text-[12px] text-white/80 active:scale-95"
-                                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
+                                    className="w-full flex items-center justify-between px-[12px] py-[10px] text-left active:bg-white/[0.05]"
+                                    style={{
+                                      borderTop: i === 0 ? "none" : "1px solid rgba(255,255,255,0.05)",
+                                    }}
                                   >
-                                    {c.name}
+                                    <span className="font-['Geist'] text-[13.5px] text-white truncate">
+                                      {c.name}
+                                    </span>
+                                    {c.phone && (
+                                      <span className="font-['Geist'] text-[11px] text-white/40 shrink-0 ml-[10px]">
+                                        {c.phone}
+                                      </span>
+                                    )}
                                   </button>
                                 ))}
+                              </div>
+                            )}
+                            {!customerId && q.length > 0 && !exact && (
+                              <div className="font-['Geist'] text-[11px] text-white/40 px-[4px]">
+                                Se creará “{customer.trim()}” al confirmar el fiado.
+                              </div>
+                            )}
+                            {customers.length === 0 && !q && (
+                              <div className="font-['Geist'] text-[11.5px] text-white/40 px-[4px]">
+                                Aún no tienes clientes. Escribe el nombre para crear uno nuevo.
                               </div>
                             )}
                           </>

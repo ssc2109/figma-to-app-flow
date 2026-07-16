@@ -30,7 +30,7 @@ const GROW: GrowCard[] = [
     title: "Comparte tu catálogo por WhatsApp",
     grad:
       "radial-gradient(110% 110% at 18% 16%, #1f7fc2 0%, transparent 52%), radial-gradient(120% 120% at 86% 26%, #2cc0d6 0%, transparent 50%), linear-gradient(165deg, #102a3f 0%, #0a1622 100%)",
-    intent: { kind: "screen", screen: "crecer" },
+    intent: { kind: "screen", screen: "negocio", subview: "catalog" },
   },
 ];
 
