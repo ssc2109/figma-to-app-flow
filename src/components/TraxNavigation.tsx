@@ -37,7 +37,9 @@ function NavShell() {
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [plansOpen, setPlansOpen] = useState(false);
-  const [negocioInitialView, setNegocioInitialView] = useState<"hub" | "receivables">("hub");
+  const [negocioInitialView, setNegocioInitialView] = useState<
+    "hub" | "receivables" | "suppliers" | "catalog" | "cashHistory"
+  >("hub");
   const [sociaPrompt, setSociaPrompt] = useState<string | undefined>(undefined);
   const [sociaShowHistory, setSociaShowHistory] = useState(false);
   const { setHandler } = useQuickActions();
@@ -99,9 +101,8 @@ function NavShell() {
           <ScreenTransition screenKey={currentScreen}>
             {currentScreen === "inicio" && (
               <Container
-                onSeeAllActions={() => setQuickActionsOpen(true)}
                 onSeeAllActivity={() => {
-                  setNegocioInitialView("receivables");
+                  setNegocioInitialView("cashHistory");
                   setCurrentScreen("negocio");
                 }}
                 onOpenSettings={() => setSettingsOpen(true)}
@@ -112,10 +113,18 @@ function NavShell() {
                   } else if (intent.kind === "sales") {
                     setSalesOpen(true);
                   } else if (intent.kind === "reponer") {
+                    setNegocioInitialView("hub");
                     setCurrentScreen("negocio");
+                  } else if (intent.kind === "scroll") {
+                    const el = document.getElementById(`home-${intent.target}`);
+                    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
                   } else if (intent.kind === "screen") {
-                    if (intent.screen === "negocio" && intent.subview === "finanzas") {
-                      setNegocioInitialView("receivables");
+                    if (intent.screen === "negocio") {
+                      if (intent.subview === "finanzas") setNegocioInitialView("receivables");
+                      else if (intent.subview === "suppliers") setNegocioInitialView("suppliers");
+                      else if (intent.subview === "catalog") setNegocioInitialView("catalog");
+                      else if (intent.subview === "cashHistory") setNegocioInitialView("cashHistory");
+                      else setNegocioInitialView("hub");
                     }
                     setCurrentScreen(intent.screen);
                   }

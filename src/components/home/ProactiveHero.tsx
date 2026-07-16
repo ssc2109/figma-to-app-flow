@@ -14,9 +14,14 @@ type InsightAction = BriefingCtaAction;
 
 export type HomeNavIntent =
   | { kind: "chat"; prompt: string }
-  | { kind: "screen"; screen: "negocio" | "crecer" | "yo" | "socia"; subview?: "finanzas" | "hub" }
+  | {
+      kind: "screen";
+      screen: "negocio" | "crecer" | "yo" | "socia";
+      subview?: "finanzas" | "hub" | "suppliers" | "catalog" | "cashHistory";
+    }
   | { kind: "sales" }
-  | { kind: "reponer"; productHint?: string };
+  | { kind: "reponer"; productHint?: string }
+  | { kind: "scroll"; target: "activity" };
 
 function bucket(n: number, step: number) {
   return Math.floor(n / step);

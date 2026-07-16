@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Plus, X, Check, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, CalendarIcon } from "lucide-react";
+import { Plus, X, Check, Wallet, ArrowDownLeft, ArrowUpRight, Trash2, CalendarIcon, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -188,6 +188,31 @@ export default function DebtsView({
     load();
   };
 
+  const revertPaid = async (id: string) => {
+    const d = items.find((x) => x.id === id);
+    if (!d) return;
+    if (!confirm("¿Revertir este cobro/pago? Se eliminará también el movimiento asociado en caja.")) return;
+    const { error } = await supabase
+      .from("fiados")
+      .update({ paid: false, paid_at: null })
+      .eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    // Borrar movimiento asociado en caja (sales o expenses)
+    if (user) {
+      const noteMatch =
+        d.kind === "cobrar"
+          ? `Cobro deuda · ${d.customer_name}`
+          : `Pago deuda · ${d.customer_name}`;
+      if (d.kind === "cobrar") {
+        await supabase.from("sales").delete().eq("user_id", user.id).eq("note", noteMatch);
+      } else {
+        await supabase.from("expenses").delete().eq("user_id", user.id).eq("note", noteMatch);
+      }
+    }
+    toast.success("Revertido");
+    load();
+  };
+
   const del = async (id: string) => {
     if (!confirm("¿Eliminar este registro?")) return;
     const { error } = await supabase.from("fiados").delete().eq("id", id);
@@ -286,12 +311,20 @@ export default function DebtsView({
                         {d.paid && <span className="ml-[8px] text-[#4ADE80]">· Saldada</span>}
                       </div>
                     </div>
-                    {!d.paid && (
+                    {!d.paid ? (
                       <button onClick={() => markPaid(d.id)}
                         className="h-[32px] w-[32px] rounded-full grid place-items-center active:scale-95"
                         style={{ background: "rgba(74,222,128,0.15)", border: "1px solid rgba(74,222,128,0.3)" }}
                         aria-label="Marcar saldada">
                         <Check className="h-[14px] w-[14px] text-[#4ADE80]" strokeWidth={2.2} />
+                      </button>
+                    ) : (
+                      <button onClick={() => revertPaid(d.id)}
+                        className="h-[32px] px-[10px] rounded-full grid grid-flow-col auto-cols-max items-center gap-[5px] active:scale-95"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
+                        aria-label="Revertir cobro">
+                        <RotateCcw className="h-[12px] w-[12px] text-white/70" strokeWidth={2} />
+                        <span className="font-['Geist'] text-[11px] font-medium text-white/70">Revertir</span>
                       </button>
                     )}
                     <button onClick={() => del(d.id)}

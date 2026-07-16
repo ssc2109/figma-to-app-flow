@@ -291,22 +291,22 @@ Tu trabajo en el briefing de inicio es sonar HUMANA, CERCANA y EMPÁTICA — com
 
 REGLAS DURAS:
 - Español peruano natural, tuteo, nunca formal.
-- Saludo (line1+line2) ajustado a la hora: madrugada (0-4) descansa, mañana (5-11) motivador suave, mediodía-tarde (12-18) energético, noche (19-23) calmado/cierre.
-- Basa TODO en los datos reales que te doy. NUNCA inventes cifras, nombres de productos, clientes ni categorías. Si el dato es 0 o no está, no lo menciones.
-- Insights (0-4): prioriza en este orden:
-  1) fiados vencidos con monto/persona conocidos (tone "warning", action "cobrar_fiado").
+- Saludo (line1+line2) ajustado a la hora.
+- Basa TODO en los datos reales que te doy. NUNCA inventes cifras, nombres de productos, clientes ni categorías.
+- SIEMPRE devuelve entre 1 y 4 insights. NUNCA digas que "todo está bien", "vas al día" ni felicites sin proponer nada. Aun cuando el negocio esté calmado, TU TRABAJO es encontrar UN punto concreto de mejora, oportunidad de crecimiento, eficiencia, hábito o riesgo latente basado en los datos. Prohibido conformarte.
+- Orden de prioridad:
+  1) fiados vencidos (tone "warning", action "cobrar_fiado", payload = nombre).
   2) stock crítico o agotado por producto real (tone "warning", action "reponer", payload = nombre exacto).
-  3) productos por vencer en <=7 días (tone "warning" o "opportunity", action "reponer" o "promo", payload = nombre).
+  3) productos por vencer en <=7 días (tone "warning" u "opportunity", action "reponer" o "promo", payload = nombre).
   4) eventos del día pendientes (tone "info", action "chat").
-  5) oportunidades reales: producto top de la semana, día bueno vs ayer (tone "opportunity" o "celebration").
-- Si el negocio está calmado y todo está al día, devuelve 0 insights. No inventes tareas.
-- Cada insight: máximo 18 palabras, conversacional, con número o nombre concreto de los datos.
-- CTA label: verbo de acción de 1-2 palabras, GENÉRICO. Permitidos exactamente: "Reponer", "Cobrar", "Ver", "Registrar", "Crear promo", "Abrir". PROHIBIDO repetir en el label el nombre del producto, cliente, monto, cantidad o cualquier palabra ya presente en el texto del insight (el label NO puede parafrasear ni resumir el texto). El contexto va en payload, nunca en label. Si no hay una acción clara distinta al mensaje, usa cta: null.
-- quickPrompts (3): sugerencias breves y CONTEXTUALES para preguntarle a socIA hoy, usando los datos reales (ej. "¿Cuánto gané esta semana?", "Sugiéreme una promo para ${'{'}producto real${'}'}").
-- salesNote: una línea corta comparando hoy vs ayer a esta hora, sólo si hay ventas de referencia. Si no, null.
-- Usuario sin datos aún: saludo de bienvenida, 0 insights, prompts de onboarding ("Registrar mi primer producto", "¿Cómo empiezo?").
+  5) MEJORA / CRECIMIENTO real cuando no haya urgencias: potenciar el producto top de la semana con una promo, ajustar precio si el margen es débil, sugerir combo con otro producto real, registrar más ventas para tener mejor data, cerrar el día con gastos, revisar clientes con fiados pendientes, promover un producto por WhatsApp, etc. Siempre concreta y accionable.
+- Cada insight: máximo 18 palabras, conversacional, con número o nombre concreto de los datos cuando aplique.
+- CTA label: verbo genérico de 1-2 palabras. Permitidos exactamente: "Reponer", "Cobrar", "Ver", "Registrar", "Crear promo", "Abrir". PROHIBIDO repetir en el label el nombre del producto, cliente, monto o cualquier palabra del texto. Si no hay acción clara, usa cta: null.
+- quickPrompts (3): sugerencias contextuales usando datos reales.
+- salesNote: línea comparativa hoy vs ayer a esta hora, o null.
+- Usuario sin datos aún: saludo de bienvenida + 1 insight de onboarding ("Registra tu primer producto para que pueda ayudarte mejor"), prompts de onboarding.
 
-NO uses formalismos. NO repitas el nombre del dueño en cada frase. NO inventes datos.`;
+NO uses formalismos. NO repitas el nombre del dueño en cada frase. NO inventes datos. NUNCA dejes el array de insights vacío.`;
 
     const userPrompt = JSON.stringify({
       contexto: {
@@ -445,18 +445,50 @@ function fallbackBriefing(
       cta: { label: "Ver", action: "chat", payload: e.title },
     });
   }
-  if (
-    insights.length === 0 &&
-    snap.yesterdayIncomeSameHour > 0 &&
-    snap.todayIncome > snap.yesterdayIncomeSameHour * 1.1
-  ) {
-    insights.push({
-      id: "celebrate",
-      tone: "celebration",
-      emoji: "🎉",
-      text: `Vas mejor que ayer a esta hora: S/ ${snap.todayIncome.toFixed(0)}.`,
-      cta: null,
-    });
+  // Nunca dejes insights vacío: siempre proponer una mejora.
+  if (insights.length === 0) {
+    if (snap.topSelling7d[0]) {
+      const t = snap.topSelling7d[0];
+      insights.push({
+        id: `growth-${t.name}`,
+        tone: "opportunity",
+        emoji: "🚀",
+        text: `${t.name} vende bien. Prueba una promo o combo para escalar esa venta.`,
+        cta: { label: "Crear promo", action: "promo", payload: t.name },
+      });
+    } else if (snap.totalProducts === 0) {
+      insights.push({
+        id: "onboard-products",
+        tone: "opportunity",
+        emoji: "📦",
+        text: "Registra tu primer producto para que pueda ayudarte a vender más.",
+        cta: { label: "Abrir", action: "reponer" },
+      });
+    } else if (snap.todaySalesCount === 0) {
+      insights.push({
+        id: "no-sales-yet",
+        tone: "opportunity",
+        emoji: "🧾",
+        text: "Aún no hay ventas hoy. Registra la primera y mide tu ritmo real.",
+        cta: { label: "Registrar", action: "ventas" },
+      });
+    } else if (snap.fiadosPendingCount > 0) {
+      insights.push({
+        id: "chase-fiados",
+        tone: "opportunity",
+        emoji: "💸",
+        text: `Tienes ${snap.fiadosPendingCount} fiados pendientes. Cobra los más antiguos para liberar caja.`,
+        cta: { label: "Cobrar", action: "cobrar_fiado" },
+      });
+    } else {
+      insights.push({
+        id: "share-catalog",
+        tone: "opportunity",
+        emoji: "📲",
+        text: "Comparte tu catálogo por WhatsApp: es la forma más rápida de traer pedidos hoy.",
+        cta: { label: "Abrir", action: "promo" },
+      });
+    }
   }
 
   const prompts: string[] = [];
