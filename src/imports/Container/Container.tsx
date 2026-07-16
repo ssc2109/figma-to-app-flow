@@ -576,10 +576,9 @@ function SociaHero({
   }, [reduce, isLoading]);
 
   const firstInsight = briefing?.insights?.[0];
-  const text =
-    firstInsight?.text ??
-    briefing?.greeting.line2 ??
-    "Buen momento para revisar tu día. Aquí estoy para lo que necesites.";
+  // DEMO: mensaje simulado para captura de pantalla
+  const text = "Te quedan 3 ciabatas. Al ritmo de hoy, se acaban en 10 minutos.";
+  
   
 
   const bodyWords = text.split(" ").length;
@@ -918,8 +917,8 @@ function MoneyStrip({
   onOpen: () => void;
 }) {
   const v = useCountUp(todayNet, !reduce);
-  const delta =
-    yesterdayNet > 0 ? Math.round(((todayNet - yesterdayNet) / yesterdayNet) * 100) : null;
+  // DEMO: valor simulado para captura de pantalla
+  const delta = 18;
   const deltaColor = delta === null || delta >= 0 ? GREEN : RED;
   return (
     <button
