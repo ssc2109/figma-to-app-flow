@@ -1,23 +1,22 @@
 import { useMemo, useState } from "react";
-import { createPortal } from "react-dom";
-
 import { motion, AnimatePresence } from "motion/react";
-import { Share2, Tag, Search, Package, X, Check, Sparkles } from "lucide-react";
+import { Share2, Search, Package, Sparkles, Plus, Pencil, Trash2 } from "lucide-react";
 import { SubHeader, SubScreen } from "./shared";
-import { useInventory } from "@/data/inventory";
+import { useInventory, type InventoryItem } from "@/data/inventory";
 import { usePlan } from "@/hooks/usePlan";
 import { toast } from "sonner";
+import ProductSheet from "./ProductSheet";
 
 /**
- * Catálogo (vitrina pública). Distinto de Inventario: aquí lo importante
- * es cómo lo verían tus clientes — no muestra costo ni stock detallado.
+ * Catálogo (vitrina pública). Aquí se crean, editan y eliminan productos.
+ * Inventario solo gestiona stock.
  */
 export default function CatalogView({ onBack }: { onBack: () => void }) {
   const inv = useInventory();
   const { limits } = usePlan();
   const showTraxBadge = !limits.hasCatalogBranding;
   const [q, setQ] = useState("");
-  const [editing, setEditing] = useState(false);
+  const [sheet, setSheet] = useState<InventoryItem | "new" | null>(null);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -34,6 +33,12 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const remove = async (p: InventoryItem) => {
+    if (!confirm(`¿Eliminar "${p.name}" del catálogo?`)) return;
+    await inv.removeProduct(p.id);
+    toast.success("Producto eliminado");
+  };
+
   return (
     <SubScreen>
       <SubHeader
@@ -42,12 +47,12 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
         onBack={onBack}
         action={
           <button
-            onClick={() => setEditing(true)}
-            className="h-[36px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white flex items-center gap-[6px] active:scale-95"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.10)" }}
+            onClick={() => setSheet("new")}
+            className="h-[36px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-black bg-white flex items-center gap-[6px] active:scale-95"
+            aria-label="Añadir producto"
           >
-            <Tag className="h-[13px] w-[13px]" strokeWidth={1.8} />
-            Precios
+            <Plus className="h-[13px] w-[13px]" strokeWidth={2.2} />
+            Añadir
           </button>
         }
       />
@@ -89,9 +94,16 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
             >
               <Package className="h-[24px] w-[24px] text-white/55" strokeWidth={1.5} />
             </div>
-            <p className="font-['Geist'] text-[13px] text-white/55 max-w-[260px] leading-[1.5]">
-              Aún no tienes productos en tu catálogo. Agrégalos desde Inventario.
+            <p className="font-['Geist'] text-[13px] text-white/55 max-w-[260px] leading-[1.5] mb-[18px]">
+              Aún no tienes productos en tu catálogo. Añade el primero para empezar.
             </p>
+            <button
+              onClick={() => setSheet("new")}
+              className="h-[44px] px-[20px] rounded-full bg-white text-black font-['Geist'] text-[13.5px] font-semibold active:scale-95 flex items-center gap-[8px]"
+            >
+              <Plus className="h-[15px] w-[15px]" strokeWidth={2.4} />
+              Añadir producto
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-[10px]">
@@ -102,7 +114,7 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
               >
                 <div
-                  className="aspect-square rounded-[12px] grid place-items-center overflow-hidden"
+                  className="relative aspect-square rounded-[12px] grid place-items-center overflow-hidden"
                   style={{ background: "rgba(255,255,255,0.04)" }}
                 >
                   {p.image ? (
@@ -115,6 +127,9 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
                   <div className="font-['Geist'] text-[13px] text-white truncate">{p.name}</div>
                   <div className="font-['Bai_Jamjuree'] text-[15px] font-semibold text-white tabular-nums mt-[2px]">
                     S/ {p.price.toFixed(2)}
+                    {p.unit && p.unit !== "unidad" && (
+                      <span className="ml-[4px] text-[11px] font-['Geist'] font-normal text-white/45">/{p.unit}</span>
+                    )}
                   </div>
                   <div className="mt-[4px] flex items-center gap-[6px]">
                     <span
@@ -131,6 +146,27 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
                     )}
                   </div>
                 </div>
+
+                <div className="flex items-center gap-[6px] pt-[2px]">
+                  <button
+                    type="button"
+                    onClick={() => setSheet(p)}
+                    className="flex-1 h-[32px] rounded-[10px] flex items-center justify-center gap-[6px] font-['Geist'] text-[11.5px] font-medium text-white active:scale-95"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  >
+                    <Pencil className="h-[11px] w-[11px]" strokeWidth={1.8} />
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => remove(p)}
+                    className="h-[32px] w-[32px] rounded-[10px] grid place-items-center active:scale-95"
+                    style={{ background: "rgba(248,113,113,0.10)", border: "1px solid rgba(248,113,113,0.20)" }}
+                    aria-label="Eliminar producto"
+                  >
+                    <Trash2 className="h-[12px] w-[12px] text-[#F87171]" strokeWidth={1.8} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -144,103 +180,9 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
         )}
       </div>
 
-
-
       <AnimatePresence>
-        {editing && <PriceEditor onClose={() => setEditing(false)} />}
+        {sheet && <ProductSheet item={sheet} onClose={() => setSheet(null)} />}
       </AnimatePresence>
     </SubScreen>
   );
 }
-
-function PriceEditor({ onClose }: { onClose: () => void }) {
-  const inv = useInventory();
-  const [prices, setPrices] = useState<Record<string, string>>(() =>
-    Object.fromEntries(inv.items.map((i) => [i.id, i.price.toString()])),
-  );
-  const [saving, setSaving] = useState(false);
-
-  const save = async () => {
-    setSaving(true);
-    try {
-      const jobs = inv.items
-        .map((i) => {
-          const n = parseFloat(prices[i.id]?.replace(",", ".") ?? "");
-          if (!Number.isFinite(n) || n < 0 || n === i.price) return null;
-          return inv.updateProduct(i.id, { price: n });
-        })
-        .filter(Boolean) as Promise<void>[];
-      await Promise.all(jobs);
-      toast.success(`Precios actualizados`);
-      onClose();
-    } catch (e) {
-      toast.error((e as Error)?.message ?? "No se pudieron guardar los precios");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return createPortal(
-    <motion.div
-      className="fixed inset-0 z-[80] flex items-center justify-center p-[16px]"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => !saving && onClose()} />
-      <motion.div
-        initial={{ y: 20, scale: 0.98, opacity: 0 }}
-        animate={{ y: 0, scale: 1, opacity: 1 }}
-        exit={{ y: 20, scale: 0.98, opacity: 0 }}
-        transition={{ type: "spring", stiffness: 340, damping: 32 }}
-        className="relative w-full max-w-[430px] rounded-[24px] pt-[18px] pb-[20px] px-[20px] max-h-[calc(100dvh-32px)] flex flex-col"
-        style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}
-      >
-        <div className="flex items-center justify-between mb-[14px]">
-          <h3 className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white">Editar precios</h3>
-          <button
-            onClick={onClose}
-            className="h-[32px] w-[32px] rounded-full grid place-items-center active:bg-white/[0.05]"
-          >
-            <X className="h-[15px] w-[15px] text-white/55" strokeWidth={1.8} />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto flex flex-col gap-[8px] pb-[8px] -mx-[4px] px-[4px]">
-          {inv.items.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center gap-[10px] p-[10px] rounded-[14px]"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="font-['Geist'] text-[13.5px] text-white truncate">{p.name}</div>
-                <div className="font-['Geist'] text-[11px] text-white/40 tabular-nums">Antes S/ {p.price.toFixed(2)}</div>
-              </div>
-              <div className="flex items-center gap-[4px]">
-                <span className="font-['Geist'] text-[12px] text-white/50">S/</span>
-                <input
-                  value={prices[p.id] ?? ""}
-                  onChange={(e) => setPrices((cur) => ({ ...cur, [p.id]: e.target.value }))}
-                  inputMode="decimal"
-                  className="w-[80px] h-[36px] px-[10px] rounded-[10px] bg-white/[0.05] border border-white/[0.10] text-white text-right font-['Bai_Jamjuree'] text-[14px] tabular-nums outline-none focus:border-white/30 transition"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <button
-          onClick={save}
-          disabled={saving}
-          className="mt-[14px] w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40 flex items-center justify-center gap-[8px]"
-        >
-          <Check className="h-[15px] w-[15px]" strokeWidth={2.4} />
-          {saving ? "Guardando…" : "Guardar cambios"}
-        </button>
-      </motion.div>
-    </motion.div>,
-    document.body,
-  );
-}
-
