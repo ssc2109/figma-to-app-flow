@@ -55,6 +55,9 @@ import {
   Activity,
   ShoppingBag,
   AlertOctagon,
+  ClipboardCheck,
+  RotateCcw,
+  Youtube,
 } from "lucide-react";
 import { useFinance } from "@/data/finance";
 import { useInventory } from "@/data/inventory";
