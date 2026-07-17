@@ -55,11 +55,25 @@ import {
   Activity,
   ShoppingBag,
   AlertOctagon,
+  ClipboardCheck,
+  RotateCcw,
+  Youtube,
 } from "lucide-react";
 import { useFinance } from "@/data/finance";
 import { useInventory } from "@/data/inventory";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
+import {
+  EXPANDED_LESSONS,
+  TIER_LABEL,
+  TIER_RANGES,
+  expandedTopicTitles,
+  isExpanded,
+  type LessonKind,
+  type LessonNode as LessonNodeT,
+  type LessonTier,
+  type LessonVideo,
+} from "@/lib/learn/lessons";
 import {
   useMe,
   type Todo,
@@ -1842,11 +1856,13 @@ type LearningPath = {
   totalMinutes: number;
   topics: string[];
   gradient: string;
+  /** Estructura extendida a 30 lecciones (checkpoints, recalls, final). Opcional. */
+  lessons?: LessonNodeT[];
 };
 
 const LEARNING_PATHS: LearningPath[] = [
-  { id: "ventas", emoji: "📈", name: "Cómo aumentar las ventas", description: "Estrategias probadas para vender más sin gastar más.", level: "Básico", totalMinutes: 180, gradient: "linear-gradient(135deg,#1f2937,#0f766e)", topics: ["Psicología del comprador", "Cross-selling y up-selling", "Fidelización de clientes recurrentes", "Precios que convierten", "Cierre de venta consultivo"] },
-  { id: "finanzas", emoji: "💰", name: "Finanzas para pequeños negocios", description: "Domina el flujo de caja, márgenes y decisiones de dinero.", level: "Básico", totalMinutes: 210, gradient: "linear-gradient(135deg,#0f172a,#2563eb)", topics: ["Flujo de caja diario", "Margen bruto vs. margen neto", "Punto de equilibrio", "Control de gastos operativos", "Cómo fijar precios correctamente"] },
+  { id: "ventas", emoji: "📈", name: "Cómo aumentar las ventas", description: "Estrategias probadas para vender más sin gastar más.", level: "Básico", totalMinutes: 300, gradient: "linear-gradient(135deg,#1f2937,#0f766e)", topics: expandedTopicTitles("ventas"), lessons: EXPANDED_LESSONS.ventas },
+  { id: "finanzas", emoji: "💰", name: "Finanzas para pequeños negocios", description: "Domina el flujo de caja, márgenes y decisiones de dinero.", level: "Básico", totalMinutes: 300, gradient: "linear-gradient(135deg,#0f172a,#2563eb)", topics: expandedTopicTitles("finanzas"), lessons: EXPANDED_LESSONS.finanzas },
   { id: "clientes", emoji: "🤝", name: "Atención al Cliente", description: "Convierte compradores ocasionales en fans del negocio.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", topics: ["Experiencia del cliente", "Manejo de quejas y reclamos", "Programas de fidelización", "Comunicación asertiva", "Post-venta que retiene"] },
   { id: "productividad", emoji: "🧠", name: "Productividad", description: "Menos tiempo perdido, más avances reales cada día.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#111827,#f59e0b)", topics: ["Regla del 80/20 aplicada al negocio", "Bloques de tiempo profundo", "Gestión de energía, no solo tiempo", "Rutinas de dueños de negocio", "Delegar y automatizar"] },
   { id: "organizacion", emoji: "🗂️", name: "Organización y Procesos", description: "Ordena tu negocio con procesos simples que no dependen de ti.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#1e293b,#64748b)", topics: ["Procesos que no dependen del dueño", "Checklists para reducir errores", "Orden del local y del almacén", "Documentar lo que ya funciona", "Delegar tareas repetitivas"] },
@@ -1897,6 +1913,10 @@ type StoredSession = {
   quizScore?: number;
   quizTotal?: number;
   completed?: boolean;
+  /** Metadata de la lección de origen (para video, checkpoint, final). */
+  lessonKind?: LessonKind;
+  lessonTier?: LessonTier;
+  video?: LessonVideo;
 };
 
 type FavoriteRef = { type: "book" | "case" | "news" | "trend"; sessionId: string; index: number };
@@ -2281,6 +2301,27 @@ function SessionRunner({
                     <p className="font-['Geist'] text-[14px] text-white/90 leading-[1.55] italic">{steps[stepIdx].reflection}</p>
                   </div>
                 )}
+
+                {stored.video && stepIdx === 0 && (
+                  <div className="rounded-[16px] overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
+                      <iframe
+                        className="absolute inset-0 w-full h-full"
+                        src={`https://www.youtube.com/embed/${stored.video.youtubeId}?rel=0&modestbranding=1`}
+                        title={stored.video.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="flex items-center gap-[8px] px-[14px] py-[10px]">
+                      <Youtube className="h-[14px] w-[14px] text-[#ef4444]" strokeWidth={2} />
+                      <span className="font-['Geist'] text-[12px] text-white/80 leading-[1.3]">{stored.video.title}</span>
+                      {stored.video.seconds && (
+                        <span className="ml-auto font-['Geist'] text-[10.5px] text-white/45 tabular-nums">{stored.video.seconds}s</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -2495,7 +2536,11 @@ function PathNodesTrail({
   const FinalIcon = ICONS[path.id] ?? GraduationCap;
   const rowH = 118;
   const topPad = 44;
-  const items = [...path.topics, "__final__"];
+  // Expanded paths ya incluyen la lección "final" (pos 30). Los paths clásicos
+  // agregan un nodo sintético de graduación al final.
+  const items = path.lessons ? [...path.topics] : [...path.topics, "__final__"];
+  // Mapa rápido título → LessonNode para expanded paths.
+  const lessonByTitle = new Map<string, LessonNodeT>((path.lessons ?? []).map((l) => [l.title, l]));
   const positions = items.map((_, i) => ({
     x: phases[i % phases.length],
     y: topPad + i * rowH,
@@ -2604,40 +2649,94 @@ function PathNodesTrail({
         />
       </svg>
 
+      {/* Tier dividers (solo en paths expandidos: entre 10-11 y 20-21) */}
+      {path.lessons && [10, 20].map((cutAfter) => {
+        if (cutAfter >= items.length) return null;
+        const yTop = positions[cutAfter - 1]?.y ?? 0;
+        const yBot = positions[cutAfter]?.y ?? 0;
+        const yMid = (yTop + yBot) / 2;
+        const tierLabel = cutAfter === 10 ? TIER_LABEL[2] : TIER_LABEL[3];
+        return (
+          <div
+            key={`divider-${cutAfter}`}
+            className="absolute left-0 right-0 flex items-center gap-[10px] px-[14px] pointer-events-none"
+            style={{ top: yMid - 12, transform: "translateY(-50%)" }}
+          >
+            <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, transparent, ${c2}55, transparent)` }} />
+            <div
+              className="font-['Geist'] text-[9.5px] uppercase tracking-[1.6px] px-[8px] py-[3px] rounded-full"
+              style={{ background: "rgba(0,0,0,0.7)", border: `1px solid ${c2}55`, color: c2 }}
+            >
+              {tierLabel}
+            </div>
+            <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, transparent, ${c2}55, transparent)` }} />
+          </div>
+        );
+      })}
+
       {items.map((t, i) => {
         const pos = positions[i];
-        const isFinal = t === "__final__";
-        const isDone = !isFinal && done.has(t);
-        const isCurrent = !isFinal && i === currentIdx;
-        const isLocked = !isFinal && !isDone && !isCurrent;
-        const isFinalActive = isFinal && allDone;
+        const isFinalSynth = t === "__final__"; // solo paths clásicos
+        const lesson = lessonByTitle.get(t);
+        const kind: LessonKind = lesson?.kind ?? "lesson";
+        const isFinalLesson = kind === "final";
+        const isCheckpoint = kind === "checkpoint";
+        const isRecall = kind === "recall";
 
-        const size = isCurrent || isFinalActive ? 72 : 60;
-        const clickable = isDone || isCurrent || isFinalActive;
+        const isDone = !isFinalSynth && done.has(t);
+        const isCurrent = !isFinalSynth && i === currentIdx;
+        const isLocked = !isFinalSynth && !isDone && !isCurrent;
+        const isFinalSynthActive = isFinalSynth && allDone;
+
+        const highlighted = isCurrent || isFinalSynthActive || (isFinalLesson && (isCurrent || isDone));
+        const size = highlighted ? 72 : isCheckpoint || isRecall ? 64 : 60;
+        const clickable = isDone || isCurrent || isFinalSynthActive;
+
+        // Fondo por kind
+        const accentByKind =
+          isFinalLesson || isFinalSynth
+            ? `linear-gradient(135deg, ${c1}, ${c2})`
+            : isCheckpoint
+            ? "linear-gradient(135deg,#7c2d12,#f97316)"
+            : isRecall
+            ? "linear-gradient(135deg,#164e63,#22d3ee)"
+            : `linear-gradient(135deg, ${c1}, ${c2})`;
 
         const bg = isDone
-          ? `linear-gradient(135deg, ${c1}, ${c2})`
+          ? accentByKind
           : isCurrent
           ? "rgba(0,0,0,0.55)"
-          : isFinalActive
-          ? `linear-gradient(135deg, ${c1}, ${c2})`
+          : isFinalSynthActive
+          ? accentByKind
           : "rgba(255,255,255,0.05)";
 
+        const ringColor = isCheckpoint ? "#f97316" : isRecall ? "#22d3ee" : c2;
         const ring = isCurrent
-          ? `0 0 0 2px ${c2}, 0 0 24px -4px ${c2}`
-          : isFinal && !isFinalActive
+          ? `0 0 0 2px ${ringColor}, 0 0 24px -4px ${ringColor}`
+          : isFinalSynth && !isFinalSynthActive
           ? "inset 0 0 0 1px rgba(255,255,255,0.08)"
-          : isFinal
+          : isFinalSynth
           ? `0 0 0 2px ${c2}, 0 0 28px -4px ${c2}`
           : isLocked
           ? "inset 0 0 0 1px rgba(255,255,255,0.06)"
           : "none";
 
-        const label = isFinal
+        const label = isFinalSynth
           ? "Ruta completada"
           : isCurrent
           ? t
           : "";
+
+        // Icono central según kind
+        const InnerIcon = isFinalSynth
+          ? FinalIcon
+          : isFinalLesson
+          ? Trophy
+          : isCheckpoint
+          ? ClipboardCheck
+          : isRecall
+          ? RotateCcw
+          : Play;
 
         return (
           <div
@@ -2654,10 +2753,10 @@ function PathNodesTrail({
               type="button"
               disabled={!clickable}
               onClick={() => {
-                if (isFinalActive) return; // celebratory node, no session
-                if (clickable && !isFinal) onStartTopic(t);
+                if (isFinalSynthActive) return; // celebratory node classic, no session
+                if (clickable && !isFinalSynth) onStartTopic(t);
               }}
-              aria-label={isFinal ? "Ruta completada" : t}
+              aria-label={isFinalSynth ? "Ruta completada" : t}
               className={`relative rounded-full flex items-center justify-center transition-transform ${
                 clickable ? "active:scale-95" : "cursor-default"
               }`}
@@ -2669,21 +2768,25 @@ function PathNodesTrail({
                 opacity: isLocked ? 0.55 : 1,
               }}
             >
-              {isFinal ? (
-                <FinalIcon
+              {isFinalSynth ? (
+                <InnerIcon
                   className="text-white"
-                  style={{ width: size * 0.42, height: size * 0.42, opacity: isFinalActive ? 1 : 0.45 }}
+                  style={{ width: size * 0.42, height: size * 0.42, opacity: isFinalSynthActive ? 1 : 0.45 }}
                   strokeWidth={1.6}
                 />
               ) : isDone ? (
                 <Check className="text-white" style={{ width: size * 0.42, height: size * 0.42 }} strokeWidth={2.4} />
               ) : isCurrent ? (
-                <Play
-                  className="text-white"
-                  style={{ width: size * 0.38, height: size * 0.38, marginLeft: 2 }}
-                  strokeWidth={2}
-                  fill="white"
-                />
+                kind === "lesson" ? (
+                  <Play
+                    className="text-white"
+                    style={{ width: size * 0.38, height: size * 0.38, marginLeft: 2 }}
+                    strokeWidth={2}
+                    fill="white"
+                  />
+                ) : (
+                  <InnerIcon className="text-white" style={{ width: size * 0.42, height: size * 0.42 }} strokeWidth={1.9} />
+                )
               ) : (
                 <Lock
                   className="text-white/40"
@@ -2691,8 +2794,8 @@ function PathNodesTrail({
                   strokeWidth={1.8}
                 />
               )}
-              {/* Step number badge for non-final nodes */}
-              {!isFinal && (
+              {/* Step number badge for non-final-synth nodes */}
+              {!isFinalSynth && (
                 <span
                   className="absolute -top-1 -right-1 flex items-center justify-center rounded-full font-['Geist'] text-[10px] font-medium tabular-nums text-white/80"
                   style={{
@@ -2705,23 +2808,38 @@ function PathNodesTrail({
                   {i + 1}
                 </span>
               )}
+              {/* Marker de video en la esquina inferior */}
+              {lesson?.video && !isDone && (
+                <span
+                  className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    background: "#ef4444",
+                    border: "2px solid rgba(0,0,0,0.85)",
+                  }}
+                  aria-label="Con video corto"
+                >
+                  <Youtube className="text-white" style={{ width: 10, height: 10 }} strokeWidth={2.4} />
+                </span>
+              )}
             </button>
             {label && (
               <div
                 className={`mt-[8px] text-center font-['Geist'] leading-[1.2] ${
-                  isFinal ? "text-white/70 text-[11.5px]" : "text-white text-[12px]"
+                  isFinalSynth ? "text-white/70 text-[11.5px]" : "text-white text-[12px]"
                 }`}
                 style={{ maxWidth: 140 }}
               >
                 {label}
                 {isCurrent && (
-                  <div className="mt-[2px] font-['Geist'] text-[10.5px] uppercase tracking-[1.2px] text-white/45">
-                    Siguiente
+                  <div className="mt-[2px] font-['Geist'] text-[10.5px] uppercase tracking-[1.2px]" style={{ color: isCheckpoint ? "#fdba74" : isRecall ? "#67e8f9" : "rgba(255,255,255,0.45)" }}>
+                    {isCheckpoint ? "Checkpoint" : isRecall ? "Repaso activo" : isFinalLesson ? "Examen final" : "Siguiente"}
                   </div>
                 )}
               </div>
             )}
-            {isFinal && !isFinalActive && (
+            {isFinalSynth && !isFinalSynthActive && (
               <div className="mt-[8px] text-center font-['Geist'] text-[11px] text-white/35 leading-[1.2]" style={{ maxWidth: 140 }}>
                 Completa las {total} lecciones
               </div>
@@ -2732,6 +2850,66 @@ function PathNodesTrail({
     </div>
   );
 }
+
+function GraduationOverlay({
+  path, nextTier, onClose,
+}: {
+  path: LearningPath;
+  nextTier?: "Pro" | "Avanzado";
+  onClose: () => void;
+}) {
+  const [c1, c2] = extractGradientColors(path.gradient);
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center px-[24px]" style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)" }}>
+      <div
+        className="relative w-full max-w-[380px] rounded-[24px] p-[28px] text-center overflow-hidden animate-in fade-in zoom-in-95 duration-500"
+        style={{ background: "rgba(20,20,22,0.95)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        {/* Aura de graduación */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-60"
+          style={{ background: `radial-gradient(circle at 50% 30%, ${c2}55, transparent 70%)` }}
+        />
+        <div className="relative flex flex-col items-center gap-[16px]">
+          <div
+            className="w-[88px] h-[88px] rounded-full flex items-center justify-center animate-in zoom-in duration-700"
+            style={{ background: `linear-gradient(135deg, ${c1}, ${c2})`, boxShadow: `0 0 40px -8px ${c2}` }}
+          >
+            <GraduationCap className="text-white" style={{ width: 44, height: 44 }} strokeWidth={1.6} />
+          </div>
+          <div>
+            <div className="font-['Bai_Jamjuree'] text-[10px] uppercase tracking-[2px] text-white/50">Categoría completada</div>
+            <div className="mt-[6px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white leading-tight">{path.name}</div>
+          </div>
+          <p className="font-['Geist'] text-[13px] text-white/60 leading-[1.5]">
+            Completaste las 30 lecciones, checkpoints y el examen final. Ya eres una referencia en este tema.
+          </p>
+          {nextTier && (
+            <div
+              className="w-full rounded-[16px] p-[14px] text-left"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <div className="font-['Bai_Jamjuree'] text-[10px] uppercase tracking-[1.6px] text-white/50">Siguiente reto</div>
+              <div className="mt-[4px] font-['Geist'] text-[13px] text-white">
+                Desbloquea las categorías del plan <span className="font-semibold">{nextTier}</span> y sigue avanzando.
+              </div>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-[4px] w-full rounded-[14px] py-[12px] font-['Geist'] text-[13px] font-semibold text-black"
+            style={{ background: "#ffffff" }}
+          >
+            Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 
 function PathDetail({
   path, completedTopics, hasStarted, onBack, onStartTopic,
@@ -2934,11 +3112,43 @@ function LearnView({ onBack }: { onBack: () => void }) {
     setError(undefined);
     try {
       const previousTopics = store.state.sessions.slice(0, 6).map((s) => s.topic);
+      // Buscar el LessonNode correspondiente (paths expandidos: kind/tier/video)
+      const lesson = setupPath?.lessons?.find((l) => l.title === topic);
       const topicIndex = setupPath ? setupPath.topics.indexOf(topic) : -1;
       const topicTotal = setupPath?.topics.length;
+      const baselineLevel = (prefs?.diagnostic_result as { level?: LearnLevel } | undefined)?.level;
+
+      // Para checkpoint/recall/final: pasar el rango de temas cubiertos
+      let tierRange: [number, number] | undefined;
+      let coveredTopics: string[] | undefined;
+      if (lesson && lesson.kind !== "lesson" && setupPath?.lessons) {
+        const range: [number, number] =
+          lesson.kind === "final"
+            ? [1, 29]
+            : lesson.kind === "checkpoint" && lesson.id === "l10"
+            ? [1, 9]
+            : lesson.kind === "checkpoint" && lesson.id === "l20"
+            ? [11, 19]
+            : lesson.kind === "recall" && lesson.id === "l15"
+            ? [1, 14]
+            : lesson.kind === "recall" && lesson.id === "l25"
+            ? [16, 24]
+            : [1, Math.max(1, topicIndex)];
+        tierRange = range;
+        coveredTopics = setupPath.lessons
+          .slice(range[0] - 1, range[1])
+          .filter((l) => l.kind === "lesson")
+          .map((l) => l.title);
+      }
+
       const session = await generate({ data: {
         topic, level, minutes, previousTopics, pathId: setupPath?.id,
         ...(topicIndex >= 0 ? { topicIndex, topicTotal } : {}),
+        ...(lesson ? { lessonKind: lesson.kind } : {}),
+        ...(tierRange ? { tierRange } : {}),
+        ...(coveredTopics && coveredTopics.length > 0 ? { coveredTopics } : {}),
+        ...(baselineLevel ? { baselineLevel } : {}),
+        ...(lesson?.video ? { videoRef: lesson.video } : {}),
       } });
       const stored: StoredSession = {
         id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
@@ -2948,6 +3158,9 @@ function LearnView({ onBack }: { onBack: () => void }) {
         level,
         minutes,
         session,
+        lessonKind: lesson?.kind,
+        lessonTier: lesson?.tier,
+        video: lesson?.video,
       };
       store.addSession(stored);
       setSetupOpen(false);
@@ -2959,11 +3172,30 @@ function LearnView({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const [graduation, setGraduation] = useState<{ path: LearningPath; nextTier?: "Pro" | "Avanzado" } | null>(null);
+
   const completeRunning = (score: number, total: number) => {
     if (!running) return;
     store.updateSession(running.id, { quizScore: score, quizTotal: total, completed: true });
     if (running.pathId) store.markPathTopic(running.pathId, running.topic);
     setRunning((r) => (r ? { ...r, quizScore: score, quizTotal: total, completed: true } : r));
+
+    // Graduación: examen final aprobado (≥70%) de una categoría del plan actual.
+    if (running.lessonKind === "final" && running.pathId && total > 0 && score / total >= 0.7) {
+      const finPath = LEARNING_PATHS.find((p) => p.id === running.pathId);
+      if (finPath) {
+        const lockedLevels = (["Intermedio", "Avanzado"] as LearnLevel[]).filter((lvl) => {
+          const req = minPlanForLevel(lvl);
+          return !planMeetsRequirement(plan, req);
+        });
+        const nextTier: "Pro" | "Avanzado" | undefined = lockedLevels.includes("Intermedio")
+          ? "Pro"
+          : lockedLevels.includes("Avanzado")
+          ? "Avanzado"
+          : undefined;
+        setGraduation({ path: finPath, nextTier });
+      }
+    }
   };
 
   const removeRunning = () => {
@@ -2974,12 +3206,21 @@ function LearnView({ onBack }: { onBack: () => void }) {
 
   if (running) {
     return (
-      <SessionRunner
-        stored={running}
-        onClose={() => setRunning(null)}
-        onComplete={completeRunning}
-        onRemove={removeRunning}
-      />
+      <>
+        <SessionRunner
+          stored={running}
+          onClose={() => setRunning(null)}
+          onComplete={completeRunning}
+          onRemove={removeRunning}
+        />
+        {graduation && (
+          <GraduationOverlay
+            path={graduation.path}
+            nextTier={graduation.nextTier}
+            onClose={() => { setGraduation(null); setRunning(null); }}
+          />
+        )}
+      </>
     );
   }
 
