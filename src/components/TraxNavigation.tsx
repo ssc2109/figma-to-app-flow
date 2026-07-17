@@ -7,6 +7,7 @@ import GrowScreen from "@/components/GrowScreen";
 import MeScreen from "@/components/MeScreen";
 import SociaScreen from "@/components/SociaScreen";
 import SalesOverlay from "@/components/SalesOverlay";
+import POSOverlay from "@/components/POSOverlay";
 import ExpenseOverlay from "@/components/ExpenseOverlay";
 import ScanScreen from "@/components/ScanScreen";
 import QuickActionsScreen from "@/components/QuickActionsScreen";
@@ -32,6 +33,7 @@ function NavShell() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("inicio");
   const [booting, setBooting] = useState(true);
   const [salesOpen, setSalesOpen] = useState(false);
+  const [posOpen, setPosOpen] = useState(false);
   const [expenseOpen, setExpenseOpen] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
@@ -137,6 +139,7 @@ function NavShell() {
                 key={negocioInitialView}
                 initialView={negocioInitialView}
                 onNewSale={() => setSalesOpen(true)}
+                onOpenPOS={() => setPosOpen(true)}
                 onNewExpense={() => setExpenseOpen(true)}
                 onOpenPlans={() => setPlansOpen(true)}
               />
@@ -157,6 +160,7 @@ function NavShell() {
           currentScreen={currentScreen}
           onNavigate={(s) => {
             setSalesOpen(false);
+            setPosOpen(false);
             setExpenseOpen(false);
             setScanOpen(false);
             setQuickActionsOpen(false);
@@ -173,6 +177,7 @@ function NavShell() {
       </div>
 
       <SalesOverlay open={salesOpen} onClose={() => setSalesOpen(false)} />
+      <POSOverlay open={posOpen} onClose={() => setPosOpen(false)} />
       <ExpenseOverlay open={expenseOpen} onClose={() => setExpenseOpen(false)} />
       <ScanScreen open={scanOpen} onClose={() => setScanOpen(false)} onOpenInventory={goToInventory} />
       <QuickActionsScreen open={quickActionsOpen} onClose={() => setQuickActionsOpen(false)} />

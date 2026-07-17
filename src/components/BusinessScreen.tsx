@@ -62,6 +62,7 @@ const COMING: Record<
 type BusinessScreenProps = {
   initialView?: View;
   onNewSale: () => void;
+  onOpenPOS: () => void;
   onNewExpense: () => void;
   onOpenPlans?: () => void;
 };
@@ -69,6 +70,7 @@ type BusinessScreenProps = {
 export default function BusinessScreen({
   initialView = "hub",
   onNewSale,
+  onOpenPOS,
   onNewExpense,
   onOpenPlans,
 }: BusinessScreenProps) {
@@ -103,6 +105,7 @@ export default function BusinessScreen({
               onCalendar={() => setView("calendar")}
               onCashHistory={() => setView("cashHistory")}
               onNewSale={onNewSale}
+              onOpenPOS={onOpenPOS}
               onNewExpense={onNewExpense}
             />
           </motion.div>
