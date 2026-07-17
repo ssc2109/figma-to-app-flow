@@ -5294,8 +5294,9 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             tasksTotal={todaysTasks.length}
             salesToday={salesToday}
             alerts={alertsCount}
-            lowStock={inventory.lowStock ?? 0}
-            fiadosOverdue={finance.fiadosOverdue ?? 0}
+            lowStock={lowStockCount}
+            fiadosOverdue={fiadosOverdueCount}
+
           />
         </div>
 
