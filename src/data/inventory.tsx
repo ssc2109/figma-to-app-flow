@@ -174,6 +174,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         cost?: number;
         stock?: number;
         category?: string;
+        unit?: string;
+        image_url?: string | null;
         low_stock_threshold?: number;
       } = {};
       if (patch.name !== undefined) dbPatch.name = patch.name;
@@ -181,9 +183,12 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       if (patch.cost !== undefined) dbPatch.cost = patch.cost;
       if (patch.stock !== undefined) dbPatch.stock = patch.stock;
       if (patch.category !== undefined) dbPatch.category = patch.category;
+      if (patch.unit !== undefined) dbPatch.unit = patch.unit;
+      if (patch.image !== undefined) dbPatch.image_url = patch.image || null;
       if (patch.lowStockThreshold !== undefined) dbPatch.low_stock_threshold = patch.lowStockThreshold;
       setItems((arr) => arr.map((i) => (i.id === id ? { ...i, ...patch } : i)));
       const { error } = await supabase.from("products").update(dbPatch).eq("id", item.dbId);
+
       if (error) {
         console.error("updateProduct", error);
         await load();
