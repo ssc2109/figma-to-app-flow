@@ -367,50 +367,8 @@ function TodayStatus({
 }
 
 
-/* Streak hero that blends into the aurora (no card border) */
-function StreakAurora({ streak, name }: { streak: number; name: string }) {
-  const target = Math.max(streak, 7);
-  const pct = Math.min(streak / target, 1);
-  const size = 132;
-  const stroke = 8;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  return (
-    <div className="relative flex items-center gap-[18px]">
-      <div className="relative shrink-0" style={{ width: size, height: size }}>
-        <div
-          aria-hidden
-          className="absolute inset-[-16px] rounded-full opacity-70"
-          style={{ background: "radial-gradient(circle, rgba(96,165,250,0.35) 0%, rgba(59,130,246,0) 70%)", filter: "blur(18px)" }}
-        />
-        <svg width={size} height={size} className="relative rotate-[-90deg]">
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(148,163,184,0.16)" strokeWidth={stroke} fill="none" />
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="url(#streakAuroraGrad)" strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} style={{ filter: "drop-shadow(0 0 10px rgba(96,165,250,0.7))" }} />
-          <defs>
-            <linearGradient id="streakAuroraGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#60A5FA" />
-              <stop offset="100%" stopColor="#3B82F6" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Flame className="h-[15px] w-[15px] text-[#93C5FD] mb-[1px]" strokeWidth={1.8} />
-          <span className="font-['Bai_Jamjuree'] text-[42px] font-bold text-white tabular-nums leading-none">{streak}</span>
-          <span className="font-['Geist'] text-[10px] uppercase tracking-[1.6px] text-[#93C5FD] mt-[3px]">días</span>
-        </div>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">Racha activa</div>
-        <div className="mt-[6px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white leading-[1.15] tracking-[-0.3px]">
-          {streak === 0 ? `Empieza tu racha, ${name}` : streak < 3 ? "Vas encaminado" : streak < 7 ? "Ritmo constante" : "Fuego imparable"}
-        </div>
-        <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.5]">
-          {streak < target ? `Faltan ${target - streak} para tu próxima meta.` : "Meta alcanzada — sigue sumando."}
-        </p>
-      </div>
-    </div>
-  );
-}
+/* StreakAurora eliminado — hub sin racha */
+
 
 /* Animated count-up number for stat cards */
 function CountUp({
