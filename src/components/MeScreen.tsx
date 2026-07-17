@@ -763,7 +763,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
 
   const done = todos.filter((t) => t.done).length;
   const total = todos.length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
 
   return (
     <SubScreen>
