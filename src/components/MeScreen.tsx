@@ -2896,13 +2896,15 @@ function LearnView({ onBack }: { onBack: () => void }) {
   }
 
   if (pathOpen) {
+    const hasStarted = (store.state.startedPaths ?? []).includes(pathOpen.id);
     return (
       <>
         <PathDetail
           path={pathOpen}
           completedTopics={store.state.pathProgress[pathOpen.id] ?? []}
+          hasStarted={hasStarted}
           onBack={() => setPathOpen(null)}
-          onStartTopic={(t) => openSetup(pathOpen, t)}
+          onStartTopic={(t) => { store.markPathStarted(pathOpen.id); openSetup(pathOpen, t); }}
         />
         <SessionSetupSheet
           open={setupOpen}
