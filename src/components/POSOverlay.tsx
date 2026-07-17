@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Plus, Minus, Search, Package, Check, Trash2, LogOut } from "lucide-react";
+import { X, Plus, Minus, Search, Package, Check, Trash2, LogOut, ShoppingCart, ChevronDown } from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
