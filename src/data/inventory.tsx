@@ -95,7 +95,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold")
+      .select("id, name, price, cost, stock, category, unit, sku, image_url, low_stock_threshold")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
     if (error) {
@@ -150,7 +150,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           category: p.category ?? "General",
           low_stock_threshold: profile?.low_stock_threshold ?? LOW_STOCK_THRESHOLD,
         })
-        .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold")
+        .select("id, name, price, cost, stock, category, unit, sku, image_url, low_stock_threshold")
         .single();
       if (error) {
         console.error("addProduct", error);
