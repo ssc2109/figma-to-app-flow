@@ -20,6 +20,7 @@ export type InventoryItem = {
   cost: number;
   stock: number;
   category: string;
+  unit: string;
   image: string;
   lowStockThreshold: number;
 };
@@ -31,10 +32,12 @@ type DbProduct = {
   cost: number;
   stock: number;
   category: string;
+  unit: string | null;
   sku: string | null;
   image_url: string | null;
   low_stock_threshold: number;
 };
+
 
 type Ctx = {
   items: InventoryItem[];
