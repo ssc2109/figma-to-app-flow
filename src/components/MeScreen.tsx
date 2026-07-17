@@ -2821,7 +2821,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
     if (!profile?.id) { setDiagnosticOpen(false); return; }
     const nextPrefs = { ...prefs, has_completed_diagnostic_test: true, ...(result ? { diagnostic_result: result } : {}) };
     try {
-      await supabase.from("profiles").update({ preferences: nextPrefs }).eq("id", profile.id);
+      await supabase.from("profiles").update({ preferences: nextPrefs as never }).eq("id", profile.id);
       await refreshProfile?.();
     } catch { /* noop */ }
     setDiagnosticOpen(false);
