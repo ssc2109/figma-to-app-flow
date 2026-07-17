@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { Search, UserPlus, Users, Phone, X, Trash2 } from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -82,43 +84,56 @@ function ClientSheet({
     onSaved(); onClose();
   };
 
-  return (
+  return createPortal(
     <motion.div className="fixed inset-0 z-[80] flex items-end justify-center"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => !saving && onClose()} />
       <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 100 }}
         transition={{ type: "spring", stiffness: 340, damping: 32 }}
-        className="relative w-full max-w-[430px] rounded-t-[28px] pt-[14px] pb-[28px] px-[20px] max-h-[90vh] overflow-y-auto"
-        style={{ background: "rgba(14,14,16,0.97)", border: "1px solid rgba(255,255,255,0.08)" }}>
-        <div className="mx-auto h-[4px] w-[40px] rounded-full bg-white/15 mb-[14px]" />
-        <div className="flex items-center justify-between mb-[18px]">
-          <h3 className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white">
-            {isNew ? "Nuevo cliente" : "Editar cliente"}
-          </h3>
-          <button onClick={onClose} className="h-[32px] w-[32px] rounded-full flex items-center justify-center active:bg-white/[0.05]" aria-label="Cerrar">
-            <X className="h-[15px] w-[15px] text-white/55" strokeWidth={1.8} />
-          </button>
+        className="relative w-full max-w-[430px] rounded-t-[28px] flex flex-col"
+        style={{
+          background: "rgba(14,14,16,0.97)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          maxHeight: "min(85dvh, 720px)",
+        }}>
+        <div className="shrink-0 pt-[14px] px-[20px]">
+          <div className="mx-auto h-[4px] w-[40px] rounded-full bg-white/15 mb-[14px]" />
+          <div className="flex items-center justify-between mb-[6px]">
+            <h3 className="font-['Bai_Jamjuree'] text-[20px] font-semibold text-white">
+              {isNew ? "Nuevo cliente" : "Editar cliente"}
+            </h3>
+            <button onClick={onClose} className="h-[32px] w-[32px] rounded-full flex items-center justify-center active:bg-white/[0.05]" aria-label="Cerrar">
+              <X className="h-[15px] w-[15px] text-white/55" strokeWidth={1.8} />
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-[10px]">
-          <Field label="Nombre" value={name} onChange={setName} placeholder="Ej. María Quispe" />
-          <Field label="Teléfono" value={phone} onChange={setPhone} placeholder="987 654 321" type="tel" />
-          <Field label="Nota (opcional)" value={note} onChange={setNote} placeholder="Vecina, viene los sábados" />
+        <div className="flex-1 min-h-0 overflow-y-auto px-[20px] pt-[12px] pb-[16px]">
+          <div className="flex flex-col gap-[10px]">
+            <Field label="Nombre" value={name} onChange={setName} placeholder="Ej. María Quispe" />
+            <Field label="Teléfono" value={phone} onChange={setPhone} placeholder="987 654 321" type="tel" />
+            <Field label="Nota (opcional)" value={note} onChange={setNote} placeholder="Vecina, viene los sábados" />
+          </div>
         </div>
-        <button onClick={submit} disabled={saving}
-          className="mt-[18px] w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40">
-          {saving ? "Guardando…" : isNew ? "Crear cliente" : "Guardar cambios"}
-        </button>
-        {!isNew && (
-          <button onClick={del}
-            className="mt-[10px] w-full h-[44px] rounded-[14px] font-['Geist'] text-[13px] text-[#F87171] active:bg-white/[0.04] flex items-center justify-center gap-[8px]"
-            style={{ border: "1px solid rgba(248,113,113,0.20)" }}>
-            <Trash2 className="h-[14px] w-[14px]" strokeWidth={1.8} /> Eliminar
+        <div className="shrink-0 px-[20px] pt-[8px] pb-[calc(env(safe-area-inset-bottom)+18px)] border-t border-white/[0.05]"
+          style={{ background: "rgba(14,14,16,0.97)" }}>
+          <button onClick={submit} disabled={saving}
+            className="w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40">
+            {saving ? "Guardando…" : isNew ? "Crear cliente" : "Guardar cambios"}
           </button>
-        )}
+          {!isNew && (
+            <button onClick={del}
+              className="mt-[10px] w-full h-[44px] rounded-[14px] font-['Geist'] text-[13px] text-[#F87171] active:bg-white/[0.04] flex items-center justify-center gap-[8px]"
+              style={{ border: "1px solid rgba(248,113,113,0.20)" }}>
+              <Trash2 className="h-[14px] w-[14px]" strokeWidth={1.8} /> Eliminar
+            </button>
+          )}
+        </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
+
 
 export default function ClientsView({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
