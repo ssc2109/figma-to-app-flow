@@ -1716,13 +1716,15 @@ function GoalSheet({
   const [due, setDue] = useState(initial?.due ?? "");
 
   useEffect(() => {
+    if (!open) return;
     setLabel(initial?.label ?? "");
     setDescription(initial?.description ?? "");
     setTarget(initial?.target ?? 100);
     setUnit(initial?.unit ?? "u");
     setCategory(initial?.category);
     setDue(initial?.due ?? "");
-  }, [initial]);
+  }, [initial, open]);
+
 
   const cats: Goal["category"][] = ["Ventas", "Marketing", "Finanzas", "Clientes", "Operaciones", "Personal"];
 
