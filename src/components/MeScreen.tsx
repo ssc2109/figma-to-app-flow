@@ -86,6 +86,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { usePlan } from "@/hooks/usePlan";
 import type { PlanId } from "@/lib/plans";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 type View =
   | "hub"
@@ -1854,6 +1856,7 @@ const LEARNING_PATHS: LearningPath[] = [
   { id: "administracion", emoji: "📊", name: "Administración", description: "Los procesos que sostienen a un negocio que crece.", level: "Intermedio", totalMinutes: 210, gradient: "linear-gradient(135deg,#1e293b,#0d9488)", topics: ["Indicadores clave (KPIs)", "Toma de decisiones con datos", "Planeación semanal y mensual", "Procesos y manuales operativos", "Gestión de proveedores"] },
   { id: "negociacion", emoji: "🤝", name: "Negociación con Proveedores y Clientes", description: "Negocia mejores condiciones sin dañar la relación.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#422006,#ca8a04)", topics: ["Principios de negociación efectiva", "Cómo negociar precios con proveedores", "Manejo de objeciones en la venta", "Cuándo ceder y cuándo sostener postura", "Cerrar acuerdos que se cumplen"] },
   { id: "liderazgo", emoji: "👥", name: "Liderazgo", description: "Guía tu equipo con claridad, cercanía y resultados.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#4c1d95,#db2777)", topics: ["Liderazgo situacional", "Delegación efectiva", "Feedback que construye", "Motivación intrínseca del equipo", "Cultura de servicio"] },
+  { id: "rrhh", emoji: "🧑‍🤝‍🧑", name: "Recursos Humanos y Equipo", description: "Contrata, integra y retén al equipo que hace crecer tu negocio.", level: "Intermedio", totalMinutes: 210, gradient: "linear-gradient(135deg,#1e1b4b,#6366f1)", topics: ["Cómo contratar a tu primer colaborador", "Contratos y planillas básicas", "Onboarding: primeros 30 días", "Evaluación de desempeño simple", "Retener al buen personal"] },
   { id: "ia", emoji: "🤖", name: "IA aplicada a negocios", description: "Casos reales de IA que ahorran horas y aumentan ingresos.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#000000,#7c3aed)", topics: ["IA para atención al cliente 24/7", "IA para marketing y contenido", "IA para análisis de ventas", "IA para inventario predictivo", "Automatización de tareas repetitivas"] },
   { id: "expansion", emoji: "🚀", name: "Expansión y Crecimiento", description: "Escala tu negocio a nuevas sucursales o mercados con orden.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#052e16,#16a34a)", topics: ["Cuándo tu negocio está listo para escalar", "Franquicias vs. sucursales propias", "Sistematizar antes de expandir", "Financiamiento para crecer", "Errores comunes al expandirse rápido"] },
   { id: "inversion", emoji: "💹", name: "Finanzas Avanzadas e Inversión", description: "Reinvierte con criterio y entiende cómo acceder a capital.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#0c0a09,#dc2626)", topics: ["Cuándo y cómo reinvertir utilidades", "Acceso a crédito para negocios", "Fundamentos para atraer inversionistas", "Evaluar el retorno de una inversión", "Riesgos financieros que evitar"] },
@@ -1902,9 +1905,10 @@ type LearnState = {
   sessions: StoredSession[];
   favorites: FavoriteRef[];
   pathProgress: Record<string, string[]>; // pathId -> completed topics
+  startedPaths?: string[]; // paths where the first lesson has been opened
 };
 
-const emptyLearnState: LearnState = { sessions: [], favorites: [], pathProgress: {} };
+const emptyLearnState: LearnState = { sessions: [], favorites: [], pathProgress: {}, startedPaths: [] };
 
 function useLearnStore() {
   const [state, setState] = useState<LearnState>(emptyLearnState);
@@ -1952,7 +1956,15 @@ function useLearnStore() {
       return { ...prev, pathProgress: { ...prev.pathProgress, [pathId]: [...done] } };
     });
 
-  return { state, addSession, updateSession, removeSession, toggleFavorite, isFavorite, markPathTopic };
+  const markPathStarted = (pathId: string) =>
+    setState((prev) => {
+      const started = new Set(prev.startedPaths ?? []);
+      if (started.has(pathId)) return prev;
+      started.add(pathId);
+      return { ...prev, startedPaths: [...started] };
+    });
+
+  return { state, addSession, updateSession, removeSession, toggleFavorite, isFavorite, markPathTopic, markPathStarted };
 }
 
 /* -------- helpers -------- */
@@ -2064,32 +2076,42 @@ function SessionSetupSheet({
           <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar el precio de alquiler de mi local" />
         </Field>
       )}
-      <Field label="Nivel">
-        <div className="flex gap-[6px]">
-          {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((l) => (
-            <button key={l} type="button" onClick={() => setLevel(l)}
-              className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white"
-              style={{
-                background: level === l ? "rgba(255,255,255,0.10)" : "transparent",
-                border: `1px solid ${level === l ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
-              }}
-            >{l}</button>
-          ))}
+      {!path && (
+        <>
+          <Field label="Nivel">
+            <div className="flex gap-[6px]">
+              {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((l) => (
+                <button key={l} type="button" onClick={() => setLevel(l)}
+                  className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white"
+                  style={{
+                    background: level === l ? "rgba(255,255,255,0.10)" : "transparent",
+                    border: `1px solid ${level === l ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+                  }}
+                >{l}</button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Duración">
+            <div className="flex gap-[6px]">
+              {([30, 45, 60] as LearnMinutes[]).map((m) => (
+                <button key={m} type="button" onClick={() => setMinutes(m)}
+                  className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white tabular-nums"
+                  style={{
+                    background: minutes === m ? "rgba(255,255,255,0.10)" : "transparent",
+                    border: `1px solid ${minutes === m ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+                  }}
+                >{m} min</button>
+              ))}
+            </div>
+          </Field>
+        </>
+      )}
+      {path && (
+        <div className="rounded-[12px] px-[12px] py-[10px] flex items-center gap-[8px]" style={{ background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.20)" }}>
+          <Sparkles className="h-[13px] w-[13px] text-[#93C5FD]" strokeWidth={1.8} />
+          <span className="font-['Geist'] text-[12px] text-white/80">Personalizado para ti según tu diagnóstico</span>
         </div>
-      </Field>
-      <Field label="Duración">
-        <div className="flex gap-[6px]">
-          {([30, 45, 60] as LearnMinutes[]).map((m) => (
-            <button key={m} type="button" onClick={() => setMinutes(m)}
-              className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white tabular-nums"
-              style={{
-                background: minutes === m ? "rgba(255,255,255,0.10)" : "transparent",
-                border: `1px solid ${minutes === m ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
-              }}
-            >{m} min</button>
-          ))}
-        </div>
-      </Field>
+      )}
       <div className="font-['Geist'] text-[12px] text-white/45 leading-[1.5]">
         {path
           ? "La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable."
@@ -2422,10 +2444,12 @@ function PathNodesTrail({
   path,
   completedTopics,
   onStartTopic,
+  hasStarted,
 }: {
   path: LearningPath;
   completedTopics: string[];
   onStartTopic: (topic: string) => void;
+  hasStarted: boolean;
 }) {
   const done = new Set(completedTopics);
   const [c1, c2] = extractGradientColors(path.gradient);
@@ -2448,6 +2472,7 @@ function PathNodesTrail({
     ia: [22, 78, 22, 78],
     expansion: [26, 46, 66, 86],
     inversion: [50, 26, 74, 50],
+    rrhh: [30, 66, 30, 66],
   };
   const ICONS: Record<string, typeof GraduationCap> = {
     ventas: Trophy,
@@ -2464,6 +2489,7 @@ function PathNodesTrail({
     ia: Cpu,
     expansion: Rocket,
     inversion: Gem,
+    rrhh: Users,
   };
   const phases = PATTERNS[path.id] ?? [22, 50, 78, 50];
   const FinalIcon = ICONS[path.id] ?? GraduationCap;
@@ -2497,6 +2523,51 @@ function PathNodesTrail({
   const reachedFrac = items.length > 1 ? reachedIdx / (items.length - 1) : 0;
 
   const gradId = `path-grad-${path.id}`;
+
+  // Duolingo-style: on first entry, show ONLY the first lesson centered with "Comenzar"
+  if (!hasStarted && !allDone) {
+    const firstTopic = path.topics[0];
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="flex flex-col items-center justify-center gap-[18px] py-[36px]"
+      >
+        <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-white/40">Lección 1 de {total}</div>
+        <button
+          type="button"
+          onClick={() => onStartTopic(firstTopic)}
+          aria-label={`Comenzar: ${firstTopic}`}
+          className="relative rounded-full flex items-center justify-center active:scale-95 transition-transform"
+          style={{
+            width: 108,
+            height: 108,
+            background: `linear-gradient(135deg, ${c1}, ${c2})`,
+            boxShadow: `0 0 0 3px ${c2}44, 0 18px 40px -8px ${c2}`,
+          }}
+        >
+          <Play className="text-white" style={{ width: 40, height: 40, marginLeft: 3 }} strokeWidth={2} fill="white" />
+        </button>
+        <div className="text-center max-w-[280px]">
+          <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white leading-[1.25] tracking-[-0.2px]">
+            {firstTopic}
+          </div>
+          <div className="mt-[6px] font-['Geist'] text-[12px] text-white/45 leading-[1.4]">
+            Completa esta lección para desbloquear el resto del camino.
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onStartTopic(firstTopic)}
+          className="h-[46px] px-[26px] rounded-full font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-black bg-white active:scale-95 transition-transform flex items-center gap-[8px]"
+        >
+          Comenzar
+          <ArrowRight className="h-[16px] w-[16px]" strokeWidth={2} />
+        </button>
+      </motion.div>
+    );
+  }
 
   return (
     <div className="relative w-full" style={{ height }}>
@@ -2663,10 +2734,11 @@ function PathNodesTrail({
 }
 
 function PathDetail({
-  path, completedTopics, onBack, onStartTopic,
+  path, completedTopics, hasStarted, onBack, onStartTopic,
 }: {
   path: LearningPath;
   completedTopics: string[];
+  hasStarted: boolean;
   onBack: () => void;
   onStartTopic: (topic: string) => void;
 }) {
@@ -2674,6 +2746,8 @@ function PathDetail({
   const progress = path.topics.length > 0 ? Math.round((done.size / path.topics.length) * 100) : 0;
   return (
     <SubScreen>
+      <LearnAuroraEdges />
+      <div className="relative z-10">
       <SubHeader eyebrow="Ruta de aprendizaje" title={`${path.emoji} ${path.name}`} onBack={onBack} />
       <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <div className="rounded-[18px] overflow-hidden shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -2681,33 +2755,126 @@ function PathDetail({
           <div className="p-[16px]">
             <p className="font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{path.description}</p>
             <div className="mt-[10px] flex items-center gap-[6px] flex-wrap">
-              <LibraryTagPill>Nivel {path.level}</LibraryTagPill>
-              <LibraryTagPill>{path.topics.length} lecciones</LibraryTagPill>
-              <LibraryTagPill>~{path.totalMinutes} min</LibraryTagPill>
+              <span className="h-[22px] px-[9px] rounded-full flex items-center gap-[5px] font-['Geist'] text-[10.5px] font-medium text-white/85" style={{ background: "rgba(96,165,250,0.10)", border: "1px solid rgba(96,165,250,0.22)" }}>
+                <Sparkles className="h-[10px] w-[10px] text-[#93C5FD]" strokeWidth={2} />
+                Personalizado para ti
+              </span>
             </div>
             <div className="mt-[12px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
               <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
             </div>
-            <div className="mt-[6px] font-['Geist'] text-[11.5px] text-white/45 tabular-nums">{progress}% completado · {done.size} de {path.topics.length}</div>
+            <div className="mt-[6px] font-['Geist'] text-[11.5px] text-white/45 tabular-nums">{done.size} de {path.topics.length} lecciones</div>
           </div>
         </div>
 
         <SectionLabel>Camino de lecciones</SectionLabel>
         <div className="shrink-0">
-          <PathNodesTrail path={path} completedTopics={completedTopics} onStartTopic={onStartTopic} />
+          <PathNodesTrail path={path} completedTopics={completedTopics} onStartTopic={onStartTopic} hasStarted={hasStarted} />
         </div>
       </ProductivityScroll>
+      </div>
     </SubScreen>
+  );
+}
+
+/* Aurora azul solo en bordes superior/inferior — centro negro */
+function LearnAuroraEdges() {
+  return (
+    <>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[220px] z-0"
+        style={{ background: "radial-gradient(120% 100% at 50% 0%, rgba(59,130,246,0.20) 0%, rgba(59,130,246,0.05) 42%, rgba(0,0,0,0) 80%)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[240px] z-0"
+        style={{ background: "radial-gradient(120% 100% at 50% 100%, rgba(96,165,250,0.14) 0%, rgba(96,165,250,0.04) 46%, rgba(0,0,0,0) 84%)" }}
+      />
+    </>
+  );
+}
+
+/* -------- Diagnostic Test -------- */
+type DiagnosticQ = { q: string; options: string[]; correct: number };
+const DIAGNOSTIC_QUESTIONS: DiagnosticQ[] = [
+  { q: "Si vendes S/ 100 y tu producto te costó S/ 60, ¿cuál es tu ganancia bruta?", options: ["S/ 40", "S/ 60", "S/ 100", "S/ 160"], correct: 0 },
+  { q: "¿Qué significa 'margen de ganancia'?", options: ["El total vendido", "La diferencia entre precio y costo, sobre el precio", "El dinero en caja", "Los impuestos que pagas"], correct: 1 },
+  { q: "¿Qué es el flujo de caja?", options: ["El total de deudas", "El dinero que entra y sale en un periodo", "Solo las ventas del día", "El inventario disponible"], correct: 1 },
+  { q: "Si compras 10 productos a S/ 5 c/u, ¿cuál es tu inventario en valor?", options: ["S/ 15", "S/ 50", "S/ 5", "S/ 100"], correct: 1 },
+  { q: "¿Qué es 'fiado' en un negocio?", options: ["Un descuento", "Una venta a crédito por cobrar", "Un impuesto", "Un tipo de producto"], correct: 1 },
+  { q: "¿Cuál es la mejor forma de saber si ganas dinero?", options: ["Contar el efectivo en caja", "Restar gastos totales a ingresos totales", "Ver cuántos clientes vinieron", "Comparar con el vecino"], correct: 1 },
+  { q: "¿Qué es el 'punto de equilibrio'?", options: ["Cuando cierras el día", "Cuando ingresos igualan a costos totales", "Cuando el stock se agota", "Cuando pagas impuestos"], correct: 1 },
+  { q: "¿Por qué es importante separar dinero personal del negocio?", options: ["No importa", "Para saber la salud real del negocio", "Solo por impuestos", "Solo si tienes empleados"], correct: 1 },
+  { q: "¿Qué es un cliente recurrente?", options: ["El que compra una sola vez", "El que regresa a comprar seguido", "El que pide fiado", "El que reclama"], correct: 1 },
+  { q: "Si un producto rota rápido pero deja poca ganancia, ¿qué conviene?", options: ["Dejar de venderlo", "Analizar volumen vs margen antes de decidir", "Subirle mucho el precio", "Regalarlo"], correct: 1 },
+];
+
+function DiagnosticTestSheet({
+  open, onClose, onFinish,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onFinish: (result: { score: number; total: number; level: LearnLevel }) => void;
+}) {
+  const [idx, setIdx] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
+  useEffect(() => { if (open) { setIdx(0); setAnswers([]); } }, [open]);
+
+  const q = DIAGNOSTIC_QUESTIONS[idx];
+  const total = DIAGNOSTIC_QUESTIONS.length;
+
+  const answer = (i: number) => {
+    const next = [...answers, i];
+    setAnswers(next);
+    if (idx + 1 >= total) {
+      const score = next.reduce((acc, a, k) => acc + (a === DIAGNOSTIC_QUESTIONS[k].correct ? 1 : 0), 0);
+      const level: LearnLevel = score <= 4 ? "Básico" : score <= 7 ? "Intermedio" : "Avanzado";
+      onFinish({ score, total, level });
+    } else {
+      setIdx(idx + 1);
+    }
+  };
+
+  return (
+    <Sheet open={open} onClose={onClose} title={`Pregunta ${idx + 1} de ${total}`}>
+      <div className="flex flex-col gap-[16px] py-[6px]">
+        <div className="h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
+          <div className="h-full rounded-full bg-white" style={{ width: `${((idx) / total) * 100}%` }} />
+        </div>
+        {q && (
+          <>
+            <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white leading-[1.35]">{q.q}</div>
+            <div className="flex flex-col gap-[8px]">
+              {q.options.map((opt, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => answer(i)}
+                  className="text-left rounded-[14px] px-[14px] py-[12px] font-['Geist'] text-[13.5px] text-white/90 active:scale-[0.99] transition-transform"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </Sheet>
   );
 }
 
 /* -------- Main LearnView -------- */
 type LearnTab = "rutas" | "historial";
 
+
+
 function LearnView({ onBack }: { onBack: () => void }) {
   const store = useLearnStore();
   const generate = useServerFn(generateLearnSession);
   const { plan } = usePlan();
+  const { profile, refreshProfile } = useAuth();
   const [tab, setTab] = useState<LearnTab>("rutas");
   const [pathOpen, setPathOpen] = useState<LearningPath | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
@@ -2717,6 +2884,21 @@ function LearnView({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [running, setRunning] = useState<StoredSession | null>(null);
+  const [diagnosticOpen, setDiagnosticOpen] = useState(false);
+
+  const prefs = (profile?.preferences ?? {}) as Record<string, unknown>;
+  const hasCompletedDiagnostic = Boolean(prefs?.has_completed_diagnostic_test);
+
+  const markDiagnosticDone = async (result?: Record<string, unknown>) => {
+    if (!profile?.id) { setDiagnosticOpen(false); return; }
+    const nextPrefs = { ...prefs, has_completed_diagnostic_test: true, ...(result ? { diagnostic_result: result } : {}) };
+    try {
+      await supabase.from("profiles").update({ preferences: nextPrefs as never }).eq("id", profile.id);
+      await refreshProfile?.();
+    } catch { /* noop */ }
+    setDiagnosticOpen(false);
+  };
+
 
   const openSetup = (path?: LearningPath, topic?: string) => {
     // Tema libre (sin path) es exclusivo del plan Avanzado.
@@ -2802,13 +2984,15 @@ function LearnView({ onBack }: { onBack: () => void }) {
   }
 
   if (pathOpen) {
+    const hasStarted = (store.state.startedPaths ?? []).includes(pathOpen.id);
     return (
       <>
         <PathDetail
           path={pathOpen}
           completedTopics={store.state.pathProgress[pathOpen.id] ?? []}
+          hasStarted={hasStarted}
           onBack={() => setPathOpen(null)}
-          onStartTopic={(t) => openSetup(pathOpen, t)}
+          onStartTopic={(t) => { store.markPathStarted(pathOpen.id); openSetup(pathOpen, t); }}
         />
         <SessionSetupSheet
           open={setupOpen}
@@ -2826,8 +3010,55 @@ function LearnView({ onBack }: { onBack: () => void }) {
   const totalMinutes = store.state.sessions.reduce((s, x) => s + (x.completed ? x.minutes : 0), 0);
   const completedCount = store.state.sessions.filter((s) => s.completed).length;
 
+  if (profile && !hasCompletedDiagnostic) {
+    return (
+      <SubScreen>
+        <LearnAuroraEdges />
+        <div className="relative z-10">
+          <SubHeader eyebrow="Centro Inteligente de Aprendizaje" title="Aprender" onBack={onBack} />
+          <div className="px-[20px] pt-[6px] pb-[40px] flex flex-col items-center text-center gap-[18px]">
+            <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#1e3a8a,#3b82f6)", boxShadow: "0 12px 40px -8px rgba(59,130,246,0.5)" }}>
+              <Compass className="h-[32px] w-[32px] text-white" strokeWidth={1.6} />
+            </div>
+            <div>
+              <div className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.3px]">Test de diagnóstico</div>
+              <p className="mt-[8px] font-['Geist'] text-[13.5px] text-white/60 leading-[1.55] max-w-[320px]">
+                Antes de empezar, responde 10 preguntas rápidas de nociones generales de negocio. Con eso personalizamos tus rutas y lecciones.
+              </p>
+            </div>
+            <div className="flex flex-col gap-[10px] w-full max-w-[320px] mt-[8px]">
+              <button
+                type="button"
+                onClick={() => setDiagnosticOpen(true)}
+                className="h-[50px] rounded-full bg-white text-black font-['Bai_Jamjuree'] text-[15px] font-semibold active:scale-[0.98] transition-transform flex items-center justify-center gap-[8px]"
+              >
+                <Sparkles className="h-[15px] w-[15px]" strokeWidth={2} />
+                Empezar test
+              </button>
+              <button
+                type="button"
+                onClick={() => markDiagnosticDone()}
+                className="h-[44px] rounded-full font-['Geist'] text-[13px] font-medium text-white/70 active:scale-[0.98] transition-transform"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                Omitir por ahora
+              </button>
+            </div>
+          </div>
+        </div>
+        <DiagnosticTestSheet
+          open={diagnosticOpen}
+          onClose={() => setDiagnosticOpen(false)}
+          onFinish={(res) => markDiagnosticDone(res)}
+        />
+      </SubScreen>
+    );
+  }
+
   return (
     <SubScreen>
+      <LearnAuroraEdges />
+      <div className="relative z-10">
       <SubHeader
         eyebrow="Centro Inteligente de Aprendizaje"
         title="Aprender"
@@ -2986,6 +3217,12 @@ function LearnView({ onBack }: { onBack: () => void }) {
           </div>
         </Sheet>
       )}
+      <DiagnosticTestSheet
+        open={diagnosticOpen}
+        onClose={() => setDiagnosticOpen(false)}
+        onFinish={(res) => markDiagnosticDone(res)}
+      />
+      </div>
     </SubScreen>
   );
 }
