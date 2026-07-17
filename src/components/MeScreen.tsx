@@ -2301,6 +2301,27 @@ function SessionRunner({
                     <p className="font-['Geist'] text-[14px] text-white/90 leading-[1.55] italic">{steps[stepIdx].reflection}</p>
                   </div>
                 )}
+
+                {stored.video && stepIdx === 0 && (
+                  <div className="rounded-[16px] overflow-hidden" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
+                      <iframe
+                        className="absolute inset-0 w-full h-full"
+                        src={`https://www.youtube.com/embed/${stored.video.youtubeId}?rel=0&modestbranding=1`}
+                        title={stored.video.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="flex items-center gap-[8px] px-[14px] py-[10px]">
+                      <Youtube className="h-[14px] w-[14px] text-[#ef4444]" strokeWidth={2} />
+                      <span className="font-['Geist'] text-[12px] text-white/80 leading-[1.3]">{stored.video.title}</span>
+                      {stored.video.seconds && (
+                        <span className="ml-auto font-['Geist'] text-[10.5px] text-white/45 tabular-nums">{stored.video.seconds}s</span>
+                      )}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             )}
 
