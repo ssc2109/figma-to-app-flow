@@ -2938,8 +2938,55 @@ function LearnView({ onBack }: { onBack: () => void }) {
   const totalMinutes = store.state.sessions.reduce((s, x) => s + (x.completed ? x.minutes : 0), 0);
   const completedCount = store.state.sessions.filter((s) => s.completed).length;
 
+  if (profile && !hasCompletedDiagnostic) {
+    return (
+      <SubScreen>
+        <LearnAuroraEdges />
+        <div className="relative z-10">
+          <SubHeader eyebrow="Centro Inteligente de Aprendizaje" title="Aprender" onBack={onBack} />
+          <div className="px-[20px] pt-[6px] pb-[40px] flex flex-col items-center text-center gap-[18px]">
+            <div className="w-[72px] h-[72px] rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg,#1e3a8a,#3b82f6)", boxShadow: "0 12px 40px -8px rgba(59,130,246,0.5)" }}>
+              <Compass className="h-[32px] w-[32px] text-white" strokeWidth={1.6} />
+            </div>
+            <div>
+              <div className="font-['Bai_Jamjuree'] text-[22px] font-semibold text-white tracking-[-0.3px]">Test de diagnóstico</div>
+              <p className="mt-[8px] font-['Geist'] text-[13.5px] text-white/60 leading-[1.55] max-w-[320px]">
+                Antes de empezar, responde 10 preguntas rápidas de nociones generales de negocio. Con eso personalizamos tus rutas y lecciones.
+              </p>
+            </div>
+            <div className="flex flex-col gap-[10px] w-full max-w-[320px] mt-[8px]">
+              <button
+                type="button"
+                onClick={() => setDiagnosticOpen(true)}
+                className="h-[50px] rounded-full bg-white text-black font-['Bai_Jamjuree'] text-[15px] font-semibold active:scale-[0.98] transition-transform flex items-center justify-center gap-[8px]"
+              >
+                <Sparkles className="h-[15px] w-[15px]" strokeWidth={2} />
+                Empezar test
+              </button>
+              <button
+                type="button"
+                onClick={() => markDiagnosticDone()}
+                className="h-[44px] rounded-full font-['Geist'] text-[13px] font-medium text-white/70 active:scale-[0.98] transition-transform"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                Omitir por ahora
+              </button>
+            </div>
+          </div>
+        </div>
+        <DiagnosticTestSheet
+          open={diagnosticOpen}
+          onClose={() => setDiagnosticOpen(false)}
+          onFinish={(res) => markDiagnosticDone(res)}
+        />
+      </SubScreen>
+    );
+  }
+
   return (
     <SubScreen>
+      <LearnAuroraEdges />
+      <div className="relative z-10">
       <SubHeader
         eyebrow="Centro Inteligente de Aprendizaje"
         title="Aprender"
