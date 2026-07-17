@@ -3145,6 +3145,12 @@ function LearnView({ onBack }: { onBack: () => void }) {
           </div>
         </Sheet>
       )}
+      <DiagnosticTestSheet
+        open={diagnosticOpen}
+        onClose={() => setDiagnosticOpen(false)}
+        onFinish={(res) => markDiagnosticDone(res)}
+      />
+      </div>
     </SubScreen>
   );
 }
