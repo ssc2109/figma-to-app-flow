@@ -73,11 +73,13 @@ function rowToItem(row: DbProduct): InventoryItem {
     price: Number(row.price),
     cost: Number(row.cost),
     stock: row.stock,
-    category: row.category || "General",
+    category: row.category || "Producto",
+    unit: row.unit || "unidad",
     image: row.image_url ?? "",
     lowStockThreshold: row.low_stock_threshold ?? LOW_STOCK_THRESHOLD,
   };
 }
+
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
