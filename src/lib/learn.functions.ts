@@ -138,26 +138,97 @@ export type LearnStep = z.infer<typeof StepSchema>;
 export type LearnQuizQ = z.infer<typeof QuizSchema>;
 export type LearnSession = z.infer<typeof SessionSchema>;
 
-function difficultyBand(index: number | undefined, total: number | undefined) {
-  if (index == null || total == null || total <= 0) return { band: "básica", note: "Explica de forma sencilla, con lenguaje claro y ejemplos muy cotidianos." };
-  if (index <= 1) return { band: "básica", note: "Explica de forma sencilla, con lenguaje claro y ejemplos muy cotidianos. Este es de los primeros temas del path." };
-  if (index <= 3) return { band: "intermedia", note: "Sube un poco la complejidad: usa términos técnicos con su explicación corta y ejemplos con más variables (mix de productos, temporadas, costos)." };
-  return { band: "alta", note: "Presenta un caso más complejo: varias variables interactuando, decisión con trade-offs, y una reflexión más estratégica. El usuario ya avanzó en el path." };
+/** Dificultad en 3 tramos según posición (1..30) — la usa el nuevo formato
+ *  expandido de 30 lecciones. Se combina con `baselineLevel` del diagnóstico. */
+function tramoBand(index1based: number | undefined, total: number | undefined) {
+  const total30 = (total ?? 0) >= 25; // path expandido a 30 lecciones
+  if (!total30 || index1based == null) {
+    // Path clásico (5-7 lecciones): usa la banda antigua.
+    if (index1based == null || total == null || total <= 0) return { band: "básica", note: "Explica de forma sencilla, con lenguaje claro y ejemplos muy cotidianos." };
+    if (index1based <= 2) return { band: "básica", note: "Explica de forma sencilla, con lenguaje claro y ejemplos muy cotidianos." };
+    if (index1based <= 4) return { band: "intermedia", note: "Sube un poco la complejidad: usa términos técnicos con su explicación y ejemplos con más variables." };
+    return { band: "alta", note: "Caso complejo con varias variables interactuando y trade-offs estratégicos." };
+  }
+  if (index1based <= 10) return { band: "poco visible", note: "Contenido introductorio a intermedio-bajo. Sé claro y directo, sin jerga. La dificultad debe subir de forma casi imperceptible respecto a la lección anterior." };
+  if (index1based <= 20) return { band: "presente", note: "Contenido intermedio a intermedio-alto. Introduce vocabulario técnico con explicación, casos con 2-3 variables y decisiones concretas. El usuario ya notará el salto." };
+  return { band: "ultrapresente", note: "Contenido avanzado y casos complejos. Trade-offs, escenarios multi-variable, decisiones estratégicas y ejemplos con márgenes/porcentajes/plazos reales." };
+}
+
+function baselineNote(baseline?: "Básico" | "Intermedio" | "Avanzado") {
+  if (!baseline) return "";
+  if (baseline === "Básico") return "El usuario dio nivel BÁSICO en el test de diagnóstico: no asumas conocimientos previos. Baja medio escalón la dificultad esperada del tramo y añade micro-recordatorios de conceptos base.";
+  if (baseline === "Intermedio") return "El usuario dio nivel INTERMEDIO en el test de diagnóstico: mantén la dificultad del tramo tal como se pide.";
+  return "El usuario dio nivel AVANZADO en el test de diagnóstico: sube medio escalón la exigencia — menos definiciones básicas, más profundidad estratégica y ejemplos con cifras.";
 }
 
 function buildPrompt(input: z.infer<typeof InputSchema>) {
-  const { topic, level, minutes, businessType, previousTopics, pathId, topicIndex, topicTotal } = input;
+  const { topic, level, minutes, businessType, previousTopics, pathId, topicIndex, topicTotal, lessonKind = "lesson", tierRange, baselineLevel, videoRef, coveredTopics } = input;
   const curatedSources = pathId ? SOURCE_LIBRARY[pathId] : undefined;
+  const position1 = topicIndex != null ? topicIndex + 1 : undefined;
+  const diff = tramoBand(position1, topicTotal);
+  const baseline = baselineNote(baselineLevel);
+
+  // ==== Formato según tipo de lección ====
+  if (lessonKind === "checkpoint" || lessonKind === "final") {
+    const isFinal = lessonKind === "final";
+    const quizCount = isFinal ? "10" : "6";
+    const rangeTxt = tierRange ? `lecciones ${tierRange[0]} a ${tierRange[1]}` : "las lecciones vistas";
+    return `Eres un instructor experto en negocios diseñando un TEST FORMATIVO${isFinal ? " FINAL" : ""} para dueños de MYPEs peruanas.
+
+Categoría/ruta: ${pathId ?? "general"}
+Título del test: "${topic}"
+Este test evalúa exclusivamente el contenido de ${rangeTxt} de la ruta. NO introduzcas conceptos nuevos: pregunta sobre lo ya cubierto.
+
+${baseline}
+
+REGLAS OBLIGATORIAS:
+- Devuelve "steps": [] (vacío). Este contenido es solo evaluación, no lección.
+- Devuelve exactamente ${quizCount} preguntas en "quiz". 4 opciones cada una, solo una correcta.
+- Nivel de dificultad general del test: ${diff.band} (tramo ${position1 ?? "?"} de ${topicTotal ?? "?"}).
+- Cada pregunta debe cubrir un concepto distinto del rango indicado.
+- "explanation": 1-2 frases justificando la respuesta y, cuando aplique, mencionando en qué lección se vio ese concepto.
+- "summary": una frase que resuma qué se evaluó y qué debe reforzar el usuario si falló.
+${coveredTopics && coveredTopics.length > 0 ? `- Conceptos ya cubiertos (usa estos como banco de temas): ${coveredTopics.join("; ")}.` : ""}
+${curatedSources && curatedSources.length > 0 ? `- Fuentes de referencia: ${curatedSources.join("; ")}.` : ""}
+
+Devuelve exclusivamente el JSON solicitado.`;
+  }
+
+  if (lessonKind === "recall") {
+    const rangeTxt = tierRange ? `lecciones ${tierRange[0]} a ${tierRange[1]}` : "las lecciones anteriores";
+    return `Eres un instructor experto diseñando una SESIÓN DE REPASO ACTIVO (spaced-recall) para dueños de MYPEs peruanas. Esto NO es una lección nueva ni un juego: es un recordatorio activo estructurado.
+
+Categoría/ruta: ${pathId ?? "general"}
+Título: "${topic}"
+Cubre exclusivamente conceptos de ${rangeTxt} de la ruta. NO agregues teoría nueva.
+
+${baseline}
+
+REGLAS OBLIGATORIAS:
+- Devuelve exactamente 5 "steps". Cada step es UN concepto ya visto, reformulado como recordatorio activo:
+  - "title": nombre corto del concepto ya visto.
+  - "idea": frase de 1-2 líneas que resuma la idea principal del concepto.
+  - "example": micro-ejemplo mype peruano (S/, productos reales) que active la memoria del usuario.
+  - "reflection": UNA pregunta corta de auto-chequeo ("¿Puedes explicarle esto a un socio en 2 frases?").
+- Devuelve exactamente 3 preguntas en "quiz" — cortas, tipo flashcard, que verifiquen que el concepto quedó fijado.
+- "summary": una frase que refuerce por qué este repaso importa antes de avanzar.
+${coveredTopics && coveredTopics.length > 0 ? `- Conceptos disponibles para repasar: ${coveredTopics.join("; ")}.` : ""}
+
+Devuelve exclusivamente el JSON solicitado.`;
+  }
+
+  // ==== Lección regular (posiblemente con video) ====
   const stepCount = minutes === 30 ? "5" : minutes === 45 ? "6" : "8";
-  const quizCount = minutes === 30 ? "3" : minutes === 45 ? "4" : "5";
-  const diff = difficultyBand(topicIndex, topicTotal);
+  const quizCount = videoRef ? "4" : (minutes === 30 ? "3" : minutes === 45 ? "4" : "5");
 
   return `Eres un instructor experto en administración y negocios que diseña micro-lecciones para dueños de MYPEs peruanas (bodegas, minimarkets, ferreterías, panaderías, farmacias, juguerías, tiendas de ropa, etc.). Los usuarios NO tienen tiempo para leer artículos largos: necesitan aprender rápido en formato tipo Duolingo.
 
 Tema: "${topic}"
 Nivel del path: ${level}
-Dificultad relativa dentro del path: ${diff.band}${topicIndex != null && topicTotal != null ? ` (topic ${topicIndex + 1} de ${topicTotal})` : ""}.
+Dificultad de este tramo: ${diff.band}${position1 != null && topicTotal != null ? ` (lección ${position1} de ${topicTotal})` : ""}.
 Duración objetivo: ${minutes} minutos.${businessType ? ` Negocio del usuario: ${businessType}.` : ""}
+
+${baseline}
 
 REGLAS DE CONTENIDO (obligatorias):
 - ${diff.note}
@@ -168,12 +239,12 @@ REGLAS DE CONTENIDO (obligatorias):
 - Cada "steps[].reflection": OPCIONAL. Si aporta, una pregunta corta de reflexión personal al dueño ("¿Cuánto de tu inventario rota en menos de 30 días?"). Máximo 15 palabras. Puede quedar vacía si el paso no lo necesita.
 - Devuelve exactamente ${quizCount} preguntas en "quiz". Cada una con 4 opciones y solo una correcta (correctIndex 0-3). "explanation": 1-2 frases justificando la respuesta correcta.
 - "summary": una sola frase (máximo 20 palabras) con la idea clave de toda la sesión.
-
+${videoRef ? `\nVIDEO INTEGRADO (obligatorio):\n- Justo antes del quiz el usuario verá un clip de YouTube titulado "${videoRef.title}" (~${videoRef.seconds}s).\n- De las ${quizCount} preguntas del quiz, al menos 2 deben basarse en el ángulo del video (no citando "el video dice X", sino evaluando la idea que transmite).\n` : ""}
 REGLAS DE FUENTES (obligatorias):
 - No inventes cifras, autores ni citas falsas. Si no estás seguro, generaliza sin dar dato concreto.
 - Cuando cites una idea de un libro o autor, que sea real y verificable.
 ${curatedSources && curatedSources.length > 0 ? `- Para este tema, apóyate cuando sea relevante en: ${curatedSources.join("; ")}.` : ""}
-${previousTopics && previousTopics.length > 0 ? `- El usuario ya vio: ${previousTopics.join(", ")}. Evita repetir esos ángulos.` : ""}
+${previousTopics && previousTopics.length > 0 ? `- El usuario ya vio: ${previousTopics.slice(0, 12).join(", ")}. Evita repetir esos ángulos.` : ""}
 
 Devuelve exclusivamente el objeto JSON solicitado, sin texto adicional, sin markdown, sin comentarios.`;
 }
