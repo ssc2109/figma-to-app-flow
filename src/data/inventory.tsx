@@ -51,7 +51,10 @@ type Ctx = {
     cost?: number;
     stock?: number;
     category?: string;
+    unit?: string;
+    image?: string;
   }) => Promise<void>;
+
   updateProduct: (id: string, patch: Partial<Omit<InventoryItem, "id" | "dbId">>) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
