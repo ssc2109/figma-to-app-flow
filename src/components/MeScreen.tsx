@@ -3091,11 +3091,30 @@ function LearnView({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const [graduation, setGraduation] = useState<{ path: LearningPath; nextTier?: "Pro" | "Avanzado" } | null>(null);
+
   const completeRunning = (score: number, total: number) => {
     if (!running) return;
     store.updateSession(running.id, { quizScore: score, quizTotal: total, completed: true });
     if (running.pathId) store.markPathTopic(running.pathId, running.topic);
     setRunning((r) => (r ? { ...r, quizScore: score, quizTotal: total, completed: true } : r));
+
+    // Graduación: examen final aprobado (≥70%) de una categoría del plan actual.
+    if (running.lessonKind === "final" && running.pathId && total > 0 && score / total >= 0.7) {
+      const finPath = LEARNING_PATHS.find((p) => p.id === running.pathId);
+      if (finPath) {
+        const lockedLevels = (["Intermedio", "Avanzado"] as LearnLevel[]).filter((lvl) => {
+          const req = minPlanForLevel(lvl);
+          return !planMeetsRequirement(plan, req);
+        });
+        const nextTier: "Pro" | "Avanzado" | undefined = lockedLevels.includes("Intermedio")
+          ? "Pro"
+          : lockedLevels.includes("Avanzado")
+          ? "Avanzado"
+          : undefined;
+        setGraduation({ path: finPath, nextTier });
+      }
+    }
   };
 
   const removeRunning = () => {
@@ -3106,12 +3125,21 @@ function LearnView({ onBack }: { onBack: () => void }) {
 
   if (running) {
     return (
-      <SessionRunner
-        stored={running}
-        onClose={() => setRunning(null)}
-        onComplete={completeRunning}
-        onRemove={removeRunning}
-      />
+      <>
+        <SessionRunner
+          stored={running}
+          onClose={() => setRunning(null)}
+          onComplete={completeRunning}
+          onRemove={removeRunning}
+        />
+        {graduation && (
+          <GraduationOverlay
+            path={graduation.path}
+            nextTier={graduation.nextTier}
+            onClose={() => { setGraduation(null); setRunning(null); }}
+          />
+        )}
+      </>
     );
   }
 
