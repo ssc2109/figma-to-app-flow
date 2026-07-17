@@ -2795,8 +2795,80 @@ function LearnAuroraEdges() {
   );
 }
 
+/* -------- Diagnostic Test -------- */
+type DiagnosticQ = { q: string; options: string[]; correct: number };
+const DIAGNOSTIC_QUESTIONS: DiagnosticQ[] = [
+  { q: "Si vendes S/ 100 y tu producto te costó S/ 60, ¿cuál es tu ganancia bruta?", options: ["S/ 40", "S/ 60", "S/ 100", "S/ 160"], correct: 0 },
+  { q: "¿Qué significa 'margen de ganancia'?", options: ["El total vendido", "La diferencia entre precio y costo, sobre el precio", "El dinero en caja", "Los impuestos que pagas"], correct: 1 },
+  { q: "¿Qué es el flujo de caja?", options: ["El total de deudas", "El dinero que entra y sale en un periodo", "Solo las ventas del día", "El inventario disponible"], correct: 1 },
+  { q: "Si compras 10 productos a S/ 5 c/u, ¿cuál es tu inventario en valor?", options: ["S/ 15", "S/ 50", "S/ 5", "S/ 100"], correct: 1 },
+  { q: "¿Qué es 'fiado' en un negocio?", options: ["Un descuento", "Una venta a crédito por cobrar", "Un impuesto", "Un tipo de producto"], correct: 1 },
+  { q: "¿Cuál es la mejor forma de saber si ganas dinero?", options: ["Contar el efectivo en caja", "Restar gastos totales a ingresos totales", "Ver cuántos clientes vinieron", "Comparar con el vecino"], correct: 1 },
+  { q: "¿Qué es el 'punto de equilibrio'?", options: ["Cuando cierras el día", "Cuando ingresos igualan a costos totales", "Cuando el stock se agota", "Cuando pagas impuestos"], correct: 1 },
+  { q: "¿Por qué es importante separar dinero personal del negocio?", options: ["No importa", "Para saber la salud real del negocio", "Solo por impuestos", "Solo si tienes empleados"], correct: 1 },
+  { q: "¿Qué es un cliente recurrente?", options: ["El que compra una sola vez", "El que regresa a comprar seguido", "El que pide fiado", "El que reclama"], correct: 1 },
+  { q: "Si un producto rota rápido pero deja poca ganancia, ¿qué conviene?", options: ["Dejar de venderlo", "Analizar volumen vs margen antes de decidir", "Subirle mucho el precio", "Regalarlo"], correct: 1 },
+];
+
+function DiagnosticTestSheet({
+  open, onClose, onFinish,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onFinish: (result: { score: number; total: number; level: LearnLevel }) => void;
+}) {
+  const [idx, setIdx] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
+  useEffect(() => { if (open) { setIdx(0); setAnswers([]); } }, [open]);
+
+  const q = DIAGNOSTIC_QUESTIONS[idx];
+  const total = DIAGNOSTIC_QUESTIONS.length;
+
+  const answer = (i: number) => {
+    const next = [...answers, i];
+    setAnswers(next);
+    if (idx + 1 >= total) {
+      const score = next.reduce((acc, a, k) => acc + (a === DIAGNOSTIC_QUESTIONS[k].correct ? 1 : 0), 0);
+      const level: LearnLevel = score <= 4 ? "Básico" : score <= 7 ? "Intermedio" : "Avanzado";
+      onFinish({ score, total, level });
+    } else {
+      setIdx(idx + 1);
+    }
+  };
+
+  return (
+    <Sheet open={open} onClose={onClose} title={`Pregunta ${idx + 1} de ${total}`}>
+      <div className="flex flex-col gap-[16px] py-[6px]">
+        <div className="h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
+          <div className="h-full rounded-full bg-white" style={{ width: `${((idx) / total) * 100}%` }} />
+        </div>
+        {q && (
+          <>
+            <div className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white leading-[1.35]">{q.q}</div>
+            <div className="flex flex-col gap-[8px]">
+              {q.options.map((opt, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => answer(i)}
+                  className="text-left rounded-[14px] px-[14px] py-[12px] font-['Geist'] text-[13.5px] text-white/90 active:scale-[0.99] transition-transform"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </Sheet>
+  );
+}
+
 /* -------- Main LearnView -------- */
 type LearnTab = "rutas" | "historial";
+
+
 
 function LearnView({ onBack }: { onBack: () => void }) {
   const store = useLearnStore();
