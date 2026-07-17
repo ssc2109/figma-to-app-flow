@@ -2830,6 +2830,66 @@ function PathNodesTrail({
   );
 }
 
+function GraduationOverlay({
+  path, nextTier, onClose,
+}: {
+  path: LearningPath;
+  nextTier?: "Pro" | "Avanzado";
+  onClose: () => void;
+}) {
+  const [c1, c2] = path.gradient;
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center px-[24px]" style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)" }}>
+      <div
+        className="relative w-full max-w-[380px] rounded-[24px] p-[28px] text-center overflow-hidden animate-in fade-in zoom-in-95 duration-500"
+        style={{ background: "rgba(20,20,22,0.95)", border: "1px solid rgba(255,255,255,0.08)" }}
+      >
+        {/* Aura de graduación */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-60"
+          style={{ background: `radial-gradient(circle at 50% 30%, ${c2}55, transparent 70%)` }}
+        />
+        <div className="relative flex flex-col items-center gap-[16px]">
+          <div
+            className="w-[88px] h-[88px] rounded-full flex items-center justify-center animate-in zoom-in duration-700"
+            style={{ background: `linear-gradient(135deg, ${c1}, ${c2})`, boxShadow: `0 0 40px -8px ${c2}` }}
+          >
+            <GraduationCap className="text-white" style={{ width: 44, height: 44 }} strokeWidth={1.6} />
+          </div>
+          <div>
+            <div className="font-['Bai_Jamjuree'] text-[10px] uppercase tracking-[2px] text-white/50">Categoría completada</div>
+            <div className="mt-[6px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white leading-tight">{path.title}</div>
+          </div>
+          <p className="font-['Geist'] text-[13px] text-white/60 leading-[1.5]">
+            Completaste las 30 lecciones, checkpoints y el examen final. Ya eres una referencia en este tema.
+          </p>
+          {nextTier && (
+            <div
+              className="w-full rounded-[16px] p-[14px] text-left"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            >
+              <div className="font-['Bai_Jamjuree'] text-[10px] uppercase tracking-[1.6px] text-white/50">Siguiente reto</div>
+              <div className="mt-[4px] font-['Geist'] text-[13px] text-white">
+                Desbloquea las categorías del plan <span className="font-semibold">{nextTier}</span> y sigue avanzando.
+              </div>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-[4px] w-full rounded-[14px] py-[12px] font-['Geist'] text-[13px] font-semibold text-black"
+            style={{ background: "#ffffff" }}
+          >
+            Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
 function PathDetail({
   path, completedTopics, hasStarted, onBack, onStartTopic,
 }: {
