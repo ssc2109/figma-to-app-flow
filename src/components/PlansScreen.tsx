@@ -185,11 +185,39 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
 
 
         <div className="font-['Geist'] text-[11.5px] text-white/40 text-center pt-[6px] leading-[1.5]">
-          Pagos procesados por Culqi (Perú). Aceptamos tarjetas y Yape.
+          Pagos internacionales por Stripe · Métodos locales (Yape, QR, Apple Pay) por Culqi.
           <br />
           Puedes cancelar cuando quieras desde esta pantalla.
         </div>
       </div>
+
+      {checkoutFor && (
+        <CheckoutSheet
+          open={!!checkoutFor}
+          plan={checkoutFor}
+          email={user?.email ?? "cliente@trax.pe"}
+          onClose={() => setCheckoutFor(null)}
+          onSuccess={async (r) => {
+            setBusy(checkoutFor);
+            try {
+              await subscribe({
+                data: { plan: checkoutFor, provider: r.provider, providerRef: r.providerRef },
+              });
+              await refresh();
+              setNotice(
+                r.demo
+                  ? `Plan ${checkoutFor} activado en modo demo (${r.provider}). Configura las llaves reales en Secrets para cobrar de verdad.`
+                  : `¡Listo! Plan ${checkoutFor} activo. Ya puedes usar todas las funciones incluidas.`,
+              );
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "No se pudo activar el plan.");
+            } finally {
+              setBusy(null);
+              setCheckoutFor(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
