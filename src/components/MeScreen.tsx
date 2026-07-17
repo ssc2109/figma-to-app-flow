@@ -2472,6 +2472,7 @@ function PathNodesTrail({
     ia: [22, 78, 22, 78],
     expansion: [26, 46, 66, 86],
     inversion: [50, 26, 74, 50],
+    rrhh: [30, 66, 30, 66],
   };
   const ICONS: Record<string, typeof GraduationCap> = {
     ventas: Trophy,
@@ -2488,6 +2489,7 @@ function PathNodesTrail({
     ia: Cpu,
     expansion: Rocket,
     inversion: Gem,
+    rrhh: Users,
   };
   const phases = PATTERNS[path.id] ?? [22, 50, 78, 50];
   const FinalIcon = ICONS[path.id] ?? GraduationCap;
