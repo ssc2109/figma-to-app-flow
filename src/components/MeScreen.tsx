@@ -4907,6 +4907,8 @@ function FlightCard({ project, onTap }: { project: Project; onTap: () => void })
 
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [learnOpen, setLearnOpen] = useState(false);
+  const [view, setView] = useState<View>("hub");
+
   const [taskSheet, setTaskSheet] = useState<{ open: boolean; initial?: Todo }>({ open: false });
   const [eventSheet, setEventSheet] = useState<{ open: boolean; date: string }>({
     open: false,
