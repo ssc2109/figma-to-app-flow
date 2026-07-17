@@ -86,6 +86,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { usePlan } from "@/hooks/usePlan";
 import type { PlanId } from "@/lib/plans";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 type View =
   | "hub"
