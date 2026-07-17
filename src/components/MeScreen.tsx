@@ -321,13 +321,14 @@ function TodayStatus({
           Estado del negocio hoy
         </span>
       </div>
-      <div className="mb-[14px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2] tracking-[-0.3px]">
+      <div className="mb-[14px] font-['Bai_Jamjuree'] text-[18px] font-semibold text-white leading-[1.2] tracking-[-0.3px]">
         {alerts > 0
-          ? `${name}, hay ${alerts} cosa${alerts === 1 ? "" : "s"} que atender`
+          ? `Hay ${alerts} cosa${alerts === 1 ? "" : "s"} que atender`
           : salesToday > 0
-          ? `Buen ritmo, ${name}`
-          : `A darle, ${name}`}
+          ? `Buen ritmo hoy`
+          : `Aún sin movimiento hoy`}
       </div>
+
       <div className="grid grid-cols-3 gap-[8px]">
         {items.map((it) => (
           <div
