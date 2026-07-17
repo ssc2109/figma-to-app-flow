@@ -142,6 +142,8 @@ export default function POSOverlay({ open, onClose }: { open: boolean; onClose: 
         result.isCredit ? `Fiado · ${fmt(result.total)}` : `Cobrado · ${fmt(result.total)}`,
       );
       clearCart();
+      setCheckoutOpen(false);
+
     } catch (err) {
       console.error("POS submitSale", err);
       toast.error((err as Error)?.message ?? "No se pudo registrar la venta");
