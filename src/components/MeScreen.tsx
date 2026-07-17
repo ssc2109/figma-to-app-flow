@@ -112,56 +112,8 @@ const PROJECT_STATUS: Record<ProjectStatus, { label: string; color: string }> = 
 };
 
 /* ============ HUB HERO ============ */
-function StreakHero({ streak }: { streak: number }) {
-  const target = Math.max(streak, 7);
-  const pct = Math.min(streak / target, 1);
-  const size = 168;
-  const stroke = 10;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  return (
-    <div
-      className="relative rounded-[26px] overflow-hidden px-[20px] py-[26px] flex items-center gap-[20px]"
-      style={{
-        background: "linear-gradient(135deg,#0F172A 0%,#1E293B 100%)",
-        border: "1px solid rgba(96,165,250,0.18)",
-        boxShadow: "0 10px 40px -20px rgba(37,99,235,0.55)",
-      }}
-    >
-      <div
-        aria-hidden
-        className="absolute -top-[40px] -left-[40px] w-[220px] h-[220px] rounded-full opacity-60 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35) 0%, rgba(59,130,246,0) 70%)" }}
-      />
-      <div className="relative shrink-0" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="rotate-[-90deg]">
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(148,163,184,0.18)" strokeWidth={stroke} fill="none" />
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="url(#streakGrad)" strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} style={{ filter: "drop-shadow(0 0 8px rgba(96,165,250,0.55))" }} />
-          <defs>
-            <linearGradient id="streakGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#3B82F6" />
-              <stop offset="100%" stopColor="#60A5FA" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Flame className="h-[18px] w-[18px] text-[#60A5FA] mb-[2px]" strokeWidth={1.8} />
-          <span className="font-['Bai_Jamjuree'] text-[52px] font-bold text-white tabular-nums leading-none">{streak}</span>
-          <span className="font-['Geist'] text-[11px] uppercase tracking-[1.6px] text-[#93C5FD] mt-[4px]">días</span>
-        </div>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">Racha activa</div>
-        <div className="mt-[6px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2]">
-          {streak === 0 ? "Empieza tu racha hoy" : streak < 3 ? "Vas encaminado" : streak < 7 ? "Ritmo constante" : "Fuego imparable"}
-        </div>
-        <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/60 leading-[1.5]">
-          {streak < target ? `Faltan ${target - streak} para tu próxima meta.` : "Meta alcanzada — sigue sumando."}
-        </p>
-      </div>
-    </div>
-  );
-}
+/* StreakHero eliminado — hub sin gamificación de racha */
+
 
 /* ============ AURORA BG + BENTO TILE (Productivity hub only) ============ */
 
@@ -369,13 +321,14 @@ function TodayStatus({
           Estado del negocio hoy
         </span>
       </div>
-      <div className="mb-[14px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2] tracking-[-0.3px]">
+      <div className="mb-[14px] font-['Bai_Jamjuree'] text-[18px] font-semibold text-white leading-[1.2] tracking-[-0.3px]">
         {alerts > 0
-          ? `${name}, hay ${alerts} cosa${alerts === 1 ? "" : "s"} que atender`
+          ? `Hay ${alerts} cosa${alerts === 1 ? "" : "s"} que atender`
           : salesToday > 0
-          ? `Buen ritmo, ${name}`
-          : `A darle, ${name}`}
+          ? `Buen ritmo hoy`
+          : `Aún sin movimiento hoy`}
       </div>
+
       <div className="grid grid-cols-3 gap-[8px]">
         {items.map((it) => (
           <div
@@ -415,50 +368,8 @@ function TodayStatus({
 }
 
 
-/* Streak hero that blends into the aurora (no card border) */
-function StreakAurora({ streak, name }: { streak: number; name: string }) {
-  const target = Math.max(streak, 7);
-  const pct = Math.min(streak / target, 1);
-  const size = 132;
-  const stroke = 8;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  return (
-    <div className="relative flex items-center gap-[18px]">
-      <div className="relative shrink-0" style={{ width: size, height: size }}>
-        <div
-          aria-hidden
-          className="absolute inset-[-16px] rounded-full opacity-70"
-          style={{ background: "radial-gradient(circle, rgba(96,165,250,0.35) 0%, rgba(59,130,246,0) 70%)", filter: "blur(18px)" }}
-        />
-        <svg width={size} height={size} className="relative rotate-[-90deg]">
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(148,163,184,0.16)" strokeWidth={stroke} fill="none" />
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="url(#streakAuroraGrad)" strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} style={{ filter: "drop-shadow(0 0 10px rgba(96,165,250,0.7))" }} />
-          <defs>
-            <linearGradient id="streakAuroraGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#60A5FA" />
-              <stop offset="100%" stopColor="#3B82F6" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Flame className="h-[15px] w-[15px] text-[#93C5FD] mb-[1px]" strokeWidth={1.8} />
-          <span className="font-['Bai_Jamjuree'] text-[42px] font-bold text-white tabular-nums leading-none">{streak}</span>
-          <span className="font-['Geist'] text-[10px] uppercase tracking-[1.6px] text-[#93C5FD] mt-[3px]">días</span>
-        </div>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">Racha activa</div>
-        <div className="mt-[6px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white leading-[1.15] tracking-[-0.3px]">
-          {streak === 0 ? `Empieza tu racha, ${name}` : streak < 3 ? "Vas encaminado" : streak < 7 ? "Ritmo constante" : "Fuego imparable"}
-        </div>
-        <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/55 leading-[1.5]">
-          {streak < target ? `Faltan ${target - streak} para tu próxima meta.` : "Meta alcanzada — sigue sumando."}
-        </p>
-      </div>
-    </div>
-  );
-}
+/* StreakAurora eliminado — hub sin racha */
+
 
 /* Animated count-up number for stat cards */
 function CountUp({
@@ -852,7 +763,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
 
   const done = todos.filter((t) => t.done).length;
   const total = todos.length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
 
   return (
     <SubScreen>
@@ -1005,8 +916,9 @@ function TaskSheet({
   const [projectId, setProjectId] = useState(initial?.projectId ?? "");
   const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
-  // reset when initial changes
+  // reset when initial changes o al abrir
   useEffect(() => {
+    if (!open) return;
     setTitle(initial?.title ?? "");
     setDescription(initial?.description ?? "");
     setPriority(initial?.priority ?? "normal");
@@ -1015,7 +927,8 @@ function TaskSheet({
     setTag(initial?.tag ?? "");
     setProjectId(initial?.projectId ?? "");
     setGoalId(initial?.goalId ?? "");
-  }, [initial]);
+  }, [initial, open]);
+
 
   const submit = () => {
     if (!title.trim()) return;
@@ -1300,8 +1213,15 @@ function EventSheet({
   const [description, setDescription] = useState("");
 
   useEffect(() => {
+    if (!open) return;
+    setTitle("");
     setDate(defaultDate);
-  }, [defaultDate]);
+    setStart("");
+    setEnd("");
+    setPlace("");
+    setDescription("");
+  }, [open, defaultDate]);
+
 
   const submit = () => {
     if (!title.trim()) return;
@@ -1569,15 +1489,16 @@ function ProjectSheet({
   const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
   useEffect(() => {
+    if (!open) return;
     setName(initial?.name ?? "");
     setDescription(initial?.description ?? "");
     setOwner(initial?.owner ?? "");
     setDueDate(initial?.dueDate ?? "");
     setStatus(initial?.status ?? "planning");
     setPriority(initial?.priority ?? "normal");
-    
     setGoalId(initial?.goalId ?? "");
-  }, [initial]);
+  }, [initial, open]);
+
 
   const submit = () => {
     if (!name.trim()) return;
@@ -1795,13 +1716,15 @@ function GoalSheet({
   const [due, setDue] = useState(initial?.due ?? "");
 
   useEffect(() => {
+    if (!open) return;
     setLabel(initial?.label ?? "");
     setDescription(initial?.description ?? "");
     setTarget(initial?.target ?? 100);
     setUnit(initial?.unit ?? "u");
     setCategory(initial?.category);
     setDue(initial?.due ?? "");
-  }, [initial]);
+  }, [initial, open]);
+
 
   const cats: Goal["category"][] = ["Ventas", "Marketing", "Finanzas", "Clientes", "Operaciones", "Personal"];
 
@@ -3233,13 +3156,13 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
         <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</div>
           <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
-            <AnimatedStat label="Productividad" value={productivity} suffix="%" />
             <AnimatedStat label="Tareas" value={doneTasks} denom={totalTasks} />
             <AnimatedStat label="Ventas hoy" value={Math.round(finance.todayIncome)} suffix=" S/" />
             <AnimatedStat label="Metas" value={activeGoals} />
             <AnimatedStat label="Proyectos" value={activeProjects} />
             <AnimatedStat label="En riesgo" value={lateProjects} highlight={lateProjects > 0} />
           </div>
+
         </div>
 
         <SectionLabel>Recomendaciones</SectionLabel>
@@ -4984,6 +4907,8 @@ function FlightCard({ project, onTap }: { project: Project; onTap: () => void })
 
 export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const [learnOpen, setLearnOpen] = useState(false);
+  const [view, setView] = useState<View>("hub");
+
   const [taskSheet, setTaskSheet] = useState<{ open: boolean; initial?: Todo }>({ open: false });
   const [eventSheet, setEventSheet] = useState<{ open: boolean; date: string }>({
     open: false,
@@ -5285,12 +5210,59 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
     };
   }, [todos, todaysEvents, today, inventory.lowStock, finance.fiadosOverdue]);
 
-  if (learnOpen) {
-    return <LearnView onBack={() => setLearnOpen(false)} />;
+  if (view === "priorities") return <PrioritiesView onBack={() => setView("hub")} />;
+  if (view === "calendar") return <CalendarView onBack={() => setView("hub")} />;
+  if (view === "projects") return <ProjectsView onBack={() => setView("hub")} />;
+  if (view === "goals") return <GoalsView onBack={() => setView("hub")} />;
+  if (view === "recos") return <RecosView onBack={() => setView("hub")} goTo={setView} />;
+  if (view === "learn" || learnOpen) {
+    return <LearnView onBack={() => { setView("hub"); setLearnOpen(false); }} />;
   }
 
+  const salesToday = Math.round(finance.todayIncome ?? 0);
+  const lowStockCount = inventory.lowStock?.length ?? 0;
+  const fiadosOverdueCount = finance.fiadosOverdue ?? 0;
+  const alertsCount = lowStockCount + fiadosOverdueCount;
+  const nextEventLabel = todaysEvents.length > 0
+    ? `${todaysEvents.length} evento${todaysEvents.length > 1 ? "s" : ""} hoy`
+    : "Sin eventos hoy";
+  const projectsMeta = projects.length
+    ? `${projects.length} activo${projects.length > 1 ? "s" : ""}`
+    : "Sin proyectos";
+  const goalsMeta = goals.length
+    ? `${goals.length} activa${goals.length > 1 ? "s" : ""}`
+    : "Sin metas";
+  const recosMeta = pending > 0 || alertsCount > 0
+    ? "Insights del día"
+    : "Sin novedades";
+
+  const prioritiesMeta = pending > 0
+    ? `${pending} pendiente${pending > 1 ? "s" : ""}`
+    : todaysTasks.length > 0
+    ? "Todo cerrado hoy"
+    : "Aún sin tareas";
+  const prioritiesSpan: 1 | 2 = pending > 0 ? 2 : 1;
+
   return (
-    <div className="relative w-full min-h-[100dvh] bg-black">
+    <div className="relative w-full min-h-[100dvh] bg-black overflow-hidden">
+      {/* Aurora sutil solo en bordes */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[240px] z-0"
+        style={{
+          background:
+            "radial-gradient(120% 100% at 50% 0%, rgba(59,130,246,0.22) 0%, rgba(59,130,246,0.06) 40%, rgba(0,0,0,0) 78%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[260px] z-0"
+        style={{
+          background:
+            "radial-gradient(120% 100% at 50% 100%, rgba(96,165,250,0.16) 0%, rgba(96,165,250,0.04) 45%, rgba(0,0,0,0) 82%)",
+        }}
+      />
+
       {onClose && (
         <div className="absolute top-[22px] right-[20px] z-20">
           <button
@@ -5304,232 +5276,80 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
       )}
 
       <div className="relative z-10 pb-[180px]">
-        {/* Ambient Header */}
+        {/* Header simple */}
         <div className="px-[20px] pt-[64px] pb-[6px]">
           <span className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.6px] text-white/35">
             {dateLabel}
           </span>
-          <h1 className="mt-[6px] font-['Bai_Jamjuree'] font-semibold text-[24px] leading-[28px] text-white tracking-[-0.5px]">
+          <h1 className="mt-[6px] font-['Bai_Jamjuree'] font-semibold text-[26px] leading-[30px] text-white tracking-[-0.5px]">
             Hola, {name}
           </h1>
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={ambientLine}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.35 }}
-              className="mt-[6px] font-['Geist'] text-[12px] leading-[16px] text-white/50 min-h-[16px]"
-            >
-              <span className="text-white/80">socIA · </span>
-              {ambientLine}
-            </motion.p>
-          </AnimatePresence>
-        </div>
-
-        {/* Pulse Canvas */}
-        <div className="mt-[26px] flex justify-center">
-          <PulseCanvas
-            goalPct={goalPct}
-            dayPct={dayPct}
-            centerLabel={currentCenter?.label ?? "Trax"}
-            centerValue={currentCenter?.value ?? "—"}
-            centerDelta={currentCenter?.delta}
-            onNext={() => setCenterIdx((i) => (i + 1) % Math.max(1, centers.length))}
-            dotIdx={Math.min(centerIdx, centers.length - 1)}
-            dotCount={centers.length}
-          />
-        </div>
-
-        {/* legenda mini bajo Pulse */}
-        <div className="mt-[10px] flex justify-center gap-[16px]">
-          <span className="flex items-center gap-[6px] font-['Geist'] text-[10px] font-medium text-white/50">
-            <span className="h-[6px] w-[6px] rounded-full bg-white/85" /> meta principal
-          </span>
-          <span className="flex items-center gap-[6px] font-['Geist'] text-[10px] font-medium text-white/50">
-            <span className="h-[6px] w-[6px] rounded-full bg-white/40" /> día productivo
-          </span>
         </div>
 
         {/* Estado del negocio hoy */}
-        <div className="px-[20px] mt-[26px]">
+        <div className="px-[20px] mt-[22px]">
           <TodayStatus
             name={name}
             tasksDone={todayDone}
             tasksTotal={todaysTasks.length}
-            salesToday={finance.todayIncome}
-            alerts={(inventory.lowStock?.length ?? 0) + (finance.fiadosOverdue ?? 0)}
-            lowStock={inventory.lowStock?.length ?? 0}
-            fiadosOverdue={finance.fiadosOverdue ?? 0}
+            salesToday={salesToday}
+            alerts={alertsCount}
+            lowStock={lowStockCount}
+            fiadosOverdue={fiadosOverdueCount}
+
           />
         </div>
 
-        {/* socIA Whisper */}
-        <div className="mt-[26px]">
-          <SociaWhisper items={whispers} />
-        </div>
-
-        {/* Horizonte */}
-        <div className="px-[20px] mt-[26px]">
-          <div className="flex items-baseline justify-between pb-[10px]">
-            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Horizonte
-            </h3>
-            <span className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.2px] text-white/35">
-              8 semanas
-            </span>
-          </div>
-          <HorizonteStrip
-            weeks={weeks}
-            onWeek={(w) => setWeekSheet({ open: true, week: w })}
-          />
-        </div>
-
-        {/* Focus Orb */}
-        <div className="px-[20px] mt-[26px]">
-          <FocusOrb
-            title={focus.title}
-            context={focus.context}
-            tone={focus.tone}
-            onDone={
-              focus.task
-                ? () => toggleTodo(focus.task!.id)
-                : undefined
-            }
-            onLater={
-              focus.task
-                ? () => {
-                    if (focus.task!.time) {
-                      const [h, m] = focus.task!.time.split(":").map(Number);
-                      const total = h * 60 + m + 15;
-                      const nh = Math.min(23, Math.floor(total / 60));
-                      const nm = total % 60;
-                      updateTodo(focus.task!.id, {
-                        time: `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`,
-                      });
-                    } else {
-                      setTaskSheet({ open: true, initial: focus.task });
-                    }
-                  }
-                : focus.event
-                  ? () => setEventSheet({ open: true, date: focus.event!.date })
-                  : undefined
-            }
-          />
-        </div>
-
-        {/* Constelación de Metas */}
-        <div className="px-[20px] mt-[26px]">
-          <div className="flex items-baseline justify-between pb-[10px]">
-            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Constelación
-            </h3>
-            <span className="font-['Geist'] text-[10px] font-medium uppercase tracking-[1.2px] text-white/35">
-              {goals.length > 0 ? `${goals.length} meta${goals.length > 1 ? "s" : ""}` : "sin metas"}
-            </span>
-          </div>
-          <GoalConstellation
-            goals={goals}
-            onTap={(g) => setGoalSheet({ open: true, initial: g })}
-            onAdd={() => setGoalSheet({ open: true })}
-          />
-        </div>
-
-        {/* Proyectos en vuelo */}
-        <div className="px-[20px] mt-[26px]">
-          <div className="flex items-baseline justify-between pb-[10px]">
-            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              En vuelo
-            </h3>
-            <button
-              type="button"
-              onClick={() => setProjectSheet({ open: true })}
-              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/45 active:text-white"
-            >
-              + nuevo
-            </button>
-          </div>
-          {projects.length === 0 ? (
-            <button
-              type="button"
-              onClick={() => setProjectSheet({ open: true })}
-              className="w-full rounded-[20px] p-[20px] text-left flex items-center gap-[14px] active:opacity-90"
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <div
-                className="h-[42px] w-[42px] rounded-[14px] grid place-items-center shrink-0"
-                style={{ background: "rgba(255,255,255,0.05)" }}
-              >
-                <Rocket className="h-[18px] w-[18px] text-white/70" strokeWidth={1.6} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white/90">
-                  Lanza tu primer proyecto
-                </p>
-                <p className="font-['Geist'] text-[11.5px] text-white/45 mt-[2px]">
-                  Divide lo grande en entregables con pista de despegue.
-                </p>
-              </div>
-              <ArrowRight className="h-[14px] w-[14px] text-white/40" strokeWidth={1.6} />
-            </button>
-          ) : (
-            <div className="flex flex-col gap-[10px]">
-              {projects.slice(0, 2).map((p) => (
-                <FlightCard
-                  key={p.id}
-                  project={p}
-                  onTap={() => setProjectSheet({ open: true, initial: p })}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Aprender */}
-        <div className="px-[20px] mt-[26px]">
-          <div className="flex items-baseline justify-between pb-[10px]">
-            <h3 className="font-['Bai_Jamjuree'] font-semibold text-[15px] tracking-[-0.2px] text-white/90">
-              Aprender
-            </h3>
-            <button
-              type="button"
-              onClick={() => setLearnOpen(true)}
-              className="font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.1px] text-white/45 active:text-white flex items-center gap-[3px]"
-            >
-              Ver rutas <ArrowRight className="h-[11px] w-[11px]" strokeWidth={2} />
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={() => setLearnOpen(true)}
-            className="w-full rounded-[20px] p-[16px] text-left flex items-center gap-[14px] active:opacity-90"
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
+        {/* Bento grid — acceso directo */}
+        <div className="px-[20px] mt-[22px]">
+          <div
+            className="grid grid-cols-2 gap-[12px]"
+            style={{ gridAutoFlow: "dense" }}
           >
-            <div
-              className="h-[42px] w-[42px] rounded-[12px] grid place-items-center shrink-0"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <GraduationCap className="h-[18px] w-[18px] text-white/80" strokeWidth={1.6} />
-            </div>
-            <div className="flex-1 min-w-0 flex flex-col gap-[2px]">
-              <span className="font-['Geist'] text-[13.5px] font-medium text-white/90">
-                Centro de aprendizaje
-              </span>
-              <span className="font-['Geist'] text-[11.5px] text-white/45">
-                Rutas cortas, sesiones IA y quiz para crecer tu negocio.
-              </span>
-            </div>
-            <ArrowRight className="h-[14px] w-[14px] text-white/40 shrink-0" strokeWidth={1.6} />
-          </button>
+            <BentoTile
+              Icon={ListChecks}
+              label="Prioridades"
+              meta={prioritiesMeta}
+              accent="#F87171"
+              span={prioritiesSpan}
+              onClick={() => setView("priorities")}
+            />
+            <BentoTile
+              Icon={CalendarIcon}
+              label="Calendario"
+              meta={nextEventLabel}
+              accent="#60A5FA"
+              onClick={() => setView("calendar")}
+            />
+            <BentoTile
+              Icon={FolderKanban}
+              label="Proyectos"
+              meta={projectsMeta}
+              accent="#A78BFA"
+              onClick={() => setView("projects")}
+            />
+            <BentoTile
+              Icon={Target}
+              label="Metas"
+              meta={goalsMeta}
+              accent="#34D399"
+              onClick={() => setView("goals")}
+            />
+            <BentoTile
+              Icon={GraduationCap}
+              label="Aprender"
+              meta="Rutas cortas de IA"
+              accent="#F59E0B"
+              onClick={() => setView("learn")}
+            />
+            <BentoTile
+              Icon={BrainCircuit}
+              label="Recomendaciones IA"
+              meta={recosMeta}
+              accent="#3B82F6"
+              onClick={() => setView("recos")}
+            />
+          </div>
         </div>
 
         <div className="mt-[28px] px-[20px]">
@@ -5537,88 +5357,6 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
         </div>
       </div>
 
-      {/* Detalle de semana (sheet reusa WeekGantt para dar contexto) */}
-      {weekSheet.open && weekSheet.week && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-          onClick={() => setWeekSheet({ open: false })}
-        >
-          <div
-            className="absolute bottom-0 left-0 right-0 max-h-[80dvh] overflow-y-auto rounded-t-[24px] p-[20px] pb-[40px]"
-            style={{
-              background: "#0a0a0a",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-[16px]">
-              <div>
-                <span className="font-['Geist'] text-[10px] font-semibold uppercase tracking-[1.4px] text-white/40">
-                  Semana del
-                </span>
-                <h3 className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white/95 mt-[2px]">
-                  {weekSheet.week.label}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setWeekSheet({ open: false })}
-                className="h-[32px] w-[32px] rounded-full grid place-items-center text-white/60 active:text-white"
-                style={{ background: "rgba(255,255,255,0.05)" }}
-              >
-                <X className="h-[14px] w-[14px]" strokeWidth={1.8} />
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-[8px] mb-[16px]">
-              <div className="rounded-[12px] p-[10px]" style={{ background: "rgba(255,255,255,0.03)" }}>
-                <div className="font-['Geist'] text-[9px] font-semibold uppercase tracking-[1.2px] text-white/40">Total</div>
-                <div className="font-['Bai_Jamjuree'] tabular-nums text-[18px] font-semibold text-white/95 mt-[2px]">{weekSheet.week.count}</div>
-              </div>
-              <div className="rounded-[12px] p-[10px]" style={{ background: "rgba(255,255,255,0.03)" }}>
-                <div className="font-['Geist'] text-[9px] font-semibold uppercase tracking-[1.2px] text-white/40">Hechas</div>
-                <div className="font-['Bai_Jamjuree'] tabular-nums text-[18px] font-semibold text-white/95 mt-[2px]" style={{ color: "#4ADE80" }}>{weekSheet.week.done}</div>
-              </div>
-              <div className="rounded-[12px] p-[10px]" style={{ background: "rgba(255,255,255,0.03)" }}>
-                <div className="font-['Geist'] text-[9px] font-semibold uppercase tracking-[1.2px] text-white/40">Pendiente</div>
-                <div className="font-['Bai_Jamjuree'] tabular-nums text-[18px] font-semibold text-white/95 mt-[2px]">{weekSheet.week.count - weekSheet.week.done}</div>
-              </div>
-            </div>
-            <div className="flex gap-[8px]">
-              <button
-                type="button"
-                onClick={() => {
-                  const iso = weekSheet.week!.start.toISOString().slice(0, 10);
-                  setWeekSheet({ open: false });
-                  setTaskSheet({ open: true, initial: undefined });
-                  // pre-fill via a follow-up if needed; sheet handles empty due
-                  void iso;
-                }}
-                className="flex-1 h-[42px] rounded-[12px] font-['Geist'] text-[12.5px] font-semibold text-black"
-                style={{ background: "#FFFFFF" }}
-              >
-                + Añadir tarea
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const iso = weekSheet.week!.start.toISOString().slice(0, 10);
-                  setWeekSheet({ open: false });
-                  setEventSheet({ open: true, date: iso });
-                }}
-                className="flex-1 h-[42px] rounded-[12px] font-['Geist'] text-[12.5px] font-semibold text-white/80"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
-              >
-                + Añadir evento
-              </button>
-            </div>
-            {pending === 0 && (
-              <p className="mt-[14px] font-['Geist'] text-[11.5px] text-white/40 text-center">
-                Sin actividad registrada para esta semana.
-              </p>
-            )}
-          </div>
-        </div>
-      )}
 
 
 
