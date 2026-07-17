@@ -1910,6 +1910,10 @@ type StoredSession = {
   quizScore?: number;
   quizTotal?: number;
   completed?: boolean;
+  /** Metadata de la lección de origen (para video, checkpoint, final). */
+  lessonKind?: LessonKind;
+  lessonTier?: LessonTier;
+  video?: LessonVideo;
 };
 
 type FavoriteRef = { type: "book" | "case" | "news" | "trend"; sessionId: string; index: number };
