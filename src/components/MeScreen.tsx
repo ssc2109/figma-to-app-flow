@@ -2444,10 +2444,12 @@ function PathNodesTrail({
   path,
   completedTopics,
   onStartTopic,
+  hasStarted,
 }: {
   path: LearningPath;
   completedTopics: string[];
   onStartTopic: (topic: string) => void;
+  hasStarted: boolean;
 }) {
   const done = new Set(completedTopics);
   const [c1, c2] = extractGradientColors(path.gradient);
