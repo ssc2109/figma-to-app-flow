@@ -34,6 +34,8 @@ export default function POSOverlay({ open, onClose }: { open: boolean; onClose: 
   const [saving, setSaving] = useState(false);
   const [salesToday, setSalesToday] = useState(0);
   const [totalToday, setTotalToday] = useState(0);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+
 
   useEffect(() => {
     if (!open) {
