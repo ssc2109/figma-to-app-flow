@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CreditCard, Smartphone, Loader2, ShieldCheck, QrCode } from "lucide-react";
-import { loadStripe, type Stripe as StripeJs, type StripePaymentRequest } from "@stripe/stripe-js";
+import { loadStripe, type Stripe as StripeJs, type PaymentRequest as StripePaymentRequest } from "@stripe/stripe-js";
 import {
   Elements,
   PaymentElement,
