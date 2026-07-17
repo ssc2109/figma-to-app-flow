@@ -112,56 +112,8 @@ const PROJECT_STATUS: Record<ProjectStatus, { label: string; color: string }> = 
 };
 
 /* ============ HUB HERO ============ */
-function StreakHero({ streak }: { streak: number }) {
-  const target = Math.max(streak, 7);
-  const pct = Math.min(streak / target, 1);
-  const size = 168;
-  const stroke = 10;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  return (
-    <div
-      className="relative rounded-[26px] overflow-hidden px-[20px] py-[26px] flex items-center gap-[20px]"
-      style={{
-        background: "linear-gradient(135deg,#0F172A 0%,#1E293B 100%)",
-        border: "1px solid rgba(96,165,250,0.18)",
-        boxShadow: "0 10px 40px -20px rgba(37,99,235,0.55)",
-      }}
-    >
-      <div
-        aria-hidden
-        className="absolute -top-[40px] -left-[40px] w-[220px] h-[220px] rounded-full opacity-60 pointer-events-none"
-        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.35) 0%, rgba(59,130,246,0) 70%)" }}
-      />
-      <div className="relative shrink-0" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="rotate-[-90deg]">
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(148,163,184,0.18)" strokeWidth={stroke} fill="none" />
-          <circle cx={size / 2} cy={size / 2} r={r} stroke="url(#streakGrad)" strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct)} style={{ filter: "drop-shadow(0 0 8px rgba(96,165,250,0.55))" }} />
-          <defs>
-            <linearGradient id="streakGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#3B82F6" />
-              <stop offset="100%" stopColor="#60A5FA" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <Flame className="h-[18px] w-[18px] text-[#60A5FA] mb-[2px]" strokeWidth={1.8} />
-          <span className="font-['Bai_Jamjuree'] text-[52px] font-bold text-white tabular-nums leading-none">{streak}</span>
-          <span className="font-['Geist'] text-[11px] uppercase tracking-[1.6px] text-[#93C5FD] mt-[4px]">días</span>
-        </div>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-['Geist'] text-[10.5px] font-medium uppercase tracking-[1.8px] text-[#93C5FD]/80">Racha activa</div>
-        <div className="mt-[6px] font-['Bai_Jamjuree'] text-[20px] font-semibold text-white leading-[1.2]">
-          {streak === 0 ? "Empieza tu racha hoy" : streak < 3 ? "Vas encaminado" : streak < 7 ? "Ritmo constante" : "Fuego imparable"}
-        </div>
-        <p className="mt-[6px] font-['Geist'] text-[12.5px] text-white/60 leading-[1.5]">
-          {streak < target ? `Faltan ${target - streak} para tu próxima meta.` : "Meta alcanzada — sigue sumando."}
-        </p>
-      </div>
-    </div>
-  );
-}
+/* StreakHero eliminado — hub sin gamificación de racha */
+
 
 /* ============ AURORA BG + BENTO TILE (Productivity hub only) ============ */
 
