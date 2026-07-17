@@ -5220,7 +5220,9 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
   }
 
   const salesToday = Math.round(finance.todayIncome ?? 0);
-  const alertsCount = (inventory.lowStock ?? 0) + (finance.fiadosOverdue ?? 0);
+  const lowStockCount = inventory.lowStock?.length ?? 0;
+  const fiadosOverdueCount = finance.fiadosOverdue ?? 0;
+  const alertsCount = lowStockCount + fiadosOverdueCount;
   const nextEventLabel = todaysEvents.length > 0
     ? `${todaysEvents.length} evento${todaysEvents.length > 1 ? "s" : ""} hoy`
     : "Sin eventos hoy";
@@ -5230,10 +5232,10 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
   const goalsMeta = goals.length
     ? `${goals.length} activa${goals.length > 1 ? "s" : ""}`
     : "Sin metas";
-  const recosCount = recommendations.length;
-  const recosMeta = recosCount > 0
-    ? `${recosCount} insight${recosCount > 1 ? "s" : ""}`
+  const recosMeta = pending > 0 || alertsCount > 0
+    ? "Insights del día"
     : "Sin novedades";
+
   const prioritiesMeta = pending > 0
     ? `${pending} pendiente${pending > 1 ? "s" : ""}`
     : todaysTasks.length > 0
