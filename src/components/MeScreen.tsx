@@ -3031,11 +3031,43 @@ function LearnView({ onBack }: { onBack: () => void }) {
     setError(undefined);
     try {
       const previousTopics = store.state.sessions.slice(0, 6).map((s) => s.topic);
+      // Buscar el LessonNode correspondiente (paths expandidos: kind/tier/video)
+      const lesson = setupPath?.lessons?.find((l) => l.title === topic);
       const topicIndex = setupPath ? setupPath.topics.indexOf(topic) : -1;
       const topicTotal = setupPath?.topics.length;
+      const baselineLevel = (prefs?.diagnostic_result as { level?: LearnLevel } | undefined)?.level;
+
+      // Para checkpoint/recall/final: pasar el rango de temas cubiertos
+      let tierRange: [number, number] | undefined;
+      let coveredTopics: string[] | undefined;
+      if (lesson && lesson.kind !== "lesson" && setupPath?.lessons) {
+        const range: [number, number] =
+          lesson.kind === "final"
+            ? [1, 29]
+            : lesson.kind === "checkpoint" && lesson.id === "l10"
+            ? [1, 9]
+            : lesson.kind === "checkpoint" && lesson.id === "l20"
+            ? [11, 19]
+            : lesson.kind === "recall" && lesson.id === "l15"
+            ? [1, 14]
+            : lesson.kind === "recall" && lesson.id === "l25"
+            ? [16, 24]
+            : [1, Math.max(1, topicIndex)];
+        tierRange = range;
+        coveredTopics = setupPath.lessons
+          .slice(range[0] - 1, range[1])
+          .filter((l) => l.kind === "lesson")
+          .map((l) => l.title);
+      }
+
       const session = await generate({ data: {
         topic, level, minutes, previousTopics, pathId: setupPath?.id,
         ...(topicIndex >= 0 ? { topicIndex, topicTotal } : {}),
+        ...(lesson ? { lessonKind: lesson.kind } : {}),
+        ...(tierRange ? { tierRange } : {}),
+        ...(coveredTopics && coveredTopics.length > 0 ? { coveredTopics } : {}),
+        ...(baselineLevel ? { baselineLevel } : {}),
+        ...(lesson?.video ? { videoRef: lesson.video } : {}),
       } });
       const stored: StoredSession = {
         id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
@@ -3045,6 +3077,9 @@ function LearnView({ onBack }: { onBack: () => void }) {
         level,
         minutes,
         session,
+        lessonKind: lesson?.kind,
+        lessonTier: lesson?.tier,
+        video: lesson?.video,
       };
       store.addSession(stored);
       setSetupOpen(false);
