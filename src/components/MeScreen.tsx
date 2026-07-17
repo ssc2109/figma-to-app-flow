@@ -2837,7 +2837,7 @@ function GraduationOverlay({
   nextTier?: "Pro" | "Avanzado";
   onClose: () => void;
 }) {
-  const [c1, c2] = path.gradient;
+  const [c1, c2] = extractGradientColors(path.gradient);
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center px-[24px]" style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)" }}>
       <div
