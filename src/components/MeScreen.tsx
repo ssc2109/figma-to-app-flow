@@ -2512,7 +2512,11 @@ function PathNodesTrail({
   const FinalIcon = ICONS[path.id] ?? GraduationCap;
   const rowH = 118;
   const topPad = 44;
-  const items = [...path.topics, "__final__"];
+  // Expanded paths ya incluyen la lección "final" (pos 30). Los paths clásicos
+  // agregan un nodo sintético de graduación al final.
+  const items = path.lessons ? [...path.topics] : [...path.topics, "__final__"];
+  // Mapa rápido título → LessonNode para expanded paths.
+  const lessonByTitle = new Map<string, LessonNodeT>((path.lessons ?? []).map((l) => [l.title, l]));
   const positions = items.map((_, i) => ({
     x: phases[i % phases.length],
     y: topPad + i * rowH,
