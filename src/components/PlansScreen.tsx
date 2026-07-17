@@ -5,48 +5,39 @@ import { useServerFn } from "@tanstack/react-start";
 import { subscribeToPlan } from "@/lib/api/subscription.functions";
 import { PLAN_FEATURES, PLAN_PRICES, type PlanId } from "@/lib/plans";
 import { usePlan } from "@/hooks/usePlan";
-import { useCulqiCheckout } from "@/components/CulqiCheckout";
 import { useAuth } from "@/hooks/useAuth";
+import CheckoutSheet from "@/components/CheckoutSheet";
+
+type PaidPlan = Exclude<PlanId, "trial" | "gratis">;
 
 export default function PlansScreen({ onBack }: { onBack: () => void }) {
   const { subscription, plan, isTrialing, daysLeft, refresh } = usePlan();
   const { user } = useAuth();
   const subscribe = useServerFn(subscribeToPlan);
-  const openCulqi = useCulqiCheckout();
   const [busy, setBusy] = useState<PlanId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [checkoutFor, setCheckoutFor] = useState<PaidPlan | null>(null);
 
   const handleChoose = async (target: "gratis" | "pro" | "avanzado") => {
     setError(null);
     setNotice(null);
-    setBusy(target);
-    try {
-      if (target === "gratis") {
+    if (target === "gratis") {
+      setBusy(target);
+      try {
         await subscribe({ data: { plan: "gratis" } });
         await refresh();
         setNotice("Estás en el plan Gratis. Puedes subir a Pro o Avanzado cuando quieras.");
-      } else {
-        const { token, demo, error: culqiErr } = await openCulqi(
-          target,
-          user?.email ?? "cliente@trax.pe",
-        );
-        if (culqiErr) throw new Error(culqiErr);
-        await subscribe({ data: { plan: target, culqiToken: token ?? undefined } });
-        await refresh();
-        setNotice(
-          demo
-            ? `Plan ${target} activado en modo demo (Culqi no configurado). Configura VITE_CULQI_PUBLIC_KEY en Secrets para cobrar de verdad.`
-            : `¡Listo! Plan ${target} activo.`,
-        );
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "No se pudo activar el plan.");
+      } finally {
+        setBusy(null);
       }
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "No se pudo activar el plan.";
-      setError(msg);
-    } finally {
-      setBusy(null);
+      return;
     }
+    setCheckoutFor(target);
   };
+
 
 
   return (
@@ -194,11 +185,39 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
 
 
         <div className="font-['Geist'] text-[11.5px] text-white/40 text-center pt-[6px] leading-[1.5]">
-          Pagos procesados por Culqi (Perú). Aceptamos tarjetas y Yape.
+          Pagos internacionales por Stripe · Métodos locales (Yape, QR, Apple Pay) por Culqi.
           <br />
           Puedes cancelar cuando quieras desde esta pantalla.
         </div>
       </div>
+
+      {checkoutFor && (
+        <CheckoutSheet
+          open={!!checkoutFor}
+          plan={checkoutFor}
+          email={user?.email ?? "cliente@trax.pe"}
+          onClose={() => setCheckoutFor(null)}
+          onSuccess={async (r) => {
+            setBusy(checkoutFor);
+            try {
+              await subscribe({
+                data: { plan: checkoutFor, provider: r.provider, providerRef: r.providerRef },
+              });
+              await refresh();
+              setNotice(
+                r.demo
+                  ? `Plan ${checkoutFor} activado en modo demo (${r.provider}). Configura las llaves reales en Secrets para cobrar de verdad.`
+                  : `¡Listo! Plan ${checkoutFor} activo. Ya puedes usar todas las funciones incluidas.`,
+              );
+            } catch (e) {
+              setError(e instanceof Error ? e.message : "No se pudo activar el plan.");
+            } finally {
+              setBusy(null);
+              setCheckoutFor(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
