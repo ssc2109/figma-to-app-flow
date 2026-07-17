@@ -20,6 +20,7 @@ export type InventoryItem = {
   cost: number;
   stock: number;
   category: string;
+  unit: string;
   image: string;
   lowStockThreshold: number;
 };
@@ -31,10 +32,12 @@ type DbProduct = {
   cost: number;
   stock: number;
   category: string;
+  unit: string | null;
   sku: string | null;
   image_url: string | null;
   low_stock_threshold: number;
 };
+
 
 type Ctx = {
   items: InventoryItem[];
@@ -48,7 +51,10 @@ type Ctx = {
     cost?: number;
     stock?: number;
     category?: string;
+    unit?: string;
+    image?: string;
   }) => Promise<void>;
+
   updateProduct: (id: string, patch: Partial<Omit<InventoryItem, "id" | "dbId">>) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
@@ -67,11 +73,13 @@ function rowToItem(row: DbProduct): InventoryItem {
     price: Number(row.price),
     cost: Number(row.cost),
     stock: row.stock,
-    category: row.category || "General",
+    category: row.category || "Producto",
+    unit: row.unit || "unidad",
     image: row.image_url ?? "",
     lowStockThreshold: row.low_stock_threshold ?? LOW_STOCK_THRESHOLD,
   };
 }
+
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
@@ -87,7 +95,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold")
+      .select("id, name, price, cost, stock, category, unit, sku, image_url, low_stock_threshold")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
     if (error) {
@@ -139,11 +147,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           price: p.price,
           cost: p.cost ?? 0,
           stock: p.stock ?? 0,
-          category: p.category ?? "General",
+          category: p.category ?? "Producto",
+          unit: p.unit ?? "unidad",
+          image_url: p.image ?? null,
           low_stock_threshold: profile?.low_stock_threshold ?? LOW_STOCK_THRESHOLD,
         })
-        .select("id, name, price, cost, stock, category, sku, image_url, low_stock_threshold")
+        .select("id, name, price, cost, stock, category, unit, sku, image_url, low_stock_threshold")
         .single();
+
       if (error) {
         console.error("addProduct", error);
         return;
@@ -163,6 +174,8 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         cost?: number;
         stock?: number;
         category?: string;
+        unit?: string;
+        image_url?: string | null;
         low_stock_threshold?: number;
       } = {};
       if (patch.name !== undefined) dbPatch.name = patch.name;
@@ -170,9 +183,12 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       if (patch.cost !== undefined) dbPatch.cost = patch.cost;
       if (patch.stock !== undefined) dbPatch.stock = patch.stock;
       if (patch.category !== undefined) dbPatch.category = patch.category;
+      if (patch.unit !== undefined) dbPatch.unit = patch.unit;
+      if (patch.image !== undefined) dbPatch.image_url = patch.image || null;
       if (patch.lowStockThreshold !== undefined) dbPatch.low_stock_threshold = patch.lowStockThreshold;
       setItems((arr) => arr.map((i) => (i.id === id ? { ...i, ...patch } : i)));
       const { error } = await supabase.from("products").update(dbPatch).eq("id", item.dbId);
+
       if (error) {
         console.error("updateProduct", error);
         await load();
