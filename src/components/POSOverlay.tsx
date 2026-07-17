@@ -48,8 +48,10 @@ export default function POSOverlay({ open, onClose }: { open: boolean; onClose: 
       setCustomerPicker(false);
       setSalesToday(0);
       setTotalToday(0);
+      setCheckoutOpen(false);
       return;
     }
+
     if (!user) return;
     supabase
       .from("customers")
