@@ -1213,8 +1213,15 @@ function EventSheet({
   const [description, setDescription] = useState("");
 
   useEffect(() => {
+    if (!open) return;
+    setTitle("");
     setDate(defaultDate);
-  }, [defaultDate]);
+    setStart("");
+    setEnd("");
+    setPlace("");
+    setDescription("");
+  }, [open, defaultDate]);
+
 
   const submit = () => {
     if (!title.trim()) return;
