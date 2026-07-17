@@ -1489,15 +1489,16 @@ function ProjectSheet({
   const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
   useEffect(() => {
+    if (!open) return;
     setName(initial?.name ?? "");
     setDescription(initial?.description ?? "");
     setOwner(initial?.owner ?? "");
     setDueDate(initial?.dueDate ?? "");
     setStatus(initial?.status ?? "planning");
     setPriority(initial?.priority ?? "normal");
-    
     setGoalId(initial?.goalId ?? "");
-  }, [initial]);
+  }, [initial, open]);
+
 
   const submit = () => {
     if (!name.trim()) return;
