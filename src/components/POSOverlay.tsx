@@ -164,7 +164,7 @@ export default function POSOverlay({ open, onClose }: { open: boolean; onClose: 
           exit={{ opacity: 0, y: 24 }}
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="mx-auto w-full max-w-[430px] h-full flex flex-col">
+          <div className="relative mx-auto w-full max-w-[430px] h-full flex flex-col">
             {/* Header */}
             <div className="shrink-0 bg-black/85 backdrop-blur-xl px-[20px] pt-[18px] pb-[12px] border-b border-white/[0.05]">
               <div className="flex items-center justify-between mb-[12px]">
