@@ -2734,10 +2734,11 @@ function PathNodesTrail({
 }
 
 function PathDetail({
-  path, completedTopics, onBack, onStartTopic,
+  path, completedTopics, hasStarted, onBack, onStartTopic,
 }: {
   path: LearningPath;
   completedTopics: string[];
+  hasStarted: boolean;
   onBack: () => void;
   onStartTopic: (topic: string) => void;
 }) {
@@ -2745,6 +2746,8 @@ function PathDetail({
   const progress = path.topics.length > 0 ? Math.round((done.size / path.topics.length) * 100) : 0;
   return (
     <SubScreen>
+      <LearnAuroraEdges />
+      <div className="relative z-10">
       <SubHeader eyebrow="Ruta de aprendizaje" title={`${path.emoji} ${path.name}`} onBack={onBack} />
       <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
         <div className="rounded-[18px] overflow-hidden shrink-0" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -2752,23 +2755,43 @@ function PathDetail({
           <div className="p-[16px]">
             <p className="font-['Geist'] text-[13px] text-white/70 leading-[1.55]">{path.description}</p>
             <div className="mt-[10px] flex items-center gap-[6px] flex-wrap">
-              <LibraryTagPill>Nivel {path.level}</LibraryTagPill>
-              <LibraryTagPill>{path.topics.length} lecciones</LibraryTagPill>
-              <LibraryTagPill>~{path.totalMinutes} min</LibraryTagPill>
+              <span className="h-[22px] px-[9px] rounded-full flex items-center gap-[5px] font-['Geist'] text-[10.5px] font-medium text-white/85" style={{ background: "rgba(96,165,250,0.10)", border: "1px solid rgba(96,165,250,0.22)" }}>
+                <Sparkles className="h-[10px] w-[10px] text-[#93C5FD]" strokeWidth={2} />
+                Personalizado para ti
+              </span>
             </div>
             <div className="mt-[12px] h-[3px] w-full rounded-full bg-white/[0.06] overflow-hidden">
               <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
             </div>
-            <div className="mt-[6px] font-['Geist'] text-[11.5px] text-white/45 tabular-nums">{progress}% completado · {done.size} de {path.topics.length}</div>
+            <div className="mt-[6px] font-['Geist'] text-[11.5px] text-white/45 tabular-nums">{done.size} de {path.topics.length} lecciones</div>
           </div>
         </div>
 
         <SectionLabel>Camino de lecciones</SectionLabel>
         <div className="shrink-0">
-          <PathNodesTrail path={path} completedTopics={completedTopics} onStartTopic={onStartTopic} />
+          <PathNodesTrail path={path} completedTopics={completedTopics} onStartTopic={onStartTopic} hasStarted={hasStarted} />
         </div>
       </ProductivityScroll>
+      </div>
     </SubScreen>
+  );
+}
+
+/* Aurora azul solo en bordes superior/inferior — centro negro */
+function LearnAuroraEdges() {
+  return (
+    <>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[220px] z-0"
+        style={{ background: "radial-gradient(120% 100% at 50% 0%, rgba(59,130,246,0.20) 0%, rgba(59,130,246,0.05) 42%, rgba(0,0,0,0) 80%)" }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[240px] z-0"
+        style={{ background: "radial-gradient(120% 100% at 50% 100%, rgba(96,165,250,0.14) 0%, rgba(96,165,250,0.04) 46%, rgba(0,0,0,0) 84%)" }}
+      />
+    </>
   );
 }
 
