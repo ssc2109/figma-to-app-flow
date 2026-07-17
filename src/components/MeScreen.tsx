@@ -2628,40 +2628,94 @@ function PathNodesTrail({
         />
       </svg>
 
+      {/* Tier dividers (solo en paths expandidos: entre 10-11 y 20-21) */}
+      {path.lessons && [10, 20].map((cutAfter) => {
+        if (cutAfter >= items.length) return null;
+        const yTop = positions[cutAfter - 1]?.y ?? 0;
+        const yBot = positions[cutAfter]?.y ?? 0;
+        const yMid = (yTop + yBot) / 2;
+        const tierLabel = cutAfter === 10 ? TIER_LABEL[2] : TIER_LABEL[3];
+        return (
+          <div
+            key={`divider-${cutAfter}`}
+            className="absolute left-0 right-0 flex items-center gap-[10px] px-[14px] pointer-events-none"
+            style={{ top: yMid - 12, transform: "translateY(-50%)" }}
+          >
+            <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, transparent, ${c2}55, transparent)` }} />
+            <div
+              className="font-['Geist'] text-[9.5px] uppercase tracking-[1.6px] px-[8px] py-[3px] rounded-full"
+              style={{ background: "rgba(0,0,0,0.7)", border: `1px solid ${c2}55`, color: c2 }}
+            >
+              {tierLabel}
+            </div>
+            <div className="flex-1 h-px" style={{ background: `linear-gradient(90deg, transparent, ${c2}55, transparent)` }} />
+          </div>
+        );
+      })}
+
       {items.map((t, i) => {
         const pos = positions[i];
-        const isFinal = t === "__final__";
-        const isDone = !isFinal && done.has(t);
-        const isCurrent = !isFinal && i === currentIdx;
-        const isLocked = !isFinal && !isDone && !isCurrent;
-        const isFinalActive = isFinal && allDone;
+        const isFinalSynth = t === "__final__"; // solo paths clásicos
+        const lesson = lessonByTitle.get(t);
+        const kind: LessonKind = lesson?.kind ?? "lesson";
+        const isFinalLesson = kind === "final";
+        const isCheckpoint = kind === "checkpoint";
+        const isRecall = kind === "recall";
 
-        const size = isCurrent || isFinalActive ? 72 : 60;
-        const clickable = isDone || isCurrent || isFinalActive;
+        const isDone = !isFinalSynth && done.has(t);
+        const isCurrent = !isFinalSynth && i === currentIdx;
+        const isLocked = !isFinalSynth && !isDone && !isCurrent;
+        const isFinalSynthActive = isFinalSynth && allDone;
+
+        const highlighted = isCurrent || isFinalSynthActive || (isFinalLesson && (isCurrent || isDone));
+        const size = highlighted ? 72 : isCheckpoint || isRecall ? 64 : 60;
+        const clickable = isDone || isCurrent || isFinalSynthActive;
+
+        // Fondo por kind
+        const accentByKind =
+          isFinalLesson || isFinalSynth
+            ? `linear-gradient(135deg, ${c1}, ${c2})`
+            : isCheckpoint
+            ? "linear-gradient(135deg,#7c2d12,#f97316)"
+            : isRecall
+            ? "linear-gradient(135deg,#164e63,#22d3ee)"
+            : `linear-gradient(135deg, ${c1}, ${c2})`;
 
         const bg = isDone
-          ? `linear-gradient(135deg, ${c1}, ${c2})`
+          ? accentByKind
           : isCurrent
           ? "rgba(0,0,0,0.55)"
-          : isFinalActive
-          ? `linear-gradient(135deg, ${c1}, ${c2})`
+          : isFinalSynthActive
+          ? accentByKind
           : "rgba(255,255,255,0.05)";
 
+        const ringColor = isCheckpoint ? "#f97316" : isRecall ? "#22d3ee" : c2;
         const ring = isCurrent
-          ? `0 0 0 2px ${c2}, 0 0 24px -4px ${c2}`
-          : isFinal && !isFinalActive
+          ? `0 0 0 2px ${ringColor}, 0 0 24px -4px ${ringColor}`
+          : isFinalSynth && !isFinalSynthActive
           ? "inset 0 0 0 1px rgba(255,255,255,0.08)"
-          : isFinal
+          : isFinalSynth
           ? `0 0 0 2px ${c2}, 0 0 28px -4px ${c2}`
           : isLocked
           ? "inset 0 0 0 1px rgba(255,255,255,0.06)"
           : "none";
 
-        const label = isFinal
+        const label = isFinalSynth
           ? "Ruta completada"
           : isCurrent
           ? t
           : "";
+
+        // Icono central según kind
+        const InnerIcon = isFinalSynth
+          ? FinalIcon
+          : isFinalLesson
+          ? Trophy
+          : isCheckpoint
+          ? ClipboardCheck
+          : isRecall
+          ? RotateCcw
+          : Play;
 
         return (
           <div
@@ -2678,10 +2732,10 @@ function PathNodesTrail({
               type="button"
               disabled={!clickable}
               onClick={() => {
-                if (isFinalActive) return; // celebratory node, no session
-                if (clickable && !isFinal) onStartTopic(t);
+                if (isFinalSynthActive) return; // celebratory node classic, no session
+                if (clickable && !isFinalSynth) onStartTopic(t);
               }}
-              aria-label={isFinal ? "Ruta completada" : t}
+              aria-label={isFinalSynth ? "Ruta completada" : t}
               className={`relative rounded-full flex items-center justify-center transition-transform ${
                 clickable ? "active:scale-95" : "cursor-default"
               }`}
@@ -2693,21 +2747,25 @@ function PathNodesTrail({
                 opacity: isLocked ? 0.55 : 1,
               }}
             >
-              {isFinal ? (
-                <FinalIcon
+              {isFinalSynth ? (
+                <InnerIcon
                   className="text-white"
-                  style={{ width: size * 0.42, height: size * 0.42, opacity: isFinalActive ? 1 : 0.45 }}
+                  style={{ width: size * 0.42, height: size * 0.42, opacity: isFinalSynthActive ? 1 : 0.45 }}
                   strokeWidth={1.6}
                 />
               ) : isDone ? (
                 <Check className="text-white" style={{ width: size * 0.42, height: size * 0.42 }} strokeWidth={2.4} />
               ) : isCurrent ? (
-                <Play
-                  className="text-white"
-                  style={{ width: size * 0.38, height: size * 0.38, marginLeft: 2 }}
-                  strokeWidth={2}
-                  fill="white"
-                />
+                kind === "lesson" ? (
+                  <Play
+                    className="text-white"
+                    style={{ width: size * 0.38, height: size * 0.38, marginLeft: 2 }}
+                    strokeWidth={2}
+                    fill="white"
+                  />
+                ) : (
+                  <InnerIcon className="text-white" style={{ width: size * 0.42, height: size * 0.42 }} strokeWidth={1.9} />
+                )
               ) : (
                 <Lock
                   className="text-white/40"
@@ -2715,8 +2773,8 @@ function PathNodesTrail({
                   strokeWidth={1.8}
                 />
               )}
-              {/* Step number badge for non-final nodes */}
-              {!isFinal && (
+              {/* Step number badge for non-final-synth nodes */}
+              {!isFinalSynth && (
                 <span
                   className="absolute -top-1 -right-1 flex items-center justify-center rounded-full font-['Geist'] text-[10px] font-medium tabular-nums text-white/80"
                   style={{
@@ -2729,23 +2787,38 @@ function PathNodesTrail({
                   {i + 1}
                 </span>
               )}
+              {/* Marker de video en la esquina inferior */}
+              {lesson?.video && !isDone && (
+                <span
+                  className="absolute -bottom-1 -right-1 flex items-center justify-center rounded-full"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    background: "#ef4444",
+                    border: "2px solid rgba(0,0,0,0.85)",
+                  }}
+                  aria-label="Con video corto"
+                >
+                  <Youtube className="text-white" style={{ width: 10, height: 10 }} strokeWidth={2.4} />
+                </span>
+              )}
             </button>
             {label && (
               <div
                 className={`mt-[8px] text-center font-['Geist'] leading-[1.2] ${
-                  isFinal ? "text-white/70 text-[11.5px]" : "text-white text-[12px]"
+                  isFinalSynth ? "text-white/70 text-[11.5px]" : "text-white text-[12px]"
                 }`}
                 style={{ maxWidth: 140 }}
               >
                 {label}
                 {isCurrent && (
-                  <div className="mt-[2px] font-['Geist'] text-[10.5px] uppercase tracking-[1.2px] text-white/45">
-                    Siguiente
+                  <div className="mt-[2px] font-['Geist'] text-[10.5px] uppercase tracking-[1.2px]" style={{ color: isCheckpoint ? "#fdba74" : isRecall ? "#67e8f9" : "rgba(255,255,255,0.45)" }}>
+                    {isCheckpoint ? "Checkpoint" : isRecall ? "Repaso activo" : isFinalLesson ? "Examen final" : "Siguiente"}
                   </div>
                 )}
               </div>
             )}
-            {isFinal && !isFinalActive && (
+            {isFinalSynth && !isFinalSynthActive && (
               <div className="mt-[8px] text-center font-['Geist'] text-[11px] text-white/35 leading-[1.2]" style={{ maxWidth: 140 }}>
                 Completa las {total} lecciones
               </div>
