@@ -2524,6 +2524,51 @@ function PathNodesTrail({
 
   const gradId = `path-grad-${path.id}`;
 
+  // Duolingo-style: on first entry, show ONLY the first lesson centered with "Comenzar"
+  if (!hasStarted && !allDone) {
+    const firstTopic = path.topics[0];
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="flex flex-col items-center justify-center gap-[18px] py-[36px]"
+      >
+        <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-white/40">Lección 1 de {total}</div>
+        <button
+          type="button"
+          onClick={() => onStartTopic(firstTopic)}
+          aria-label={`Comenzar: ${firstTopic}`}
+          className="relative rounded-full flex items-center justify-center active:scale-95 transition-transform"
+          style={{
+            width: 108,
+            height: 108,
+            background: `linear-gradient(135deg, ${c1}, ${c2})`,
+            boxShadow: `0 0 0 3px ${c2}44, 0 18px 40px -8px ${c2}`,
+          }}
+        >
+          <Play className="text-white" style={{ width: 40, height: 40, marginLeft: 3 }} strokeWidth={2} fill="white" />
+        </button>
+        <div className="text-center max-w-[280px]">
+          <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white leading-[1.25] tracking-[-0.2px]">
+            {firstTopic}
+          </div>
+          <div className="mt-[6px] font-['Geist'] text-[12px] text-white/45 leading-[1.4]">
+            Completa esta lección para desbloquear el resto del camino.
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onStartTopic(firstTopic)}
+          className="h-[46px] px-[26px] rounded-full font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-black bg-white active:scale-95 transition-transform flex items-center gap-[8px]"
+        >
+          Comenzar
+          <ArrowRight className="h-[16px] w-[16px]" strokeWidth={2} />
+        </button>
+      </motion.div>
+    );
+  }
+
   return (
     <div className="relative w-full" style={{ height }}>
       <svg
