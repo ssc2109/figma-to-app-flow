@@ -17,10 +17,24 @@ const InputSchema = z.object({
   level: z.enum(["Básico", "Intermedio", "Avanzado"]),
   minutes: z.union([z.literal(30), z.literal(45), z.literal(60)]),
   businessType: z.string().max(120).optional(),
-  previousTopics: z.array(z.string().max(120)).max(20).optional(),
+  previousTopics: z.array(z.string().max(120)).max(40).optional(),
   pathId: z.string().max(40).optional(),
-  topicIndex: z.number().int().min(0).max(20).optional(),
-  topicTotal: z.number().int().min(1).max(20).optional(),
+  topicIndex: z.number().int().min(0).max(40).optional(),
+  topicTotal: z.number().int().min(1).max(40).optional(),
+  /** Tipo especial de lección: checkpoint | recall | final | lesson (default). */
+  lessonKind: z.enum(["lesson", "checkpoint", "recall", "final"]).optional(),
+  /** Rango de posiciones (1-based) que cubre el checkpoint/recall/final. */
+  tierRange: z.tuple([z.number().int().min(1), z.number().int().min(1)]).optional(),
+  /** Nivel base inferido del test de diagnóstico ("Básico" | "Intermedio" | "Avanzado"). */
+  baselineLevel: z.enum(["Básico", "Intermedio", "Avanzado"]).optional(),
+  /** Referencia de video de YouTube integrada en la lección. */
+  videoRef: z.object({
+    youtubeId: z.string().max(24),
+    title: z.string().max(160),
+    seconds: z.number().int().min(10).max(180),
+  }).optional(),
+  /** Títulos ya vistos en la ruta actual (para checkpoints/recalls). */
+  coveredTopics: z.array(z.string().max(160)).max(40).optional(),
 });
 
 const SOURCE_LIBRARY: Record<string, string[]> = {
