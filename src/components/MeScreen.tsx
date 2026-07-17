@@ -2076,32 +2076,42 @@ function SessionSetupSheet({
           <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar el precio de alquiler de mi local" />
         </Field>
       )}
-      <Field label="Nivel">
-        <div className="flex gap-[6px]">
-          {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((l) => (
-            <button key={l} type="button" onClick={() => setLevel(l)}
-              className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white"
-              style={{
-                background: level === l ? "rgba(255,255,255,0.10)" : "transparent",
-                border: `1px solid ${level === l ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
-              }}
-            >{l}</button>
-          ))}
+      {!path && (
+        <>
+          <Field label="Nivel">
+            <div className="flex gap-[6px]">
+              {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((l) => (
+                <button key={l} type="button" onClick={() => setLevel(l)}
+                  className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white"
+                  style={{
+                    background: level === l ? "rgba(255,255,255,0.10)" : "transparent",
+                    border: `1px solid ${level === l ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+                  }}
+                >{l}</button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Duración">
+            <div className="flex gap-[6px]">
+              {([30, 45, 60] as LearnMinutes[]).map((m) => (
+                <button key={m} type="button" onClick={() => setMinutes(m)}
+                  className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white tabular-nums"
+                  style={{
+                    background: minutes === m ? "rgba(255,255,255,0.10)" : "transparent",
+                    border: `1px solid ${minutes === m ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
+                  }}
+                >{m} min</button>
+              ))}
+            </div>
+          </Field>
+        </>
+      )}
+      {path && (
+        <div className="rounded-[12px] px-[12px] py-[10px] flex items-center gap-[8px]" style={{ background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.20)" }}>
+          <Sparkles className="h-[13px] w-[13px] text-[#93C5FD]" strokeWidth={1.8} />
+          <span className="font-['Geist'] text-[12px] text-white/80">Personalizado para ti según tu diagnóstico</span>
         </div>
-      </Field>
-      <Field label="Duración">
-        <div className="flex gap-[6px]">
-          {([30, 45, 60] as LearnMinutes[]).map((m) => (
-            <button key={m} type="button" onClick={() => setMinutes(m)}
-              className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white tabular-nums"
-              style={{
-                background: minutes === m ? "rgba(255,255,255,0.10)" : "transparent",
-                border: `1px solid ${minutes === m ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
-              }}
-            >{m} min</button>
-          ))}
-        </div>
-      </Field>
+      )}
       <div className="font-['Geist'] text-[12px] text-white/45 leading-[1.5]">
         {path
           ? "La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable."
