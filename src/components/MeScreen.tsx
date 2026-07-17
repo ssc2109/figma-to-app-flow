@@ -2802,6 +2802,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
   const store = useLearnStore();
   const generate = useServerFn(generateLearnSession);
   const { plan } = usePlan();
+  const { profile, refreshProfile } = useAuth();
   const [tab, setTab] = useState<LearnTab>("rutas");
   const [pathOpen, setPathOpen] = useState<LearningPath | null>(null);
   const [setupOpen, setSetupOpen] = useState(false);
@@ -2811,6 +2812,21 @@ function LearnView({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [running, setRunning] = useState<StoredSession | null>(null);
+  const [diagnosticOpen, setDiagnosticOpen] = useState(false);
+
+  const prefs = (profile?.preferences ?? {}) as Record<string, unknown>;
+  const hasCompletedDiagnostic = Boolean(prefs?.has_completed_diagnostic_test);
+
+  const markDiagnosticDone = async (result?: Record<string, unknown>) => {
+    if (!profile?.id) { setDiagnosticOpen(false); return; }
+    const nextPrefs = { ...prefs, has_completed_diagnostic_test: true, ...(result ? { diagnostic_result: result } : {}) };
+    try {
+      await supabase.from("profiles").update({ preferences: nextPrefs }).eq("id", profile.id);
+      await refreshProfile?.();
+    } catch { /* noop */ }
+    setDiagnosticOpen(false);
+  };
+
 
   const openSetup = (path?: LearningPath, topic?: string) => {
     // Tema libre (sin path) es exclusivo del plan Avanzado.
