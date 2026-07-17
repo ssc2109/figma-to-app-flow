@@ -1,248 +1,881 @@
 import { useState } from 'react';
 import {
-  Building2, ShieldCheck, HeartPulse, Rocket,
-  Building, FileText, CheckCircle2,
-  X, HelpCircle, ArrowUpRight, Scale, Briefcase,
+  Building2,
+  ShieldCheck,
+  HeartPulse,
+  Landmark,
+  ArrowRight,
+  ArrowUpRight,
+  ArrowLeft,
+  X,
+  HelpCircle,
+  CheckCircle2,
+  FileText,
+  Scale,
+  Building,
+  Fingerprint,
+  KeyRound,
+  MapPin,
+  Store,
+  Users,
+  Sparkles,
 } from 'lucide-react';
 
-type TipoPersona = 'natural' | 'juridica' | null;
-type TerminoKey = 'minuta' | 'domicilio' | 'clavesol';
+type View = 'entry' | 'learning' | 'building';
+type TipoPersona = 'natural' | 'juridica';
+type TerminoKey = 'minuta' | 'domicilio' | 'clavesol' | 'ruc10' | 'ruc20' | 'nrus';
 type Termino = { titulo: string; texto: string };
 
+const terminos: Record<TerminoKey, Termino> = {
+  minuta: {
+    titulo: 'La Minuta',
+    texto:
+      'Es la partida de nacimiento de tu empresa. Un documento donde se declara quiénes son los dueños, qué van a vender y cuánto capital aportan para empezar.',
+  },
+  domicilio: {
+    titulo: 'Domicilio Fiscal',
+    texto:
+      'La dirección oficial de tu negocio. Es el lugar donde SUNAT te ubica para entregarte notificaciones. Puede ser tu casa o tu local.',
+  },
+  clavesol: {
+    titulo: 'Clave SOL',
+    texto:
+      'Es como el PIN de tu tarjeta bancaria, pero para SUNAT. Con ella entras a su sistema para emitir boletas o pagar impuestos por internet.',
+  },
+  ruc10: {
+    titulo: 'RUC 10 · Persona Natural',
+    texto:
+      'Trabajas con tu propio DNI. Es rápido y barato, pero respondes con tus bienes personales (casa, ahorros) ante cualquier deuda del negocio.',
+  },
+  ruc20: {
+    titulo: 'RUC 20 · Persona Jurídica',
+    texto:
+      'Creas una empresa separada de ti. Protege tu patrimonio personal porque el negocio responde por sí mismo ante deudas o problemas legales.',
+  },
+  nrus: {
+    titulo: 'Nuevo RUS (NRUS)',
+    texto:
+      'Régimen simplificado para pequeños negocios. Pagas una cuota fija mensual (desde S/20) según tus ingresos. No llevas contabilidad compleja.',
+  },
+};
+
+/* ============================================================
+   Root
+   ============================================================ */
 const Formalizacion = () => {
-  const [tipoPersona, setTipoPersona] = useState<TipoPersona>(null);
+  const [currentView, setCurrentView] = useState<View>('entry');
   const [glosario, setGlosario] = useState<Termino | null>(null);
 
-  const terminosGlosario: Record<TerminoKey, Termino> = {
-    minuta: {
-      titulo: 'La Minuta',
-      texto:
-        'Es como la partida de nacimiento de tu empresa. Es un documento donde dice quiénes son los dueños, qué van a vender y cuánto dinero o máquinas están aportando para empezar.',
-    },
-    domicilio: {
-      titulo: 'Domicilio Fiscal',
-      texto:
-        'Es la dirección oficial de tu negocio. Es el lugar donde la SUNAT irá a buscarte si necesita entregarte un documento importante. Puede ser tu casa o el local que alquilas.',
-    },
-    clavesol: {
-      titulo: 'Clave SOL',
-      texto:
-        'Es como el PIN de tu tarjeta del banco, pero para la SUNAT. Con esta contraseña secreta podrás entrar a su sistema por internet para emitir boletas o pagar tus impuestos.',
-    },
-  };
-
-  const abrirGlosario = (termino: TerminoKey) => setGlosario(terminosGlosario[termino]);
+  const abrirGlosario = (k: TerminoKey) => setGlosario(terminos[k]);
   const cerrarGlosario = () => setGlosario(null);
 
   return (
-    <div className="min-h-screen bg-slate-50 max-w-md mx-auto relative pb-20">
-      {/* Header Principal */}
-      <header className="bg-blue-900 text-white p-6 rounded-b-3xl shadow-md sticky top-0 z-10">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Building2 className="w-7 h-7 text-blue-300" />
-          Ruta de Crecimiento
-        </h1>
-        <p className="text-blue-100 mt-2 text-sm leading-relaxed">
-          Construye tu negocio paso a paso. Formalizarte es ganar beneficios, no problemas.
-        </p>
-      </header>
-
-      <main className="p-4 space-y-6">
-        {/* PISO 1: Beneficios */}
-        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-          <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
-            El Despegue (Tus Beneficios)
-          </h2>
-          <div className="space-y-3">
-            <div className="flex gap-3 bg-emerald-50 p-3 rounded-xl border border-emerald-100">
-              <ShieldCheck className="w-6 h-6 text-emerald-600 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-emerald-900 text-sm">Chau miedos a la SUNAT</h3>
-                <p className="text-xs text-emerald-700 mt-1">Con el Nuevo RUS (NRUS) pagas una cuota súper pequeña al mes (S/20). Nadie tocará tus ganancias.</p>
-              </div>
-            </div>
-            <div className="flex gap-3 bg-blue-50 p-3 rounded-xl border border-blue-100">
-              <HeartPulse className="w-6 h-6 text-blue-600 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-blue-900 text-sm">SIS Emprendedor</h3>
-                <p className="text-xs text-blue-700 mt-1">Por estar en el RUS, el Estado te da un seguro de salud completo para ti y tu familia.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* PISO 2: Decisión (Ruta) */}
-        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-          <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
-            ¿Cómo vas a trabajar?
-          </h2>
-          <div className="grid gap-3">
-            <button
-              onClick={() => setTipoPersona('natural')}
-              className={`text-left p-4 rounded-xl border-2 transition-all ${
-                tipoPersona === 'natural' ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                  <Rocket className="w-5 h-5 text-blue-500" /> Ruta Rápida (RUC 10)
-                </h3>
-                {tipoPersona === 'natural' && <CheckCircle2 className="w-5 h-5 text-blue-500" />}
-              </div>
-              <p className="text-xs text-slate-600 mt-2">Usas tu propio DNI. Es más barato y al instante, pero respondes con tus bienes personales si algo sale mal.</p>
-            </button>
-
-            <button
-              onClick={() => setTipoPersona('juridica')}
-              className={`text-left p-4 rounded-xl border-2 transition-all ${
-                tipoPersona === 'juridica' ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-indigo-500" /> Ruta Segura (RUC 20)
-                </h3>
-                {tipoPersona === 'juridica' && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}
-              </div>
-              <p className="text-xs text-slate-600 mt-2">Creas una "Empresa". Protege tu casa y tus ahorros porque el negocio responde por sí mismo.</p>
-            </button>
-          </div>
-        </section>
-
-        {/* PISO 3: Creación (SOLO si es Persona Jurídica) */}
-        {tipoPersona === 'juridica' && (
-          <section className="bg-indigo-900 text-white p-5 rounded-2xl shadow-sm relative overflow-hidden">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <span className="bg-indigo-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">3</span>
-              Creando tu Empresa
-            </h2>
-            <p className="text-indigo-200 text-xs mb-4">Como elegiste la Ruta Segura, necesitas registrar a tu empresa oficialmente en la SUNARP antes de ir a SUNAT.</p>
-            <ul className="space-y-4 text-sm">
-              <li className="flex items-start gap-3">
-                <FileText className="w-5 h-5 text-indigo-300 mt-0.5" />
-                <span>
-                  Redactar la{' '}
-                  <span
-                    onClick={() => abrirGlosario('minuta')}
-                    className="underline decoration-dashed decoration-indigo-400 font-bold cursor-pointer text-indigo-200 hover:text-white"
-                  >
-                    Minuta <HelpCircle className="inline w-3 h-3" />
-                  </span>{' '}
-                  del negocio.
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Scale className="w-5 h-5 text-indigo-300 mt-0.5" />
-                <span>Llevarla a una Notaría para la firma oficial.</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Building className="w-5 h-5 text-indigo-300 mt-0.5" />
-                <span>La notaría la inscribe en la SUNARP automáticamente.</span>
-              </li>
-            </ul>
-          </section>
-        )}
-
-        {/* PISO 4: SUNAT */}
-        <section className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
-          <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <span className="bg-blue-100 text-blue-700 w-6 h-6 rounded-full flex items-center justify-center text-sm">
-              {tipoPersona === 'juridica' ? '4' : '3'}
-            </span>
-            Inscripción del RUC
-          </h2>
-          <p className="text-xs text-slate-500 mb-4">Descarga la "App Personas" de SUNAT o entra a su web y sigue estos 4 pasos rápidos:</p>
-          <div className="space-y-4 pl-2 border-l-2 border-blue-100 ml-2">
-            <div className="relative pl-4">
-              <div className="absolute -left-3 top-1 bg-white border-2 border-blue-400 w-4 h-4 rounded-full"></div>
-              <p className="text-sm font-semibold text-slate-700">1. Identificación y Motivo</p>
-              <p className="text-xs text-slate-500">Ingresa tu DNI e indica que vas a "Iniciar un negocio".</p>
-            </div>
-            <div className="relative pl-4">
-              <div className="absolute -left-3 top-1 bg-white border-2 border-blue-400 w-4 h-4 rounded-full"></div>
-              <p className="text-sm font-semibold text-slate-700">2. Verificación de Identidad</p>
-              <p className="text-xs text-slate-500">La app te pedirá escanear tu huella dactilar con la cámara.</p>
-            </div>
-            <div className="relative pl-4">
-              <div className="absolute -left-3 top-1 bg-white border-2 border-blue-400 w-4 h-4 rounded-full"></div>
-              <p className="text-sm font-semibold text-slate-700">3. Datos del Negocio</p>
-              <p className="text-xs text-slate-500">
-                Ingresa tu{' '}
-                <span
-                  onClick={() => abrirGlosario('domicilio')}
-                  className="underline decoration-dashed decoration-blue-500 font-bold cursor-pointer text-blue-700"
-                >
-                  Domicilio Fiscal <HelpCircle className="inline w-3 h-3" />
-                </span>{' '}
-                y a qué te dedicas.
-              </p>
-            </div>
-            <div className="relative pl-4">
-              <div className="absolute -left-3 top-1 bg-white border-2 border-blue-400 w-4 h-4 rounded-full"></div>
-              <p className="text-sm font-semibold text-slate-700">4. Contacto y Clave</p>
-              <p className="text-xs text-slate-500">
-                Pon tu celular, correo y crea tu{' '}
-                <span
-                  onClick={() => abrirGlosario('clavesol')}
-                  className="underline decoration-dashed decoration-blue-500 font-bold cursor-pointer text-blue-700"
-                >
-                  Clave SOL <HelpCircle className="inline w-3 h-3" />
-                </span>
-                .
-              </p>
-            </div>
-          </div>
-          <button className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-colors">
-            Ir a la web de SUNAT <ArrowUpRight className="w-5 h-5" />
-          </button>
-        </section>
-
-        {/* Pisos Adicionales */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
-            <Building className="w-5 h-5 text-slate-400 mb-2" />
-            <h3 className="text-xs font-bold text-slate-600">Licencia y Local</h3>
-          </div>
-          <div className="bg-slate-100 p-4 rounded-xl border border-slate-200">
-            <Briefcase className="w-5 h-5 text-slate-400 mb-2" />
-            <h3 className="text-xs font-bold text-slate-600">Crecer con Equipo</h3>
-          </div>
-        </div>
-      </main>
-
-      {/* BOTTOM SHEET (GLOSARIO INTERACTIVO) */}
-      {glosario && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center max-w-md mx-auto">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
-            onClick={cerrarGlosario}
-          ></div>
-          <div className="bg-white w-full sm:w-[95%] rounded-t-3xl sm:rounded-3xl p-6 relative z-10 animate-in slide-in-from-bottom-10 shadow-2xl">
-            <button
-              onClick={cerrarGlosario}
-              className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
-            <div className="flex items-center gap-3 mb-3">
-              <HelpCircle className="w-7 h-7 text-blue-500" />
-              <h3 className="text-xl font-bold text-slate-800">{glosario.titulo}</h3>
-            </div>
-            <p className="text-slate-600 leading-relaxed text-sm">{glosario.texto}</p>
-            <button
-              onClick={cerrarGlosario}
-              className="w-full mt-6 bg-slate-100 text-slate-700 font-semibold py-3 rounded-xl"
-            >
-              ¡Entendido!
-            </button>
-          </div>
-        </div>
+    <div className="w-full min-h-screen bg-black text-white/90 pb-[180px]">
+      {currentView === 'entry' && <EntryView onStart={() => setCurrentView('learning')} />}
+      {currentView === 'learning' && (
+        <LearningView
+          onFinish={() => setCurrentView('building')}
+          onBack={() => setCurrentView('entry')}
+        />
       )}
+      {currentView === 'building' && (
+        <BuildingView onBack={() => setCurrentView('learning')} openGlossary={abrirGlosario} />
+      )}
+
+      {/* Glossary bottom sheet */}
+      {glosario && <GlossarySheet term={glosario} onClose={cerrarGlosario} />}
     </div>
   );
 };
+
+/* ============================================================
+   ENTRY
+   ============================================================ */
+function EntryView({ onStart }: { onStart: () => void }) {
+  return (
+    <div className="w-full px-4 pt-10">
+      <div className="mb-8">
+        <p className="font-['Geist'] text-[11px] uppercase tracking-[1.6px] text-white/40">
+          Crecer · Formalización
+        </p>
+        <h1 className="mt-2 font-['Bai_Jamjuree'] text-[30px] font-semibold tracking-[-0.6px] leading-[1.1]">
+          Construye tu negocio,
+          <br />
+          piso por piso.
+        </h1>
+      </div>
+
+      <div
+        className="w-full rounded-[24px] p-6 relative overflow-hidden"
+        style={{
+          background:
+            'linear-gradient(160deg, rgba(59,130,246,0.14) 0%, rgba(24,24,27,0.6) 45%, rgba(9,9,11,1) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        {/* soft blue glow */}
+        <div
+          className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-40"
+          style={{ background: '#3b82f6' }}
+        />
+
+        <div className="relative">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
+            style={{
+              background: 'rgba(59,130,246,0.12)',
+              border: '1px solid rgba(59,130,246,0.25)',
+            }}
+          >
+            <Building2 className="w-7 h-7 text-[#3b82f6]" strokeWidth={1.6} />
+          </div>
+
+          <h2 className="font-['Bai_Jamjuree'] text-[22px] font-semibold tracking-[-0.3px] text-white">
+            Ruta de Formalización
+          </h2>
+          <p className="mt-2 font-['Geist'] text-[14px] leading-[1.55] text-white/55">
+            Un camino guiado en 7 pisos. Aprende los beneficios, elige tu ruta y obtén tu RUC sin
+            miedo a la SUNAT.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            <MetaChip icon={<ShieldCheck className="w-3.5 h-3.5" />} label="SIS gratis" />
+            <MetaChip icon={<Landmark className="w-3.5 h-3.5" />} label="Créditos" />
+            <MetaChip icon={<Sparkles className="w-3.5 h-3.5" />} label="Sin miedo" />
+          </div>
+
+          <button
+            onClick={onStart}
+            className="mt-7 w-full h-[52px] rounded-2xl bg-[#3b82f6] hover:bg-[#2563eb] active:scale-[0.99] transition-all flex items-center justify-center gap-2 font-['Geist'] text-[15px] font-semibold text-white"
+          >
+            Comenzar
+            <ArrowRight className="w-4 h-4" strokeWidth={2} />
+          </button>
+        </div>
+      </div>
+
+      <p className="mt-6 text-center font-['Geist'] text-[12px] text-white/30">
+        Toma unos 15 minutos · 100% en línea
+      </p>
+    </div>
+  );
+}
+
+function MetaChip({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-['Geist'] text-[11px] text-white/70"
+      style={{
+        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.07)',
+      }}
+    >
+      {icon}
+      {label}
+    </span>
+  );
+}
+
+/* ============================================================
+   LEARNING · Carousel
+   ============================================================ */
+const slides = [
+  {
+    icon: HeartPulse,
+    tone: '#22c55e',
+    eyebrow: 'Beneficio 01',
+    title: 'Salud para tu familia',
+    body: 'Con el SIS Emprendedor tú y tu familia acceden a atención médica gratuita en toda la red pública. Solo por estar en el NRUS.',
+  },
+  {
+    icon: Landmark,
+    tone: '#3b82f6',
+    eyebrow: 'Beneficio 02',
+    title: 'Créditos bancarios',
+    body: 'Un RUC activo abre las puertas a tasas más bajas, líneas de capital de trabajo y financiamiento para crecer sin depender de prestamistas.',
+  },
+  {
+    icon: ShieldCheck,
+    tone: '#a78bfa',
+    eyebrow: 'Beneficio 03',
+    title: 'Protección de bienes',
+    body: 'Al operar como empresa (RUC 20) separas tu patrimonio del negocio. Tu casa y ahorros quedan protegidos si algo sale mal.',
+  },
+];
+
+function LearningView({ onFinish, onBack }: { onFinish: () => void; onBack: () => void }) {
+  const [i, setI] = useState(0);
+  const slide = slides[i];
+  const Icon = slide.icon;
+  const isLast = i === slides.length - 1;
+
+  return (
+    <div className="w-full px-4 pt-6">
+      <div className="flex items-center justify-between mb-8">
+        <button
+          onClick={() => (i === 0 ? onBack() : setI(i - 1))}
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/[0.04] transition-colors"
+          aria-label="Volver"
+        >
+          <ArrowLeft className="w-5 h-5 text-white/70" strokeWidth={1.8} />
+        </button>
+
+        <div className="flex items-center gap-1.5">
+          {slides.map((_, idx) => (
+            <span
+              key={idx}
+              className="h-1 rounded-full transition-all"
+              style={{
+                width: idx === i ? 22 : 6,
+                background: idx === i ? '#3b82f6' : 'rgba(255,255,255,0.15)',
+              }}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={onFinish}
+          className="font-['Geist'] text-[12px] text-white/40 hover:text-white/70 transition-colors"
+        >
+          Saltar
+        </button>
+      </div>
+
+      <div
+        className="w-full rounded-[24px] p-7 min-h-[440px] flex flex-col relative overflow-hidden"
+        style={{
+          background: `linear-gradient(160deg, ${slide.tone}18 0%, rgba(15,15,17,0.9) 55%, rgba(9,9,11,1) 100%)`,
+          border: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <div
+          className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl opacity-30"
+          style={{ background: slide.tone }}
+        />
+
+        <div className="relative flex-1 flex flex-col">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8"
+            style={{
+              background: `${slide.tone}1a`,
+              border: `1px solid ${slide.tone}40`,
+            }}
+          >
+            <Icon className="w-8 h-8" style={{ color: slide.tone }} strokeWidth={1.6} />
+          </div>
+
+          <p
+            className="font-['Geist'] text-[11px] uppercase tracking-[1.6px]"
+            style={{ color: slide.tone }}
+          >
+            {slide.eyebrow}
+          </p>
+          <h2 className="mt-2 font-['Bai_Jamjuree'] text-[28px] font-semibold tracking-[-0.5px] text-white leading-[1.15]">
+            {slide.title}
+          </h2>
+          <p className="mt-4 font-['Geist'] text-[15px] leading-[1.6] text-white/60">
+            {slide.body}
+          </p>
+        </div>
+      </div>
+
+      <button
+        onClick={() => (isLast ? onFinish() : setI(i + 1))}
+        className="mt-6 w-full h-[52px] rounded-2xl bg-[#3b82f6] hover:bg-[#2563eb] active:scale-[0.99] transition-all flex items-center justify-center gap-2 font-['Geist'] text-[15px] font-semibold text-white"
+      >
+        {isLast ? 'Empezar a construir' : 'Siguiente'}
+        <ArrowRight className="w-4 h-4" strokeWidth={2} />
+      </button>
+    </div>
+  );
+}
+
+/* ============================================================
+   BUILDING · Vertical floors
+   ============================================================ */
+type Floor = { n: number; label: string; short: string };
+const floors: Floor[] = [
+  { n: 1, label: 'Beneficios', short: 'P1' },
+  { n: 2, label: 'Tu ruta', short: 'P2' },
+  { n: 3, label: 'Crear empresa', short: 'P3' },
+  { n: 4, label: 'RUC · SUNAT', short: 'P4' },
+  { n: 5, label: 'Licencia', short: 'P5' },
+  { n: 6, label: 'Equipo', short: 'P6' },
+  { n: 7, label: 'Crecer', short: 'P7' },
+];
+
+function BuildingView({
+  onBack,
+  openGlossary,
+}: {
+  onBack: () => void;
+  openGlossary: (k: TerminoKey) => void;
+}) {
+  const [floor, setFloor] = useState(1);
+  const [tipoPersona, setTipoPersona] = useState<TipoPersona | null>(null);
+
+  return (
+    <div className="w-full px-4 pt-6">
+      <div className="flex items-center gap-3 mb-6">
+        <button
+          onClick={onBack}
+          className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/[0.04] transition-colors"
+          aria-label="Volver"
+        >
+          <ArrowLeft className="w-5 h-5 text-white/70" strokeWidth={1.8} />
+        </button>
+        <div>
+          <p className="font-['Geist'] text-[11px] uppercase tracking-[1.6px] text-white/40">
+            Edificio · Formalización
+          </p>
+          <h1 className="font-['Bai_Jamjuree'] text-[20px] font-semibold tracking-[-0.3px]">
+            Piso {floor} · {floors[floor - 1].label}
+          </h1>
+        </div>
+      </div>
+
+      <div className="flex gap-3 w-full">
+        {/* Vertical floor selector */}
+        <div
+          className="shrink-0 w-[62px] rounded-[20px] p-2 flex flex-col-reverse gap-1.5"
+          style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.06)',
+          }}
+        >
+          {floors.map((f) => {
+            const active = floor === f.n;
+            return (
+              <button
+                key={f.n}
+                onClick={() => setFloor(f.n)}
+                className="w-full h-[52px] rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all relative"
+                style={{
+                  background: active ? '#3b82f6' : 'rgba(255,255,255,0.025)',
+                  border: active ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.05)',
+                }}
+              >
+                <span
+                  className="font-['Bai_Jamjuree'] text-[13px] font-semibold"
+                  style={{ color: active ? '#fff' : 'rgba(255,255,255,0.65)' }}
+                >
+                  {f.short}
+                </span>
+                <span
+                  className="font-['Geist'] text-[8.5px] uppercase tracking-[0.6px] leading-none"
+                  style={{ color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)' }}
+                >
+                  {f.n === 1 ? 'Inicio' : f.n === 7 ? 'Top' : `·`}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Floor content */}
+        <div className="flex-1 min-w-0">
+          <FloorContent
+            floor={floor}
+            tipoPersona={tipoPersona}
+            setTipoPersona={setTipoPersona}
+            openGlossary={openGlossary}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   Floor contents
+   ============================================================ */
+function FloorContent({
+  floor,
+  tipoPersona,
+  setTipoPersona,
+  openGlossary,
+}: {
+  floor: number;
+  tipoPersona: TipoPersona | null;
+  setTipoPersona: (t: TipoPersona) => void;
+  openGlossary: (k: TerminoKey) => void;
+}) {
+  if (floor === 1) {
+    return (
+      <Panel>
+        <FloorEyebrow>Piso 01</FloorEyebrow>
+        <FloorTitle>Los beneficios reales</FloorTitle>
+        <div className="mt-5 space-y-2.5">
+          <BenefitRow
+            icon={<ShieldCheck className="w-5 h-5" />}
+            tone="#22c55e"
+            title="Chau miedo a la SUNAT"
+            body={
+              <>
+                Con el{' '}
+                <TermLink onClick={() => openGlossary('nrus')}>NRUS</TermLink> pagas desde S/20 al
+                mes. Nadie toca tus ganancias.
+              </>
+            }
+          />
+          <BenefitRow
+            icon={<HeartPulse className="w-5 h-5" />}
+            tone="#3b82f6"
+            title="SIS Emprendedor"
+            body="Salud gratuita para ti y tu familia por estar en el régimen NRUS."
+          />
+          <BenefitRow
+            icon={<Landmark className="w-5 h-5" />}
+            tone="#a78bfa"
+            title="Historial crediticio"
+            body="Bancos y cajas te prestan a mejores tasas cuando tu RUC está activo."
+          />
+        </div>
+      </Panel>
+    );
+  }
+
+  if (floor === 2) {
+    return (
+      <Panel>
+        <FloorEyebrow>Piso 02</FloorEyebrow>
+        <FloorTitle>¿Cómo vas a trabajar?</FloorTitle>
+        <p className="mt-2 font-['Geist'] text-[13px] text-white/50 leading-[1.5]">
+          Elige la ruta que mejor se adapta a tu negocio.
+        </p>
+
+        <div className="mt-5 space-y-2.5">
+          <RouteChoice
+            active={tipoPersona === 'natural'}
+            accent="#3b82f6"
+            title="Ruta Rápida"
+            tag="RUC 10 · Persona Natural"
+            body="Usas tu propio DNI. Es más barato e instantáneo, pero respondes con tus bienes personales."
+            onClick={() => setTipoPersona('natural')}
+            onGlossary={() => openGlossary('ruc10')}
+          />
+          <RouteChoice
+            active={tipoPersona === 'juridica'}
+            accent="#a78bfa"
+            title="Ruta Segura"
+            tag="RUC 20 · Persona Jurídica"
+            body="Creas una empresa. Protege tu casa y ahorros porque el negocio responde por sí mismo."
+            onClick={() => setTipoPersona('juridica')}
+            onGlossary={() => openGlossary('ruc20')}
+          />
+        </div>
+      </Panel>
+    );
+  }
+
+  if (floor === 3) {
+    if (tipoPersona !== 'juridica') {
+      return (
+        <Panel>
+          <FloorEyebrow>Piso 03</FloorEyebrow>
+          <FloorTitle>Crear empresa</FloorTitle>
+          <p className="mt-3 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
+            Este piso aplica solo si elegiste la <span className="text-white">Ruta Segura (RUC 20)</span>{' '}
+            en el piso anterior. Puedes saltar al piso 4 si vas con RUC 10.
+          </p>
+        </Panel>
+      );
+    }
+    return (
+      <Panel>
+        <FloorEyebrow>Piso 03</FloorEyebrow>
+        <FloorTitle>Creando tu empresa</FloorTitle>
+        <p className="mt-2 font-['Geist'] text-[13px] text-white/50 leading-[1.55]">
+          Registra tu empresa en SUNARP antes de sacar el RUC.
+        </p>
+
+        <ol className="mt-5 space-y-3">
+          <StepLine
+            icon={<FileText className="w-4 h-4" />}
+            text={
+              <>
+                Redactar la{' '}
+                <TermLink onClick={() => openGlossary('minuta')}>Minuta</TermLink> del negocio.
+              </>
+            }
+          />
+          <StepLine
+            icon={<Scale className="w-4 h-4" />}
+            text="Llevarla a una notaría para la firma oficial."
+          />
+          <StepLine
+            icon={<Building className="w-4 h-4" />}
+            text="La notaría inscribe automáticamente en SUNARP."
+          />
+        </ol>
+      </Panel>
+    );
+  }
+
+  if (floor === 4) {
+    return (
+      <Panel>
+        <FloorEyebrow>Piso 04 · SUNAT</FloorEyebrow>
+        <FloorTitle>Inscripción del RUC</FloorTitle>
+        <p className="mt-2 font-['Geist'] text-[13px] text-white/50 leading-[1.55]">
+          4 pasos rápidos en la App Personas de SUNAT.
+        </p>
+
+        <div className="mt-5 space-y-2.5">
+          <SunatStep
+            n={1}
+            icon={<Fingerprint className="w-4 h-4" />}
+            title="Identificación y motivo"
+            body='Ingresa tu DNI e indica "Iniciar un negocio".'
+          />
+          <SunatStep
+            n={2}
+            icon={<Fingerprint className="w-4 h-4" />}
+            title="Verificación biométrica"
+            body="La app escaneará tu huella con la cámara."
+          />
+          <SunatStep
+            n={3}
+            icon={<MapPin className="w-4 h-4" />}
+            title="Datos del negocio"
+            body={
+              <>
+                Ingresa tu{' '}
+                <TermLink onClick={() => openGlossary('domicilio')}>Domicilio Fiscal</TermLink> y
+                actividad.
+              </>
+            }
+          />
+          <SunatStep
+            n={4}
+            icon={<KeyRound className="w-4 h-4" />}
+            title="Contacto y Clave SOL"
+            body={
+              <>
+                Registra celular, correo y crea tu{' '}
+                <TermLink onClick={() => openGlossary('clavesol')}>Clave SOL</TermLink>.
+              </>
+            }
+          />
+        </div>
+
+        <a
+          href="https://www.sunat.gob.pe/"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="mt-6 w-full h-[50px] rounded-2xl bg-[#3b82f6] hover:bg-[#2563eb] active:scale-[0.99] transition-all flex items-center justify-center gap-2 font-['Geist'] text-[14.5px] font-semibold text-white"
+        >
+          Ir a la web de SUNAT
+          <ArrowUpRight className="w-4 h-4" strokeWidth={2} />
+        </a>
+      </Panel>
+    );
+  }
+
+  if (floor === 5) {
+    return (
+      <Panel>
+        <FloorEyebrow>Piso 05</FloorEyebrow>
+        <FloorTitle>Licencia municipal</FloorTitle>
+        <IconBubble icon={<Store className="w-6 h-6" />} tone="#3b82f6" />
+        <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
+          Si atiendes al público en un local, tramita tu licencia de funcionamiento en la
+          municipalidad de tu distrito. Es un pago único y suele demorar de 3 a 15 días.
+        </p>
+      </Panel>
+    );
+  }
+
+  if (floor === 6) {
+    return (
+      <Panel>
+        <FloorEyebrow>Piso 06</FloorEyebrow>
+        <FloorTitle>Crecer con equipo</FloorTitle>
+        <IconBubble icon={<Users className="w-6 h-6" />} tone="#a78bfa" />
+        <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
+          Cuando contrates a alguien, tendrás que registrarlo en la planilla de SUNAT. Podrás
+          acceder a regímenes MYPE que reducen los costos laborales durante los primeros años.
+        </p>
+      </Panel>
+    );
+  }
+
+  return (
+    <Panel>
+      <FloorEyebrow>Piso 07 · Top</FloorEyebrow>
+      <FloorTitle>Consolidar y crecer</FloorTitle>
+      <IconBubble icon={<Sparkles className="w-6 h-6" />} tone="#22c55e" />
+      <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
+        Con tu negocio formal puedes emitir facturas, exportar, acceder a licitaciones y postular a
+        programas del Estado. Es el piso donde tu negocio deja de ser un emprendimiento y se
+        convierte en una marca.
+      </p>
+    </Panel>
+  );
+}
+
+/* ============================================================
+   Building UI primitives
+   ============================================================ */
+function Panel({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="w-full rounded-[20px] p-5 min-h-[440px]"
+      style={{
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function FloorEyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-['Geist'] text-[10.5px] uppercase tracking-[1.6px] text-white/40">
+      {children}
+    </p>
+  );
+}
+
+function FloorTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mt-1 font-['Bai_Jamjuree'] text-[22px] font-semibold tracking-[-0.3px] text-white leading-[1.15]">
+      {children}
+    </h2>
+  );
+}
+
+function BenefitRow({
+  icon,
+  tone,
+  title,
+  body,
+}: {
+  icon: React.ReactNode;
+  tone: string;
+  title: string;
+  body: React.ReactNode;
+}) {
+  return (
+    <div
+      className="rounded-[14px] p-3.5 flex gap-3"
+      style={{
+        background: 'rgba(255,255,255,0.025)',
+        border: '1px solid rgba(255,255,255,0.05)',
+      }}
+    >
+      <div
+        className="w-9 h-9 rounded-[10px] shrink-0 flex items-center justify-center"
+        style={{ background: `${tone}1a`, color: tone, border: `1px solid ${tone}33` }}
+      >
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="font-['Geist'] text-[13.5px] font-medium text-white leading-[1.3]">
+          {title}
+        </p>
+        <p className="mt-1 font-['Geist'] text-[12.5px] text-white/50 leading-[1.5]">{body}</p>
+      </div>
+    </div>
+  );
+}
+
+function RouteChoice({
+  active,
+  accent,
+  title,
+  tag,
+  body,
+  onClick,
+  onGlossary,
+}: {
+  active: boolean;
+  accent: string;
+  title: string;
+  tag: string;
+  body: string;
+  onClick: () => void;
+  onGlossary: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left rounded-[14px] p-4 transition-all"
+      style={{
+        background: active ? `${accent}12` : 'rgba(255,255,255,0.025)',
+        border: `1px solid ${active ? `${accent}66` : 'rgba(255,255,255,0.05)'}`,
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <div className="min-w-0">
+          <p
+            className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px]"
+            style={{ color: accent }}
+          >
+            {tag}
+          </p>
+          <h3 className="mt-1 font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">
+            {title}
+          </h3>
+        </div>
+        {active && <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: accent }} />}
+      </div>
+      <p className="mt-2 font-['Geist'] text-[12.5px] text-white/55 leading-[1.5]">{body}</p>
+      <span
+        onClick={(e) => {
+          e.stopPropagation();
+          onGlossary();
+        }}
+        className="mt-2 inline-flex items-center gap-1 font-['Geist'] text-[11.5px] text-white/45 hover:text-white/70 transition-colors cursor-pointer"
+      >
+        <HelpCircle className="w-3 h-3" />
+        ¿Qué significa?
+      </span>
+    </button>
+  );
+}
+
+function StepLine({ icon, text }: { icon: React.ReactNode; text: React.ReactNode }) {
+  return (
+    <li className="flex gap-3 items-start">
+      <div
+        className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-[#3b82f6]"
+        style={{ background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.25)' }}
+      >
+        {icon}
+      </div>
+      <p className="pt-1.5 font-['Geist'] text-[13.5px] text-white/70 leading-[1.5]">{text}</p>
+    </li>
+  );
+}
+
+function SunatStep({
+  n,
+  icon,
+  title,
+  body,
+}: {
+  n: number;
+  icon: React.ReactNode;
+  title: string;
+  body: React.ReactNode;
+}) {
+  return (
+    <div
+      className="rounded-[14px] p-3.5 flex gap-3"
+      style={{
+        background: 'rgba(255,255,255,0.025)',
+        border: '1px solid rgba(255,255,255,0.05)',
+      }}
+    >
+      <div className="flex flex-col items-center gap-1 shrink-0">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center font-['Bai_Jamjuree'] text-[13px] font-semibold text-white"
+          style={{ background: '#3b82f6' }}
+        >
+          {n}
+        </div>
+        <div className="text-white/40">{icon}</div>
+      </div>
+      <div className="min-w-0 pt-0.5">
+        <p className="font-['Geist'] text-[13.5px] font-medium text-white leading-[1.3]">
+          {title}
+        </p>
+        <p className="mt-1 font-['Geist'] text-[12.5px] text-white/50 leading-[1.5]">{body}</p>
+      </div>
+    </div>
+  );
+}
+
+function IconBubble({ icon, tone }: { icon: React.ReactNode; tone: string }) {
+  return (
+    <div
+      className="mt-5 w-12 h-12 rounded-2xl flex items-center justify-center"
+      style={{
+        background: `${tone}18`,
+        border: `1px solid ${tone}40`,
+        color: tone,
+      }}
+    >
+      {icon}
+    </div>
+  );
+}
+
+function TermLink({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      onClick={onClick}
+      className="underline decoration-dashed decoration-[#3b82f6]/60 underline-offset-2 cursor-pointer text-[#93c5fd] hover:text-white transition-colors"
+    >
+      {children}
+      <HelpCircle className="inline w-3 h-3 ml-0.5 -mt-0.5" />
+    </span>
+  );
+}
+
+/* ============================================================
+   Glossary sheet (dark)
+   ============================================================ */
+function GlossarySheet({ term, onClose }: { term: Termino; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center max-w-[430px] mx-auto">
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div
+        className="relative z-10 w-full rounded-t-[24px] p-6 animate-in slide-in-from-bottom-4"
+        style={{
+          background: '#111113',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: 'none',
+        }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/[0.06] transition-colors"
+          aria-label="Cerrar"
+        >
+          <X className="w-4 h-4 text-white/60" />
+        </button>
+        <div className="w-10 h-1 bg-white/15 rounded-full mx-auto mb-5" />
+        <div className="flex items-center gap-3 mb-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{
+              background: 'rgba(59,130,246,0.14)',
+              border: '1px solid rgba(59,130,246,0.3)',
+            }}
+          >
+            <HelpCircle className="w-5 h-5 text-[#3b82f6]" strokeWidth={1.8} />
+          </div>
+          <h3 className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white">
+            {term.titulo}
+          </h3>
+        </div>
+        <p className="font-['Geist'] text-[14px] leading-[1.6] text-white/65">{term.texto}</p>
+        <button
+          onClick={onClose}
+          className="w-full mt-6 h-[48px] rounded-2xl font-['Geist'] text-[14px] font-semibold text-white"
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}
+        >
+          Entendido
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default Formalizacion;
