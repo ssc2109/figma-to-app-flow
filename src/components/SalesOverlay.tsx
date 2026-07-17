@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
 import { useFinance, type PayMethod } from "@/data/finance";
+import { submitSale as runSubmitSale } from "@/lib/sales/submit-sale";
 import { toast } from "sonner";
 
 const fmt = (n: number) => `S/ ${n.toFixed(2)}`;
@@ -104,67 +105,25 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
     }
     setSaving(true);
     try {
-      const isCredit = mode === "fiar";
-
-      // Si es fiado y no hay customerId pero sí nombre nuevo, crea el cliente
-      let finalCustomerId = customerId;
-      if (isCredit && !finalCustomerId && customer.trim()) {
-        const { data: newC } = await supabase
-          .from("customers")
-          .insert({ user_id: user.id, name: customer.trim() })
-          .select("id")
-          .single();
-        finalCustomerId = newC?.id ?? null;
-      }
-
-      const { data: sale, error: sErr } = await supabase
-        .from("sales")
-        .insert({
-          user_id: user.id,
-          total: subtotal,
-          payment_method: isCredit ? "fiado" : method.toLowerCase(),
-          note: note.trim() || null,
-          customer_name: customer.trim() || null,
-          customer_id: finalCustomerId,
-          is_credit: isCredit,
-          paid: !isCredit,
-        })
-        .select("id")
-        .single();
-      if (sErr || !sale) throw sErr ?? new Error("No se pudo registrar la venta");
-
-      const itemsPayload = lines.map((l) => ({
-        sale_id: sale.id,
-        user_id: user.id,
-        product_id: l.dbId,
-        name: l.name,
-        qty: l.qty,
-        unit_price: l.price,
-      }));
-      const { error: iErr } = await supabase.from("sale_items").insert(itemsPayload);
-      if (iErr) throw iErr;
-
-      // Decrementar stock (en paralelo)
-      await Promise.all(
-        lines.map((l) =>
-          supabase
-            .from("products")
-            .update({ stock: Math.max(0, l.stock - l.qty) })
-            .eq("id", l.dbId),
-        ),
-      );
-
-      if (isCredit) {
-        await supabase.from("fiados").insert({
-          user_id: user.id,
-          sale_id: sale.id,
-          customer_name: customer.trim(),
-          amount: subtotal,
-        });
-      }
-
+      const result = await runSubmitSale({
+        userId: user.id,
+        lines: lines.map((l) => ({
+          dbId: l.dbId,
+          name: l.name,
+          price: l.price,
+          stock: l.stock,
+          qty: l.qty,
+        })),
+        mode,
+        method,
+        customerName: customer,
+        customerId,
+        note,
+      });
       await Promise.all([inv.refresh(), fin.refresh()]);
-      toast.success(isCredit ? "Fiado registrado" : `Venta registrada · ${fmt(subtotal)}`);
+      toast.success(
+        result.isCredit ? "Fiado registrado" : `Venta registrada · ${fmt(result.total)}`,
+      );
       onClose();
     } catch (err) {
       console.error("submitSale", err);

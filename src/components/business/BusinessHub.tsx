@@ -27,6 +27,7 @@ type Props = {
   onCalendar: () => void;
   onCashHistory: () => void;
   onNewSale: () => void;
+  onOpenPOS: () => void;
   onNewExpense: () => void;
 };
 
@@ -836,6 +837,7 @@ function CashArea(p: Props, s: Signals) {
           title="Módulos"
           items={[
             { label: "Ventas", sub: "Registrar venta", onClick: p.onNewSale },
+            { label: "Caja rápida", sub: "POS · ventas seguidas", onClick: p.onOpenPOS },
             { label: "Gastos", sub: "Registrar gasto", onClick: p.onNewExpense },
             { label: "Deudas", sub: "Por cobrar / pagar", onClick: p.onReceivables },
             { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
@@ -888,6 +890,7 @@ function CashArea(p: Props, s: Signals) {
         title="Módulos"
         items={[
           { label: "Ventas", sub: `${s.salesCount} registrada${s.salesCount === 1 ? "" : "s"}`, onClick: p.onNewSale },
+          { label: "Caja rápida", sub: "POS · ventas seguidas", onClick: p.onOpenPOS },
           { label: "Gastos", sub: s.expenseCount > 0 ? `${s.expenseCount} registrados` : "Registrar", onClick: p.onNewExpense },
           { label: "Deudas", sub: s.debtAmount > 0 ? money(s.debtAmount) : "Por cobrar / pagar", onClick: p.onReceivables },
             { label: "Métodos pago", sub: "Cómo cobras", onClick: p.onPayments },
