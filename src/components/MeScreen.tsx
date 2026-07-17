@@ -916,8 +916,9 @@ function TaskSheet({
   const [projectId, setProjectId] = useState(initial?.projectId ?? "");
   const [goalId, setGoalId] = useState(initial?.goalId ?? "");
 
-  // reset when initial changes
+  // reset when initial changes o al abrir
   useEffect(() => {
+    if (!open) return;
     setTitle(initial?.title ?? "");
     setDescription(initial?.description ?? "");
     setPriority(initial?.priority ?? "normal");
@@ -926,7 +927,8 @@ function TaskSheet({
     setTag(initial?.tag ?? "");
     setProjectId(initial?.projectId ?? "");
     setGoalId(initial?.goalId ?? "");
-  }, [initial]);
+  }, [initial, open]);
+
 
   const submit = () => {
     if (!title.trim()) return;
