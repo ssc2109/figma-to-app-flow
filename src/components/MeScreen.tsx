@@ -1905,9 +1905,10 @@ type LearnState = {
   sessions: StoredSession[];
   favorites: FavoriteRef[];
   pathProgress: Record<string, string[]>; // pathId -> completed topics
+  startedPaths?: string[]; // paths where the first lesson has been opened
 };
 
-const emptyLearnState: LearnState = { sessions: [], favorites: [], pathProgress: {} };
+const emptyLearnState: LearnState = { sessions: [], favorites: [], pathProgress: {}, startedPaths: [] };
 
 function useLearnStore() {
   const [state, setState] = useState<LearnState>(emptyLearnState);
