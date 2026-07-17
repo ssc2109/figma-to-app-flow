@@ -5214,7 +5214,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
   if (view === "calendar") return <CalendarView onBack={() => setView("hub")} />;
   if (view === "projects") return <ProjectsView onBack={() => setView("hub")} />;
   if (view === "goals") return <GoalsView onBack={() => setView("hub")} />;
-  if (view === "recos") return <RecosView onBack={() => setView("hub")} />;
+  if (view === "recos") return <RecosView onBack={() => setView("hub")} goTo={setView} />;
   if (view === "learn" || learnOpen) {
     return <LearnView onBack={() => { setView("hub"); setLearnOpen(false); }} />;
   }
