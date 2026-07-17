@@ -3144,13 +3144,13 @@ function RecosView({ onBack, goTo }: { onBack: () => void; goTo: (v: View) => vo
         <div className="rounded-[18px] p-[16px]" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <div className="font-['Geist'] text-[11px] uppercase tracking-[1.4px] text-white/40">Resumen del día</div>
           <div className="mt-[10px] grid grid-cols-2 gap-[12px]">
-            <AnimatedStat label="Productividad" value={productivity} suffix="%" />
             <AnimatedStat label="Tareas" value={doneTasks} denom={totalTasks} />
             <AnimatedStat label="Ventas hoy" value={Math.round(finance.todayIncome)} suffix=" S/" />
             <AnimatedStat label="Metas" value={activeGoals} />
             <AnimatedStat label="Proyectos" value={activeProjects} />
             <AnimatedStat label="En riesgo" value={lateProjects} highlight={lateProjects > 0} />
           </div>
+
         </div>
 
         <SectionLabel>Recomendaciones</SectionLabel>
