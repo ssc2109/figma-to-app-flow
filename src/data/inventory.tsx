@@ -147,11 +147,14 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           price: p.price,
           cost: p.cost ?? 0,
           stock: p.stock ?? 0,
-          category: p.category ?? "General",
+          category: p.category ?? "Producto",
+          unit: p.unit ?? "unidad",
+          image_url: p.image ?? null,
           low_stock_threshold: profile?.low_stock_threshold ?? LOW_STOCK_THRESHOLD,
         })
         .select("id, name, price, cost, stock, category, unit, sku, image_url, low_stock_threshold")
         .single();
+
       if (error) {
         console.error("addProduct", error);
         return;
