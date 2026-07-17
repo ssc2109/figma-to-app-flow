@@ -19,6 +19,9 @@ import {
   Store,
   Users,
   Sparkles,
+  Lock,
+  Receipt,
+  Briefcase,
 } from 'lucide-react';
 
 type View = 'entry' | 'learning' | 'building';
@@ -181,6 +184,13 @@ function MetaChip({ icon, label }: { icon: React.ReactNode; label: string }) {
    ============================================================ */
 const slides = [
   {
+    icon: Building2,
+    tone: '#3b82f6',
+    eyebrow: 'Primero lo básico',
+    title: '¿Qué es la formalización?',
+    body: 'Es registrar tu negocio ante el Estado para que exista oficialmente. No es un castigo ni te va a robar la SUNAT o el Gobierno; es proteger tu esfuerzo, tu negocio y abrirle las puertas al crecimiento real, con ventajas que antes no tenías.',
+  },
+  {
     icon: HeartPulse,
     tone: '#22c55e',
     eyebrow: 'Beneficio 01',
@@ -299,9 +309,9 @@ const floors: Floor[] = [
   { n: 2, label: 'Tu ruta', short: 'P2' },
   { n: 3, label: 'Crear empresa', short: 'P3' },
   { n: 4, label: 'RUC · SUNAT', short: 'P4' },
-  { n: 5, label: 'Licencia', short: 'P5' },
-  { n: 6, label: 'Equipo', short: 'P6' },
-  { n: 7, label: 'Crecer', short: 'P7' },
+  { n: 5, label: 'Tu Local Oficial', short: 'P5' },
+  { n: 6, label: 'Facturación Electrónica', short: 'P6' },
+  { n: 7, label: 'Crecer con Equipo', short: 'P7' },
 ];
 
 function BuildingView({
@@ -313,6 +323,15 @@ function BuildingView({
 }) {
   const [floor, setFloor] = useState(1);
   const [tipoPersona, setTipoPersona] = useState<TipoPersona | null>(null);
+  const [unlockedFloor, setUnlockedFloor] = useState(1);
+
+  const handleCompleteFloor = () => {
+    setUnlockedFloor((prev) => {
+      const next = Math.min(prev + 1, floors.length);
+      if (next > floor) setFloor(next);
+      return next;
+    });
+  };
 
   return (
     <div className="w-full px-4 pt-6">
@@ -345,22 +364,37 @@ function BuildingView({
         >
           {floors.map((f) => {
             const active = floor === f.n;
+            const locked = f.n > unlockedFloor;
             return (
               <button
                 key={f.n}
-                onClick={() => setFloor(f.n)}
-                className="w-full h-[52px] rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all relative"
+                onClick={() => !locked && setFloor(f.n)}
+                disabled={locked}
+                className="w-full h-[52px] rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all relative disabled:cursor-not-allowed"
                 style={{
-                  background: active ? '#3b82f6' : 'rgba(255,255,255,0.025)',
-                  border: active ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.05)',
+                  background: active
+                    ? '#3b82f6'
+                    : locked
+                      ? 'rgba(255,255,255,0.015)'
+                      : 'rgba(255,255,255,0.025)',
+                  border: active
+                    ? '1px solid #3b82f6'
+                    : locked
+                      ? '1px solid rgba(255,255,255,0.03)'
+                      : '1px solid rgba(255,255,255,0.05)',
+                  opacity: locked ? 0.45 : 1,
                 }}
               >
-                <span
-                  className="font-['Bai_Jamjuree'] text-[13px] font-semibold"
-                  style={{ color: active ? '#fff' : 'rgba(255,255,255,0.65)' }}
-                >
-                  {f.short}
-                </span>
+                {locked ? (
+                  <Lock className="w-3.5 h-3.5 text-white/40" strokeWidth={2} />
+                ) : (
+                  <span
+                    className="font-['Bai_Jamjuree'] text-[13px] font-semibold"
+                    style={{ color: active ? '#fff' : 'rgba(255,255,255,0.65)' }}
+                  >
+                    {f.short}
+                  </span>
+                )}
                 <span
                   className="font-['Geist'] text-[8.5px] uppercase tracking-[0.6px] leading-none"
                   style={{ color: active ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)' }}
@@ -379,6 +413,8 @@ function BuildingView({
             tipoPersona={tipoPersona}
             setTipoPersona={setTipoPersona}
             openGlossary={openGlossary}
+            isLastUnlocked={floor === unlockedFloor}
+            onCompleteFloor={handleCompleteFloor}
           />
         </div>
       </div>
@@ -394,11 +430,15 @@ function FloorContent({
   tipoPersona,
   setTipoPersona,
   openGlossary,
+  isLastUnlocked,
+  onCompleteFloor,
 }: {
   floor: number;
   tipoPersona: TipoPersona | null;
   setTipoPersona: (t: TipoPersona) => void;
   openGlossary: (k: TerminoKey) => void;
+  isLastUnlocked: boolean;
+  onCompleteFloor: () => void;
 }) {
   if (floor === 1) {
     return (
@@ -431,6 +471,8 @@ function FloorContent({
             body="Bancos y cajas te prestan a mejores tasas cuando tu RUC está activo."
           />
         </div>
+
+        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -464,6 +506,8 @@ function FloorContent({
             onGlossary={() => openGlossary('ruc20')}
           />
         </div>
+
+        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -478,6 +522,8 @@ function FloorContent({
             Este piso aplica solo si elegiste la <span className="text-white">Ruta Segura (RUC 20)</span>{' '}
             en el piso anterior. Puedes saltar al piso 4 si vas con RUC 10.
           </p>
+
+          {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
         </Panel>
       );
     }
@@ -508,6 +554,8 @@ function FloorContent({
             text="La notaría inscribe automáticamente en SUNARP."
           />
         </ol>
+
+        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -568,6 +616,8 @@ function FloorContent({
           Ir a la web de SUNAT
           <ArrowUpRight className="w-4 h-4" strokeWidth={2} />
         </a>
+
+        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -576,12 +626,29 @@ function FloorContent({
     return (
       <Panel>
         <FloorEyebrow>Piso 05</FloorEyebrow>
-        <FloorTitle>Licencia municipal</FloorTitle>
+        <FloorTitle>Tu Local Oficial</FloorTitle>
         <IconBubble icon={<Store className="w-6 h-6" />} tone="#3b82f6" />
         <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
-          Si atiendes al público en un local, tramita tu licencia de funcionamiento en la
-          municipalidad de tu distrito. Es un pago único y suele demorar de 3 a 15 días.
+          Para vender productos físicos en un local, necesitas el permiso municipal para evitar
+          multas o clausuras sorpresivas.
         </p>
+
+        <div className="mt-5 space-y-2.5">
+          <BenefitRow
+            icon={<ShieldCheck className="w-5 h-5" />}
+            tone="#3b82f6"
+            title="Paso A - Defensa Civil (ITSE)"
+            body="Asegura que tu local no sea un peligro. Te pedirán cosas básicas como extintores, botiquín y pozo a tierra."
+          />
+          <BenefitRow
+            icon={<CheckCircle2 className="w-5 h-5" />}
+            tone="#22c55e"
+            title="Paso B - Licencia de Funcionamiento"
+            body="El permiso definitivo que te da la municipalidad de tu distrito para abrir tus puertas legalmente."
+          />
+        </div>
+
+        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -590,12 +657,29 @@ function FloorContent({
     return (
       <Panel>
         <FloorEyebrow>Piso 06</FloorEyebrow>
-        <FloorTitle>Crecer con equipo</FloorTitle>
-        <IconBubble icon={<Users className="w-6 h-6" />} tone="#a78bfa" />
+        <FloorTitle>Facturación Electrónica</FloorTitle>
+        <IconBubble icon={<Receipt className="w-6 h-6" />} tone="#a78bfa" />
         <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
-          Cuando contrates a alguien, tendrás que registrarlo en la planilla de SUNAT. Podrás
-          acceder a regímenes MYPE que reducen los costos laborales durante los primeros años.
+          ¡Es hora de vender en grande! Aquí es donde nuestra app Trax se conecta para ayudarte a
+          emitir comprobantes en segundos.
         </p>
+
+        <div className="mt-5 space-y-2.5">
+          <BenefitRow
+            icon={<Users className="w-5 h-5" />}
+            tone="#3b82f6"
+            title="Paso A - Boletas"
+            body="Para venderle al público en general de manera rápida."
+          />
+          <BenefitRow
+            icon={<Landmark className="w-5 h-5" />}
+            tone="#a78bfa"
+            title="Paso B - Facturas"
+            body="La clave para crecer. Te permite venderle a empresas más grandes, ya que ellas necesitan facturas para sustentar sus gastos."
+          />
+        </div>
+
+        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -603,13 +687,39 @@ function FloorContent({
   return (
     <Panel>
       <FloorEyebrow>Piso 07 · Top</FloorEyebrow>
-      <FloorTitle>Consolidar y crecer</FloorTitle>
-      <IconBubble icon={<Sparkles className="w-6 h-6" />} tone="#22c55e" />
+      <FloorTitle>Crecer con Equipo</FloorTitle>
+      <IconBubble icon={<Briefcase className="w-6 h-6" />} tone="#22c55e" />
       <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
-        Con tu negocio formal puedes emitir facturas, exportar, acceder a licitaciones y postular a
-        programas del Estado. Es el piso donde tu negocio deja de ser un emprendimiento y se
-        convierte en una marca.
+        Tu negocio ya tiene éxito y necesitas ayuda o vender tus propios productos empacados. Hazlo
+        de forma inteligente.
       </p>
+
+      <div className="mt-5 space-y-2.5">
+        <BenefitRow
+          icon={<HeartPulse className="w-5 h-5" />}
+          tone="#22c55e"
+          title="Paso A - Permisos Especiales (Registro Sanitario)"
+          body="Obligatorio (con DIGESA o DIGEMID) si fabricas alimentos, bebidas o cosméticos para asegurar que son seguros para el público."
+        />
+        <BenefitRow
+          icon={<Users className="w-5 h-5" />}
+          tone="#3b82f6"
+          title="Paso B - Régimen Laboral MYPE (REMYPE)"
+          body="El secreto legal para contratar ayudantes sin quebrar. Te permite pagar menos beneficios sociales (la mitad de CTS, gratificaciones y vacaciones) estando 100% en regla."
+        />
+      </div>
+
+      {isLastUnlocked && (
+        <div className="mt-6 rounded-2xl p-4 text-center" style={{ background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.25)' }}>
+          <Sparkles className="w-6 h-6 mx-auto text-[#22c55e] mb-2" strokeWidth={1.8} />
+          <p className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">
+            ¡Edificio completado!
+          </p>
+          <p className="mt-1 font-['Geist'] text-[12.5px] text-white/55">
+            Tu negocio está listo para crecer de forma formal y segura.
+          </p>
+        </div>
+      )}
     </Panel>
   );
 }
@@ -644,6 +754,18 @@ function FloorTitle({ children }: { children: React.ReactNode }) {
     <h2 className="mt-1 font-['Bai_Jamjuree'] text-[22px] font-semibold tracking-[-0.3px] text-white leading-[1.15]">
       {children}
     </h2>
+  );
+}
+
+function CompleteFloorButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="mt-6 w-full h-[50px] rounded-2xl bg-[#3b82f6] hover:bg-[#2563eb] active:scale-[0.99] transition-all flex items-center justify-center gap-2 font-['Geist'] text-[14.5px] font-semibold text-white"
+    >
+      Completar Piso y Subir
+      <ArrowUpRight className="w-4 h-4" strokeWidth={2} />
+    </button>
   );
 }
 
