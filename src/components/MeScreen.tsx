@@ -61,6 +61,17 @@ import { useInventory } from "@/data/inventory";
 import { useServerFn } from "@tanstack/react-start";
 import { generateLearnSession, type LearnSession } from "@/lib/learn.functions";
 import {
+  EXPANDED_LESSONS,
+  TIER_LABEL,
+  TIER_RANGES,
+  expandedTopicTitles,
+  isExpanded,
+  type LessonKind,
+  type LessonNode as LessonNodeT,
+  type LessonTier,
+  type LessonVideo,
+} from "@/lib/learn/lessons";
+import {
   useMe,
   type Todo,
   type Lesson,
