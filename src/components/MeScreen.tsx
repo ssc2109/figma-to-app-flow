@@ -1956,7 +1956,15 @@ function useLearnStore() {
       return { ...prev, pathProgress: { ...prev.pathProgress, [pathId]: [...done] } };
     });
 
-  return { state, addSession, updateSession, removeSession, toggleFavorite, isFavorite, markPathTopic };
+  const markPathStarted = (pathId: string) =>
+    setState((prev) => {
+      const started = new Set(prev.startedPaths ?? []);
+      if (started.has(pathId)) return prev;
+      started.add(pathId);
+      return { ...prev, startedPaths: [...started] };
+    });
+
+  return { state, addSession, updateSession, removeSession, toggleFavorite, isFavorite, markPathTopic, markPathStarted };
 }
 
 /* -------- helpers -------- */
