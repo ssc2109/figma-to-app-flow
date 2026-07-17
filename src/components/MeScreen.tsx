@@ -2858,7 +2858,7 @@ function GraduationOverlay({
           </div>
           <div>
             <div className="font-['Bai_Jamjuree'] text-[10px] uppercase tracking-[2px] text-white/50">Categoría completada</div>
-            <div className="mt-[6px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white leading-tight">{path.title}</div>
+            <div className="mt-[6px] font-['Bai_Jamjuree'] text-[22px] font-semibold text-white leading-tight">{path.name}</div>
           </div>
           <p className="font-['Geist'] text-[13px] text-white/60 leading-[1.5]">
             Completaste las 30 lecciones, checkpoints y el examen final. Ya eres una referencia en este tema.
