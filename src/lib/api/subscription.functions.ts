@@ -58,7 +58,9 @@ export const getSubscription = createServerFn({ method: "GET" })
 
 const SubscribeInput = z.object({
   plan: z.enum(["gratis", "pro", "avanzado"]),
-  culqiToken: z.string().min(1).optional(), // token generado por Culqi.js en el cliente
+  provider: z.enum(["stripe", "culqi", "demo"]).optional(),
+  providerRef: z.string().min(1).optional(), // paymentIntentId / culqi token / etc.
+  culqiToken: z.string().min(1).optional(), // legacy alias — se mapea a providerRef
 });
 
 export const subscribeToPlan = createServerFn({ method: "POST" })
@@ -68,24 +70,20 @@ export const subscribeToPlan = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const plan = data.plan as PlanId;
 
-    // ⚠️  Integración Culqi (modo test). Reemplazar CULQI_TEST_SECRET por process.env.CULQI_SECRET_KEY.
-    // Docs: https://docs.culqi.com/es/documentacion/subscripciones-v2/introduccion/
-    const secret = process.env.CULQI_SECRET_KEY || CULQI_TEST_SECRET;
-    let providerSubscriptionId: string | null = null;
+    // Determinar procesador: preferimos el explícito; si viene culqiToken legacy, es culqi.
+    const provider = data.provider ?? (data.culqiToken ? "culqi" : plan === "gratis" ? null : "demo");
+    const providerRef = data.providerRef ?? data.culqiToken ?? null;
 
-    if (data.culqiToken && secret && !secret.includes("placeholder")) {
-      try {
-        // 1) crear/obtener cliente en Culqi con el email
-        // 2) crear card con el token
-        // 3) crear suscripción al plan
-        // (Aquí van las llamadas reales cuando el dueño configure sus llaves.)
-        // const res = await fetch("https://api.culqi.com/v2/subscriptions/create", {...})
-        providerSubscriptionId = `culqi_${plan}_${Date.now()}`;
-      } catch (err) {
-        console.error("[culqi] subscription error", err);
-        throw new Error("No se pudo procesar el pago. Verifica tu tarjeta e intenta de nuevo.");
+    // Log-only en modo test. El cobro real de tarjeta ya se hizo en el cliente
+    // (Stripe: confirmPayment; Culqi: token capturado). Aquí solo registramos.
+    if (provider === "culqi" && providerRef) {
+      const culqiSecret = process.env.CULQI_SECRET_KEY || CULQI_TEST_SECRET;
+      if (culqiSecret && !culqiSecret.includes("placeholder")) {
+        // TODO producción: POST https://api.culqi.com/v2/charges
+        //   { amount, currency_code:"PEN", email, source_id: providerRef }
       }
     }
+    const providerSubscriptionId = providerRef ? `${provider}_${plan}_${providerRef.slice(-8)}` : null;
 
     const now = new Date();
     const periodEnd = new Date(now);
@@ -99,7 +97,7 @@ export const subscribeToPlan = createServerFn({ method: "POST" })
         status: "active",
         current_period_start: now.toISOString(),
         current_period_end: isPaid ? periodEnd.toISOString() : null,
-        payment_provider: isPaid ? "culqi" : null,
+        payment_provider: isPaid ? provider : null,
         provider_subscription_id: isPaid ? providerSubscriptionId : null,
       })
       .eq("user_id", userId);
