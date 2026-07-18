@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 const CATEGORIES = [
   "Mercadería",
