@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { PlanChip } from "./shared";
+import { useConfirm } from "@/components/ui/confirm";
 
 export type SettingsRoute =
   | "profile"
