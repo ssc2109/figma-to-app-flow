@@ -20,6 +20,7 @@ type Line = { productId: string; name: string; qty: number; unitCost: number };
 
 export default function PurchasesView({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [items, setItems] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheet, setSheet] = useState(false);
