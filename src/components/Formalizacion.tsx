@@ -60,6 +60,16 @@ const terminos: Record<TerminoKey, Termino> = {
     texto:
       'Régimen simplificado para pequeños negocios. Pagas una cuota fija mensual (desde S/20) según tus ingresos. No llevas contabilidad compleja.',
   },
+  gratificacion: {
+    titulo: 'Gratificación',
+    texto:
+      'Bono obligatorio que se paga dos veces al año: en julio (Fiestas Patrias) y en diciembre (Navidad). En el Régimen General equivale a un sueldo completo cada vez; en REMYPE, solo medio sueldo.',
+  },
+  cts: {
+    titulo: 'CTS · Compensación por Tiempo de Servicios',
+    texto:
+      'Un fondo de desempleo que el empleador deposita para el trabajador (mayo y noviembre). Sirve como colchón si termina el vínculo laboral. En REMYPE, se paga la mitad de lo que exige el Régimen General.',
+  },
 };
 
 /* ============================================================
