@@ -30,7 +30,7 @@ export default function TeamView({ onBack }: { onBack: () => void }) {
           <button
             type="button"
             onClick={handleInvite}
-            className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95"
+            className="h-[36px] w-[36px] rounded-full bg-[#3b82f6] text-white flex items-center justify-center active:scale-95"
             aria-label="Invitar"
           >
             <UserPlus className="h-[15px] w-[15px]" strokeWidth={2} />

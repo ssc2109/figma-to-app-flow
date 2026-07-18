@@ -79,7 +79,7 @@ export default function CalendarView({ onBack }: { onBack: () => void }) {
         action={
           <button
             onClick={() => setSheet(true)}
-            className="h-[36px] w-[36px] rounded-full bg-white text-black grid place-items-center active:scale-95"
+            className="h-[36px] w-[36px] rounded-full bg-[#3b82f6] text-white grid place-items-center active:scale-95"
             aria-label="Nuevo evento"
           >
             <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
@@ -304,7 +304,7 @@ function EventSheet({ defaultDate, onClose, onSaved }: { defaultDate: Date; onCl
         <button
           onClick={submit}
           disabled={saving}
-          className="mt-[16px] w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40"
+          className="mt-[16px] w-full h-[52px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40"
         >
           {saving ? "Guardando…" : "Agendar"}
         </button>

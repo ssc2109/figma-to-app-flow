@@ -117,7 +117,7 @@ function ClientSheet({
         <div className="shrink-0 px-[20px] pt-[8px] pb-[calc(env(safe-area-inset-bottom)+18px)] border-t border-white/[0.05]"
           style={{ background: "rgba(14,14,16,0.97)" }}>
           <button onClick={submit} disabled={saving}
-            className="w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40">
+            className="w-full h-[52px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40">
             {saving ? "Guardando…" : isNew ? "Crear cliente" : "Guardar cambios"}
           </button>
           {!isNew && (
@@ -170,7 +170,7 @@ export default function ClientsView({ onBack }: { onBack: () => void }) {
         onBack={onBack}
         action={
           <button onClick={() => setSheet("new")}
-            className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95"
+            className="h-[36px] w-[36px] rounded-full bg-[#3b82f6] text-white flex items-center justify-center active:scale-95"
             aria-label="Añadir cliente">
             <UserPlus className="h-[15px] w-[15px]" strokeWidth={2} />
           </button>
@@ -190,7 +190,7 @@ export default function ClientsView({ onBack }: { onBack: () => void }) {
             Registra a tus clientes frecuentes para llevar su historial y contacto.
           </p>
           <button onClick={() => setSheet("new")}
-            className="h-[44px] px-[20px] rounded-full bg-white text-black font-['Geist'] text-[13.5px] font-semibold active:scale-95 flex items-center gap-[8px]">
+            className="h-[44px] px-[20px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[13.5px] font-semibold active:scale-95 flex items-center gap-[8px]">
             <UserPlus className="h-[15px] w-[15px]" strokeWidth={2.4} /> Agregar cliente
           </button>
         </div>

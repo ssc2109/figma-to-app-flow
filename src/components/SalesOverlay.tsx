@@ -235,7 +235,7 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
                             type="button"
                             disabled={out}
                             onClick={() => add(p.id)}
-                            className="h-[34px] px-[14px] rounded-full bg-white text-black font-['Geist'] text-[13px] font-semibold active:scale-95 disabled:opacity-30"
+                            className="h-[34px] px-[14px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[13px] font-semibold active:scale-95 disabled:opacity-30"
                           >
                             Agregar
                           </button>
@@ -261,7 +261,7 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
                             <button
                               type="button"
                               onClick={() => add(p.id)}
-                              className="h-[26px] w-[26px] rounded-full bg-white text-black flex items-center justify-center active:scale-90"
+                              className="h-[26px] w-[26px] rounded-full bg-[#3b82f6] text-white flex items-center justify-center active:scale-90"
                               aria-label="Agregar"
                             >
                               <Plus className="h-[14px] w-[14px]" strokeWidth={2.4} />
@@ -506,7 +506,7 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
                     type="button"
                     onClick={submitSale}
                     disabled={saving}
-                    className="w-full h-[54px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40"
+                    className="w-full h-[54px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40"
                   >
                     {saving ? "Guardando…" : mode === "fiar" ? `Fiar ${fmt(subtotal)}` : `Cobrar ${fmt(subtotal)}`}
                   </button>
@@ -541,7 +541,7 @@ function EmptyInventory({ onClose }: { onClose: () => void }) {
       <button
         type="button"
         onClick={onClose}
-        className="h-[44px] px-[20px] rounded-full bg-white text-black font-['Geist'] text-[13.5px] font-semibold active:scale-95"
+        className="h-[44px] px-[20px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[13.5px] font-semibold active:scale-95"
       >
         Ir a inventario
       </button>

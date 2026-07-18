@@ -91,7 +91,7 @@ export function SaveButton({
       disabled={disabled || saving}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="h-[36px] px-[14px] rounded-full bg-white text-black font-['Geist'] text-[13px] font-semibold flex items-center gap-[6px] disabled:opacity-40"
+      className="h-[36px] px-[14px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[13px] font-semibold flex items-center gap-[6px] disabled:opacity-40"
     >
       {saving ? (
         <Loader2 className="h-[14px] w-[14px] animate-spin" />

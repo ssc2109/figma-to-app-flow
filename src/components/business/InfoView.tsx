@@ -165,7 +165,7 @@ function EditSheet({
             type="button"
             onClick={submit}
             disabled={saving}
-            className="h-[52px] flex-[1.4] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40"
+            className="h-[52px] flex-[1.4] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40"
           >
             {saving ? "Guardando…" : "Guardar cambios"}
           </button>
@@ -359,7 +359,7 @@ function AdvancedGate({ onClose, onUpgrade }: { onClose: () => void; onUpgrade?:
           {onUpgrade && (
             <button
               onClick={onUpgrade}
-              className="h-[48px] rounded-full bg-white text-black font-['Geist'] text-[14px] font-semibold flex items-center justify-center gap-[8px] active:scale-95"
+              className="h-[48px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[14px] font-semibold flex items-center justify-center gap-[8px] active:scale-95"
             >
               <Sparkles className="h-[14px] w-[14px]" strokeWidth={2} />
               Ver planes

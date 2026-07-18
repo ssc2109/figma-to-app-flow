@@ -374,7 +374,7 @@ function HQPanel({ insights, signals }: { insights: Insight[]; signals: Signals 
         {next ? (
           <button
             onClick={next.go}
-            className="mt-[16px] w-full h-[50px] rounded-[20px] bg-white text-black font-['Geist'] text-[15px] font-bold active:scale-[0.985] transition-transform inline-flex items-center justify-center gap-[8px]"
+            className="mt-[16px] w-full h-[50px] rounded-[20px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-bold active:scale-[0.985] transition-transform inline-flex items-center justify-center gap-[8px]"
           >
             {next.cta}
             <ArrowRight className="h-[15px] w-[15px]" strokeWidth={2.4} />

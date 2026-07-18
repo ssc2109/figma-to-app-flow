@@ -99,7 +99,7 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
             </p>
             <button
               onClick={() => setSheet("new")}
-              className="h-[44px] px-[20px] rounded-full bg-white text-black font-['Geist'] text-[13.5px] font-semibold active:scale-95 flex items-center gap-[8px]"
+              className="h-[44px] px-[20px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[13.5px] font-semibold active:scale-95 flex items-center gap-[8px]"
             >
               <Plus className="h-[15px] w-[15px]" strokeWidth={2.4} />
               Añadir producto

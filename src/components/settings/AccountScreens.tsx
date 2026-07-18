@@ -123,7 +123,7 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
               {initials}
             </span>
           )}
-          <div className="absolute bottom-[-2px] right-[-2px] h-[34px] w-[34px] rounded-full bg-white text-black grid place-items-center border-2 border-black">
+          <div className="absolute bottom-[-2px] right-[-2px] h-[34px] w-[34px] rounded-full bg-[#3b82f6] text-white grid place-items-center border-2 border-black">
             {uploading ? (
               <Loader2 className="h-[14px] w-[14px] animate-spin" />
             ) : (
@@ -232,7 +232,7 @@ export function EmailPasswordScreen({ onBack }: { onBack: () => void }) {
           type="button"
           onClick={changePassword}
           disabled={changingPw || !pw}
-          className="w-full h-[46px] rounded-full bg-white text-black font-['Geist'] text-[14px] font-semibold disabled:opacity-40 flex items-center justify-center gap-[8px]"
+          className="w-full h-[46px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[14px] font-semibold disabled:opacity-40 flex items-center justify-center gap-[8px]"
         >
           {changingPw && <Loader2 className="h-[14px] w-[14px] animate-spin" />}
           Actualizar contraseña
