@@ -259,7 +259,7 @@ export default function SettingsHub({
             <div className="mt-[18px]">
               <button
                 type="button"
-                onClick={onSignOut}
+                onClick={handleSignOut}
                 className="w-full flex items-center justify-center gap-[10px] h-[48px] rounded-full font-['Geist'] text-[14px] font-semibold text-[#F87171]"
                 style={{
                   background: "rgba(248,113,113,0.08)",
