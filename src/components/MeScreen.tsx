@@ -2262,7 +2262,7 @@ function SessionRunner({
                     <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
                       <iframe
                         className="absolute inset-0 w-full h-full"
-                        src={`https://www.youtube.com/embed/${stored.video.youtubeId}?rel=0&modestbranding=1`}
+                        src={`https://www.youtube.com/embed/${stored.video.youtubeId}?rel=0&modestbranding=1&start=${stored.video.startSeconds ?? 0}&end=${stored.video.endSeconds ?? (stored.video.startSeconds ?? 0) + (stored.video.seconds ?? 55)}`}
                         title={stored.video.title}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
