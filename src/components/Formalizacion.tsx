@@ -26,7 +26,7 @@ import {
 
 type View = 'entry' | 'learning' | 'building';
 type TipoPersona = 'natural' | 'juridica';
-type TerminoKey = 'minuta' | 'domicilio' | 'clavesol' | 'ruc10' | 'ruc20' | 'nrus';
+type TerminoKey = 'minuta' | 'domicilio' | 'clavesol' | 'ruc10' | 'ruc20' | 'nrus' | 'gratificacion' | 'cts';
 type Termino = { titulo: string; texto: string };
 
 const terminos: Record<TerminoKey, Termino> = {
@@ -59,6 +59,16 @@ const terminos: Record<TerminoKey, Termino> = {
     titulo: 'Nuevo RUS (NRUS)',
     texto:
       'Régimen simplificado para pequeños negocios. Pagas una cuota fija mensual (desde S/20) según tus ingresos. No llevas contabilidad compleja.',
+  },
+  gratificacion: {
+    titulo: 'Gratificación',
+    texto:
+      'Bono obligatorio que se paga dos veces al año: en julio (Fiestas Patrias) y en diciembre (Navidad). En el Régimen General equivale a un sueldo completo cada vez; en REMYPE, solo medio sueldo.',
+  },
+  cts: {
+    titulo: 'CTS · Compensación por Tiempo de Servicios',
+    texto:
+      'Un fondo de desempleo que el empleador deposita para el trabajador (mayo y noviembre). Sirve como colchón si termina el vínculo laboral. En REMYPE, se paga la mitad de lo que exige el Régimen General.',
   },
 };
 
@@ -309,9 +319,8 @@ const floors: Floor[] = [
   { n: 2, label: 'Tu ruta', short: 'P2' },
   { n: 3, label: 'Crear empresa', short: 'P3' },
   { n: 4, label: 'RUC · SUNAT', short: 'P4' },
-  { n: 5, label: 'Tu Local Oficial', short: 'P5' },
-  { n: 6, label: 'Facturación Electrónica', short: 'P6' },
-  { n: 7, label: 'Crecer con Equipo', short: 'P7' },
+  { n: 5, label: 'Defensa Civil', short: 'P5' },
+  { n: 6, label: 'Contratar (REMYPE)', short: 'P6' },
 ];
 
 function BuildingView({
@@ -507,100 +516,258 @@ function FloorContent({
   );
 
   if (floor === 5) {
-    return (
-      <Panel>
-        <FloorEyebrow>Piso 05</FloorEyebrow>
-        <FloorTitle>Tu Local Oficial</FloorTitle>
-        <IconBubble icon={<Store className="w-6 h-6" />} tone="#3b82f6" />
-        <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
-          Para vender productos físicos en un local, necesitas el permiso municipal para evitar
-          multas o clausuras sorpresivas.
-        </p>
-
-        <div className="mt-5 space-y-2.5">
-          <BenefitRow
-            icon={<ShieldCheck className="w-5 h-5" />}
-            tone="#3b82f6"
-            title="Paso A - Defensa Civil (ITSE)"
-            body="Asegura que tu local no sea un peligro. Te pedirán cosas básicas como extintores, botiquín y pozo a tierra."
-          />
-          <BenefitRow
-            icon={<CheckCircle2 className="w-5 h-5" />}
-            tone="#22c55e"
-            title="Paso B - Licencia de Funcionamiento"
-            body="El permiso definitivo que te da la municipalidad de tu distrito para abrir tus puertas legalmente."
-          />
-        </div>
-
-      </Panel>
-    );
+    return <FloorFive unlockedFloor={unlockedFloor} advanceFloor={advanceFloor} />;
   }
 
-  if (floor === 6) {
-    return (
-      <Panel>
-        <FloorEyebrow>Piso 06</FloorEyebrow>
-        <FloorTitle>Facturación Electrónica</FloorTitle>
-        <IconBubble icon={<Receipt className="w-6 h-6" />} tone="#a78bfa" />
-        <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
-          ¡Es hora de vender en grande! Aquí es donde nuestra app Trax se conecta para ayudarte a
-          emitir comprobantes en segundos.
-        </p>
+  return <FloorSix openGlossary={openGlossary} />;
+}
 
-        <div className="mt-5 space-y-2.5">
-          <BenefitRow
-            icon={<Users className="w-5 h-5" />}
-            tone="#3b82f6"
-            title="Paso A - Boletas"
-            body="Para venderle al público en general de manera rápida."
-          />
-          <BenefitRow
-            icon={<Landmark className="w-5 h-5" />}
-            tone="#a78bfa"
-            title="Paso B - Facturas"
-            body="La clave para crecer. Te permite venderle a empresas más grandes, ya que ellas necesitan facturas para sustentar sus gastos."
-          />
-        </div>
+/* ============================================================
+   Floor 5 · Defensa Civil · Checklist
+   ============================================================ */
+function FloorFive({
+  unlockedFloor,
+  advanceFloor,
+}: {
+  unlockedFloor: number;
+  advanceFloor: (n?: number) => void;
+}) {
+  const items = [
+    'Extintor con carga vigente',
+    'Luces de emergencia instaladas',
+    'Pozo a tierra operativo',
+    'Señalética de Salida y Botiquín',
+  ];
+  const [checks, setChecks] = useState<boolean[]>([false, false, false, false]);
+  const done = checks.filter(Boolean).length;
+  const pct = (done / items.length) * 100;
+  const complete = done === items.length;
 
-      </Panel>
-    );
-  }
+  const toggle = (i: number) =>
+    setChecks((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
 
   return (
     <Panel>
-      <FloorEyebrow>Piso 07 · Top</FloorEyebrow>
-      <FloorTitle>Crecer con Equipo</FloorTitle>
-      <IconBubble icon={<Briefcase className="w-6 h-6" />} tone="#22c55e" />
-      <p className="mt-4 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
-        Tu negocio ya tiene éxito y necesitas ayuda o vender tus propios productos empacados. Hazlo
-        de forma inteligente.
+      <FloorEyebrow>Piso 05</FloorEyebrow>
+      <FloorTitle>Defensa Civil</FloorTitle>
+      <IconBubble icon={<ShieldCheck className="w-6 h-6" />} tone="#3b82f6" />
+      <p className="mt-4 font-['Geist'] text-[14px] text-white/60 leading-[1.55]">
+        Antes de pedir tu Licencia de Funcionamiento, Defensa Civil revisará tu local. Marca lo que
+        ya tienes listo:
       </p>
 
-      <div className="mt-5 space-y-2.5">
-        <BenefitRow
-          icon={<HeartPulse className="w-5 h-5" />}
-          tone="#22c55e"
-          title="Paso A - Permisos Especiales (Registro Sanitario)"
-          body="Obligatorio (con DIGESA o DIGEMID) si fabricas alimentos, bebidas o cosméticos para asegurar que son seguros para el público."
-        />
-        <BenefitRow
-          icon={<Users className="w-5 h-5" />}
-          tone="#3b82f6"
-          title="Paso B - Régimen Laboral MYPE (REMYPE)"
-          body="El secreto legal para contratar ayudantes sin quebrar. Te permite pagar menos beneficios sociales (la mitad de CTS, gratificaciones y vacaciones) estando 100% en regla."
-        />
+      {/* Progress bar */}
+      <div className="mt-5">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-['Geist'] text-[11px] uppercase tracking-[0.8px] text-white/45">
+            Preparación del local
+          </span>
+          <span
+            className="font-['Bai_Jamjuree'] text-[13px] font-semibold"
+            style={{ color: complete ? '#22c55e' : '#93c5fd' }}
+          >
+            {Math.round(pct)}%
+          </span>
+        </div>
+        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${pct}%`,
+              background: complete
+                ? 'linear-gradient(90deg,#22c55e,#4ade80)'
+                : 'linear-gradient(90deg,#3b82f6,#60a5fa)',
+            }}
+          />
+        </div>
       </div>
 
-      {isLastUnlocked && (
-        <div className="mt-6 rounded-2xl p-4 text-center" style={{ background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.25)' }}>
-          <Sparkles className="w-6 h-6 mx-auto text-[#22c55e] mb-2" strokeWidth={1.8} />
-          <p className="font-['Bai_Jamjuree'] text-[16px] font-semibold text-white">
-            ¡Edificio completado!
-          </p>
-          <p className="mt-1 font-['Geist'] text-[12.5px] text-white/55">
-            Tu negocio está listo para crecer de forma formal y segura.
-          </p>
-        </div>
+      {/* Checklist */}
+      <div className="mt-5 space-y-2">
+        {items.map((label, i) => {
+          const on = checks[i];
+          return (
+            <button
+              key={label}
+              type="button"
+              onClick={() => toggle(i)}
+              className="w-full flex items-center gap-3 rounded-2xl p-3 text-left transition-colors"
+              style={{
+                background: on ? 'rgba(34,197,94,0.10)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${on ? 'rgba(34,197,94,0.35)' : 'rgba(255,255,255,0.08)'}`,
+              }}
+            >
+              <div
+                className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                style={{
+                  background: on ? '#22c55e' : 'rgba(255,255,255,0.06)',
+                  border: `1px solid ${on ? '#22c55e' : 'rgba(255,255,255,0.15)'}`,
+                }}
+              >
+                {on && <CheckCircle2 className="w-4 h-4 text-white" strokeWidth={2.4} />}
+              </div>
+              <span
+                className="font-['Geist'] text-[13.5px]"
+                style={{ color: on ? '#fff' : 'rgba(255,255,255,0.75)' }}
+              >
+                {label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {complete && (
+        <button
+          type="button"
+          onClick={() => {
+            if (unlockedFloor === 5) advanceFloor(6);
+            else advanceFloor(6);
+          }}
+          className="w-full mt-6 h-[52px] rounded-2xl font-['Geist'] text-[14px] font-semibold text-white active:scale-[0.98] transition-transform"
+          style={{ background: '#3b82f6' }}
+        >
+          Validar Local y Subir al P6
+        </button>
+      )}
+    </Panel>
+  );
+}
+
+/* ============================================================
+   Floor 6 · REMYPE · Calculadora laboral
+   ============================================================ */
+function FloorSix({ openGlossary }: { openGlossary: (k: TerminoKey) => void }) {
+  const [salaryStr, setSalaryStr] = useState<string>('');
+  const [celebrated, setCelebrated] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('trax.formalizacionCompleted') === 'true';
+  });
+  const salary = Number(salaryStr);
+  const validSalary = Number.isFinite(salary) && salary > 0;
+
+  // Ahorro anual aproximado en REMYPE vs Régimen General:
+  // Régimen General: 2 gratificaciones completas + 1 CTS + 15 días extra de vacaciones (~medio sueldo)
+  // REMYPE: media gratificación x2 + media CTS + 15 días vacaciones
+  // Diferencia aproximada por año = 1 sueldo (gratificaciones) + 0.5 sueldo (CTS) + 0.5 sueldo (vacaciones) = ~2 sueldos.
+  const ahorroAnual = validSalary ? Math.round(salary * 2) : 0;
+
+  const finalize = () => {
+    window.localStorage.setItem('trax.formalizacionCompleted', 'true');
+    setCelebrated(true);
+  };
+
+  return (
+    <Panel>
+      <FloorEyebrow>Piso 06</FloorEyebrow>
+      <FloorTitle>Contratar con REMYPE</FloorTitle>
+      <IconBubble icon={<Users className="w-6 h-6" />} tone="#22c55e" />
+      <p className="mt-4 font-['Geist'] text-[14px] text-white/60 leading-[1.55]">
+        ¡Tu negocio crece y necesitas contratar! Muchos temen a los costos laborales, pero el
+        Estado creó el <b className="text-white/85">REMYPE</b> para que contrates legalmente
+        pagando muchos menos beneficios.
+      </p>
+
+      <label className="flex flex-col gap-1.5 mt-5">
+        <span className="font-['Geist'] text-[11px] uppercase tracking-[0.8px] text-white/45">
+          Sueldo mensual planeado (S/)
+        </span>
+        <input
+          value={salaryStr}
+          onChange={(e) => setSalaryStr(e.target.value.replace(/[^0-9.]/g, ''))}
+          inputMode="decimal"
+          placeholder="Ej: 1025"
+          className="h-[52px] rounded-2xl px-4 bg-white/[0.04] border border-white/[0.10] text-white font-['Bai_Jamjuree'] text-[20px] font-semibold tabular-nums placeholder:text-white/25 outline-none focus:border-white/30 transition"
+        />
+      </label>
+
+      {validSalary && (
+        <>
+          <div className="mt-5 grid grid-cols-2 gap-2.5">
+            {/* Régimen General */}
+            <div
+              className="rounded-2xl p-3.5"
+              style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)' }}
+            >
+              <div className="font-['Geist'] text-[10.5px] uppercase tracking-[0.8px] text-[#F87171]">
+                Régimen General
+              </div>
+              <div className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white mt-1 mb-2">
+                El caro
+              </div>
+              <ul className="space-y-1.5 font-['Geist'] text-[12px] text-white/70 leading-snug">
+                <li>· 30 días de vacaciones</li>
+                <li>
+                  · 2 sueldos extras al año (
+                  <TermLink onClick={() => openGlossary('gratificacion')}>Gratificación</TermLink>)
+                </li>
+                <li>
+                  · 1 sueldo extra (<TermLink onClick={() => openGlossary('cts')}>CTS</TermLink>)
+                </li>
+              </ul>
+            </div>
+
+            {/* REMYPE */}
+            <div
+              className="rounded-2xl p-3.5"
+              style={{ background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)' }}
+            >
+              <div className="font-['Geist'] text-[10.5px] uppercase tracking-[0.8px] text-[#4ADE80]">
+                REMYPE
+              </div>
+              <div className="font-['Bai_Jamjuree'] text-[14px] font-semibold text-white mt-1 mb-2">
+                Tu beneficio
+              </div>
+              <ul className="space-y-1.5 font-['Geist'] text-[12px] text-[#bbf7d0] leading-snug">
+                <li>· Solo 15 días de vacaciones</li>
+                <li>
+                  · Media{' '}
+                  <TermLink onClick={() => openGlossary('gratificacion')}>Gratificación</TermLink>
+                </li>
+                <li>
+                  · Media <TermLink onClick={() => openGlossary('cts')}>CTS</TermLink>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div
+            className="mt-4 rounded-2xl p-4"
+            style={{ background: 'rgba(6,78,59,0.55)', border: '1px solid rgba(34,197,94,0.45)' }}
+          >
+            <p className="font-['Geist'] text-[13px] text-[#d1fae5] leading-[1.5]">
+              💡 Al inscribirte en el <b className="text-white">REMYPE</b>, te ahorras aprox.{' '}
+              <span className="font-['Bai_Jamjuree'] font-semibold text-white tabular-nums">
+                S/ {ahorroAnual.toLocaleString('es-PE')}
+              </span>{' '}
+              al año por trabajador.
+            </p>
+          </div>
+
+          {!celebrated ? (
+            <button
+              type="button"
+              onClick={finalize}
+              className="w-full mt-6 h-[58px] rounded-2xl font-['Bai_Jamjuree'] text-[15px] font-semibold text-white active:scale-[0.98] transition-transform"
+              style={{ background: 'linear-gradient(135deg,#22c55e,#3b82f6)' }}
+            >
+              🎉 ¡Celebrar Formalización!
+            </button>
+          ) : (
+            <div
+              className="mt-6 rounded-2xl p-5 text-center"
+              style={{ background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.35)' }}
+            >
+              <Sparkles className="w-7 h-7 mx-auto text-[#22c55e] mb-2" strokeWidth={1.8} />
+              <p className="font-['Bai_Jamjuree'] text-[17px] font-semibold text-white">
+                ¡Formalización completada!
+              </p>
+              <p className="mt-1.5 font-['Geist'] text-[13px] text-white/65 leading-[1.5]">
+                Tu negocio está 100% listo para crecer, contratar y facturar de forma legal.
+              </p>
+            </div>
+          )}
+        </>
       )}
     </Panel>
   );
