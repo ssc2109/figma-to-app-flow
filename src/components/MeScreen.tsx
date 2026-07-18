@@ -2067,7 +2067,7 @@ function SessionSetupSheet({
     <Sheet
       open={open}
       onClose={loading ? () => {} : onClose}
-      title={path ? `Sesión · ${path.name}` : "Pregúntale a la IA"}
+      title={path ? `Sesión · ${path.name}` : "Nueva sesión"}
       footer={
         <>
           <GhostButton onClick={onClose} disabled={loading}>Cancelar</GhostButton>
@@ -2078,53 +2078,10 @@ function SessionSetupSheet({
       }
     >
       {path && (
-        <Field label="Tema del path">
-          <select
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            className="w-full h-[38px] px-[10px] rounded-[10px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white"
-            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            {path.topics.map((t) => (
-              <option key={t} value={t} className="bg-black">{t}</option>
-            ))}
-          </select>
-        </Field>
-      )}
-      {!path && (
-        <Field label="Pregunta o tema">
-          <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar el precio de alquiler de mi local" />
-        </Field>
-      )}
-      {!path && (
-        <>
-          <Field label="Nivel">
-            <div className="flex gap-[6px]">
-              {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((l) => (
-                <button key={l} type="button" onClick={() => setLevel(l)}
-                  className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white"
-                  style={{
-                    background: level === l ? "rgba(255,255,255,0.10)" : "transparent",
-                    border: `1px solid ${level === l ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
-                  }}
-                >{l}</button>
-              ))}
-            </div>
-          </Field>
-          <Field label="Duración">
-            <div className="flex gap-[6px]">
-              {([30, 45, 60] as LearnMinutes[]).map((m) => (
-                <button key={m} type="button" onClick={() => setMinutes(m)}
-                  className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white tabular-nums"
-                  style={{
-                    background: minutes === m ? "rgba(255,255,255,0.10)" : "transparent",
-                    border: `1px solid ${minutes === m ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
-                  }}
-                >{m} min</button>
-              ))}
-            </div>
-          </Field>
-        </>
+        <div className="rounded-[12px] px-[12px] py-[10px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/45 mb-[4px]">Lección</div>
+          <div className="font-['Geist'] text-[14px] text-white leading-[1.35]">{topic}</div>
+        </div>
       )}
       {path && (
         <div className="rounded-[12px] px-[12px] py-[10px] flex items-center gap-[8px]" style={{ background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.20)" }}>
@@ -2133,9 +2090,7 @@ function SessionSetupSheet({
         </div>
       )}
       <div className="font-['Geist'] text-[12px] text-white/45 leading-[1.5]">
-        {path
-          ? "La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable."
-          : "Pregúntale cualquier duda de tu negocio y la IA investigará y armará una sesión completa para ti."}
+        La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable.
       </div>
       {loading && (
         <div className="flex items-center gap-[10px] rounded-[12px] p-[12px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
