@@ -12,6 +12,7 @@ import {
   NavRow,
   ICON_TILE,
 } from "./shared";
+import { useConfirm } from "@/components/ui/confirm";
 
 const COUNTRY_CODES: { code: string; flag: string; name: string; len: [number, number] }[] = [
   { code: "+51", flag: "🇵🇪", name: "Perú", len: [9, 9] },
