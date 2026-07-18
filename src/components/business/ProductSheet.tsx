@@ -5,6 +5,7 @@ import { X, Trash2, Camera, Package } from "lucide-react";
 import { toast } from "sonner";
 import { useInventory, type InventoryItem } from "@/data/inventory";
 import { usePlan } from "@/hooks/usePlan";
+import { useConfirm } from "@/components/ui/confirm";
 
 const CATEGORIES = ["Producto", "Servicio", "Oferta/Combo"] as const;
 const UNITS = ["unidad", "kg", "g", "L", "ml", "docena", "six-pack", "paquete", "caja"] as const;
