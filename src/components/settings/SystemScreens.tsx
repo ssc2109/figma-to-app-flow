@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { SettingsShell, Section, NavRow } from "./shared";
+import { useConfirm } from "@/components/ui/confirm";
 
 /* ------------------------ Datos y privacidad ------------------------ */
 export function DataPrivacyScreen({ onBack }: { onBack: () => void }) {
