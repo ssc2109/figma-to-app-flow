@@ -91,7 +91,7 @@ function NavShell() {
   }, [setHandler]);
 
   return (
-    <div className="min-h-screen bg-black relative">
+    <div className="min-h-[100dvh] bg-black relative">
       <div
         className={`relative z-10 mx-auto w-full max-w-[430px] ${
           currentScreen === "socia" ? "pb-0" : "pb-[140px]"
