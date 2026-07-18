@@ -6,6 +6,7 @@ import { useInventory, type InventoryItem } from "@/data/inventory";
 import { usePlan } from "@/hooks/usePlan";
 import { toast } from "sonner";
 import ProductSheet from "./ProductSheet";
+import { useConfirm } from "@/components/ui/confirm";
 
 /**
  * Catálogo (vitrina pública). Aquí se crean, editan y eliminan productos.
