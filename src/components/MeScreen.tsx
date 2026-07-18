@@ -3190,6 +3190,10 @@ function LearnView({ onBack }: { onBack: () => void }) {
           onClose={() => setRunning(null)}
           onComplete={completeRunning}
           onRemove={removeRunning}
+          onProgress={(p) => {
+            store.updateSession(running.id, { progress: p });
+            setRunning((r) => (r ? { ...r, progress: p } : r));
+          }}
         />
         {graduation && (
           <GraduationOverlay
