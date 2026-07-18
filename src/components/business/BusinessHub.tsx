@@ -32,7 +32,7 @@ type Props = {
   onNewExpense: () => void;
 };
 
-type Area = "operacion" | "caja" | "clientes";
+type Area = "operacion" | "caja" | "clientes" | "analisis";
 
 /* ---------- helpers ---------- */
 const has = (v: unknown) => typeof v === "string" && v.trim().length > 0;
