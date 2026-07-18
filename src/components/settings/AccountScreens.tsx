@@ -234,7 +234,7 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
                 onChange={(v) => update("phoneDigits", v.replace(/\D/g, "").slice(0, 15))}
                 placeholder="999999999"
                 type="tel"
-                inputMode="numeric"
+                numeric
               />
             </div>
           </div>
