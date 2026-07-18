@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Kind = "cobrar" | "pagar";
 type Debt = {
@@ -144,6 +145,7 @@ export default function DebtsView({
   onBack, initialKind = "cobrar", lockKind = false,
 }: { onBack: () => void; initialKind?: Kind; lockKind?: boolean }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [tab, setTab] = useState<Kind>(initialKind);
   const [items, setItems] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
@@ -191,7 +193,7 @@ export default function DebtsView({
   const revertPaid = async (id: string) => {
     const d = items.find((x) => x.id === id);
     if (!d) return;
-    if (!confirm("¿Revertir este cobro/pago? Se eliminará también el movimiento asociado en caja.")) return;
+    if (!(await confirm({ title: "Revertir movimiento", description: "Se eliminará también el movimiento asociado en caja. No se puede deshacer.", confirmText: "Revertir", tone: "danger" }))) return;
     const { error } = await supabase
       .from("fiados")
       .update({ paid: false, paid_at: null })
@@ -214,7 +216,7 @@ export default function DebtsView({
   };
 
   const del = async (id: string) => {
-    if (!confirm("¿Eliminar este registro?")) return;
+    if (!(await confirm({ title: "Eliminar registro", description: "Este movimiento desaparecerá permanentemente.", confirmText: "Eliminar", tone: "danger" }))) return;
     const { error } = await supabase.from("fiados").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     load();

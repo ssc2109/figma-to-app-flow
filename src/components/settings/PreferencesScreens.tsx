@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 import {
   SettingsShell,
   Section,
@@ -197,11 +198,12 @@ export function NotificationsScreen({ onBack }: { onBack: () => void }) {
 /* ------------------------- SocIA ------------------------- */
 export function SociaSettingsScreen({ onBack, openThreads }: { onBack: () => void; openThreads?: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [clearing, setClearing] = useState(false);
 
   const clearHistory = async () => {
     if (!user) return;
-    if (!confirm("¿Borrar todo tu historial de chats con socIA? Esta acción no se puede deshacer.")) return;
+    if (!(await confirm({ title: "Borrar historial de socIA", description: "Se eliminarán todas tus conversaciones. Esta acción no se puede deshacer.", confirmText: "Borrar historial", tone: "danger" }))) return;
     setClearing(true);
     const { error } = await supabase.from("chat_threads").delete().eq("user_id", user.id);
     setClearing(false);

@@ -7,6 +7,7 @@ import { SubHeader, SubScreen, ListGroup } from "./shared";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Kind = "recordatorio" | "pago" | "servicio";
 type Ev = { id: string; title: string; notes: string | null; event_date: string; kind: Kind; done: boolean };
@@ -26,6 +27,7 @@ function ymd(d: Date) {
 
 export default function CalendarView({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [items, setItems] = useState<Ev[]>([]);
   const [selected, setSelected] = useState<Date>(new Date());
   const [sheet, setSheet] = useState(false);
@@ -64,7 +66,7 @@ export default function CalendarView({ onBack }: { onBack: () => void }) {
     load();
   };
   const del = async (id: string) => {
-    if (!confirm("¿Eliminar este evento?")) return;
+    if (!(await confirm({ title: "Eliminar evento", description: "Se quitará de tu agenda. Esta acción no se puede deshacer.", confirmText: "Eliminar", tone: "danger" }))) return;
     const { error } = await supabase.from("calendar_events").delete().eq("id", id);
     if (error) return toast.error(error.message);
     load();

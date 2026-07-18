@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinance } from "@/data/finance";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 const CATEGORIES = [
   "Mercadería",
@@ -18,6 +19,7 @@ const CATEGORIES = [
 export default function ExpenseOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user } = useAuth();
   const fin = useFinance();
+  const confirm = useConfirm();
 
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string>("Mercadería");
@@ -39,6 +41,11 @@ export default function ExpenseOverlay({ open, onClose }: { open: boolean; onClo
       toast.error("Pon un monto válido");
       return;
     }
+    if (!(await confirm({
+      title: "Registrar gasto",
+      description: `Vas a registrar un gasto de S/ ${n.toFixed(2)} en ${category}. Se sumará a tus egresos del día.`,
+      confirmText: "Registrar gasto",
+    }))) return;
     setSaving(true);
     try {
       const { error } = await supabase.from("expenses").insert({

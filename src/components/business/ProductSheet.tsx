@@ -5,6 +5,7 @@ import { X, Trash2, Camera, Package } from "lucide-react";
 import { toast } from "sonner";
 import { useInventory, type InventoryItem } from "@/data/inventory";
 import { usePlan } from "@/hooks/usePlan";
+import { useConfirm } from "@/components/ui/confirm";
 
 const CATEGORIES = ["Producto", "Servicio", "Oferta/Combo"] as const;
 const UNITS = ["unidad", "kg", "g", "L", "ml", "docena", "six-pack", "paquete", "caja"] as const;
@@ -32,6 +33,7 @@ export default function ProductSheet({
 }) {
   const { addProduct, updateProduct, removeProduct, items } = useInventory();
   const { limits, plan } = usePlan();
+  const confirm = useConfirm();
   const isNew = item === "new";
   const current = isNew ? null : item;
 
@@ -114,7 +116,7 @@ export default function ProductSheet({
 
   const del = async () => {
     if (!current) return;
-    if (!confirm(`¿Eliminar "${current.name}" del catálogo?`)) return;
+    if (!(await confirm({ title: `Eliminar "${current.name}"`, description: "Se quitará del catálogo. No afecta las ventas ya registradas.", confirmText: "Eliminar", tone: "danger" }))) return;
     await removeProduct(current.id);
     toast.success("Producto eliminado");
     onClose();

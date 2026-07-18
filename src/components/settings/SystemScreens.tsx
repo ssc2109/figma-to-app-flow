@@ -16,10 +16,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { SettingsShell, Section, NavRow } from "./shared";
+import { useConfirm } from "@/components/ui/confirm";
 
 /* ------------------------ Datos y privacidad ------------------------ */
 export function DataPrivacyScreen({ onBack }: { onBack: () => void }) {
   const { user, signOut } = useAuth();
+  const confirm = useConfirm();
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -61,9 +63,12 @@ export function DataPrivacyScreen({ onBack }: { onBack: () => void }) {
 
   const deleteAccount = async () => {
     if (!user) return;
-    const ok = confirm(
-      "Vas a eliminar todos los datos de tu negocio y cerrar tu cuenta. Esta acción es permanente. ¿Continuar?",
-    );
+    const ok = await confirm({
+      title: "Eliminar cuenta",
+      description: "Vas a borrar todos los datos de tu negocio y cerrar tu cuenta. Esta acción es permanente.",
+      confirmText: "Eliminar cuenta",
+      tone: "danger",
+    });
     if (!ok) return;
     setDeleting(true);
     try {

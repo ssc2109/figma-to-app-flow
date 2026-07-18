@@ -6,6 +6,7 @@ import { useInventory, type InventoryItem } from "@/data/inventory";
 import { usePlan } from "@/hooks/usePlan";
 import { toast } from "sonner";
 import ProductSheet from "./ProductSheet";
+import { useConfirm } from "@/components/ui/confirm";
 
 /**
  * Catálogo (vitrina pública). Aquí se crean, editan y eliminan productos.
@@ -14,6 +15,7 @@ import ProductSheet from "./ProductSheet";
 export default function CatalogView({ onBack }: { onBack: () => void }) {
   const inv = useInventory();
   const { limits } = usePlan();
+  const confirm = useConfirm();
   const showTraxBadge = !limits.hasCatalogBranding;
   const [q, setQ] = useState("");
   const [sheet, setSheet] = useState<InventoryItem | "new" | null>(null);
@@ -34,7 +36,7 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
   };
 
   const remove = async (p: InventoryItem) => {
-    if (!confirm(`¿Eliminar "${p.name}" del catálogo?`)) return;
+    if (!(await confirm({ title: `Eliminar "${p.name}"`, description: "Se quitará del catálogo público y de tu inventario.", confirmText: "Eliminar", tone: "danger" }))) return;
     await inv.removeProduct(p.id);
     toast.success("Producto eliminado");
   };

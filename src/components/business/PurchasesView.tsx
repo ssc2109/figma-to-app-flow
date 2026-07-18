@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Purchase = {
   id: string;
@@ -19,6 +20,7 @@ type Line = { productId: string; name: string; qty: number; unitCost: number };
 
 export default function PurchasesView({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [items, setItems] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
   const [sheet, setSheet] = useState(false);
@@ -51,7 +53,7 @@ export default function PurchasesView({ onBack }: { onBack: () => void }) {
   }, [items]);
 
   const del = async (id: string) => {
-    if (!confirm("¿Eliminar esta compra?")) return;
+    if (!(await confirm({ title: "Eliminar compra", description: "Se borrará esta compra y sus ítems del historial.", confirmText: "Eliminar", tone: "danger" }))) return;
     const { error } = await supabase.from("purchases").delete().eq("id", id);
     if (error) return toast.error(error.message);
     load();

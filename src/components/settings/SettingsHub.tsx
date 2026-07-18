@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { PlanChip } from "./shared";
+import { useConfirm } from "@/components/ui/confirm";
 
 export type SettingsRoute =
   | "profile"
@@ -63,7 +64,18 @@ export default function SettingsHub({
 }) {
   const { user, profile } = useAuth();
   const { plan, isTrialing, daysLeft } = usePlan();
+  const confirm = useConfirm();
   const [query, setQuery] = useState("");
+
+  const handleSignOut = async () => {
+    if (!(await confirm({
+      title: "Cerrar sesión",
+      description: "Vas a cerrar tu sesión en Trax. Podrás volver a entrar cuando quieras.",
+      confirmText: "Cerrar sesión",
+      tone: "danger",
+    }))) return;
+    onSignOut();
+  };
 
   const groups: Group[] = useMemo(
     () => [
@@ -247,7 +259,7 @@ export default function SettingsHub({
             <div className="mt-[18px]">
               <button
                 type="button"
-                onClick={onSignOut}
+                onClick={handleSignOut}
                 className="w-full flex items-center justify-center gap-[10px] h-[48px] rounded-full font-['Geist'] text-[14px] font-semibold text-[#F87171]"
                 style={{
                   background: "rgba(248,113,113,0.08)",

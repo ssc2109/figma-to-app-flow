@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Customer = {
   id: string;
@@ -37,6 +38,7 @@ function ClientSheet({
   client, onClose, onSaved,
 }: { client: Customer | "new"; onClose: () => void; onSaved: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const isNew = client === "new";
   const current = isNew ? null : client;
   const [name, setName] = useState(current?.name ?? "");
@@ -77,7 +79,7 @@ function ClientSheet({
 
   const del = async () => {
     if (!current) return;
-    if (!confirm(`¿Eliminar a ${current.name}?`)) return;
+    if (!(await confirm({ title: `Eliminar a ${current.name}`, description: "Se borrará este cliente y sus datos de contacto. No afecta ventas ya registradas.", confirmText: "Eliminar", tone: "danger" }))) return;
     const { error } = await supabase.from("customers").delete().eq("id", current.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Cliente eliminado");
@@ -137,6 +139,7 @@ function ClientSheet({
 
 export default function ClientsView({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [items, setItems] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");

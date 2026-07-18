@@ -7,6 +7,7 @@ import { useInventory } from "@/data/inventory";
 import { useFinance, type PayMethod } from "@/data/finance";
 import { submitSale as runSubmitSale } from "@/lib/sales/submit-sale";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 const fmt = (n: number) => `S/ ${n.toFixed(2)}`;
 
@@ -16,6 +17,7 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
   const { user } = useAuth();
   const inv = useInventory();
   const fin = useFinance();
+  const confirm = useConfirm();
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [query, setQuery] = useState("");
@@ -103,6 +105,15 @@ export default function SalesOverlay({ open, onClose }: { open: boolean; onClose
       toast.error("Pon el nombre del cliente para fiar");
       return;
     }
+    const total = lines.reduce((s, l) => s + l.qty * l.price, 0);
+    const isCredit = mode === "fiar";
+    if (!(await confirm({
+      title: isCredit ? "Registrar fiado" : "Registrar venta",
+      description: isCredit
+        ? `Se guardará una deuda de ${fmt(total)} a nombre de ${customer.trim()}. Se descontará el stock.`
+        : `Vas a registrar una venta de ${fmt(total)} cobrada en ${method}. Se descontará el stock.`,
+      confirmText: isCredit ? "Registrar fiado" : "Registrar venta",
+    }))) return;
     setSaving(true);
     try {
       const result = await runSubmitSale({
