@@ -641,7 +641,7 @@ function PrimaryButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLBut
   return (
     <button
       {...rest}
-      className="w-full h-[44px] px-[16px] rounded-full bg-white text-black font-['Geist'] text-[13px] font-semibold active:scale-95 disabled:opacity-40"
+      className="w-full h-[44px] px-[16px] rounded-[16px] text-white font-['Geist'] text-[13px] font-semibold active:scale-95 disabled:opacity-40 trax-btn-primary"
     >
       {children}
     </button>
@@ -791,7 +791,7 @@ function PrioritiesView({ onBack }: { onBack: () => void }) {
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95"
+            className="h-[36px] w-[36px] rounded-full text-white flex items-center justify-center active:scale-95 trax-btn-primary"
             aria-label="Nueva tarea"
           >
             <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
@@ -1085,7 +1085,7 @@ function CalendarView({ onBack }: { onBack: () => void }) {
           <button
             type="button"
             onClick={() => setCreating(true)}
-            className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95"
+            className="h-[36px] w-[36px] rounded-full text-white flex items-center justify-center active:scale-95 trax-btn-primary"
             aria-label="Nuevo evento"
           >
             <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
@@ -1319,7 +1319,7 @@ function RoutineView({ onBack }: { onBack: () => void }) {
           <button
             type="button"
             onClick={() => setAdding((v) => !v)}
-            className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95"
+            className="h-[36px] w-[36px] rounded-full text-white flex items-center justify-center active:scale-95 trax-btn-primary"
           >
             <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
           </button>
@@ -1402,7 +1402,7 @@ function ProjectsView({ onBack }: { onBack: () => void }) {
         title="Proyectos"
         onBack={onBack}
         action={
-          <button type="button" onClick={() => setCreating(true)} className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95">
+          <button type="button" onClick={() => setCreating(true)} className="h-[36px] w-[36px] rounded-full text-white flex items-center justify-center active:scale-95 trax-btn-primary">
             <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
           </button>
         }
@@ -1628,7 +1628,7 @@ function GoalsView({ onBack }: { onBack: () => void }) {
         title="Metas"
         onBack={onBack}
         action={
-          <button type="button" onClick={() => setCreating(true)} className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95">
+          <button type="button" onClick={() => setCreating(true)} className="h-[36px] w-[36px] rounded-full text-white flex items-center justify-center active:scale-95 trax-btn-primary">
             <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
           </button>
         }
@@ -2463,7 +2463,7 @@ function SessionRunner({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 h-[46px] rounded-full font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-black flex items-center justify-center gap-[8px] active:scale-[0.98] transition-transform bg-white"
+              className="flex-1 h-[46px] rounded-[16px] font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white flex items-center justify-center gap-[8px] active:scale-[0.98] transition-transform trax-btn-primary"
             >
               Volver a Aprender
             </button>
@@ -3271,7 +3271,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
               <button
                 type="button"
                 onClick={() => setDiagnosticOpen(true)}
-                className="h-[50px] rounded-full bg-white text-black font-['Bai_Jamjuree'] text-[15px] font-semibold active:scale-[0.98] transition-transform flex items-center justify-center gap-[8px]"
+                className="h-[50px] rounded-[16px] text-white font-['Bai_Jamjuree'] text-[15px] font-semibold active:scale-[0.98] transition-transform flex items-center justify-center gap-[8px] trax-btn-primary"
               >
                 <Sparkles className="h-[15px] w-[15px]" strokeWidth={2} />
                 Empezar test
@@ -3308,7 +3308,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
           <button
             type="button"
             onClick={() => openSetup(undefined, undefined)}
-            className="h-[36px] px-[13px] rounded-full bg-white text-black font-['Geist'] text-[12px] font-semibold flex items-center gap-[6px] active:scale-95"
+            className="h-[36px] px-[13px] rounded-[14px] text-white font-['Geist'] text-[12px] font-semibold flex items-center gap-[6px] active:scale-95 trax-btn-primary"
           >
             <Sparkles className="h-[13px] w-[13px]" strokeWidth={2} />
             Nueva sesión

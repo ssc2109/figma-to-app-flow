@@ -1655,7 +1655,7 @@ function VoiceConfigSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-[6px] h-[50px] rounded-[16px] bg-white text-black font-['Geist'] text-[14px] font-semibold"
+                className="mt-[6px] h-[50px] rounded-[16px] text-white font-['Geist'] text-[14px] font-semibold trax-btn-primary"
               >
                 Guardar
               </button>

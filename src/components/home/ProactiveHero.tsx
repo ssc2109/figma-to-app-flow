@@ -160,19 +160,25 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
         </p>
       </motion.div>
 
-      {/* BRIEFING CARD — SOLID + animated border beam */}
+      {/* BRIEFING CARD — Crecer language: dark panel + soft blue glow + animated border beam */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.05 }}
         className="relative w-full rounded-[24px] overflow-hidden"
         style={{
-          background: "#0B0B0E",
-          border: "1px solid rgba(255,255,255,0.06)",
+          background:
+            "linear-gradient(160deg, rgba(59,130,246,0.10) 0%, rgba(15,15,17,0.9) 55%, #09090b 100%)",
+          border: "1px solid rgba(255,255,255,0.07)",
         }}
       >
+        <div
+          className="pointer-events-none absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl"
+          style={{ background: "#3b82f6", opacity: 0.28 }}
+        />
         <BorderBeam size={260} duration={9} colorFrom="#4dc8fd" colorTo="#1c7cff" />
         <BorderBeam size={260} duration={9} delay={4.5} colorFrom="#a78bfa" colorTo="#1c7cff" />
+
 
         <div className="relative p-[18px]">
           <div className="flex items-center gap-[12px] mb-[16px]">
@@ -230,11 +236,15 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
                     </p>
                   </div>
                   {ins.cta && (
-                    <span className="flex-none self-center inline-flex items-center gap-[4px] px-[10px] py-[6px] rounded-full text-[12px] font-medium font-['Geist'] text-black bg-white">
+                    <span
+                      className="flex-none self-center inline-flex items-center gap-[4px] px-[10px] py-[6px] rounded-full text-[12px] font-semibold font-['Geist'] text-white"
+                      style={{ background: "#3b82f6", boxShadow: "0 4px 12px rgba(59,130,246,0.35)" }}
+                    >
                       {getDistinctCtaLabel(ins.cta.label, ins.cta.action as InsightAction, ins.text)}
                       <ArrowUpRight className="h-[12px] w-[12px]" strokeWidth={2.2} />
                     </span>
                   )}
+
                 </motion.button>
               ))}
           </div>

@@ -411,11 +411,12 @@ function AreaTabs({ area, onChange }: { area: Area; onChange: (a: Area) => void 
           return (
             <button key={a.id} onClick={() => onChange(a.id)}
               className="relative h-[40px] rounded-[20px] font-['Geist'] text-[12px] font-semibold transition-colors"
-              style={{ color: active ? "#000" : "rgba(255,255,255,0.62)" }}>
+              style={{ color: active ? "#fff" : "rgba(255,255,255,0.62)" }}>
               {active && (
                 <motion.span
                   layoutId="biz-tab-pill"
-                  className="absolute inset-0 rounded-[20px] bg-white"
+                  className="absolute inset-0 rounded-[20px]"
+                  style={{ background: "#3b82f6", boxShadow: "0 6px 18px rgba(59,130,246,0.35)" }}
                   transition={{ type: "spring", stiffness: 380, damping: 32 }} />
               )}
               <span className="relative">{a.label}</span>
@@ -426,6 +427,7 @@ function AreaTabs({ area, onChange }: { area: Area; onChange: (a: Area) => void 
     </LayoutGroup>
   );
 }
+
 
 /* ============================================================
    Building blocks
@@ -505,12 +507,16 @@ function BigPanel({
   return (
     <div
       className="mx-[22px] relative rounded-[28px] overflow-hidden"
-      style={{ background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{
+        background: "linear-gradient(160deg, rgba(59,130,246,0.09) 0%, rgba(24,24,27,0.7) 45%, rgba(9,9,11,1) 100%)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
     >
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[170px] opacity-80"
-        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.10), transparent 68%)" }}
+        className="pointer-events-none absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl"
+        style={{ background: "#3b82f6", opacity: 0.22 }}
       />
+
       <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[18px]">
         <div className="flex items-center justify-between gap-[12px]">
           <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
@@ -572,8 +578,15 @@ function EmptyPanel({
   return (
     <div
       className="mx-[22px] relative rounded-[28px] overflow-hidden"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.075)" }}
+      style={{
+        background: "linear-gradient(160deg, rgba(59,130,246,0.10) 0%, rgba(24,24,27,0.6) 45%, rgba(9,9,11,1) 100%)",
+        border: "1px solid rgba(255,255,255,0.075)",
+      }}
     >
+      <div
+        className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl"
+        style={{ background: "#3b82f6", opacity: 0.28 }}
+      />
       <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[16px]">
         <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
         <div className="flex flex-col gap-[8px]">
@@ -584,7 +597,8 @@ function EmptyPanel({
         </div>
         <button
           onClick={onCta}
-          className="self-start h-[44px] px-[18px] rounded-[16px] bg-white text-black font-['Geist'] text-[13.5px] font-bold active:scale-[0.985] transition-transform inline-flex items-center gap-[8px]"
+          className="self-start h-[46px] px-[20px] rounded-[16px] font-['Geist'] text-[13.5px] font-semibold text-white active:scale-[0.99] transition-transform inline-flex items-center gap-[8px]"
+          style={{ background: "#3b82f6", boxShadow: "0 8px 20px rgba(59,130,246,0.28)" }}
         >
           <Plus className="h-[14px] w-[14px]" strokeWidth={2.6} />
           {cta}
@@ -593,6 +607,7 @@ function EmptyPanel({
     </div>
   );
 }
+
 
 /* ============================================================
    Shortcuts
