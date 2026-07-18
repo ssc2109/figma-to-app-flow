@@ -165,9 +165,10 @@ function baselineNote(baseline?: "Básico" | "Intermedio" | "Avanzado") {
 }
 
 function buildPrompt(input: z.infer<typeof InputSchema>) {
-  const { topic, level, minutes, businessType, previousTopics, pathId, topicIndex, topicTotal, lessonKind = "lesson", tierRange, baselineLevel, videoRef, coveredTopics } = input;
+  const { topic, level, minutes, businessType, previousTopics, pathId, topicIndex, topicTotal, lessonKind = "lesson", tierRange, baselineLevel, videoRef, coveredTopics, variantSeed } = input;
   const curatedSources = pathId ? SOURCE_LIBRARY[pathId] : undefined;
   const position1 = topicIndex != null ? topicIndex + 1 : undefined;
+
   const diff = tramoBand(position1, topicTotal);
   const baseline = baselineNote(baselineLevel);
 
