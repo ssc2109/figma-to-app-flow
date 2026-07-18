@@ -2463,7 +2463,7 @@ function SessionRunner({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 h-[46px] rounded-full font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-black flex items-center justify-center gap-[8px] active:scale-[0.98] transition-transform bg-white"
+              className="flex-1 h-[46px] rounded-[16px] font-['Bai_Jamjuree'] text-[14.5px] font-semibold text-white flex items-center justify-center gap-[8px] active:scale-[0.98] transition-transform trax-btn-primary"
             >
               Volver a Aprender
             </button>
