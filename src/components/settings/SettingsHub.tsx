@@ -64,7 +64,18 @@ export default function SettingsHub({
 }) {
   const { user, profile } = useAuth();
   const { plan, isTrialing, daysLeft } = usePlan();
+  const confirm = useConfirm();
   const [query, setQuery] = useState("");
+
+  const handleSignOut = async () => {
+    if (!(await confirm({
+      title: "Cerrar sesión",
+      description: "Vas a cerrar tu sesión en Trax. Podrás volver a entrar cuando quieras.",
+      confirmText: "Cerrar sesión",
+      tone: "danger",
+    }))) return;
+    onSignOut();
+  };
 
   const groups: Group[] = useMemo(
     () => [
