@@ -1022,7 +1022,7 @@ export default function BusinessHub(p: Props) {
       >
         <Aurora colorStops={["#003fc0", "#1c7cff", "#4dc8fd"]} amplitude={0.7} blend={0.15} speed={0.6} />
       </div>
-      <div className="relative z-10 flex flex-col gap-[18px] pt-[88px] pb-[200px]">
+      <div className="relative z-10 flex flex-col gap-[18px] pt-[88px] pb-[24px]">
         <BizHeader />
         <HQPanel insights={insights} signals={signals} />
 
