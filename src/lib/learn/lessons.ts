@@ -90,8 +90,8 @@ const FINANZAS_BASE = [
   {
     title: "Margen bruto en 1 minuto",
     summary: "(Precio − Costo) / Precio. Debajo de 20% estás en zona roja.",
-    video: { youtubeId: "u4ZoJKF_VuA", title: "Fundamentos de valor (Simon Sinek)", seconds: 50 },
   },
+
   { title: "Registra cada venta y gasto", summary: "Sin datos no hay decisiones, solo intuición." },
   { title: "Flujo de caja diario", summary: "El dinero que entra menos el que sale hoy. Esa es tu foto real." },
   { title: "Costos fijos vs variables", summary: "Los fijos te matan si no vendes; los variables suben con la venta." },
