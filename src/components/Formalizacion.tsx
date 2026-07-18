@@ -321,17 +321,44 @@ function BuildingView({
   onBack: () => void;
   openGlossary: (k: TerminoKey) => void;
 }) {
-  const [floor, setFloor] = useState(1);
+  const [floor, setFloor] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1;
+    const v = Number(window.localStorage.getItem('trax.activeFloor'));
+    return Number.isFinite(v) && v >= 1 && v <= 7 ? v : 1;
+  });
   const [tipoPersona, setTipoPersona] = useState<TipoPersona | null>(null);
-  const [unlockedFloor, setUnlockedFloor] = useState(1);
+  const [unlockedFloor, setUnlockedFloor] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1;
+    const v = Number(window.localStorage.getItem('trax.unlockedFloor'));
+    return Number.isFinite(v) && v >= 1 && v <= 7 ? v : 1;
+  });
+  const [nombreNegocioTrax, setNombreNegocioTrax] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem('trax.nombreNegocioTrax') ?? '';
+  });
 
-  const handleCompleteFloor = () => {
+  useEffect(() => {
+    window.localStorage.setItem('trax.activeFloor', String(floor));
+  }, [floor]);
+  useEffect(() => {
+    window.localStorage.setItem('trax.unlockedFloor', String(unlockedFloor));
+  }, [unlockedFloor]);
+  useEffect(() => {
+    window.localStorage.setItem('trax.nombreNegocioTrax', nombreNegocioTrax);
+  }, [nombreNegocioTrax]);
+
+  // Se llamará SOLO desde validaciones específicas de cada piso (Parte 2+).
+  const advanceFloor = (target?: number) => {
     setUnlockedFloor((prev) => {
-      const next = Math.min(prev + 1, floors.length);
+      const next = Math.min(Math.max(prev, target ?? prev + 1), floors.length);
       if (next > floor) setFloor(next);
       return next;
     });
   };
+  // Retro-compat: alias usado por props existentes.
+  const handleCompleteFloor = () => advanceFloor();
+  void nombreNegocioTrax; void setNombreNegocioTrax;
+
 
   return (
     <div className="w-full px-4 pt-6">
