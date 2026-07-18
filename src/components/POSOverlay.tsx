@@ -23,6 +23,7 @@ export default function POSOverlay({ open, onClose }: { open: boolean; onClose: 
   const { user } = useAuth();
   const inv = useInventory();
   const fin = useFinance();
+  const confirm = useConfirm();
 
   const [cart, setCart] = useState<Record<string, number>>({});
   const [query, setQuery] = useState("");
