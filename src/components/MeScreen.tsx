@@ -3248,20 +3248,33 @@ function LearnView({ onBack }: { onBack: () => void }) {
           completedTopics={store.state.pathProgress[pathOpen.id] ?? []}
           hasStarted={hasStarted}
           onBack={() => setPathOpen(null)}
-          onStartTopic={(t) => { store.markPathStarted(pathOpen.id); openSetup(pathOpen, t); }}
+          onStartTopic={(t) => {
+            if (loading) return;
+            store.markPathStarted(pathOpen.id);
+            setSetupPath(pathOpen);
+            setSetupTopic(t);
+            void doGenerate(t, pathOpen.level, 45, pathOpen);
+          }}
         />
-        <SessionSetupSheet
-          open={setupOpen}
-          path={setupPath}
-          initialTopic={setupTopic}
-          onClose={() => { if (!loading) setSetupOpen(false); }}
-          onGenerate={doGenerate}
-          loading={loading}
-          error={error}
-        />
+        {loading && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-[24px]" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(10px)" }}>
+            <div className="flex flex-col items-center gap-[14px] text-center">
+              <Loader2 className="h-[28px] w-[28px] text-white/80 animate-spin" strokeWidth={2} />
+              <div className="font-['Geist'] text-[13.5px] text-white/80">Preparando tu lección…</div>
+            </div>
+          </div>
+        )}
+        {error && !loading && (
+          <div className="fixed inset-x-0 bottom-[24px] mx-auto max-w-[380px] px-[16px] z-[110]">
+            <div className="rounded-[14px] p-[14px] font-['Geist'] text-[13px] text-[#F87171]" style={{ background: "rgba(20,20,22,0.95)", border: "1px solid rgba(248,113,113,0.35)" }}>
+              {error}
+            </div>
+          </div>
+        )}
       </>
     );
   }
+
 
   const totalMinutes = store.state.sessions.reduce((s, x) => s + (x.completed ? x.minutes : 0), 0);
   const completedCount = store.state.sessions.filter((s) => s.completed).length;
