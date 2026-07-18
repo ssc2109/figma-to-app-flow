@@ -7,6 +7,7 @@ import { SubHeader, SubScreen, ListGroup } from "./shared";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Kind = "recordatorio" | "pago" | "servicio";
 type Ev = { id: string; title: string; notes: string | null; event_date: string; kind: Kind; done: boolean };
