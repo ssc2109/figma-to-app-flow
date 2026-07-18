@@ -492,7 +492,7 @@ export default function SociaScreen({ initialPrompt, initialShowHistory }: { ini
 
   return (
     <div
-      className="socia-screen relative w-full min-h-[100dvh] flex flex-col overflow-x-hidden bg-black"
+      className={`socia-screen relative w-full flex flex-col overflow-x-hidden bg-black ${empty ? "h-[100dvh] overflow-hidden" : "min-h-[100dvh]"}`}
       style={orbStyle}
     >
       <style>{SOCIA_CSS}</style>
@@ -1847,22 +1847,22 @@ const SOCIA_CSS = `
 /* GREET */
 .socia-screen .empty-ui{
   position:relative; z-index:4; pointer-events:none;
-  flex:1; min-height:max(calc(100dvh - 98px), 740px);
+  flex:1 1 auto; min-height:0;
   display:flex; flex-direction:column;
-  overflow:visible; overflow-x:hidden;
-  padding-bottom:calc(154px + env(safe-area-inset-bottom, 0px));
+  overflow:hidden;
+  padding-bottom:calc(140px + env(safe-area-inset-bottom, 0px));
 }
 .socia-screen .greet{
   position:relative; left:0; right:0; top:auto;
   text-align:center; padding:0 24px;
-  margin-top:clamp(82px, 18dvh, 170px);
+  margin-top:clamp(20px, 5dvh, 72px);
   pointer-events:auto;
   -webkit-user-select:text; user-select:text;
 }
 .socia-screen .greet h1{
   font-family:'Bai Jamjuree', sans-serif;
   display:block;
-  font-size:clamp(26px, 7.6vw, 38px); font-weight:600; letter-spacing:-0.6px;
+  font-size:clamp(24px, 6.8vw, 34px); font-weight:600; letter-spacing:-0.6px;
   line-height:1.14;
   white-space:normal;
   overflow-wrap:break-word;
@@ -1874,9 +1874,9 @@ const SOCIA_CSS = `
   -webkit-user-select:text; user-select:text;
 }
 .socia-screen .greet p{
-  font-size:13.5px; font-weight:400; line-height:1.5;
+  font-size:13px; font-weight:400; line-height:1.5;
   color:rgba(255,255,255,.45);
-  margin-top:12px; max-width:280px; margin-inline:auto;
+  margin-top:10px; max-width:280px; margin-inline:auto;
   min-height:2.2em;
   -webkit-user-select:text; user-select:text;
 }
@@ -1891,14 +1891,13 @@ const SOCIA_CSS = `
 
 .socia-screen .midstack{
   position:relative; left:auto; right:auto; bottom:auto; top:auto;
-  width:100%; max-width:430px; margin:clamp(72px, 15dvh, 150px) auto 0;
+  width:100%; max-width:430px; margin:auto auto 0;
   transform:none; z-index:5; padding-bottom:0; pointer-events:auto;
 }
 @media (max-height: 720px){
-  .socia-screen .empty-ui{ min-height:auto; }
-  .socia-screen .greet{ margin-top:28px; }
-  .socia-screen .midstack{ margin-top:46px; padding-bottom:24px; }
+  .socia-screen .greet{ margin-top:16px; }
 }
+
 
 /* COMPOSER */
 .socia-screen .composer{ padding:0 18px; }
