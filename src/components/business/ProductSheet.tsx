@@ -116,7 +116,7 @@ export default function ProductSheet({
 
   const del = async () => {
     if (!current) return;
-    if (!confirm(`¿Eliminar "${current.name}" del catálogo?`)) return;
+    if (!(await confirm({ title: `Eliminar "${current.name}"`, description: "Se quitará del catálogo. No afecta las ventas ya registradas.", confirmText: "Eliminar", tone: "danger" }))) return;
     await removeProduct(current.id);
     toast.success("Producto eliminado");
     onClose();
