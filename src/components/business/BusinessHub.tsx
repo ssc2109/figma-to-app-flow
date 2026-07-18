@@ -411,11 +411,12 @@ function AreaTabs({ area, onChange }: { area: Area; onChange: (a: Area) => void 
           return (
             <button key={a.id} onClick={() => onChange(a.id)}
               className="relative h-[40px] rounded-[20px] font-['Geist'] text-[12px] font-semibold transition-colors"
-              style={{ color: active ? "#000" : "rgba(255,255,255,0.62)" }}>
+              style={{ color: active ? "#fff" : "rgba(255,255,255,0.62)" }}>
               {active && (
                 <motion.span
                   layoutId="biz-tab-pill"
-                  className="absolute inset-0 rounded-[20px] bg-white"
+                  className="absolute inset-0 rounded-[20px]"
+                  style={{ background: "#3b82f6", boxShadow: "0 6px 18px rgba(59,130,246,0.35)" }}
                   transition={{ type: "spring", stiffness: 380, damping: 32 }} />
               )}
               <span className="relative">{a.label}</span>
@@ -426,6 +427,7 @@ function AreaTabs({ area, onChange }: { area: Area; onChange: (a: Area) => void 
     </LayoutGroup>
   );
 }
+
 
 /* ============================================================
    Building blocks
