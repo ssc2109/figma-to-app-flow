@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Camera, User, Phone, Globe2, Loader2, Mail, KeyRound, ShieldCheck, LogOut, Monitor } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, User, Phone, Loader2, Mail, KeyRound, ShieldCheck, LogOut, Monitor, ChevronDown, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -10,9 +10,32 @@ import {
   TextInput,
   SaveButton,
   NavRow,
-  SegmentedControl,
   ICON_TILE,
 } from "./shared";
+
+const COUNTRY_CODES: { code: string; flag: string; name: string; len: [number, number] }[] = [
+  { code: "+51", flag: "🇵🇪", name: "Perú", len: [9, 9] },
+  { code: "+52", flag: "🇲🇽", name: "México", len: [10, 10] },
+  { code: "+54", flag: "🇦🇷", name: "Argentina", len: [10, 11] },
+  { code: "+55", flag: "🇧🇷", name: "Brasil", len: [10, 11] },
+  { code: "+56", flag: "🇨🇱", name: "Chile", len: [8, 9] },
+  { code: "+57", flag: "🇨🇴", name: "Colombia", len: [10, 10] },
+  { code: "+58", flag: "🇻🇪", name: "Venezuela", len: [10, 10] },
+  { code: "+593", flag: "🇪🇨", name: "Ecuador", len: [9, 9] },
+  { code: "+591", flag: "🇧🇴", name: "Bolivia", len: [8, 8] },
+  { code: "+595", flag: "🇵🇾", name: "Paraguay", len: [9, 9] },
+  { code: "+598", flag: "🇺🇾", name: "Uruguay", len: [8, 9] },
+  { code: "+34", flag: "🇪🇸", name: "España", len: [9, 9] },
+  { code: "+1", flag: "🇺🇸", name: "USA/Canadá", len: [10, 10] },
+];
+
+function splitPhone(raw: string | null | undefined): { code: string; digits: string } {
+  const s = (raw ?? "").trim();
+  if (!s) return { code: "+51", digits: "" };
+  const match = COUNTRY_CODES.find((c) => s.startsWith(c.code));
+  if (match) return { code: match.code, digits: s.slice(match.code.length).replace(/\D/g, "") };
+  return { code: "+51", digits: s.replace(/\D/g, "") };
+}
 
 /* ----------------------------- Perfil personal ----------------------------- */
 export function ProfileScreen({ onBack }: { onBack: () => void }) {
