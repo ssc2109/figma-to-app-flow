@@ -196,7 +196,6 @@ export function NotificationsScreen({ onBack }: { onBack: () => void }) {
 
 /* ------------------------- SocIA ------------------------- */
 export function SociaSettingsScreen({ onBack, openThreads }: { onBack: () => void; openThreads?: () => void }) {
-  const { prefs, update, dirty, saving, save } = usePrefs();
   const { user } = useAuth();
   const [clearing, setClearing] = useState(false);
 
@@ -215,19 +214,20 @@ export function SociaSettingsScreen({ onBack, openThreads }: { onBack: () => voi
       title="socIA"
       eyebrow="Ajustes · Preferencias"
       onBack={onBack}
-      right={dirty ? <SaveButton onClick={save} saving={saving} /> : null}
     >
       <Section title="Personalidad">
-        <FormRow icon={Sparkles} label="Tono de respuestas" last>
-          <SegmentedControl
-            value={prefs.socia_tone ?? "cercano"}
-            onChange={(v) => update("socia_tone", v)}
-            options={[
-              { value: "cercano", label: "Cercano" },
-              { value: "formal", label: "Formal" },
-            ]}
-          />
-        </FormRow>
+        <div className="flex items-start gap-[14px] px-[16px] py-[16px]">
+          <div className="h-[42px] w-[42px] rounded-[12px] grid place-items-center shrink-0 bg-[#3b82f6]/15 border border-[#3b82f6]/25">
+            <Sparkles className="h-[18px] w-[18px] text-[#3b82f6]" strokeWidth={1.8} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-['Geist'] text-[15px] text-white font-medium">Tono cercano, empático y humano</div>
+            <div className="font-['Geist'] text-[12.5px] text-white/50 mt-[4px] leading-[1.5]">
+              socIA siempre te tratará de tú, con calidez, sin tecnicismos y priorizando entenderte
+              antes que responder. Este tono es consistente en toda la app y no se puede modificar.
+            </div>
+          </div>
+        </div>
       </Section>
 
       <Section title="Historial de chats">
