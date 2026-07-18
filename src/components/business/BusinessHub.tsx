@@ -404,13 +404,13 @@ const AREAS: { id: Area; label: string }[] = [
 function AreaTabs({ area, onChange }: { area: Area; onChange: (a: Area) => void }) {
   return (
     <LayoutGroup id="biz-area-tabs">
-      <div className="mx-[22px] grid grid-cols-3 gap-[4px] p-[5px] rounded-[24px]"
+      <div className="mx-[22px] grid grid-cols-4 gap-[4px] p-[5px] rounded-[24px]"
         style={{ background: "rgba(16,17,17,0.85)", border: "1px solid rgba(255,255,255,0.07)" }}>
         {AREAS.map((a) => {
           const active = area === a.id;
           return (
             <button key={a.id} onClick={() => onChange(a.id)}
-              className="relative h-[40px] rounded-[20px] font-['Geist'] text-[13px] font-semibold transition-colors"
+              className="relative h-[40px] rounded-[20px] font-['Geist'] text-[12px] font-semibold transition-colors"
               style={{ color: active ? "#000" : "rgba(255,255,255,0.62)" }}>
               {active && (
                 <motion.span
