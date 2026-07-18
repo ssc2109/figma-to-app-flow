@@ -36,7 +36,7 @@ export default function CatalogView({ onBack }: { onBack: () => void }) {
   };
 
   const remove = async (p: InventoryItem) => {
-    if (!confirm(`¿Eliminar "${p.name}" del catálogo?`)) return;
+    if (!(await confirm({ title: `Eliminar "${p.name}"`, description: "Se quitará del catálogo público y de tu inventario.", confirmText: "Eliminar", tone: "danger" }))) return;
     await inv.removeProduct(p.id);
     toast.success("Producto eliminado");
   };
