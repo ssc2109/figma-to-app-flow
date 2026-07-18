@@ -188,24 +188,56 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
             placeholder="Cómo te llamas"
           />
         </FormRow>
-        <FormRow icon={Phone} label="Teléfono">
-          <TextInput
-            value={form.phone}
-            onChange={(v) => update("phone", v)}
-            placeholder="+51 999 999 999"
-            type="tel"
-          />
-        </FormRow>
-        <FormRow icon={Globe2} label="Idioma" last>
-          <SegmentedControl
-            value={form.language}
-            onChange={(v) => update("language", v)}
-            options={[
-              { value: "es", label: "Español" },
-              { value: "en", label: "English" },
-              { value: "pt", label: "Português" },
-            ]}
-          />
+        <FormRow icon={Phone} label="Teléfono" last>
+          <div className="flex items-stretch gap-[8px] w-full">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setCodeOpen((o) => !o)}
+                className="h-[40px] px-[10px] rounded-[12px] flex items-center gap-[6px] bg-white/[0.04] border border-white/10 text-white text-[13px] font-['Geist']"
+              >
+                <span className="text-[15px] leading-none">{currentCountry.flag}</span>
+                <span>{currentCountry.code}</span>
+                <ChevronDown className="h-[13px] w-[13px] text-white/50" />
+              </button>
+              {codeOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-[70]"
+                    onClick={() => setCodeOpen(false)}
+                  />
+                  <div className="absolute z-[71] top-[46px] left-0 w-[220px] max-h-[280px] overflow-y-auto rounded-[14px] bg-[#0e0e10] border border-white/10 shadow-2xl py-[6px]">
+                    {COUNTRY_CODES.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        onClick={() => {
+                          update("phoneCode", c.code);
+                          setCodeOpen(false);
+                        }}
+                        className={`w-full px-[12px] py-[8px] flex items-center gap-[8px] text-left text-[13px] font-['Geist'] active:bg-white/[0.06] ${
+                          c.code === form.phoneCode ? "text-white bg-white/[0.04]" : "text-white/75"
+                        }`}
+                      >
+                        <span className="text-[15px]">{c.flag}</span>
+                        <span className="flex-1">{c.name}</span>
+                        <span className="text-white/50">{c.code}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="flex-1">
+              <TextInput
+                value={form.phoneDigits}
+                onChange={(v) => update("phoneDigits", v.replace(/\D/g, "").slice(0, 15))}
+                placeholder="999999999"
+                type="tel"
+                inputMode="numeric"
+              />
+            </div>
+          </div>
         </FormRow>
       </Section>
     </SettingsShell>
