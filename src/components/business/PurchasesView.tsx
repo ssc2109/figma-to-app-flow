@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useInventory } from "@/data/inventory";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Purchase = {
   id: string;
