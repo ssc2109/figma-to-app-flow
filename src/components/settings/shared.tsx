@@ -293,13 +293,20 @@ export function Toggle({
       type="button"
       onClick={() => !disabled && onChange(!value)}
       disabled={disabled}
-      className="relative h-[26px] w-[44px] rounded-full transition-colors disabled:opacity-40 shrink-0"
-      style={{ background: value ? "#3b82f6" : "rgba(255,255,255,0.12)" }}
+      className="relative h-[26px] w-[44px] rounded-full disabled:opacity-40 shrink-0"
+      style={{
+        background: value ? "#3b82f6" : "rgba(255,255,255,0.12)",
+        transition: "background-color 180ms cubic-bezier(0.4,0,0.2,1)",
+      }}
       aria-pressed={value}
+      role="switch"
     >
       <span
-        className="absolute top-[3px] h-[20px] w-[20px] rounded-full bg-white transition-transform"
-        style={{ transform: value ? "translateX(21px)" : "translateX(3px)" }}
+        className="absolute top-[3px] left-[3px] h-[20px] w-[20px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.35)]"
+        style={{
+          transform: `translateX(${value ? 18 : 0}px)`,
+          transition: "transform 220ms cubic-bezier(0.34,1.3,0.64,1)",
+        }}
       />
     </button>
   );
