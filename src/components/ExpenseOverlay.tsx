@@ -41,6 +41,11 @@ export default function ExpenseOverlay({ open, onClose }: { open: boolean; onClo
       toast.error("Pon un monto válido");
       return;
     }
+    if (!(await confirm({
+      title: "Registrar gasto",
+      description: `Vas a registrar un gasto de S/ ${n.toFixed(2)} en ${category}. Se sumará a tus egresos del día.`,
+      confirmText: "Registrar gasto",
+    }))) return;
     setSaving(true);
     try {
       const { error } = await supabase.from("expenses").insert({
