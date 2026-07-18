@@ -8,6 +8,7 @@ import { useInventory } from "@/data/inventory";
 import { useFinance, type PayMethod } from "@/data/finance";
 import { submitSale as runSubmitSale } from "@/lib/sales/submit-sale";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm";
 
 const fmt = (n: number) => `S/ ${n.toFixed(2)}`;
 
