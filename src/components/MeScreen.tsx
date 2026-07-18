@@ -3271,7 +3271,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
               <button
                 type="button"
                 onClick={() => setDiagnosticOpen(true)}
-                className="h-[50px] rounded-full bg-white text-black font-['Bai_Jamjuree'] text-[15px] font-semibold active:scale-[0.98] transition-transform flex items-center justify-center gap-[8px]"
+                className="h-[50px] rounded-[16px] text-white font-['Bai_Jamjuree'] text-[15px] font-semibold active:scale-[0.98] transition-transform flex items-center justify-center gap-[8px] trax-btn-primary"
               >
                 <Sparkles className="h-[15px] w-[15px]" strokeWidth={2} />
                 Empezar test
