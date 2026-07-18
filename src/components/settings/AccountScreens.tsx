@@ -356,8 +356,20 @@ export function SessionsScreen({ onBack }: { onBack: () => void }) {
           title="Cerrar sesión en otros dispositivos"
           description="Solo mantiene la sesión actual"
           onClick={closeOthers}
-          last
           right={loading ? <Loader2 className="h-[14px] w-[14px] animate-spin text-white/50" /> : undefined}
+        />
+        <NavRow
+          icon={UserCog}
+          title="Cambiar de cuenta"
+          description="Cierra sesión y vuelve a entrar con otra cuenta. Requiere validar credenciales por seguridad."
+          onClick={async () => {
+            const ok = confirm(
+              "Vas a cerrar esta sesión para iniciar con otra cuenta. Por tu seguridad tendrás que validar tus credenciales al volver a entrar. ¿Continuar?",
+            );
+            if (!ok) return;
+            await supabase.auth.signOut();
+          }}
+          last
         />
       </Section>
 
