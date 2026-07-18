@@ -236,11 +236,15 @@ export default function ProactiveHero({ onIntent }: { onIntent: (i: HomeNavInten
                     </p>
                   </div>
                   {ins.cta && (
-                    <span className="flex-none self-center inline-flex items-center gap-[4px] px-[10px] py-[6px] rounded-full text-[12px] font-medium font-['Geist'] text-black bg-white">
+                    <span
+                      className="flex-none self-center inline-flex items-center gap-[4px] px-[10px] py-[6px] rounded-full text-[12px] font-semibold font-['Geist'] text-white"
+                      style={{ background: "#3b82f6", boxShadow: "0 4px 12px rgba(59,130,246,0.35)" }}
+                    >
                       {getDistinctCtaLabel(ins.cta.label, ins.cta.action as InsightAction, ins.text)}
                       <ArrowUpRight className="h-[12px] w-[12px]" strokeWidth={2.2} />
                     </span>
                   )}
+
                 </motion.button>
               ))}
           </div>
