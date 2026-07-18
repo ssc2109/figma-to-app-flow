@@ -53,7 +53,7 @@ export default function PurchasesView({ onBack }: { onBack: () => void }) {
   }, [items]);
 
   const del = async (id: string) => {
-    if (!confirm("¿Eliminar esta compra?")) return;
+    if (!(await confirm({ title: "Eliminar compra", description: "Se borrará esta compra y sus ítems del historial.", confirmText: "Eliminar", tone: "danger" }))) return;
     const { error } = await supabase.from("purchases").delete().eq("id", id);
     if (error) return toast.error(error.message);
     load();
