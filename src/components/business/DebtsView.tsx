@@ -145,6 +145,7 @@ export default function DebtsView({
   onBack, initialKind = "cobrar", lockKind = false,
 }: { onBack: () => void; initialKind?: Kind; lockKind?: boolean }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [tab, setTab] = useState<Kind>(initialKind);
   const [items, setItems] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
