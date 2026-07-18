@@ -15,6 +15,7 @@ import { useConfirm } from "@/components/ui/confirm";
 export default function CatalogView({ onBack }: { onBack: () => void }) {
   const inv = useInventory();
   const { limits } = usePlan();
+  const confirm = useConfirm();
   const showTraxBadge = !limits.hasCatalogBranding;
   const [q, setQ] = useState("");
   const [sheet, setSheet] = useState<InventoryItem | "new" | null>(null);
