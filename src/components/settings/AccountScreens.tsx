@@ -100,14 +100,19 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
 
   const save = async () => {
     if (!user) return;
+    const minLen = currentCountry.len[0];
+    const maxLen = currentCountry.len[1];
+    if (form.phoneDigits && (form.phoneDigits.length < minLen || form.phoneDigits.length > maxLen)) {
+      toast.error(`El teléfono debe tener entre ${minLen} y ${maxLen} dígitos.`);
+      return;
+    }
     setSaving(true);
-    const prevPrefs = (profile?.preferences as Record<string, unknown> | null) ?? {};
+    const fullPhone = form.phoneDigits ? `${form.phoneCode}${form.phoneDigits}` : null;
     const { error } = await supabase
       .from("profiles")
       .update({
         owner_name: form.owner_name.trim() || "Tú",
-        phone: form.phone || null,
-        preferences: { ...prevPrefs, language: form.language },
+        phone: fullPhone,
       })
       .eq("id", user.id);
     setSaving(false);
