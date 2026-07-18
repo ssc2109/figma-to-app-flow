@@ -73,7 +73,7 @@ const Formalizacion = () => {
   const cerrarGlosario = () => setGlosario(null);
 
   return (
-    <div className="w-full min-h-screen bg-black text-white/90 pb-[180px]">
+    <div className="w-full bg-black text-white/90">
       {currentView === 'entry' && <EntryView onStart={() => setCurrentView('learning')} />}
       {currentView === 'learning' && (
         <LearningView
