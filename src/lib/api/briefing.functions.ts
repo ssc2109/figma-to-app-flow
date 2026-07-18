@@ -193,7 +193,7 @@ async function gatherSnapshot(
   // Products
   const lowStock = products
     .filter((p: any) => {
-      const th = p.low_stock_threshold ?? 5;
+      const th = p.low_stock_threshold ?? 10;
       return p.stock !== null && p.stock <= th;
     })
     .map((p: any) => ({ name: p.name, units: p.stock ?? 0 }))

@@ -57,7 +57,7 @@ function makeTools(supabase: SupabaseClient, userId: string) {
         const { data, error } = await q;
         if (error) throw new Error(error.message);
         let rows = data ?? [];
-        if (soloBajoStock) rows = rows.filter((p) => (p.stock ?? 0) <= (p.low_stock_threshold ?? 5));
+        if (soloBajoStock) rows = rows.filter((p) => (p.stock ?? 0) <= (p.low_stock_threshold ?? 10));
         return {
           total: rows.length,
           productos: rows.map((p) => ({
