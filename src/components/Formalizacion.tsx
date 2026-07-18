@@ -380,10 +380,10 @@ function BuildingView({
         </div>
       </div>
 
-      <div className="flex gap-3 w-full">
-        {/* Vertical floor selector */}
+      <div className="flex gap-3 w-full h-[550px]">
+        {/* Vertical floor selector (static) */}
         <div
-          className="shrink-0 w-[62px] rounded-[20px] p-2 flex flex-col-reverse gap-1.5"
+          className="shrink-0 w-[62px] rounded-[20px] p-2 flex flex-col-reverse gap-1.5 self-start"
           style={{
             background: 'rgba(255,255,255,0.03)',
             border: '1px solid rgba(255,255,255,0.06)',
@@ -395,8 +395,9 @@ function BuildingView({
             return (
               <button
                 key={f.n}
-                onClick={() => !locked && setFloor(f.n)}
+                {...(locked ? {} : { onClick: () => setFloor(f.n) })}
                 disabled={locked}
+                aria-disabled={locked}
                 className="w-full h-[52px] rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all relative disabled:cursor-not-allowed"
                 style={{
                   background: active
@@ -409,7 +410,7 @@ function BuildingView({
                     : locked
                       ? '1px solid rgba(255,255,255,0.03)'
                       : '1px solid rgba(255,255,255,0.05)',
-                  opacity: locked ? 0.45 : 1,
+                  opacity: locked ? 0.5 : 1,
                 }}
               >
                 {locked ? (
@@ -433,8 +434,8 @@ function BuildingView({
           })}
         </div>
 
-        {/* Floor content */}
-        <div className="flex-1 min-w-0">
+        {/* Floor content (scrollable) */}
+        <div className="flex-1 min-w-0 h-full overflow-y-auto pr-1">
           <FloorContent
             floor={floor}
             tipoPersona={tipoPersona}
@@ -445,6 +446,7 @@ function BuildingView({
           />
         </div>
       </div>
+
     </div>
   );
 }
