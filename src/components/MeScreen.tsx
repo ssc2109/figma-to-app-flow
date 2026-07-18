@@ -1863,19 +1863,19 @@ type LearningPath = {
 const LEARNING_PATHS: LearningPath[] = [
   { id: "ventas", emoji: "📈", name: "Cómo aumentar las ventas", description: "Estrategias probadas para vender más sin gastar más.", level: "Básico", totalMinutes: 300, gradient: "linear-gradient(135deg,#1f2937,#0f766e)", topics: expandedTopicTitles("ventas"), lessons: EXPANDED_LESSONS.ventas },
   { id: "finanzas", emoji: "💰", name: "Finanzas para pequeños negocios", description: "Domina el flujo de caja, márgenes y decisiones de dinero.", level: "Básico", totalMinutes: 300, gradient: "linear-gradient(135deg,#0f172a,#2563eb)", topics: expandedTopicTitles("finanzas"), lessons: EXPANDED_LESSONS.finanzas },
-  { id: "clientes", emoji: "🤝", name: "Atención al Cliente", description: "Convierte compradores ocasionales en fans del negocio.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", topics: ["Experiencia del cliente", "Manejo de quejas y reclamos", "Programas de fidelización", "Comunicación asertiva", "Post-venta que retiene"] },
-  { id: "productividad", emoji: "🧠", name: "Productividad", description: "Menos tiempo perdido, más avances reales cada día.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#111827,#f59e0b)", topics: ["Regla del 80/20 aplicada al negocio", "Bloques de tiempo profundo", "Gestión de energía, no solo tiempo", "Rutinas de dueños de negocio", "Delegar y automatizar"] },
-  { id: "organizacion", emoji: "🗂️", name: "Organización y Procesos", description: "Ordena tu negocio con procesos simples que no dependen de ti.", level: "Básico", totalMinutes: 150, gradient: "linear-gradient(135deg,#1e293b,#64748b)", topics: ["Procesos que no dependen del dueño", "Checklists para reducir errores", "Orden del local y del almacén", "Documentar lo que ya funciona", "Delegar tareas repetitivas"] },
-  { id: "formalizacion", emoji: "📋", name: "Formalización y Trámites", description: "RUC, régimen tributario y trámites básicos sin dolores de cabeza.", level: "Avanzado", totalMinutes: 150, gradient: "linear-gradient(135deg,#052e2b,#0891b2)", topics: ["Cómo sacar tu RUC y elegir régimen", "SUNAT: obligaciones básicas del pequeño negocio", "Registro de marca y Sunarp", "Licencias municipales básicas", "Errores comunes al formalizarse"] },
-  { id: "marketing", emoji: "📢", name: "Marketing Digital", description: "Redes sociales, WhatsApp Business y publicidad rentable.", level: "Intermedio", totalMinutes: 240, gradient: "linear-gradient(135deg,#3b0764,#9333ea)", topics: ["Marketing en redes sociales", "WhatsApp Business avanzado", "Publicidad pagada rentable", "Contenido que vende", "SEO local para pequeños negocios"] },
-  { id: "inventario", emoji: "📦", name: "Gestión de Inventario", description: "Evita quiebres de stock y capital dormido en almacén.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", topics: ["Rotación de inventario", "Método ABC de productos", "Reabastecimiento óptimo", "Control de mermas y robos", "Proveedores estratégicos"] },
-  { id: "administracion", emoji: "📊", name: "Administración", description: "Los procesos que sostienen a un negocio que crece.", level: "Intermedio", totalMinutes: 210, gradient: "linear-gradient(135deg,#1e293b,#0d9488)", topics: ["Indicadores clave (KPIs)", "Toma de decisiones con datos", "Planeación semanal y mensual", "Procesos y manuales operativos", "Gestión de proveedores"] },
-  { id: "negociacion", emoji: "🤝", name: "Negociación con Proveedores y Clientes", description: "Negocia mejores condiciones sin dañar la relación.", level: "Intermedio", totalMinutes: 180, gradient: "linear-gradient(135deg,#422006,#ca8a04)", topics: ["Principios de negociación efectiva", "Cómo negociar precios con proveedores", "Manejo de objeciones en la venta", "Cuándo ceder y cuándo sostener postura", "Cerrar acuerdos que se cumplen"] },
-  { id: "liderazgo", emoji: "👥", name: "Liderazgo", description: "Guía tu equipo con claridad, cercanía y resultados.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#4c1d95,#db2777)", topics: ["Liderazgo situacional", "Delegación efectiva", "Feedback que construye", "Motivación intrínseca del equipo", "Cultura de servicio"] },
-  { id: "rrhh", emoji: "🧑‍🤝‍🧑", name: "Recursos Humanos y Equipo", description: "Contrata, integra y retén al equipo que hace crecer tu negocio.", level: "Intermedio", totalMinutes: 210, gradient: "linear-gradient(135deg,#1e1b4b,#6366f1)", topics: ["Cómo contratar a tu primer colaborador", "Contratos y planillas básicas", "Onboarding: primeros 30 días", "Evaluación de desempeño simple", "Retener al buen personal"] },
-  { id: "ia", emoji: "🤖", name: "IA aplicada a negocios", description: "Casos reales de IA que ahorran horas y aumentan ingresos.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#000000,#7c3aed)", topics: ["IA para atención al cliente 24/7", "IA para marketing y contenido", "IA para análisis de ventas", "IA para inventario predictivo", "Automatización de tareas repetitivas"] },
-  { id: "expansion", emoji: "🚀", name: "Expansión y Crecimiento", description: "Escala tu negocio a nuevas sucursales o mercados con orden.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#052e16,#16a34a)", topics: ["Cuándo tu negocio está listo para escalar", "Franquicias vs. sucursales propias", "Sistematizar antes de expandir", "Financiamiento para crecer", "Errores comunes al expandirse rápido"] },
-  { id: "inversion", emoji: "💹", name: "Finanzas Avanzadas e Inversión", description: "Reinvierte con criterio y entiende cómo acceder a capital.", level: "Avanzado", totalMinutes: 240, gradient: "linear-gradient(135deg,#0c0a09,#dc2626)", topics: ["Cuándo y cómo reinvertir utilidades", "Acceso a crédito para negocios", "Fundamentos para atraer inversionistas", "Evaluar el retorno de una inversión", "Riesgos financieros que evitar"] },
+  { id: "clientes", emoji: "🤝", name: "Atención al Cliente", description: "Convierte compradores ocasionales en fans del negocio.", level: "Básico", totalMinutes: 300, gradient: "linear-gradient(135deg,#7f1d1d,#f97316)", topics: expandedTopicTitles("clientes"), lessons: EXPANDED_LESSONS.clientes },
+  { id: "productividad", emoji: "🧠", name: "Productividad", description: "Menos tiempo perdido, más avances reales cada día.", level: "Básico", totalMinutes: 300, gradient: "linear-gradient(135deg,#111827,#f59e0b)", topics: expandedTopicTitles("productividad"), lessons: EXPANDED_LESSONS.productividad },
+  { id: "organizacion", emoji: "🗂️", name: "Organización y Procesos", description: "Ordena tu negocio con procesos simples que no dependen de ti.", level: "Básico", totalMinutes: 300, gradient: "linear-gradient(135deg,#1e293b,#64748b)", topics: expandedTopicTitles("organizacion"), lessons: EXPANDED_LESSONS.organizacion },
+  { id: "formalizacion", emoji: "📋", name: "Formalización y Trámites", description: "RUC, régimen tributario y trámites básicos sin dolores de cabeza.", level: "Avanzado", totalMinutes: 300, gradient: "linear-gradient(135deg,#052e2b,#0891b2)", topics: expandedTopicTitles("formalizacion"), lessons: EXPANDED_LESSONS.formalizacion },
+  { id: "marketing", emoji: "📢", name: "Marketing Digital", description: "Redes sociales, WhatsApp Business y publicidad rentable.", level: "Intermedio", totalMinutes: 300, gradient: "linear-gradient(135deg,#3b0764,#9333ea)", topics: expandedTopicTitles("marketing"), lessons: EXPANDED_LESSONS.marketing },
+  { id: "inventario", emoji: "📦", name: "Gestión de Inventario", description: "Evita quiebres de stock y capital dormido en almacén.", level: "Intermedio", totalMinutes: 300, gradient: "linear-gradient(135deg,#0c4a6e,#38bdf8)", topics: expandedTopicTitles("inventario"), lessons: EXPANDED_LESSONS.inventario },
+  { id: "administracion", emoji: "📊", name: "Administración", description: "Los procesos que sostienen a un negocio que crece.", level: "Intermedio", totalMinutes: 300, gradient: "linear-gradient(135deg,#1e293b,#0d9488)", topics: expandedTopicTitles("administracion"), lessons: EXPANDED_LESSONS.administracion },
+  { id: "negociacion", emoji: "🤝", name: "Negociación con Proveedores y Clientes", description: "Negocia mejores condiciones sin dañar la relación.", level: "Intermedio", totalMinutes: 300, gradient: "linear-gradient(135deg,#422006,#ca8a04)", topics: expandedTopicTitles("negociacion"), lessons: EXPANDED_LESSONS.negociacion },
+  { id: "liderazgo", emoji: "👥", name: "Liderazgo", description: "Guía tu equipo con claridad, cercanía y resultados.", level: "Avanzado", totalMinutes: 300, gradient: "linear-gradient(135deg,#4c1d95,#db2777)", topics: expandedTopicTitles("liderazgo"), lessons: EXPANDED_LESSONS.liderazgo },
+  { id: "rrhh", emoji: "🧑‍🤝‍🧑", name: "Recursos Humanos y Equipo", description: "Contrata, integra y retén al equipo que hace crecer tu negocio.", level: "Intermedio", totalMinutes: 300, gradient: "linear-gradient(135deg,#1e1b4b,#6366f1)", topics: expandedTopicTitles("rrhh"), lessons: EXPANDED_LESSONS.rrhh },
+  { id: "ia", emoji: "🤖", name: "IA aplicada a negocios", description: "Casos reales de IA que ahorran horas y aumentan ingresos.", level: "Avanzado", totalMinutes: 300, gradient: "linear-gradient(135deg,#000000,#7c3aed)", topics: expandedTopicTitles("ia"), lessons: EXPANDED_LESSONS.ia },
+  { id: "expansion", emoji: "🚀", name: "Expansión y Crecimiento", description: "Escala tu negocio a nuevas sucursales o mercados con orden.", level: "Avanzado", totalMinutes: 300, gradient: "linear-gradient(135deg,#052e16,#16a34a)", topics: expandedTopicTitles("expansion"), lessons: EXPANDED_LESSONS.expansion },
+  { id: "inversion", emoji: "💹", name: "Finanzas Avanzadas e Inversión", description: "Reinvierte con criterio y entiende cómo acceder a capital.", level: "Avanzado", totalMinutes: 300, gradient: "linear-gradient(135deg,#0c0a09,#dc2626)", topics: expandedTopicTitles("inversion"), lessons: EXPANDED_LESSONS.inversion },
 ];
 
 /** Plan mínimo requerido para acceder a rutas de un nivel. */
@@ -1917,6 +1917,14 @@ type StoredSession = {
   lessonKind?: LessonKind;
   lessonTier?: LessonTier;
   video?: LessonVideo;
+  /** Progreso en curso de la sesión (para retomar donde se dejó al navegar fuera). */
+  progress?: {
+    stage: "steps" | "quiz" | "score";
+    stepIdx: number;
+    quizIdx: number;
+    answers: Record<number, number>;
+    revealed: Record<number, boolean>;
+  };
 };
 
 type FavoriteRef = { type: "book" | "case" | "news" | "trend"; sessionId: string; index: number };
@@ -2067,7 +2075,7 @@ function SessionSetupSheet({
     <Sheet
       open={open}
       onClose={loading ? () => {} : onClose}
-      title={path ? `Sesión · ${path.name}` : "Pregúntale a la IA"}
+      title={path ? `Sesión · ${path.name}` : "Nueva sesión"}
       footer={
         <>
           <GhostButton onClick={onClose} disabled={loading}>Cancelar</GhostButton>
@@ -2078,53 +2086,10 @@ function SessionSetupSheet({
       }
     >
       {path && (
-        <Field label="Tema del path">
-          <select
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            className="w-full h-[38px] px-[10px] rounded-[10px] bg-white/[0.04] outline-none font-['Geist'] text-[14px] text-white"
-            style={{ border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            {path.topics.map((t) => (
-              <option key={t} value={t} className="bg-black">{t}</option>
-            ))}
-          </select>
-        </Field>
-      )}
-      {!path && (
-        <Field label="Pregunta o tema">
-          <TextInput value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Ej. Cómo negociar el precio de alquiler de mi local" />
-        </Field>
-      )}
-      {!path && (
-        <>
-          <Field label="Nivel">
-            <div className="flex gap-[6px]">
-              {(["Básico", "Intermedio", "Avanzado"] as LearnLevel[]).map((l) => (
-                <button key={l} type="button" onClick={() => setLevel(l)}
-                  className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white"
-                  style={{
-                    background: level === l ? "rgba(255,255,255,0.10)" : "transparent",
-                    border: `1px solid ${level === l ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
-                  }}
-                >{l}</button>
-              ))}
-            </div>
-          </Field>
-          <Field label="Duración">
-            <div className="flex gap-[6px]">
-              {([30, 45, 60] as LearnMinutes[]).map((m) => (
-                <button key={m} type="button" onClick={() => setMinutes(m)}
-                  className="h-[30px] px-[12px] rounded-full font-['Geist'] text-[12px] font-medium text-white tabular-nums"
-                  style={{
-                    background: minutes === m ? "rgba(255,255,255,0.10)" : "transparent",
-                    border: `1px solid ${minutes === m ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.08)"}`,
-                  }}
-                >{m} min</button>
-              ))}
-            </div>
-          </Field>
-        </>
+        <div className="rounded-[12px] px-[12px] py-[10px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div className="font-['Geist'] text-[10.5px] uppercase tracking-[1.4px] text-white/45 mb-[4px]">Lección</div>
+          <div className="font-['Geist'] text-[14px] text-white leading-[1.35]">{topic}</div>
+        </div>
       )}
       {path && (
         <div className="rounded-[12px] px-[12px] py-[10px] flex items-center gap-[8px]" style={{ background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.20)" }}>
@@ -2133,9 +2098,7 @@ function SessionSetupSheet({
         </div>
       )}
       <div className="font-['Geist'] text-[12px] text-white/45 leading-[1.5]">
-        {path
-          ? "La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable."
-          : "Pregúntale cualquier duda de tu negocio y la IA investigará y armará una sesión completa para ti."}
+        La IA investigará libros clásicos, casos reales, noticias recientes y tendencias para armarte una sesión clara y accionable.
       </div>
       {loading && (
         <div className="flex items-center gap-[10px] rounded-[12px] p-[12px]" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -2154,25 +2117,34 @@ function SessionSetupSheet({
 
 /* -------- Session Runner (micro-lecciones tipo Duolingo) -------- */
 function SessionRunner({
-  stored, onClose, onComplete, onRemove,
+  stored, onClose, onComplete, onRemove, onProgress,
 }: {
   stored: StoredSession;
   onClose: () => void;
   onComplete: (score: number, total: number) => void;
   onRemove: () => void;
+  onProgress?: (p: NonNullable<StoredSession["progress"]>) => void;
 }) {
   const { session } = stored;
   const steps = session.steps ?? [];
   const quiz = session.quiz ?? [];
   const totalSteps = steps.length;
   const totalQuestions = quiz.length;
-  // stages: step 0..N-1 -> "quiz" -> "score"
-  const [stepIdx, setStepIdx] = useState(0);
-  const [stage, setStage] = useState<"steps" | "quiz" | "score">(totalSteps > 0 ? "steps" : totalQuestions > 0 ? "quiz" : "score");
-  const [quizIdx, setQuizIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [revealed, setRevealed] = useState<Record<number, boolean>>({});
-  const savedRef = useRef(false);
+  const savedProgress = stored.progress;
+  const initialStage: "steps" | "quiz" | "score" = savedProgress?.stage
+    ?? (totalSteps > 0 ? "steps" : totalQuestions > 0 ? "quiz" : "score");
+  const [stepIdx, setStepIdx] = useState(savedProgress?.stepIdx ?? 0);
+  const [stage, setStage] = useState<"steps" | "quiz" | "score">(initialStage);
+  const [quizIdx, setQuizIdx] = useState(savedProgress?.quizIdx ?? 0);
+  const [answers, setAnswers] = useState<Record<number, number>>(savedProgress?.answers ?? {});
+  const [revealed, setRevealed] = useState<Record<number, boolean>>(savedProgress?.revealed ?? {});
+  const savedRef = useRef(stored.completed === true);
+
+  // Persistir progreso en curso cada vez que cambie el estado paso/quiz/respuestas.
+  useEffect(() => {
+    if (stage === "score" || !onProgress) return;
+    onProgress({ stage, stepIdx, quizIdx, answers, revealed });
+  }, [stage, stepIdx, quizIdx, answers, revealed, onProgress]);
 
   const path = LEARNING_PATHS.find((p) => p.id === stored.pathId);
   const [c1, c2] = extractGradientColors(path?.gradient ?? "linear-gradient(135deg,#0f172a,#3b0764)");
@@ -2307,7 +2279,7 @@ function SessionRunner({
                     <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
                       <iframe
                         className="absolute inset-0 w-full h-full"
-                        src={`https://www.youtube.com/embed/${stored.video.youtubeId}?rel=0&modestbranding=1`}
+                        src={`https://www.youtube.com/embed/${stored.video.youtubeId}?rel=0&modestbranding=1&start=${stored.video.startSeconds ?? 0}&end=${stored.video.endSeconds ?? (stored.video.startSeconds ?? 0) + (stored.video.seconds ?? 55)}`}
                         title={stored.video.title}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
@@ -3078,16 +3050,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
   };
 
 
-  const openSetup = (path?: LearningPath, topic?: string) => {
-    // Tema libre (sin path) es exclusivo del plan Avanzado.
-    if (!path && plan !== "avanzado" && plan !== "trial") {
-      setUpgradePrompt({
-        title: "Pregúntale a la IA",
-        message: "Las preguntas libres a la IA están disponibles en el plan Avanzado. Pregunta cualquier duda de tu negocio y la IA armará una sesión completa.",
-        plan: "Avanzado",
-      });
-      return;
-    }
+  const openSetup = (path: LearningPath, topic: string) => {
     setSetupPath(path);
     setSetupTopic(topic);
     setError(undefined);
@@ -3227,6 +3190,10 @@ function LearnView({ onBack }: { onBack: () => void }) {
           onClose={() => setRunning(null)}
           onComplete={completeRunning}
           onRemove={removeRunning}
+          onProgress={(p) => {
+            store.updateSession(running.id, { progress: p });
+            setRunning((r) => (r ? { ...r, progress: p } : r));
+          }}
         />
         {graduation && (
           <GraduationOverlay
@@ -3332,16 +3299,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
         eyebrow="Centro Inteligente de Aprendizaje"
         title="Aprender"
         onBack={onBack}
-        action={
-          <button
-            type="button"
-            onClick={() => openSetup(undefined, undefined)}
-            className="h-[36px] px-[13px] rounded-[14px] text-white font-['Geist'] text-[12px] font-semibold flex items-center gap-[6px] active:scale-95 trax-btn-primary"
-          >
-            <Sparkles className="h-[13px] w-[13px]" strokeWidth={2} />
-            Nueva sesión
-          </button>
-        }
+        action={undefined}
       />
 
       <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
@@ -3507,7 +3465,7 @@ function HistorialView({
   if (sessions.length === 0) {
     return (
       <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40 leading-[1.5]">
-        Aún no has generado sesiones.<br/>Toca "Nueva sesión" o elige una ruta para empezar.
+        Aún no has generado sesiones.<br/>Elige una ruta para empezar.
       </div>
     );
   }

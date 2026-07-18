@@ -31,7 +31,9 @@ const InputSchema = z.object({
   videoRef: z.object({
     youtubeId: z.string().max(24),
     title: z.string().max(160),
-    seconds: z.number().int().min(10).max(180),
+    startSeconds: z.number().int().min(0).max(36000).optional(),
+    endSeconds: z.number().int().min(1).max(36000).optional(),
+    seconds: z.number().int().min(5).max(600),
   }).optional(),
   /** Títulos ya vistos en la ruta actual (para checkpoints/recalls). */
   coveredTopics: z.array(z.string().max(160)).max(40).optional(),
