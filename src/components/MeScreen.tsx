@@ -2117,25 +2117,34 @@ function SessionSetupSheet({
 
 /* -------- Session Runner (micro-lecciones tipo Duolingo) -------- */
 function SessionRunner({
-  stored, onClose, onComplete, onRemove,
+  stored, onClose, onComplete, onRemove, onProgress,
 }: {
   stored: StoredSession;
   onClose: () => void;
   onComplete: (score: number, total: number) => void;
   onRemove: () => void;
+  onProgress?: (p: NonNullable<StoredSession["progress"]>) => void;
 }) {
   const { session } = stored;
   const steps = session.steps ?? [];
   const quiz = session.quiz ?? [];
   const totalSteps = steps.length;
   const totalQuestions = quiz.length;
-  // stages: step 0..N-1 -> "quiz" -> "score"
-  const [stepIdx, setStepIdx] = useState(0);
-  const [stage, setStage] = useState<"steps" | "quiz" | "score">(totalSteps > 0 ? "steps" : totalQuestions > 0 ? "quiz" : "score");
-  const [quizIdx, setQuizIdx] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [revealed, setRevealed] = useState<Record<number, boolean>>({});
-  const savedRef = useRef(false);
+  const savedProgress = stored.progress;
+  const initialStage: "steps" | "quiz" | "score" = savedProgress?.stage
+    ?? (totalSteps > 0 ? "steps" : totalQuestions > 0 ? "quiz" : "score");
+  const [stepIdx, setStepIdx] = useState(savedProgress?.stepIdx ?? 0);
+  const [stage, setStage] = useState<"steps" | "quiz" | "score">(initialStage);
+  const [quizIdx, setQuizIdx] = useState(savedProgress?.quizIdx ?? 0);
+  const [answers, setAnswers] = useState<Record<number, number>>(savedProgress?.answers ?? {});
+  const [revealed, setRevealed] = useState<Record<number, boolean>>(savedProgress?.revealed ?? {});
+  const savedRef = useRef(stored.completed === true);
+
+  // Persistir progreso en curso cada vez que cambie el estado paso/quiz/respuestas.
+  useEffect(() => {
+    if (stage === "score" || !onProgress) return;
+    onProgress({ stage, stepIdx, quizIdx, answers, revealed });
+  }, [stage, stepIdx, quizIdx, answers, revealed, onProgress]);
 
   const path = LEARNING_PATHS.find((p) => p.id === stored.pathId);
   const [c1, c2] = extractGradientColors(path?.gradient ?? "linear-gradient(135deg,#0f172a,#3b0764)");
