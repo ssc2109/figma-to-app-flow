@@ -138,6 +138,7 @@ function ClientSheet({
 
 export default function ClientsView({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [items, setItems] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
