@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Kind = "cobrar" | "pagar";
 type Debt = {
