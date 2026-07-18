@@ -2,20 +2,13 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
 type Prefs = {
-  theme?: "dark" | "auto";
-  text_size?: "compact" | "normal" | "large";
   reduce_motion?: boolean;
 };
 
-const SCALE: Record<NonNullable<Prefs["text_size"]>, string> = {
-  compact: "0.92",
-  normal: "1",
-  large: "1.12",
-};
-
 /**
- * Applies user preferences (theme, text size, reduce motion)
- * to the document root. Must be mounted inside AuthProvider.
+ * Applies user preferences to the document root.
+ * Theme (dark) and text size (normal) are fixed by product decision and no
+ * longer user-configurable. Only "Reducir movimiento" is respected here.
  */
 export default function PreferencesEffects() {
   const { profile } = useAuth();
@@ -23,33 +16,10 @@ export default function PreferencesEffects() {
 
   useEffect(() => {
     const root = document.documentElement;
-
-    // Theme — Trax is dark-first; "auto" follows system, "dark" forces dark.
-    const theme = prefs.theme ?? "dark";
-    const applyTheme = () => {
-      const prefersLight =
-        theme === "auto" &&
-        typeof window !== "undefined" &&
-        window.matchMedia?.("(prefers-color-scheme: light)").matches;
-      root.classList.toggle("dark", !prefersLight);
-    };
-    applyTheme();
-    let mql: MediaQueryList | null = null;
-    if (theme === "auto" && window.matchMedia) {
-      mql = window.matchMedia("(prefers-color-scheme: light)");
-      mql.addEventListener?.("change", applyTheme);
-    }
-
-    // Text size scale
-    root.style.setProperty("--text-scale", SCALE[prefs.text_size ?? "normal"]);
-
-    // Reduce motion class (CSS in styles.css disables animations/transitions)
+    root.classList.add("dark");
+    root.style.setProperty("--text-scale", "1");
     root.classList.toggle("reduce-motion", !!prefs.reduce_motion);
-
-    return () => {
-      mql?.removeEventListener?.("change", applyTheme);
-    };
-  }, [prefs.theme, prefs.text_size, prefs.reduce_motion]);
+  }, [prefs.reduce_motion]);
 
   return null;
 }
