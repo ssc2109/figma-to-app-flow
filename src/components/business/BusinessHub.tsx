@@ -6,6 +6,7 @@ import { useInventory } from "@/data/inventory";
 import { useFinance } from "@/data/finance";
 import { supabase } from "@/integrations/supabase/client";
 import Aurora from "@/components/Aurora";
+import AnalyticsArea from "./AnalyticsArea";
 
 /* ============================================================
    Trax · Business HQ — vivo, condicional, basado en data real
