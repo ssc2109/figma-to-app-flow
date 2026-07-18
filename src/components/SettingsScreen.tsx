@@ -51,8 +51,6 @@ export default function SettingsScreen({
         return <SessionsScreen onBack={goHub} />;
       case "business":
         return <BusinessInfoScreen onBack={goHub} />;
-      case "currency":
-        return <CurrencyFormatScreen onBack={goHub} />;
       case "goals":
         return <GoalsThresholdsScreen onBack={goHub} />;
       case "team":
