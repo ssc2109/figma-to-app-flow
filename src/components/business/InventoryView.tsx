@@ -280,7 +280,7 @@ export default function InventoryView({ onBack }: { onBack: () => void }) {
               className="w-full h-[54px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40 flex items-center justify-center gap-[8px]"
             >
               <Check className="h-[15px] w-[15px]" strokeWidth={2.4} />
-              {saving ? "Guardando…" : "Terminé"}
+              {saving ? "Guardando…" : "Guardar"}
             </button>
           </div>
         </div>
