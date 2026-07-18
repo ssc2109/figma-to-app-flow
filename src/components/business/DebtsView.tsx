@@ -193,7 +193,7 @@ export default function DebtsView({
   const revertPaid = async (id: string) => {
     const d = items.find((x) => x.id === id);
     if (!d) return;
-    if (!confirm("¿Revertir este cobro/pago? Se eliminará también el movimiento asociado en caja.")) return;
+    if (!(await confirm({ title: "Revertir movimiento", description: "Se eliminará también el movimiento asociado en caja. No se puede deshacer.", confirmText: "Revertir", tone: "danger" }))) return;
     const { error } = await supabase
       .from("fiados")
       .update({ paid: false, paid_at: null })
