@@ -38,6 +38,7 @@ function ClientSheet({
   client, onClose, onSaved,
 }: { client: Customer | "new"; onClose: () => void; onSaved: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const isNew = client === "new";
   const current = isNew ? null : client;
   const [name, setName] = useState(current?.name ?? "");
