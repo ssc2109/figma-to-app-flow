@@ -45,22 +45,29 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     owner_name: "",
-    phone: "",
-    language: "es",
+    phoneCode: "+51",
+    phoneDigits: "",
     avatar_url: null as string | null,
   });
   const [dirty, setDirty] = useState(false);
+  const [codeOpen, setCodeOpen] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
+    const { code, digits } = splitPhone(profile.phone);
     setForm({
       owner_name: profile.owner_name ?? "",
-      phone: profile.phone ?? "",
-      language: (profile.preferences as { language?: string } | null)?.language ?? "es",
+      phoneCode: code,
+      phoneDigits: digits,
       avatar_url: profile.avatar_url ?? null,
     });
     setDirty(false);
   }, [profile]);
+
+  const currentCountry = useMemo(
+    () => COUNTRY_CODES.find((c) => c.code === form.phoneCode) ?? COUNTRY_CODES[0],
+    [form.phoneCode],
+  );
 
   const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => {
     setForm((f) => ({ ...f, [k]: v }));
