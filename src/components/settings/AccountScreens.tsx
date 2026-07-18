@@ -331,16 +331,43 @@ export function EmailPasswordScreen({ onBack }: { onBack: () => void }) {
 
 /* --------------------------- Sesiones y dispositivos ---------------------- */
 export function SessionsScreen({ onBack }: { onBack: () => void }) {
+  const confirm = useConfirm();
   const [loading, setLoading] = useState(false);
   const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
   const device = /iPhone|iPad/i.test(ua) ? "iPhone" : /Android/i.test(ua) ? "Android" : "Este dispositivo";
 
   const closeOthers = async () => {
+    if (!(await confirm({
+      title: "Cerrar otras sesiones",
+      description: "Cerraremos la sesión de Trax en todos los demás dispositivos donde estés conectado. Este equipo seguirá activo.",
+      confirmText: "Cerrar otras",
+      tone: "danger",
+    }))) return;
     setLoading(true);
     const { error } = await supabase.auth.signOut({ scope: "others" });
     setLoading(false);
     if (error) toast.error("No se pudo cerrar las demás sesiones.");
     else toast.success("Cerramos las sesiones en otros dispositivos.");
+  };
+
+  const changeAccount = async () => {
+    if (!(await confirm({
+      title: "Cambiar de cuenta",
+      description: "Vas a cerrar esta sesión para iniciar con otra cuenta. Por tu seguridad tendrás que validar tus credenciales al volver a entrar.",
+      confirmText: "Cerrar sesión",
+      tone: "danger",
+    }))) return;
+    await supabase.auth.signOut();
+  };
+
+  const signOutHere = async () => {
+    if (!(await confirm({
+      title: "Cerrar sesión",
+      description: "Vas a cerrar la sesión en este dispositivo. Podrás volver a entrar cuando quieras.",
+      confirmText: "Cerrar sesión",
+      tone: "danger",
+    }))) return;
+    await supabase.auth.signOut();
   };
 
   return (
@@ -374,13 +401,7 @@ export function SessionsScreen({ onBack }: { onBack: () => void }) {
           icon={UserCog}
           title="Cambiar de cuenta"
           description="Cierra sesión y vuelve a entrar con otra cuenta. Requiere validar credenciales por seguridad."
-          onClick={async () => {
-            const ok = confirm(
-              "Vas a cerrar esta sesión para iniciar con otra cuenta. Por tu seguridad tendrás que validar tus credenciales al volver a entrar. ¿Continuar?",
-            );
-            if (!ok) return;
-            await supabase.auth.signOut();
-          }}
+          onClick={changeAccount}
           last
         />
       </Section>
@@ -396,9 +417,7 @@ export function SessionsScreen({ onBack }: { onBack: () => void }) {
       <div className="px-[20px]">
         <button
           type="button"
-          onClick={async () => {
-            await supabase.auth.signOut();
-          }}
+          onClick={signOutHere}
           className="w-full h-[44px] rounded-full bg-white/[0.05] border border-white/[0.08] font-['Geist'] text-[13.5px] font-semibold text-white flex items-center justify-center gap-[8px]"
         >
           <LogOut className="h-[15px] w-[15px]" strokeWidth={1.7} />
