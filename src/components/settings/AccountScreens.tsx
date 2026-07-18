@@ -248,6 +248,7 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
 /* --------------------------- Correo y contraseña -------------------------- */
 export function EmailPasswordScreen({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [sending, setSending] = useState(false);
@@ -255,6 +256,11 @@ export function EmailPasswordScreen({ onBack }: { onBack: () => void }) {
 
   const sendReset = async () => {
     if (!user?.email) return;
+    if (!(await confirm({
+      title: "Enviar link de restablecimiento",
+      description: `Te enviaremos un correo a ${user.email} con un enlace para crear una contraseña nueva.`,
+      confirmText: "Enviar correo",
+    }))) return;
     setSending(true);
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -267,6 +273,11 @@ export function EmailPasswordScreen({ onBack }: { onBack: () => void }) {
   const changePassword = async () => {
     if (pw.length < 8) return toast.error("Mínimo 8 caracteres.");
     if (pw !== pw2) return toast.error("Las contraseñas no coinciden.");
+    if (!(await confirm({
+      title: "Actualizar contraseña",
+      description: "Tu contraseña actual dejará de funcionar en todos tus dispositivos.",
+      confirmText: "Actualizar",
+    }))) return;
     setChangingPw(true);
     const { error } = await supabase.auth.updateUser({ password: pw });
     setChangingPw(false);
