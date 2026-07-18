@@ -45,9 +45,16 @@ function InventoryRow({
 }) {
   const isLow = item.stock <= item.lowStockThreshold;
 
+  const bump = (delta: number) => {
+    const current = parseInt(draft, 10);
+    const base = Number.isFinite(current) ? current : 0;
+    const next = Math.max(0, base + delta);
+    onDraftChange(String(next));
+  };
+
   return (
     <>
-      <div className="flex items-center gap-[14px] px-[16px] py-[12px]">
+      <div className="flex items-center gap-[10px] px-[16px] py-[12px]">
         <div className="flex-1 min-w-0">
           <div className="font-['Geist'] text-[14.5px] text-white truncate">{item.name}</div>
           <div className="mt-[2px] font-['Geist'] text-[11.5px] text-white/45 tabular-nums">
@@ -60,7 +67,29 @@ function InventoryRow({
             )}
           </div>
         </div>
+        {editing && (
+          <button
+            type="button"
+            onClick={() => bump(-1)}
+            aria-label={`Disminuir stock de ${item.name}`}
+            className="h-[36px] w-[36px] shrink-0 rounded-full flex items-center justify-center text-white/85 active:scale-90 transition-transform"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            <Minus className="h-[14px] w-[14px]" strokeWidth={2.2} />
+          </button>
+        )}
         <StockInput value={draft} disabled={!editing} onChange={onDraftChange} />
+        {editing && (
+          <button
+            type="button"
+            onClick={() => bump(1)}
+            aria-label={`Aumentar stock de ${item.name}`}
+            className="h-[36px] w-[36px] shrink-0 rounded-full flex items-center justify-center text-white/85 active:scale-90 transition-transform"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            <Plus className="h-[14px] w-[14px]" strokeWidth={2.2} />
+          </button>
+        )}
       </div>
       {!last && <div className="h-px bg-white/[0.05] mx-[16px]" />}
     </>
