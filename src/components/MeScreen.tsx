@@ -3278,16 +3278,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
         eyebrow="Centro Inteligente de Aprendizaje"
         title="Aprender"
         onBack={onBack}
-        action={
-          <button
-            type="button"
-            onClick={() => openSetup(undefined, undefined)}
-            className="h-[36px] px-[13px] rounded-[14px] text-white font-['Geist'] text-[12px] font-semibold flex items-center gap-[6px] active:scale-95 trax-btn-primary"
-          >
-            <Sparkles className="h-[13px] w-[13px]" strokeWidth={2} />
-            Nueva sesión
-          </button>
-        }
+        action={undefined}
       />
 
       <ProductivityScroll className="px-[20px] pt-[6px] flex flex-col gap-[16px]">
