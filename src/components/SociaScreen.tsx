@@ -492,7 +492,7 @@ export default function SociaScreen({ initialPrompt, initialShowHistory }: { ini
 
   return (
     <div
-      className="socia-screen relative w-full min-h-[100dvh] flex flex-col overflow-x-hidden bg-black"
+      className={`socia-screen relative w-full flex flex-col overflow-x-hidden bg-black ${empty ? "h-[100dvh] overflow-hidden" : "min-h-[100dvh]"}`}
       style={orbStyle}
     >
       <style>{SOCIA_CSS}</style>
