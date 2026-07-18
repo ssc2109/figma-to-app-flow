@@ -79,7 +79,7 @@ function ClientSheet({
 
   const del = async () => {
     if (!current) return;
-    if (!confirm(`¿Eliminar a ${current.name}?`)) return;
+    if (!(await confirm({ title: `Eliminar a ${current.name}`, description: "Se borrará este cliente y sus datos de contacto. No afecta ventas ya registradas.", confirmText: "Eliminar", tone: "danger" }))) return;
     const { error } = await supabase.from("customers").delete().eq("id", current.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Cliente eliminado");
