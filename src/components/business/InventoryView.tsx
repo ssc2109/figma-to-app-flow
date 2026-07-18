@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, Package, Pencil, Check, Plus, Minus } from "lucide-react";
 import { useInventory, type InventoryItem } from "@/data/inventory";
 import { toast } from "sonner";
 
 import { SubHeader, SubScreen, ListGroup } from "./shared";
+
 
 function StockInput({
   value,
@@ -265,26 +267,29 @@ export default function InventoryView({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      {editing && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-[60] px-[20px] pt-[14px] pb-[calc(env(safe-area-inset-bottom)+18px)]"
-          style={{
-            background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 40%, #000 100%)",
-          }}
-        >
-          <div className="mx-auto max-w-[430px]">
-            <button
-              type="button"
-              onClick={commit}
-              disabled={saving}
-              className="w-full h-[54px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40 flex items-center justify-center gap-[8px]"
-            >
-              <Check className="h-[15px] w-[15px]" strokeWidth={2.4} />
-              {saving ? "Guardando…" : "Guardar"}
-            </button>
-          </div>
-        </div>
-      )}
+      {editing && typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed bottom-0 left-0 right-0 z-[100] px-[20px] pt-[14px] pb-[calc(env(safe-area-inset-bottom)+18px)]"
+            style={{
+              background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.85) 40%, #000 100%)",
+            }}
+          >
+            <div className="mx-auto max-w-[430px]">
+              <button
+                type="button"
+                onClick={commit}
+                disabled={saving}
+                className="w-full h-[54px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40 flex items-center justify-center gap-[8px]"
+              >
+                <Check className="h-[15px] w-[15px]" strokeWidth={2.4} />
+                {saving ? "Guardando…" : "Guardar"}
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
+
     </SubScreen>
   );
 }
