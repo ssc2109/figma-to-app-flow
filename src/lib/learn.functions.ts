@@ -35,7 +35,10 @@ const InputSchema = z.object({
   }).optional(),
   /** Títulos ya vistos en la ruta actual (para checkpoints/recalls). */
   coveredTopics: z.array(z.string().max(160)).max(40).optional(),
+  /** Semilla de variación: si el usuario repite una lección, fuerza redacción/ejemplos/preguntas distintos. */
+  variantSeed: z.string().max(80).optional(),
 });
+
 
 const SOURCE_LIBRARY: Record<string, string[]> = {
   ventas: [
