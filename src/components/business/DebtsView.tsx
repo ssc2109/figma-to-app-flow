@@ -216,7 +216,7 @@ export default function DebtsView({
   };
 
   const del = async (id: string) => {
-    if (!confirm("¿Eliminar este registro?")) return;
+    if (!(await confirm({ title: "Eliminar registro", description: "Este movimiento desaparecerá permanentemente.", confirmText: "Eliminar", tone: "danger" }))) return;
     const { error } = await supabase.from("fiados").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     load();
