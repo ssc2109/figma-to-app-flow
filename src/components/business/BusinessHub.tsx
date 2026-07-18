@@ -574,8 +574,15 @@ function EmptyPanel({
   return (
     <div
       className="mx-[22px] relative rounded-[28px] overflow-hidden"
-      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.075)" }}
+      style={{
+        background: "linear-gradient(160deg, rgba(59,130,246,0.10) 0%, rgba(24,24,27,0.6) 45%, rgba(9,9,11,1) 100%)",
+        border: "1px solid rgba(255,255,255,0.075)",
+      }}
     >
+      <div
+        className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl"
+        style={{ background: "#3b82f6", opacity: 0.28 }}
+      />
       <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[16px]">
         <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
         <div className="flex flex-col gap-[8px]">
@@ -586,7 +593,8 @@ function EmptyPanel({
         </div>
         <button
           onClick={onCta}
-          className="self-start h-[44px] px-[18px] rounded-[16px] bg-white text-black font-['Geist'] text-[13.5px] font-bold active:scale-[0.985] transition-transform inline-flex items-center gap-[8px]"
+          className="self-start h-[46px] px-[20px] rounded-[16px] font-['Geist'] text-[13.5px] font-semibold text-white active:scale-[0.99] transition-transform inline-flex items-center gap-[8px]"
+          style={{ background: "#3b82f6", boxShadow: "0 8px 20px rgba(59,130,246,0.28)" }}
         >
           <Plus className="h-[14px] w-[14px]" strokeWidth={2.6} />
           {cta}
@@ -595,6 +603,7 @@ function EmptyPanel({
     </div>
   );
 }
+
 
 /* ============================================================
    Shortcuts
