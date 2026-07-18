@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { SubHeader, SubScreen, ListGroup } from "./shared";
+import { useConfirm } from "@/components/ui/confirm";
 
 type Customer = {
   id: string;
