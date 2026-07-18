@@ -329,7 +329,7 @@ export function GoalsThresholdsScreen({ onBack }: { onBack: () => void }) {
   const inv = useInventory();
   const [form, setForm] = useState({
     daily_goal: 1500,
-    low_stock_threshold: 5,
+    low_stock_threshold: 10,
     notifications_enabled: true,
   });
   const [dirty, setDirty] = useState(false);
@@ -339,7 +339,7 @@ export function GoalsThresholdsScreen({ onBack }: { onBack: () => void }) {
     if (!profile) return;
     setForm({
       daily_goal: Number(profile.daily_goal ?? 1500),
-      low_stock_threshold: profile.low_stock_threshold ?? 5,
+      low_stock_threshold: profile.low_stock_threshold ?? 10,
       notifications_enabled: profile.notifications_enabled ?? true,
     });
     setDirty(false);
