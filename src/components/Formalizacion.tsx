@@ -501,7 +501,6 @@ function FloorContent({
           />
         </div>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -536,7 +535,6 @@ function FloorContent({
           />
         </div>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -552,7 +550,6 @@ function FloorContent({
             en el piso anterior. Puedes saltar al piso 4 si vas con RUC 10.
           </p>
 
-          {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
         </Panel>
       );
     }
@@ -584,7 +581,6 @@ function FloorContent({
           />
         </ol>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -646,7 +642,6 @@ function FloorContent({
           <ArrowUpRight className="w-4 h-4" strokeWidth={2} />
         </a>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -677,7 +672,6 @@ function FloorContent({
           />
         </div>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -708,7 +702,6 @@ function FloorContent({
           />
         </div>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
