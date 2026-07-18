@@ -641,7 +641,7 @@ function PrimaryButton({ children, ...rest }: React.ButtonHTMLAttributes<HTMLBut
   return (
     <button
       {...rest}
-      className="w-full h-[44px] px-[16px] rounded-full bg-white text-black font-['Geist'] text-[13px] font-semibold active:scale-95 disabled:opacity-40"
+      className="w-full h-[44px] px-[16px] rounded-[16px] text-white font-['Geist'] text-[13px] font-semibold active:scale-95 disabled:opacity-40 trax-btn-primary"
     >
       {children}
     </button>
