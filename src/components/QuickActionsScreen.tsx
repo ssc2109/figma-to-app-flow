@@ -210,7 +210,7 @@ function AvailableCard({
       <button
         type="button"
         onClick={onUse}
-        className="mt-auto h-[32px] rounded-full bg-white text-black font-['Geist'] text-[12px] font-semibold flex items-center justify-center gap-[5px] active:scale-95"
+        className="mt-auto h-[32px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[12px] font-semibold flex items-center justify-center gap-[5px] active:scale-95"
       >
         <Check className="h-[12px] w-[12px]" strokeWidth={2.4} /> Usar ahora
       </button>

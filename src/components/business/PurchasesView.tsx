@@ -66,7 +66,7 @@ export default function PurchasesView({ onBack }: { onBack: () => void }) {
         action={
           <button
             onClick={() => setSheet(true)}
-            className="h-[36px] w-[36px] rounded-full bg-white text-black grid place-items-center active:scale-95"
+            className="h-[36px] w-[36px] rounded-full bg-[#3b82f6] text-white grid place-items-center active:scale-95"
             aria-label="Nueva compra"
           >
             <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
@@ -331,7 +331,7 @@ function PurchaseSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () 
         <button
           onClick={submit}
           disabled={saving || lines.length === 0}
-          className="w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40"
+          className="w-full h-[52px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40"
         >
           {saving ? "Guardando…" : "Registrar compra"}
         </button>

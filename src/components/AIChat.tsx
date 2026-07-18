@@ -290,7 +290,7 @@ export default function AIChat({ open, onClose }: { open: boolean; onClose: () =
                   type="button"
                   onClick={() => send()}
                   disabled={!input.trim()}
-                  className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95 disabled:opacity-40"
+                  className="h-[36px] w-[36px] rounded-full bg-[#3b82f6] text-white flex items-center justify-center active:scale-95 disabled:opacity-40"
                 >
                   <Send className="h-[14px] w-[14px]" strokeWidth={2.2} />
                 </button>

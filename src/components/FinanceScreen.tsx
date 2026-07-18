@@ -624,7 +624,7 @@ function AddSheet({ onClose }: { onClose: () => void }) {
           type="button"
           onClick={submit}
           disabled={!amount}
-          className="w-full h-[52px] rounded-full bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-30"
+          className="w-full h-[52px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-30"
         >
           Guardar
         </button>
@@ -690,7 +690,7 @@ export default function FinanceScreen() {
                 <button
                   type="button"
                   onClick={() => setAddOpen(true)}
-                  className="h-[40px] w-[40px] rounded-full bg-white text-black flex items-center justify-center active:scale-95 transition-transform"
+                  className="h-[40px] w-[40px] rounded-full bg-[#3b82f6] text-white flex items-center justify-center active:scale-95 transition-transform"
                   aria-label="Registrar movimiento"
                 >
                   <Plus className="h-[18px] w-[18px]" strokeWidth={2.2} />

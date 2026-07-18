@@ -132,7 +132,7 @@ function DebtSheet({
           <DateField value={due} onChange={setDue} />
         </div>
         <button onClick={submit} disabled={saving}
-          className="mt-[18px] w-full h-[52px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40">
+          className="mt-[18px] w-full h-[52px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] disabled:opacity-40">
           {saving ? "Guardando…" : "Registrar"}
         </button>
       </motion.div>
@@ -228,7 +228,7 @@ export default function DebtsView({
         onBack={onBack}
         action={
           <button onClick={() => setSheet(tab)}
-            className="h-[36px] w-[36px] rounded-full bg-white text-black flex items-center justify-center active:scale-95">
+            className="h-[36px] w-[36px] rounded-full bg-[#3b82f6] text-white flex items-center justify-center active:scale-95">
             <Plus className="h-[16px] w-[16px]" strokeWidth={2.2} />
           </button>
         }

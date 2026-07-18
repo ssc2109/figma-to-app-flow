@@ -263,7 +263,7 @@ export default function POSOverlay({ open, onClose }: { open: boolean; onClose: 
                             )}
                           </div>
                           {qty > 0 && (
-                            <div className="h-[24px] min-w-[24px] px-[7px] rounded-full bg-white text-black font-['Bai_Jamjuree'] text-[12px] font-bold flex items-center justify-center tabular-nums">
+                            <div className="h-[24px] min-w-[24px] px-[7px] rounded-full bg-[#3b82f6] text-white font-['Bai_Jamjuree'] text-[12px] font-bold flex items-center justify-center tabular-nums">
                               {qty}
                             </div>
                           )}
@@ -413,7 +413,7 @@ export default function POSOverlay({ open, onClose }: { open: boolean; onClose: 
                               <button
                                 type="button"
                                 onClick={() => add(l.id)}
-                                className="h-[24px] w-[24px] rounded-full bg-white text-black flex items-center justify-center active:scale-90"
+                                className="h-[24px] w-[24px] rounded-full bg-[#3b82f6] text-white flex items-center justify-center active:scale-90"
                                 aria-label="Sumar"
                               >
                                 <Plus className="h-[13px] w-[13px]" strokeWidth={2.4} />

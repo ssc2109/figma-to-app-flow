@@ -178,7 +178,7 @@ export default function OnboardingFlow() {
             if (isLast) finish();
             else setStep((s) => s + 1);
           }}
-          className="mt-[24px] h-[54px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-medium active:scale-[0.98] transition disabled:opacity-40 flex items-center justify-center gap-[8px]"
+          className="mt-[24px] h-[54px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-medium active:scale-[0.98] transition disabled:opacity-40 flex items-center justify-center gap-[8px]"
         >
           {saving ? "Guardando…" : isLast ? "Empezar" : "Siguiente"}
           {!saving && <ArrowRight className="h-[16px] w-[16px]" strokeWidth={2.2} />}

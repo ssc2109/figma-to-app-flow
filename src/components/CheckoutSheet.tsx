@@ -113,7 +113,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button
       onClick={onClick}
       className={`h-[40px] rounded-full font-['Geist'] text-[12.5px] font-semibold flex items-center justify-center gap-[6px] transition ${
-        active ? "bg-white text-black" : "text-white/70"
+        active ? "bg-[#3b82f6] text-white" : "text-white/70"
       }`}
     >
       {children}
@@ -290,7 +290,7 @@ function StripeInner({
       <button
         onClick={handlePay}
         disabled={!stripe || busy}
-        className="w-full h-[48px] rounded-full bg-white text-black font-['Geist'] text-[14px] font-semibold flex items-center justify-center gap-[8px] disabled:opacity-60"
+        className="w-full h-[48px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[14px] font-semibold flex items-center justify-center gap-[8px] disabled:opacity-60"
       >
         {busy ? <Loader2 className="h-[16px] w-[16px] animate-spin" /> : `Pagar ${price.label}`}
       </button>
@@ -427,7 +427,7 @@ function DemoConfirm({
       </div>
       <button
         onClick={onConfirm}
-        className="w-full h-[48px] rounded-full bg-white text-black font-['Geist'] text-[14px] font-semibold"
+        className="w-full h-[48px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[14px] font-semibold"
       >
         Simular pago exitoso
       </button>

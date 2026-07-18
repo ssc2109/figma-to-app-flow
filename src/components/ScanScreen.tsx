@@ -108,7 +108,7 @@ export default function ScanScreen({ open, onClose, onOpenInventory }: { open: b
                         onClose();
                         onOpenInventory();
                       }}
-                      className="mt-[12px] h-[38px] px-[16px] rounded-full bg-white text-black font-['Geist'] text-[12.5px] font-semibold active:scale-95"
+                      className="mt-[12px] h-[38px] px-[16px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[12.5px] font-semibold active:scale-95"
                     >
                       Ir a inventario
                     </button>

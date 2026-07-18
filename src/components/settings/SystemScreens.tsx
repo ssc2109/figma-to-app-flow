@@ -148,7 +148,7 @@ export function DataPrivacyScreen({ onBack }: { onBack: () => void }) {
         <button
           type="button"
           onClick={exportAll}
-          className="w-full h-[46px] rounded-full bg-white text-black font-['Geist'] text-[14px] font-semibold flex items-center justify-center gap-[8px]"
+          className="w-full h-[46px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[14px] font-semibold flex items-center justify-center gap-[8px]"
         >
           <Download className="h-[15px] w-[15px]" strokeWidth={2} />
           Exportar mis datos

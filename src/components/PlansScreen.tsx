@@ -129,7 +129,7 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
                   </div>
                 </div>
                 {featured && (
-                  <div className="rounded-full px-[10px] py-[4px] bg-white text-black font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.2px]">
+                  <div className="rounded-full px-[10px] py-[4px] bg-[#3b82f6] text-white font-['Geist'] text-[10.5px] font-semibold uppercase tracking-[1.2px]">
                     Recomendado
                   </div>
                 )}
@@ -156,7 +156,7 @@ export default function PlansScreen({ onBack }: { onBack: () => void }) {
                 disabled={busy !== null || isCurrent}
                 className={`mt-[18px] w-full h-[48px] rounded-full font-['Geist'] text-[14px] font-semibold flex items-center justify-center gap-[8px] transition-opacity ${
                   featured
-                    ? "bg-white text-black"
+                    ? "bg-[#3b82f6] text-white"
                     : "bg-white/10 text-white border border-white/[0.12]"
                 } ${busy || isCurrent ? "opacity-60" : "active:opacity-80"}`}
               >

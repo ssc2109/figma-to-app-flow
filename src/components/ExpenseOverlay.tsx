@@ -154,7 +154,7 @@ export default function ExpenseOverlay({ open, onClose }: { open: boolean; onClo
             <button
               onClick={submit}
               disabled={saving}
-              className="w-full h-[54px] rounded-[16px] bg-white text-black font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40"
+              className="w-full h-[54px] rounded-[16px] bg-[#3b82f6] text-white font-['Geist'] text-[15px] font-semibold active:scale-[0.98] transition-transform disabled:opacity-40"
             >
               {saving ? "Guardando…" : "Registrar gasto"}
             </button>

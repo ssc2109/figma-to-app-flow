@@ -39,7 +39,7 @@ export default function UpgradeGate({
         {onUpgrade && (
           <button
             onClick={onUpgrade}
-            className="h-[48px] px-[22px] rounded-full bg-white text-black font-['Geist'] text-[14px] font-semibold flex items-center gap-[8px] active:scale-95"
+            className="h-[48px] px-[22px] rounded-full bg-[#3b82f6] text-white font-['Geist'] text-[14px] font-semibold flex items-center gap-[8px] active:scale-95"
           >
             <Sparkles className="h-[14px] w-[14px]" strokeWidth={2} />
             Ver planes
