@@ -33,6 +33,7 @@ export default function ProductSheet({
 }) {
   const { addProduct, updateProduct, removeProduct, items } = useInventory();
   const { limits, plan } = usePlan();
+  const confirm = useConfirm();
   const isNew = item === "new";
   const current = isNew ? null : item;
 
