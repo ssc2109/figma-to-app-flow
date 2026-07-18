@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Building2,
   ShieldCheck,
@@ -73,7 +73,7 @@ const Formalizacion = () => {
   const cerrarGlosario = () => setGlosario(null);
 
   return (
-    <div className="w-full min-h-screen bg-black text-white/90 pb-[180px]">
+    <div className="w-full bg-black text-white/90">
       {currentView === 'entry' && <EntryView onStart={() => setCurrentView('learning')} />}
       {currentView === 'learning' && (
         <LearningView
@@ -321,17 +321,44 @@ function BuildingView({
   onBack: () => void;
   openGlossary: (k: TerminoKey) => void;
 }) {
-  const [floor, setFloor] = useState(1);
+  const [floor, setFloor] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1;
+    const v = Number(window.localStorage.getItem('trax.activeFloor'));
+    return Number.isFinite(v) && v >= 1 && v <= 7 ? v : 1;
+  });
   const [tipoPersona, setTipoPersona] = useState<TipoPersona | null>(null);
-  const [unlockedFloor, setUnlockedFloor] = useState(1);
+  const [unlockedFloor, setUnlockedFloor] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1;
+    const v = Number(window.localStorage.getItem('trax.unlockedFloor'));
+    return Number.isFinite(v) && v >= 1 && v <= 7 ? v : 1;
+  });
+  const [nombreNegocioTrax, setNombreNegocioTrax] = useState<string>(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem('trax.nombreNegocioTrax') ?? '';
+  });
 
-  const handleCompleteFloor = () => {
+  useEffect(() => {
+    window.localStorage.setItem('trax.activeFloor', String(floor));
+  }, [floor]);
+  useEffect(() => {
+    window.localStorage.setItem('trax.unlockedFloor', String(unlockedFloor));
+  }, [unlockedFloor]);
+  useEffect(() => {
+    window.localStorage.setItem('trax.nombreNegocioTrax', nombreNegocioTrax);
+  }, [nombreNegocioTrax]);
+
+  // Se llamará SOLO desde validaciones específicas de cada piso (Parte 2+).
+  const advanceFloor = (target?: number) => {
     setUnlockedFloor((prev) => {
-      const next = Math.min(prev + 1, floors.length);
+      const next = Math.min(Math.max(prev, target ?? prev + 1), floors.length);
       if (next > floor) setFloor(next);
       return next;
     });
   };
+  // Retro-compat: alias usado por props existentes.
+  const handleCompleteFloor = () => advanceFloor();
+  void nombreNegocioTrax; void setNombreNegocioTrax;
+
 
   return (
     <div className="w-full px-4 pt-6">
@@ -353,10 +380,10 @@ function BuildingView({
         </div>
       </div>
 
-      <div className="flex gap-3 w-full">
-        {/* Vertical floor selector */}
+      <div className="flex gap-3 w-full h-[550px]">
+        {/* Vertical floor selector (static) */}
         <div
-          className="shrink-0 w-[62px] rounded-[20px] p-2 flex flex-col-reverse gap-1.5"
+          className="shrink-0 w-[62px] rounded-[20px] p-2 flex flex-col-reverse gap-1.5 self-start"
           style={{
             background: 'rgba(255,255,255,0.03)',
             border: '1px solid rgba(255,255,255,0.06)',
@@ -368,8 +395,9 @@ function BuildingView({
             return (
               <button
                 key={f.n}
-                onClick={() => !locked && setFloor(f.n)}
+                {...(locked ? {} : { onClick: () => setFloor(f.n) })}
                 disabled={locked}
+                aria-disabled={locked}
                 className="w-full h-[52px] rounded-[14px] flex flex-col items-center justify-center gap-0.5 transition-all relative disabled:cursor-not-allowed"
                 style={{
                   background: active
@@ -382,7 +410,7 @@ function BuildingView({
                     : locked
                       ? '1px solid rgba(255,255,255,0.03)'
                       : '1px solid rgba(255,255,255,0.05)',
-                  opacity: locked ? 0.45 : 1,
+                  opacity: locked ? 0.5 : 1,
                 }}
               >
                 {locked ? (
@@ -406,8 +434,8 @@ function BuildingView({
           })}
         </div>
 
-        {/* Floor content */}
-        <div className="flex-1 min-w-0">
+        {/* Floor content (scrollable) */}
+        <div className="flex-1 min-w-0 h-full overflow-y-auto pr-1">
           <FloorContent
             floor={floor}
             tipoPersona={tipoPersona}
@@ -418,6 +446,7 @@ function BuildingView({
           />
         </div>
       </div>
+
     </div>
   );
 }
@@ -472,7 +501,6 @@ function FloorContent({
           />
         </div>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -507,7 +535,6 @@ function FloorContent({
           />
         </div>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -523,7 +550,6 @@ function FloorContent({
             en el piso anterior. Puedes saltar al piso 4 si vas con RUC 10.
           </p>
 
-          {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
         </Panel>
       );
     }
@@ -555,7 +581,6 @@ function FloorContent({
           />
         </ol>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -617,7 +642,6 @@ function FloorContent({
           <ArrowUpRight className="w-4 h-4" strokeWidth={2} />
         </a>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -648,7 +672,6 @@ function FloorContent({
           />
         </div>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
@@ -679,7 +702,6 @@ function FloorContent({
           />
         </div>
 
-        {isLastUnlocked && <CompleteFloorButton onClick={onCompleteFloor} />}
       </Panel>
     );
   }
