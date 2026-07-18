@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Moon,
-  Type,
   MousePointer2,
   Bell,
   AlertTriangle,
