@@ -21,6 +21,7 @@ import { useConfirm } from "@/components/ui/confirm";
 /* ------------------------ Datos y privacidad ------------------------ */
 export function DataPrivacyScreen({ onBack }: { onBack: () => void }) {
   const { user, signOut } = useAuth();
+  const confirm = useConfirm();
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
