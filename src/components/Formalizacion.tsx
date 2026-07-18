@@ -319,9 +319,8 @@ const floors: Floor[] = [
   { n: 2, label: 'Tu ruta', short: 'P2' },
   { n: 3, label: 'Crear empresa', short: 'P3' },
   { n: 4, label: 'RUC · SUNAT', short: 'P4' },
-  { n: 5, label: 'Tu Local Oficial', short: 'P5' },
-  { n: 6, label: 'Facturación Electrónica', short: 'P6' },
-  { n: 7, label: 'Crecer con Equipo', short: 'P7' },
+  { n: 5, label: 'Defensa Civil', short: 'P5' },
+  { n: 6, label: 'Contratar (REMYPE)', short: 'P6' },
 ];
 
 function BuildingView({
