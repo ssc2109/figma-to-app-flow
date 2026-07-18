@@ -507,12 +507,16 @@ function BigPanel({
   return (
     <div
       className="mx-[22px] relative rounded-[28px] overflow-hidden"
-      style={{ background: "rgba(255,255,255,0.055)", border: "1px solid rgba(255,255,255,0.08)" }}
+      style={{
+        background: "linear-gradient(160deg, rgba(59,130,246,0.09) 0%, rgba(24,24,27,0.7) 45%, rgba(9,9,11,1) 100%)",
+        border: "1px solid rgba(255,255,255,0.08)",
+      }}
     >
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[170px] opacity-80"
-        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.10), transparent 68%)" }}
+        className="pointer-events-none absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl"
+        style={{ background: "#3b82f6", opacity: 0.22 }}
       />
+
       <div className="relative px-[20px] pt-[18px] pb-[18px] flex flex-col gap-[18px]">
         <div className="flex items-center justify-between gap-[12px]">
           <span className="font-['Geist'] text-[10px] uppercase tracking-[2.2px] text-white/55">{title}</span>
