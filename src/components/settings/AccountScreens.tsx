@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Camera, User, Phone, Globe2, Loader2, Mail, KeyRound, ShieldCheck, LogOut, Monitor } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, User, Phone, Loader2, Mail, KeyRound, ShieldCheck, LogOut, Monitor, ChevronDown, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -10,9 +10,32 @@ import {
   TextInput,
   SaveButton,
   NavRow,
-  SegmentedControl,
   ICON_TILE,
 } from "./shared";
+
+const COUNTRY_CODES: { code: string; flag: string; name: string; len: [number, number] }[] = [
+  { code: "+51", flag: "🇵🇪", name: "Perú", len: [9, 9] },
+  { code: "+52", flag: "🇲🇽", name: "México", len: [10, 10] },
+  { code: "+54", flag: "🇦🇷", name: "Argentina", len: [10, 11] },
+  { code: "+55", flag: "🇧🇷", name: "Brasil", len: [10, 11] },
+  { code: "+56", flag: "🇨🇱", name: "Chile", len: [8, 9] },
+  { code: "+57", flag: "🇨🇴", name: "Colombia", len: [10, 10] },
+  { code: "+58", flag: "🇻🇪", name: "Venezuela", len: [10, 10] },
+  { code: "+593", flag: "🇪🇨", name: "Ecuador", len: [9, 9] },
+  { code: "+591", flag: "🇧🇴", name: "Bolivia", len: [8, 8] },
+  { code: "+595", flag: "🇵🇾", name: "Paraguay", len: [9, 9] },
+  { code: "+598", flag: "🇺🇾", name: "Uruguay", len: [8, 9] },
+  { code: "+34", flag: "🇪🇸", name: "España", len: [9, 9] },
+  { code: "+1", flag: "🇺🇸", name: "USA/Canadá", len: [10, 10] },
+];
+
+function splitPhone(raw: string | null | undefined): { code: string; digits: string } {
+  const s = (raw ?? "").trim();
+  if (!s) return { code: "+51", digits: "" };
+  const match = COUNTRY_CODES.find((c) => s.startsWith(c.code));
+  if (match) return { code: match.code, digits: s.slice(match.code.length).replace(/\D/g, "") };
+  return { code: "+51", digits: s.replace(/\D/g, "") };
+}
 
 /* ----------------------------- Perfil personal ----------------------------- */
 export function ProfileScreen({ onBack }: { onBack: () => void }) {
@@ -22,22 +45,29 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     owner_name: "",
-    phone: "",
-    language: "es",
+    phoneCode: "+51",
+    phoneDigits: "",
     avatar_url: null as string | null,
   });
   const [dirty, setDirty] = useState(false);
+  const [codeOpen, setCodeOpen] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
+    const { code, digits } = splitPhone(profile.phone);
     setForm({
       owner_name: profile.owner_name ?? "",
-      phone: profile.phone ?? "",
-      language: (profile.preferences as { language?: string } | null)?.language ?? "es",
+      phoneCode: code,
+      phoneDigits: digits,
       avatar_url: profile.avatar_url ?? null,
     });
     setDirty(false);
   }, [profile]);
+
+  const currentCountry = useMemo(
+    () => COUNTRY_CODES.find((c) => c.code === form.phoneCode) ?? COUNTRY_CODES[0],
+    [form.phoneCode],
+  );
 
   const update = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -70,14 +100,19 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
 
   const save = async () => {
     if (!user) return;
+    const minLen = currentCountry.len[0];
+    const maxLen = currentCountry.len[1];
+    if (form.phoneDigits && (form.phoneDigits.length < minLen || form.phoneDigits.length > maxLen)) {
+      toast.error(`El teléfono debe tener entre ${minLen} y ${maxLen} dígitos.`);
+      return;
+    }
     setSaving(true);
-    const prevPrefs = (profile?.preferences as Record<string, unknown> | null) ?? {};
+    const fullPhone = form.phoneDigits ? `${form.phoneCode}${form.phoneDigits}` : null;
     const { error } = await supabase
       .from("profiles")
       .update({
         owner_name: form.owner_name.trim() || "Tú",
-        phone: form.phone || null,
-        preferences: { ...prevPrefs, language: form.language },
+        phone: fullPhone,
       })
       .eq("id", user.id);
     setSaving(false);
@@ -153,24 +188,56 @@ export function ProfileScreen({ onBack }: { onBack: () => void }) {
             placeholder="Cómo te llamas"
           />
         </FormRow>
-        <FormRow icon={Phone} label="Teléfono">
-          <TextInput
-            value={form.phone}
-            onChange={(v) => update("phone", v)}
-            placeholder="+51 999 999 999"
-            type="tel"
-          />
-        </FormRow>
-        <FormRow icon={Globe2} label="Idioma" last>
-          <SegmentedControl
-            value={form.language}
-            onChange={(v) => update("language", v)}
-            options={[
-              { value: "es", label: "Español" },
-              { value: "en", label: "English" },
-              { value: "pt", label: "Português" },
-            ]}
-          />
+        <FormRow icon={Phone} label="Teléfono" last>
+          <div className="flex items-stretch gap-[8px] w-full">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setCodeOpen((o) => !o)}
+                className="h-[40px] px-[10px] rounded-[12px] flex items-center gap-[6px] bg-white/[0.04] border border-white/10 text-white text-[13px] font-['Geist']"
+              >
+                <span className="text-[15px] leading-none">{currentCountry.flag}</span>
+                <span>{currentCountry.code}</span>
+                <ChevronDown className="h-[13px] w-[13px] text-white/50" />
+              </button>
+              {codeOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-[70]"
+                    onClick={() => setCodeOpen(false)}
+                  />
+                  <div className="absolute z-[71] top-[46px] left-0 w-[220px] max-h-[280px] overflow-y-auto rounded-[14px] bg-[#0e0e10] border border-white/10 shadow-2xl py-[6px]">
+                    {COUNTRY_CODES.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        onClick={() => {
+                          update("phoneCode", c.code);
+                          setCodeOpen(false);
+                        }}
+                        className={`w-full px-[12px] py-[8px] flex items-center gap-[8px] text-left text-[13px] font-['Geist'] active:bg-white/[0.06] ${
+                          c.code === form.phoneCode ? "text-white bg-white/[0.04]" : "text-white/75"
+                        }`}
+                      >
+                        <span className="text-[15px]">{c.flag}</span>
+                        <span className="flex-1">{c.name}</span>
+                        <span className="text-white/50">{c.code}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="flex-1">
+              <TextInput
+                value={form.phoneDigits}
+                onChange={(v) => update("phoneDigits", v.replace(/\D/g, "").slice(0, 15))}
+                placeholder="999999999"
+                type="tel"
+                numeric
+              />
+            </div>
+          </div>
         </FormRow>
       </Section>
     </SettingsShell>
@@ -189,7 +256,7 @@ export function EmailPasswordScreen({ onBack }: { onBack: () => void }) {
     if (!user?.email) return;
     setSending(true);
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/auth`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     setSending(false);
     if (error) toast.error("No se pudo enviar el correo.");
@@ -289,8 +356,20 @@ export function SessionsScreen({ onBack }: { onBack: () => void }) {
           title="Cerrar sesión en otros dispositivos"
           description="Solo mantiene la sesión actual"
           onClick={closeOthers}
-          last
           right={loading ? <Loader2 className="h-[14px] w-[14px] animate-spin text-white/50" /> : undefined}
+        />
+        <NavRow
+          icon={UserCog}
+          title="Cambiar de cuenta"
+          description="Cierra sesión y vuelve a entrar con otra cuenta. Requiere validar credenciales por seguridad."
+          onClick={async () => {
+            const ok = confirm(
+              "Vas a cerrar esta sesión para iniciar con otra cuenta. Por tu seguridad tendrás que validar tus credenciales al volver a entrar. ¿Continuar?",
+            );
+            if (!ok) return;
+            await supabase.auth.signOut();
+          }}
+          last
         />
       </Section>
 

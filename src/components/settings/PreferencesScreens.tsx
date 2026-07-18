@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Moon,
-  Type,
   MousePointer2,
   Bell,
   AlertTriangle,
@@ -84,52 +82,32 @@ export function AppearanceScreen({ onBack }: { onBack: () => void }) {
       onBack={onBack}
       right={dirty ? <SaveButton onClick={save} saving={saving} /> : null}
     >
-      <Section title="Tema">
-        <FormRow icon={Moon} label="Aspecto" last>
-          <SegmentedControl
-            value={prefs.theme ?? "dark"}
-            onChange={(v) => update("theme", v)}
-            options={[
-              { value: "dark", label: "Oscuro" },
-              { value: "auto", label: "Auto" },
-            ]}
-          />
-        </FormRow>
-      </Section>
-
       <Section title="Accesibilidad">
-        <FormRow icon={Type} label="Tamaño de texto">
-          <SegmentedControl
-            value={prefs.text_size ?? "normal"}
-            onChange={(v) => update("text_size", v)}
-            options={[
-              { value: "compact", label: "Compacto" },
-              { value: "normal", label: "Normal" },
-              { value: "large", label: "Grande" },
-            ]}
-          />
-        </FormRow>
-        <div className="flex items-center gap-[12px] px-[16px] py-[14px]">
-          <div className="h-[34px] w-[34px] rounded-[10px] grid place-items-center shrink-0 bg-white/[0.05] border border-white/[0.07]">
-            <MousePointer2 className="h-[15px] w-[15px] text-white/70" strokeWidth={1.7} />
+        <div className="flex items-start gap-[14px] px-[16px] py-[18px]">
+          <div className="h-[42px] w-[42px] rounded-[12px] grid place-items-center shrink-0 bg-[#3b82f6]/15 border border-[#3b82f6]/25">
+            <MousePointer2 className="h-[18px] w-[18px] text-[#3b82f6]" strokeWidth={1.8} />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-['Geist'] text-[14.5px] text-white">Reducir movimiento</div>
-            <div className="font-['Geist'] text-[11.5px] text-white/40 mt-[2px]">
-              Minimiza animaciones y transiciones
+          <div className="flex-1 min-w-0 pr-[10px]">
+            <div className="font-['Geist'] text-[15px] text-white font-medium">Reducir movimiento</div>
+            <div className="font-['Geist'] text-[12.5px] text-white/50 mt-[4px] leading-[1.5]">
+              Suaviza y minimiza las animaciones, transiciones y efectos de parallax en toda la app.
+              Recomendado si sientes mareo con movimiento o prefieres una experiencia más tranquila.
             </div>
           </div>
-          <Toggle
-            value={!!prefs.reduce_motion}
-            onChange={(v) => update("reduce_motion", v)}
-          />
+          <div className="pt-[2px]">
+            <Toggle
+              value={!!prefs.reduce_motion}
+              onChange={(v) => update("reduce_motion", v)}
+            />
+          </div>
         </div>
       </Section>
 
       <div className="px-[20px] mt-[16px]">
         <p className="font-['Geist'] text-[11.5px] text-white/35 leading-[1.55]">
-          Trax fue diseñado en modo oscuro. El modo automático seguirá el ajuste del sistema
-          cuando la plataforma lo soporte.
+          Trax está diseñado en modo oscuro con tamaño de texto óptimo para lectura rápida. Estas
+          decisiones visuales se mantienen fijas para preservar la identidad y la accesibilidad
+          en todos los módulos.
         </p>
       </div>
     </SettingsShell>
@@ -218,7 +196,6 @@ export function NotificationsScreen({ onBack }: { onBack: () => void }) {
 
 /* ------------------------- SocIA ------------------------- */
 export function SociaSettingsScreen({ onBack, openThreads }: { onBack: () => void; openThreads?: () => void }) {
-  const { prefs, update, dirty, saving, save } = usePrefs();
   const { user } = useAuth();
   const [clearing, setClearing] = useState(false);
 
@@ -237,19 +214,20 @@ export function SociaSettingsScreen({ onBack, openThreads }: { onBack: () => voi
       title="socIA"
       eyebrow="Ajustes · Preferencias"
       onBack={onBack}
-      right={dirty ? <SaveButton onClick={save} saving={saving} /> : null}
     >
       <Section title="Personalidad">
-        <FormRow icon={Sparkles} label="Tono de respuestas" last>
-          <SegmentedControl
-            value={prefs.socia_tone ?? "cercano"}
-            onChange={(v) => update("socia_tone", v)}
-            options={[
-              { value: "cercano", label: "Cercano" },
-              { value: "formal", label: "Formal" },
-            ]}
-          />
-        </FormRow>
+        <div className="flex items-start gap-[14px] px-[16px] py-[16px]">
+          <div className="h-[42px] w-[42px] rounded-[12px] grid place-items-center shrink-0 bg-[#3b82f6]/15 border border-[#3b82f6]/25">
+            <Sparkles className="h-[18px] w-[18px] text-[#3b82f6]" strokeWidth={1.8} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-['Geist'] text-[15px] text-white font-medium">Tono cercano, empático y humano</div>
+            <div className="font-['Geist'] text-[12.5px] text-white/50 mt-[4px] leading-[1.5]">
+              socIA siempre te tratará de tú, con calidez, sin tecnicismos y priorizando entenderte
+              antes que responder. Este tono es consistente en toda la app y no se puede modificar.
+            </div>
+          </div>
+        </div>
       </Section>
 
       <Section title="Historial de chats">

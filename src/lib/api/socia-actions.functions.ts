@@ -268,7 +268,7 @@ async function execCrearProducto(
       cost: a.costo ?? 0,
       stock: a.stock ?? 0,
       category: a.categoria ?? null,
-      low_stock_threshold: a.low_stock_threshold ?? 5,
+      low_stock_threshold: a.low_stock_threshold ?? 10,
     })
     .select("id,name,price,cost,stock,category")
     .single();

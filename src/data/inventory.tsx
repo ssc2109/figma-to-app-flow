@@ -10,7 +10,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export const LOW_STOCK_THRESHOLD = 5;
+export const LOW_STOCK_THRESHOLD = 10;
 
 export type InventoryItem = {
   id: string; // = dbId
