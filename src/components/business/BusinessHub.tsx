@@ -1024,6 +1024,7 @@ export default function BusinessHub(p: Props) {
               {area === "operacion" && OperationArea(p, signals)}
               {area === "caja" && CashArea(p, signals)}
               {area === "clientes" && ClientsArea(p, signals)}
+              {area === "analisis" && <AnalyticsArea />}
             </motion.div>
           </AnimatePresence>
         </div>
