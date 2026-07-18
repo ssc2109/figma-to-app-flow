@@ -9,7 +9,6 @@ import {
 } from "./settings/AccountScreens";
 import {
   BusinessInfoScreen,
-  CurrencyFormatScreen,
   GoalsThresholdsScreen,
   TeamScreen,
 } from "./settings/BusinessScreens";
