@@ -1917,6 +1917,14 @@ type StoredSession = {
   lessonKind?: LessonKind;
   lessonTier?: LessonTier;
   video?: LessonVideo;
+  /** Progreso en curso de la sesión (para retomar donde se dejó al navegar fuera). */
+  progress?: {
+    stage: "steps" | "quiz" | "score";
+    stepIdx: number;
+    quizIdx: number;
+    answers: Record<number, number>;
+    revealed: Record<number, boolean>;
+  };
 };
 
 type FavoriteRef = { type: "book" | "case" | "news" | "trend"; sessionId: string; index: number };
