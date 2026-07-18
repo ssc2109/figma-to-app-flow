@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { Search, Package, Pencil, Check, Plus, Minus } from "lucide-react";
 import { useInventory, type InventoryItem } from "@/data/inventory";
 import { toast } from "sonner";
-import { toast } from "sonner";
 
 import { SubHeader, SubScreen, ListGroup } from "./shared";
 
