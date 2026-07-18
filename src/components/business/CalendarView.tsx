@@ -66,7 +66,7 @@ export default function CalendarView({ onBack }: { onBack: () => void }) {
     load();
   };
   const del = async (id: string) => {
-    if (!confirm("¿Eliminar este evento?")) return;
+    if (!(await confirm({ title: "Eliminar evento", description: "Se quitará de tu agenda. Esta acción no se puede deshacer.", confirmText: "Eliminar", tone: "danger" }))) return;
     const { error } = await supabase.from("calendar_events").delete().eq("id", id);
     if (error) return toast.error(error.message);
     load();
