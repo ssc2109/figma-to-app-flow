@@ -27,6 +27,7 @@ function ymd(d: Date) {
 
 export default function CalendarView({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [items, setItems] = useState<Ev[]>([]);
   const [selected, setSelected] = useState<Date>(new Date());
   const [sheet, setSheet] = useState(false);
