@@ -256,7 +256,7 @@ export function EmailPasswordScreen({ onBack }: { onBack: () => void }) {
     if (!user?.email) return;
     setSending(true);
     const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-      redirectTo: `${window.location.origin}/auth`,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
     setSending(false);
     if (error) toast.error("No se pudo enviar el correo.");
