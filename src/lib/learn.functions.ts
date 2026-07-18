@@ -35,7 +35,10 @@ const InputSchema = z.object({
   }).optional(),
   /** Títulos ya vistos en la ruta actual (para checkpoints/recalls). */
   coveredTopics: z.array(z.string().max(160)).max(40).optional(),
+  /** Semilla de variación: si el usuario repite una lección, fuerza redacción/ejemplos/preguntas distintos. */
+  variantSeed: z.string().max(80).optional(),
 });
+
 
 const SOURCE_LIBRARY: Record<string, string[]> = {
   ventas: [
@@ -162,9 +165,10 @@ function baselineNote(baseline?: "Básico" | "Intermedio" | "Avanzado") {
 }
 
 function buildPrompt(input: z.infer<typeof InputSchema>) {
-  const { topic, level, minutes, businessType, previousTopics, pathId, topicIndex, topicTotal, lessonKind = "lesson", tierRange, baselineLevel, videoRef, coveredTopics } = input;
+  const { topic, level, minutes, businessType, previousTopics, pathId, topicIndex, topicTotal, lessonKind = "lesson", tierRange, baselineLevel, videoRef, coveredTopics, variantSeed } = input;
   const curatedSources = pathId ? SOURCE_LIBRARY[pathId] : undefined;
   const position1 = topicIndex != null ? topicIndex + 1 : undefined;
+
   const diff = tramoBand(position1, topicTotal);
   const baseline = baselineNote(baselineLevel);
 
@@ -219,7 +223,7 @@ Devuelve exclusivamente el JSON solicitado.`;
 
   // ==== Lección regular (posiblemente con video) ====
   const stepCount = minutes === 30 ? "5" : minutes === 45 ? "6" : "8";
-  const quizCount = videoRef ? "4" : (minutes === 30 ? "3" : minutes === 45 ? "4" : "5");
+  const quizCount = "6"; // Formato fijo: siempre 6 preguntas por lección normal.
 
   return `Eres un instructor experto en administración y negocios que diseña micro-lecciones para dueños de MYPEs peruanas (bodegas, minimarkets, ferreterías, panaderías, farmacias, juguerías, tiendas de ropa, etc.). Los usuarios NO tienen tiempo para leer artículos largos: necesitan aprender rápido en formato tipo Duolingo.
 
@@ -237,9 +241,9 @@ REGLAS DE CONTENIDO (obligatorias):
 - Cada "steps[].idea": 1-2 frases cortas explicando la idea principal. Español claro, sin jerga innecesaria.
 - Cada "steps[].example": 1-3 frases con un ejemplo CONCRETO ambientado en una MYPE peruana real (bodega en Comas, panadería en Villa El Salvador, ferretería en Los Olivos, etc.). Usa nombres realistas, cifras en soles (S/), productos comunes en Perú.
 - Cada "steps[].reflection": OPCIONAL. Si aporta, una pregunta corta de reflexión personal al dueño ("¿Cuánto de tu inventario rota en menos de 30 días?"). Máximo 15 palabras. Puede quedar vacía si el paso no lo necesita.
-- Devuelve exactamente ${quizCount} preguntas en "quiz". Cada una con 4 opciones y solo una correcta (correctIndex 0-3). "explanation": 1-2 frases justificando la respuesta correcta.
+- Devuelve EXACTAMENTE ${quizCount} preguntas en "quiz" (ni una más, ni una menos). Cada una con 4 opciones y solo una correcta (correctIndex 0-3). "explanation": 1-2 frases justificando la respuesta correcta.
 - "summary": una sola frase (máximo 20 palabras) con la idea clave de toda la sesión.
-${videoRef ? `\nVIDEO INTEGRADO (obligatorio):\n- Justo antes del quiz el usuario verá un clip de YouTube titulado "${videoRef.title}" (~${videoRef.seconds}s).\n- De las ${quizCount} preguntas del quiz, al menos 2 deben basarse en el ángulo del video (no citando "el video dice X", sino evaluando la idea que transmite).\n` : ""}
+${videoRef ? `\nVIDEO INTEGRADO (obligatorio):\n- Justo antes del quiz el usuario verá un clip de YouTube titulado "${videoRef.title}" (~${videoRef.seconds}s).\n- De las ${quizCount} preguntas del quiz, al menos 2 deben basarse en el ángulo del video (no citando "el video dice X", sino evaluando la idea que transmite).\n` : ""}${variantSeed ? `\nVARIANTE DE REPETICIÓN (obligatorio):\n- El usuario ya vio esta MISMA lección antes y está repitiéndola como refuerzo. Semilla de variación: ${variantSeed}.\n- Mantén el MISMO tema, categoría y objetivos de aprendizaje, PERO cambia por completo la redacción, los ejemplos concretos (otras bodegas/barrios/productos), los números de referencia y las 6 preguntas del quiz. NO repitas literalmente frases ni preguntas de una versión anterior.\n` : ""}
 REGLAS DE FUENTES (obligatorias):
 - No inventes cifras, autores ni citas falsas. Si no estás seguro, generaliza sin dar dato concreto.
 - Cuando cites una idea de un libro o autor, que sea real y verificable.
@@ -248,6 +252,7 @@ ${previousTopics && previousTopics.length > 0 ? `- El usuario ya vio: ${previous
 
 Devuelve exclusivamente el objeto JSON solicitado, sin texto adicional, sin markdown, sin comentarios.`;
 }
+
 
 export const generateLearnSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

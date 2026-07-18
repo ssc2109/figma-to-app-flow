@@ -3107,21 +3107,34 @@ function LearnView({ onBack }: { onBack: () => void }) {
     setPathOpen(p);
   };
 
-  const doGenerate = async (topic: string, level: LearnLevel, minutes: LearnMinutes) => {
+  const doGenerate = async (
+    topic: string,
+    level: LearnLevel,
+    minutes: LearnMinutes,
+    pathOverride?: LearningPath,
+  ) => {
     setLoading(true);
     setError(undefined);
     try {
+      const activePath = pathOverride ?? setupPath;
       const previousTopics = store.state.sessions.slice(0, 6).map((s) => s.topic);
       // Buscar el LessonNode correspondiente (paths expandidos: kind/tier/video)
-      const lesson = setupPath?.lessons?.find((l) => l.title === topic);
-      const topicIndex = setupPath ? setupPath.topics.indexOf(topic) : -1;
-      const topicTotal = setupPath?.topics.length;
+      const lesson = activePath?.lessons?.find((l) => l.title === topic);
+      const topicIndex = activePath ? activePath.topics.indexOf(topic) : -1;
+      const topicTotal = activePath?.topics.length;
       const baselineLevel = (prefs?.diagnostic_result as { level?: LearnLevel } | undefined)?.level;
+
+      // Detectar si el usuario está REPITIENDO una lección ya completada.
+      const alreadyCompleted = !!(activePath && (store.state.pathProgress[activePath.id] ?? []).includes(topic));
+      const priorAttempts = store.state.sessions.filter((s) => s.pathId === activePath?.id && s.topic === topic).length;
+      const variantSeed = alreadyCompleted || priorAttempts > 0
+        ? `${topic}-v${priorAttempts + 1}-${Math.random().toString(36).slice(2, 8)}`
+        : undefined;
 
       // Para checkpoint/recall/final: pasar el rango de temas cubiertos
       let tierRange: [number, number] | undefined;
       let coveredTopics: string[] | undefined;
-      if (lesson && lesson.kind !== "lesson" && setupPath?.lessons) {
+      if (lesson && lesson.kind !== "lesson" && activePath?.lessons) {
         const range: [number, number] =
           lesson.kind === "final"
             ? [1, 29]
@@ -3135,25 +3148,26 @@ function LearnView({ onBack }: { onBack: () => void }) {
             ? [16, 24]
             : [1, Math.max(1, topicIndex)];
         tierRange = range;
-        coveredTopics = setupPath.lessons
+        coveredTopics = activePath.lessons
           .slice(range[0] - 1, range[1])
           .filter((l) => l.kind === "lesson")
           .map((l) => l.title);
       }
 
       const session = await generate({ data: {
-        topic, level, minutes, previousTopics, pathId: setupPath?.id,
+        topic, level, minutes, previousTopics, pathId: activePath?.id,
         ...(topicIndex >= 0 ? { topicIndex, topicTotal } : {}),
         ...(lesson ? { lessonKind: lesson.kind } : {}),
         ...(tierRange ? { tierRange } : {}),
         ...(coveredTopics && coveredTopics.length > 0 ? { coveredTopics } : {}),
         ...(baselineLevel ? { baselineLevel } : {}),
         ...(lesson?.video ? { videoRef: lesson.video } : {}),
+        ...(variantSeed ? { variantSeed } : {}),
       } });
       const stored: StoredSession = {
         id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
         createdAt: new Date().toISOString(),
-        pathId: setupPath?.id,
+        pathId: activePath?.id,
         topic,
         level,
         minutes,
@@ -3171,6 +3185,7 @@ function LearnView({ onBack }: { onBack: () => void }) {
       setLoading(false);
     }
   };
+
 
   const [graduation, setGraduation] = useState<{ path: LearningPath; nextTier?: "Pro" | "Avanzado" } | null>(null);
 
@@ -3233,20 +3248,33 @@ function LearnView({ onBack }: { onBack: () => void }) {
           completedTopics={store.state.pathProgress[pathOpen.id] ?? []}
           hasStarted={hasStarted}
           onBack={() => setPathOpen(null)}
-          onStartTopic={(t) => { store.markPathStarted(pathOpen.id); openSetup(pathOpen, t); }}
+          onStartTopic={(t) => {
+            if (loading) return;
+            store.markPathStarted(pathOpen.id);
+            setSetupPath(pathOpen);
+            setSetupTopic(t);
+            void doGenerate(t, pathOpen.level, 45, pathOpen);
+          }}
         />
-        <SessionSetupSheet
-          open={setupOpen}
-          path={setupPath}
-          initialTopic={setupTopic}
-          onClose={() => { if (!loading) setSetupOpen(false); }}
-          onGenerate={doGenerate}
-          loading={loading}
-          error={error}
-        />
+        {loading && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center px-[24px]" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(10px)" }}>
+            <div className="flex flex-col items-center gap-[14px] text-center">
+              <Loader2 className="h-[28px] w-[28px] text-white/80 animate-spin" strokeWidth={2} />
+              <div className="font-['Geist'] text-[13.5px] text-white/80">Preparando tu lección…</div>
+            </div>
+          </div>
+        )}
+        {error && !loading && (
+          <div className="fixed inset-x-0 bottom-[24px] mx-auto max-w-[380px] px-[16px] z-[110]">
+            <div className="rounded-[14px] p-[14px] font-['Geist'] text-[13px] text-[#F87171]" style={{ background: "rgba(20,20,22,0.95)", border: "1px solid rgba(248,113,113,0.35)" }}>
+              {error}
+            </div>
+          </div>
+        )}
       </>
     );
   }
+
 
   const totalMinutes = store.state.sessions.reduce((s, x) => s + (x.completed ? x.minutes : 0), 0);
   const completedCount = store.state.sessions.filter((s) => s.completed).length;
