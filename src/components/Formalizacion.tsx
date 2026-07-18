@@ -443,6 +443,10 @@ function BuildingView({
             openGlossary={openGlossary}
             isLastUnlocked={floor === unlockedFloor}
             onCompleteFloor={handleCompleteFloor}
+            unlockedFloor={unlockedFloor}
+            advanceFloor={advanceFloor}
+            nombreNegocioTrax={nombreNegocioTrax}
+            setNombreNegocioTrax={setNombreNegocioTrax}
           />
         </div>
       </div>
@@ -459,8 +463,11 @@ function FloorContent({
   tipoPersona,
   setTipoPersona,
   openGlossary,
+  unlockedFloor,
+  advanceFloor,
+  nombreNegocioTrax,
+  setNombreNegocioTrax,
   isLastUnlocked,
-  onCompleteFloor,
 }: {
   floor: number;
   tipoPersona: TipoPersona | null;
@@ -468,183 +475,36 @@ function FloorContent({
   openGlossary: (k: TerminoKey) => void;
   isLastUnlocked: boolean;
   onCompleteFloor: () => void;
+  unlockedFloor: number;
+  advanceFloor: (target?: number) => void;
+  nombreNegocioTrax: string;
+  setNombreNegocioTrax: (v: string) => void;
 }) {
-  if (floor === 1) {
-    return (
-      <Panel>
-        <FloorEyebrow>Piso 01</FloorEyebrow>
-        <FloorTitle>Los beneficios reales</FloorTitle>
-        <div className="mt-5 space-y-2.5">
-          <BenefitRow
-            icon={<ShieldCheck className="w-5 h-5" />}
-            tone="#22c55e"
-            title="Chau miedo a la SUNAT"
-            body={
-              <>
-                Con el{' '}
-                <TermLink onClick={() => openGlossary('nrus')}>NRUS</TermLink> pagas desde S/20 al
-                mes. Nadie toca tus ganancias.
-              </>
-            }
-          />
-          <BenefitRow
-            icon={<HeartPulse className="w-5 h-5" />}
-            tone="#3b82f6"
-            title="SIS Emprendedor"
-            body="Salud gratuita para ti y tu familia por estar en el régimen NRUS."
-          />
-          <BenefitRow
-            icon={<Landmark className="w-5 h-5" />}
-            tone="#a78bfa"
-            title="Historial crediticio"
-            body="Bancos y cajas te prestan a mejores tasas cuando tu RUC está activo."
-          />
-        </div>
-
-      </Panel>
-    );
-  }
-
-  if (floor === 2) {
-    return (
-      <Panel>
-        <FloorEyebrow>Piso 02</FloorEyebrow>
-        <FloorTitle>¿Cómo vas a trabajar?</FloorTitle>
-        <p className="mt-2 font-['Geist'] text-[13px] text-white/50 leading-[1.5]">
-          Elige la ruta que mejor se adapta a tu negocio.
-        </p>
-
-        <div className="mt-5 space-y-2.5">
-          <RouteChoice
-            active={tipoPersona === 'natural'}
-            accent="#3b82f6"
-            title="Ruta Rápida"
-            tag="RUC 10 · Persona Natural"
-            body="Usas tu propio DNI. Es más barato e instantáneo, pero respondes con tus bienes personales."
-            onClick={() => setTipoPersona('natural')}
-            onGlossary={() => openGlossary('ruc10')}
-          />
-          <RouteChoice
-            active={tipoPersona === 'juridica'}
-            accent="#a78bfa"
-            title="Ruta Segura"
-            tag="RUC 20 · Persona Jurídica"
-            body="Creas una empresa. Protege tu casa y ahorros porque el negocio responde por sí mismo."
-            onClick={() => setTipoPersona('juridica')}
-            onGlossary={() => openGlossary('ruc20')}
-          />
-        </div>
-
-      </Panel>
-    );
-  }
-
-  if (floor === 3) {
-    if (tipoPersona !== 'juridica') {
-      return (
-        <Panel>
-          <FloorEyebrow>Piso 03</FloorEyebrow>
-          <FloorTitle>Crear empresa</FloorTitle>
-          <p className="mt-3 font-['Geist'] text-[14px] text-white/55 leading-[1.55]">
-            Este piso aplica solo si elegiste la <span className="text-white">Ruta Segura (RUC 20)</span>{' '}
-            en el piso anterior. Puedes saltar al piso 4 si vas con RUC 10.
-          </p>
-
-        </Panel>
-      );
-    }
-    return (
-      <Panel>
-        <FloorEyebrow>Piso 03</FloorEyebrow>
-        <FloorTitle>Creando tu empresa</FloorTitle>
-        <p className="mt-2 font-['Geist'] text-[13px] text-white/50 leading-[1.55]">
-          Registra tu empresa en SUNARP antes de sacar el RUC.
-        </p>
-
-        <ol className="mt-5 space-y-3">
-          <StepLine
-            icon={<FileText className="w-4 h-4" />}
-            text={
-              <>
-                Redactar la{' '}
-                <TermLink onClick={() => openGlossary('minuta')}>Minuta</TermLink> del negocio.
-              </>
-            }
-          />
-          <StepLine
-            icon={<Scale className="w-4 h-4" />}
-            text="Llevarla a una notaría para la firma oficial."
-          />
-          <StepLine
-            icon={<Building className="w-4 h-4" />}
-            text="La notaría inscribe automáticamente en SUNARP."
-          />
-        </ol>
-
-      </Panel>
-    );
-  }
-
-  if (floor === 4) {
-    return (
-      <Panel>
-        <FloorEyebrow>Piso 04 · SUNAT</FloorEyebrow>
-        <FloorTitle>Inscripción del RUC</FloorTitle>
-        <p className="mt-2 font-['Geist'] text-[13px] text-white/50 leading-[1.55]">
-          4 pasos rápidos en la App Personas de SUNAT.
-        </p>
-
-        <div className="mt-5 space-y-2.5">
-          <SunatStep
-            n={1}
-            icon={<Fingerprint className="w-4 h-4" />}
-            title="Identificación y motivo"
-            body='Ingresa tu DNI e indica "Iniciar un negocio".'
-          />
-          <SunatStep
-            n={2}
-            icon={<Fingerprint className="w-4 h-4" />}
-            title="Verificación biométrica"
-            body="La app escaneará tu huella con la cámara."
-          />
-          <SunatStep
-            n={3}
-            icon={<MapPin className="w-4 h-4" />}
-            title="Datos del negocio"
-            body={
-              <>
-                Ingresa tu{' '}
-                <TermLink onClick={() => openGlossary('domicilio')}>Domicilio Fiscal</TermLink> y
-                actividad.
-              </>
-            }
-          />
-          <SunatStep
-            n={4}
-            icon={<KeyRound className="w-4 h-4" />}
-            title="Contacto y Clave SOL"
-            body={
-              <>
-                Registra celular, correo y crea tu{' '}
-                <TermLink onClick={() => openGlossary('clavesol')}>Clave SOL</TermLink>.
-              </>
-            }
-          />
-        </div>
-
-        <a
-          href="https://www.sunat.gob.pe/"
-          target="_blank"
-          rel="noreferrer noopener"
-          className="mt-6 w-full h-[50px] rounded-2xl bg-[#3b82f6] hover:bg-[#2563eb] active:scale-[0.99] transition-all flex items-center justify-center gap-2 font-['Geist'] text-[14.5px] font-semibold text-white"
-        >
-          Ir a la web de SUNAT
-          <ArrowUpRight className="w-4 h-4" strokeWidth={2} />
-        </a>
-
-      </Panel>
-    );
-  }
+  if (floor === 1) return <FloorOne unlockedFloor={unlockedFloor} advanceFloor={advanceFloor} openGlossary={openGlossary} />;
+  if (floor === 2) return (
+    <FloorTwo
+      unlockedFloor={unlockedFloor}
+      advanceFloor={advanceFloor}
+      tipoPersona={tipoPersona}
+      setTipoPersona={setTipoPersona}
+      openGlossary={openGlossary}
+    />
+  );
+  if (floor === 3) return (
+    <FloorThree
+      unlockedFloor={unlockedFloor}
+      advanceFloor={advanceFloor}
+      nombreNegocioTrax={nombreNegocioTrax}
+      setNombreNegocioTrax={setNombreNegocioTrax}
+    />
+  );
+  if (floor === 4) return (
+    <FloorFour
+      unlockedFloor={unlockedFloor}
+      advanceFloor={advanceFloor}
+      openGlossary={openGlossary}
+    />
+  );
 
   if (floor === 5) {
     return (
