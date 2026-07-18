@@ -398,6 +398,7 @@ const AREAS: { id: Area; label: string }[] = [
   { id: "operacion", label: "Operación" },
   { id: "caja", label: "Caja" },
   { id: "clientes", label: "Clientes" },
+  { id: "analisis", label: "Análisis" },
 ];
 
 function AreaTabs({ area, onChange }: { area: Area; onChange: (a: Area) => void }) {
