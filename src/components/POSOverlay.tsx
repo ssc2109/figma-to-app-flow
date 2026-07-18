@@ -121,6 +121,15 @@ export default function POSOverlay({ open, onClose }: { open: boolean; onClose: 
 
   const cobrar = async () => {
     if (!user || lines.length === 0 || saving) return;
+    const total = lines.reduce((s, l) => s + l.qty * l.price, 0);
+    const isCredit = mode === "fiar";
+    if (!(await confirm({
+      title: isCredit ? "Registrar fiado" : "Cobrar venta",
+      description: isCredit
+        ? `Se guardará una deuda de ${fmt(total)} a nombre de ${customer.trim() || "cliente"}. Se descontará el stock.`
+        : `Vas a cobrar ${fmt(total)} en ${method}. Se descontará el stock del carrito.`,
+      confirmText: isCredit ? "Registrar fiado" : "Cobrar",
+    }))) return;
     setSaving(true);
     try {
       const result = await runSubmitSale({
