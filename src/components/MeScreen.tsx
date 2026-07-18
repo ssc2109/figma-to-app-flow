@@ -3444,7 +3444,7 @@ function HistorialView({
   if (sessions.length === 0) {
     return (
       <div className="py-[40px] text-center font-['Geist'] text-[13px] text-white/40 leading-[1.5]">
-        Aún no has generado sesiones.<br/>Toca "Nueva sesión" o elige una ruta para empezar.
+        Aún no has generado sesiones.<br/>Elige una ruta para empezar.
       </div>
     );
   }
