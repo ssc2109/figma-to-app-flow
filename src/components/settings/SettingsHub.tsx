@@ -70,16 +70,14 @@ export default function SettingsHub({
       {
         title: "Cuenta",
         items: [
-          { key: "profile", icon: User, title: "Perfil personal", hint: "Foto, nombre, idioma" },
           { key: "email", icon: Mail, title: "Correo y contraseña", hint: "Datos de acceso" },
-          { key: "sessions", icon: ShieldCheck, title: "Sesiones y seguridad", hint: "Dispositivos conectados" },
+          { key: "sessions", icon: ShieldCheck, title: "Sesiones y dispositivos", hint: "Cambio de cuentas y seguridad" },
         ],
       },
       {
         title: "Negocio",
         items: [
           { key: "business", icon: Store, title: "Datos del negocio", hint: "Nombre, tipo, dirección" },
-          { key: "currency", icon: Coins, title: "Moneda y formato", hint: "Cómo mostramos los montos" },
           { key: "goals", icon: Target, title: "Metas y umbrales", hint: "Ventas diarias, stock crítico" },
           { key: "team", icon: Users, title: "Equipo", hint: "Invita a colaboradores", right: "Avanzado" },
         ],
