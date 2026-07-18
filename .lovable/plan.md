@@ -1,91 +1,113 @@
-## Métodos finales
-1. **Google** (ya activo).
-2. **Apple** — botón mostrado solo en iOS/macOS (detección UA). Se habilita en Cloud con `configure_social_auth`.
-3. **Correo + contraseña** — cuenta clásica.
-4. **OTP por SMS** — el usuario ingresa su celular, recibe código de 6 dígitos por SMS, entra. Auth de teléfono nativo de Supabase + Twilio como proveedor (ya hay conector oficial `standard_connectors`).
+# Plan — Rediseño funcional de Ajustes
 
-## Backend
+**Regla dura:** no toco `auth/*` (SMS/Twilio), catálogo, inventario, ni ninguna lógica fuera de lo listado abajo.
 
-- `supabase--configure_social_auth` → `providers: ["apple", "google"]` (sin desactivar email).
-- `standard_connectors--connect twilio` → linkea la conexión Twilio, expone `TWILIO_API_KEY`, `TWILIO_ACCOUNT_SID`, y `TWILIO_PHONE_NUMBER` como env vars.
-- Configurar Supabase Phone Auth con Twilio: como Lovable Cloud no expone la UI de Supabase, se hace vía llamada Admin API en un pequeño script server-fn (`configurePhoneAuth`) que corre una vez desde el panel; alternativamente, si `configure_auth` no soporta phone provider hoy, se implementa el OTP a mano — Trax genera y valida el código, y solo usa Twilio para el envío. **Voy con la ruta manual** para no depender de configs no expuestas:
-  - Nueva tabla `phone_otps(id, phone text, code_hash text, expires_at, attempts, consumed_at, created_at)` con RLS server-only.
-  - Server fn `requestPhoneOtp({ phone })`: rate-limit (1 código/60s, 5/hora por número), genera código 6 dígitos, guarda hash bcrypt, envía por Twilio (`/Messages.json`).
-  - Server fn `verifyPhoneOtp({ phone, code })`: valida, incrementa attempts (bloqueo a 5), consume, y usa `supabaseAdmin.auth.admin` para: (a) buscar user por phone, (b) crear si no existe, (c) generar sesión (`generateLink` type `magiclink` + intercambio, o `admin.createUser` + `signInWithPassword` interno). Devuelve tokens que el cliente aplica con `supabase.auth.setSession`.
-- Ajustar trigger `handle_new_user` para tolerar signups sin metadata (ya lo hace con COALESCE — verificado).
-- Nueva tabla `password_resets` no requerida (Supabase maneja `resetPasswordForEmail`).
-- Habilitar `password_hibp_enabled: true` en `configure_auth` (fortaleza sin costo).
+---
 
-## Estructura UX — 3 subpantallas con transición horizontal
+## 1. Interacciones generales
 
-**SignInScreen** (default)
+**`src/components/settings/shared.tsx`**
+- `Toggle`: revisar `translateX`. El track avanza a la derecha cuando `value=true`, pero el knob visualmente parece invertido con ciertos anchos → alinear a `translateX(20px|2px)` con `left-0` explícito, y añadir transición coherente (`transition-transform duration-200 ease-out`). Verificar también `SegmentedControl` si aplica.
+
+## 2. Perfil Personal (`AccountScreens.tsx > ProfileScreen`)
+
+- **Teléfono:** dividir en `<CountryCodeSelect />` (dropdown con +51, +1, +52, +54, +56, +57, +58, +34, etc.) + input con `inputMode="numeric"`, `pattern="[0-9]*"` y filtro `value.replace(/\D/g,'')`. Longitud 6-15. Guardar como E.164 (`${code}${digits}`).
+- **Idiomas:** eliminar el row/select. Fijar `locale='es'` en profile default; no exponer UI.
+
+## 3. Cuenta
+
+- **Duplicado "Perfil personal"** dentro de `SettingsHub` → eliminar de la sección "Cuenta" (ya está arriba como avatar/nombre). Verificar en `SettingsHub.tsx`.
+- **Reset password:**
+  - Bug: el link llega a la app pero `/reset-password` responde 404 o queda bloqueado.
+  - Revisar `src/routes/reset-password.tsx` — asegurar que:
+    - es ruta pública (no bajo `_authenticated`),
+    - parsea `type=recovery` desde el hash `#access_token=...&type=recovery`,
+    - llama `supabase.auth.setSession()` con los tokens antes de `updateUser({password})`,
+    - libera el estado del botón "Reenviar" cuando falla (limpiar `cooldown` en error o al desmontar).
+  - En `EmailPasswordScreen`: reset del `sending`/`sent` state para permitir reenvío tras error.
+- **Multicuenta + 2FA:**
+  - Nueva subvista `AccountsSwitcherScreen` bajo "Sesiones y dispositivos" (o item nuevo "Cambiar de negocio").
+  - Tabla nueva `linked_accounts (owner_user_id uuid, member_user_id uuid, business_name text, created_at)` — el usuario puede vincular sesiones adicionales. Al alternar: pedir OTP por SMS al teléfono verificado del negocio destino (reutiliza `phone_otps` + `phone-otp.functions.ts` sin tocarlos, solo consumir).
+  - Server fn `switchAccount({targetUserId, otpCode})` que valida OTP y devuelve una nueva sesión (usa `supabaseAdmin.auth.admin.generateLink` tipo `magiclink`, luego el cliente hace `setSession`).
+
+## 4. Negocio (`BusinessScreens.tsx`)
+
+- **BusinessInfoScreen:** los inputs actualmente son display-only o no persisten → habilitar `useState` local + `SaveButton` que hace `update profiles set business_name, business_type, address, ruc, razon_social, direccion_fiscal, actividad_economica` y `refreshProfile()`.
+- **Moneda y Formato:** remover el `NavRow` del hub y la subpantalla del switch en `SettingsScreen`. Mantener `currency='PEN'` hardcoded como default en profile. No borrar el archivo por si algo importa el componente — dejar export vacío o quitar la referencia.
+- **Metas y Umbrales:**
+  - `low_stock_threshold` (ya existe en profile) init default = 10.
+  - Consumidores actuales de umbral fijo → buscar (`grep low_stock`) y reemplazar por `useAuth().profile?.low_stock_threshold ?? 10`. Afecta insights de inventario y home.
+- **Equipo:** intacto.
+
+## 5. Preferencias (`PreferencesScreens.tsx` + `PreferencesEffects.tsx`)
+
+- **AppearanceScreen:**
+  - Eliminar toggle/segmented de tema (fijar `theme='dark'` en `PreferencesEffects`, quitar mql y UI).
+  - Eliminar selector de `text_size` (fijar `--text-scale:1`).
+  - Conservar `reduce_motion`. Ampliar efecto en `styles.css` para cubrir Framer Motion (`.reduce-motion * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }`) y añadir hook `useReduceMotion()` que lee `profile.preferences.reduce_motion`, y usarlo en `AnimatePresence`/`motion` clave (transiciones de pantalla en `ScreenTransition`, `SettingsScreen`).
+- **NotificationsScreen:** al togglear cualquier notificación, dispararla también:
+  - **Email** via server fn `sendNotificationEmail` usando Resend/Lovable Emails (¿o mantener sencillo con `supabase.auth.admin` no aplica?). Recomendación: crear server fn `notifyUser(userId, kind, payload)` que:
+    1. Inserta en tabla `notifications` (nueva: `id, user_id, kind, title, body, read, created_at`) — esto alimenta el feed interno de socIA en home.
+    2. Envía email vía connector (Lovable Emails si está disponible; si no, dejar TODO documentado en la fn con un `console.warn` sin romper).
+  - En Home/socIA insight component, leer `notifications` no leídas y renderizarlas.
+- **SocIA:** editar el system prompt base en `src/lib/api/briefing.functions.ts` y `src/routes/api/chat.ts` — añadir tono empático, cercano, humano, "acompaña al emprendedor como una socia real". Ajuste sutil, no borrar reglas existentes.
+
+## 6. Plan y Sistema
+
+- **Planes/Suscripciones:**
+  - Eliminar cualquier flujo simulado (buscar en `PlansScreen.tsx` / `CheckoutSheet.tsx` botones tipo "activar demo"/"simular pago" y removerlos).
+  - En rutas de edición sensibles (crear producto, editar negocio, invitar equipo, etc.), envolver la acción con `usePlan()`: si el plan actual no cubre esa capability → `UpgradeGate` con copy "Requiere plan Pro/Avanzado. Realiza el pago de la suscripción o solicita aprobación del líder de Lovable."
+  - Añadir en `SystemScreens.tsx` un card "Estado de permisos" con el plan actual y CTA a `PlansScreen`.
+
+---
+
+## Detalles técnicos
+
+**Nuevas tablas (migración):**
+```sql
+create table public.notifications (
+  id uuid pk default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  kind text not null, -- 'low_stock' | 'daily_goal' | 'debt_due' | 'system'
+  title text not null,
+  body text,
+  read boolean default false,
+  created_at timestamptz default now()
+);
+-- GRANT + RLS por auth.uid()
+
+create table public.linked_accounts (
+  id uuid pk default gen_random_uuid(),
+  primary_user_id uuid references auth.users(id) on delete cascade not null,
+  linked_user_id uuid not null,
+  business_name text,
+  created_at timestamptz default now(),
+  unique(primary_user_id, linked_user_id)
+);
+-- GRANT + RLS por primary_user_id = auth.uid()
 ```
-        [logo trax]
 
-     Bienvenido de vuelta
+**Nuevos archivos:**
+- `src/lib/api/notifications.functions.ts` — `notifyUser`, `listNotifications`, `markRead`.
+- `src/lib/api/accounts.functions.ts` — `listLinkedAccounts`, `requestAccountSwitchOTP`, `confirmAccountSwitch`.
+- `src/hooks/useReduceMotion.ts`
+- `src/components/settings/AccountsSwitcherScreen.tsx`
 
- [🍎 Continuar con Apple]      ← solo iOS/macOS
- [G  Continuar con Google]
+**Archivos editados:**
+- `settings/shared.tsx`, `settings/SettingsHub.tsx`, `settings/AccountScreens.tsx`, `settings/BusinessScreens.tsx`, `settings/PreferencesScreens.tsx`, `settings/SystemScreens.tsx`
+- `SettingsScreen.tsx` (routing: quitar 'currency', añadir 'accounts')
+- `PreferencesEffects.tsx` (fijar dark + text_size)
+- `styles.css` (reduce-motion global)
+- `routes/reset-password.tsx` (fix callback + hash parse)
+- `hooks/useAuth.tsx` (default low_stock_threshold 10 si null)
+- `api/briefing.functions.ts`, `routes/api/chat.ts` (prompt empático)
+- Componentes que usen umbral hardcoded → leer del profile.
 
- ────── o entra con ──────
+---
 
- [ 📧 Correo ] [ 📱 Celular ]  ← toggle segmentado
-    ─── panel según selección ───
-    Correo:                        Celular:
-    [ tu@correo.com     ]           [ +51 987 654 321 ]
-    [ ••••••••          ]           [    Enviar código  ]
-    [    Entrar         ]
-    ¿Olvidaste tu contraseña?
+## Fuera de alcance (confirmar antes)
 
- ───────────────────────────
+- ¿Aprobación de "líder de Lovable" es un email a un buzón concreto o solo copy visual? Voy a implementarlo como copy + CTA a soporte, sin enviar aprobación real (no hay canal definido).
+- Envío real de emails: si no hay connector Resend/Mailgun linkeado, dejo la fn preparada con TODO y notificación interna funcionando; el email se activa cuando conectes proveedor.
 
- ¿Nuevo en Trax? Crear cuenta →
-```
-
-**SignUpScreen** — mismo layout, sin "olvidaste contraseña", copy "Crear cuenta" + legal.
-
-**OtpScreen** — cuando eligen celular:
-- 6 casillas de código (`InputOTP` de shadcn ya disponible).
-- Countdown 60s + "Reenviar código".
-- "Cambiar número" arriba.
-
-**ForgotPasswordScreen** + ruta `/reset-password` para el flujo completo.
-
-## Archivos
-
-**Modificar**
-- `src/components/AuthScreen.tsx` — reescritura completa; container de subpantallas con `AnimatePresence`.
-- `src/routes/[.]lovable.oauth.consent.tsx` — swap wordmark por logo real.
-
-**Crear**
-- `src/components/auth/SignInView.tsx`
-- `src/components/auth/SignUpView.tsx`
-- `src/components/auth/OtpView.tsx`
-- `src/components/auth/ForgotPasswordView.tsx`
-- `src/components/auth/shared.tsx` — Field, AppleIcon, GoogleIcon, PhoneIcon, primitives.
-- `src/routes/reset-password.tsx` — ruta pública.
-- `src/lib/auth/phone-otp.functions.ts` — `requestPhoneOtp`, `verifyPhoneOtp`.
-- `src/assets/trax-logo-wordmark.png.asset.json` — vía `lovable-assets create` desde `/mnt/user-uploads/Trax-_Kit_de_logo_16-3.png`.
-- Migración SQL para `phone_otps` (GRANT solo a service_role, RLS ON, sin policies para anon/authenticated).
-
-## Diseño
-
-- Negro puro, hairlines `rgba(255,255,255,0.08)`, cards `rgba(255,255,255,0.04)`.
-- Logo `h-[52px] object-contain`, margin-bottom 32px.
-- Apple/Google botones equivalentes (fondo `rgba(255,255,255,0.06)`, border hairline, icono a la izquierda).
-- Toggle correo/celular tipo segmented (patrón iOS), altura 44px.
-- InputOTP: casillas 48x56px, gap 8px, radio 12px, Bai Jamjuree para dígitos.
-- Motion: subpantallas con slide horizontal 200ms + fade; entrada de la card con `y: 12 → 0` 350ms.
-
-## Verificación (Playwright)
-1. `/` renderiza → logo real, no wordmark texto.
-2. Toggle a "Celular" → aparece input phone.
-3. Enviar código con número dummy → server fn responde OK (mockeable) → aparece OtpScreen con 6 casillas.
-4. Botón "Crear cuenta" → slide a SignUpView, sin campos de negocio/nombre.
-5. UA iOS mock → Apple visible; UA Android → Apple oculto.
-6. Screenshots de las 4 pantallas para review.
-
-## Fuera de scope
-- No toco `OnboardingFlow` (business_name/owner_name se piden ahí).
-- No toco `usePlan` ni suscripciones.
-- No implemento WhatsApp OTP (Twilio SMS es suficiente y más barato para Perú con ruta A2P local).
+¿Procedo con este plan tal cual, o ajustamos alguna parte (especialmente multicuenta 2FA y bloqueo por plan)?
