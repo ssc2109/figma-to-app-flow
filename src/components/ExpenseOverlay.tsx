@@ -19,6 +19,7 @@ const CATEGORIES = [
 export default function ExpenseOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user } = useAuth();
   const fin = useFinance();
+  const confirm = useConfirm();
 
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<string>("Mercadería");
