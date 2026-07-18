@@ -26,7 +26,7 @@ import {
 
 type View = 'entry' | 'learning' | 'building';
 type TipoPersona = 'natural' | 'juridica';
-type TerminoKey = 'minuta' | 'domicilio' | 'clavesol' | 'ruc10' | 'ruc20' | 'nrus';
+type TerminoKey = 'minuta' | 'domicilio' | 'clavesol' | 'ruc10' | 'ruc20' | 'nrus' | 'gratificacion' | 'cts';
 type Termino = { titulo: string; texto: string };
 
 const terminos: Record<TerminoKey, Termino> = {
