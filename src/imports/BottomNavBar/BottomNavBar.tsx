@@ -6,6 +6,8 @@ export type Screen = "inicio" | "negocio" | "socia" | "yo" | "crecer";
 interface BottomNavBarProps {
   currentScreen?: Screen;
   onNavigate?: (screen: Screen) => void;
+  /** Nº de alertas activas — muestra un punto ámbar en la pestaña "Yo" */
+  alerts?: number;
 }
 
 interface TabProps {
@@ -13,14 +15,15 @@ interface TabProps {
   onClick?: () => void;
   Icon: React.ComponentType<{ className?: string; filled?: boolean }>;
   label: string;
+  badge?: boolean;
 }
 
-function Tab({ active, onClick, Icon, label }: TabProps) {
+function Tab({ active, onClick, Icon, label, badge }: TabProps) {
   return (
     <motion.button
       type="button"
       onClick={onClick}
-      aria-label={label}
+      aria-label={badge ? `${label} (alertas pendientes)` : label}
       whileTap={{ scale: 0.9 }}
       transition={{ type: "spring", stiffness: 520, damping: 30 }}
       className="relative flex items-center justify-center flex-1 h-[52px]"
@@ -41,10 +44,26 @@ function Tab({ active, onClick, Icon, label }: TabProps) {
             active ? "text-white" : "text-white/50"
           }`}
         />
+        {badge && (
+          <span className="absolute top-[-1px] right-[7px] h-[8px] w-[8px] pointer-events-none">
+            <motion.span
+              aria-hidden
+              className="absolute inset-0 rounded-full"
+              style={{ background: "#F59E0B" }}
+              animate={{ opacity: [0.35, 0.9, 0.35], scale: [1, 1.9, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <span
+              className="absolute inset-0 rounded-full"
+              style={{ background: "#F59E0B", boxShadow: "0 0 8px rgba(245,158,11,0.7)" }}
+            />
+          </span>
+        )}
       </div>
     </motion.button>
   );
 }
+
 
 export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: BottomNavBarProps) {
   const go = (s: Screen) => onNavigate?.(s);
