@@ -65,6 +65,7 @@ type BusinessScreenProps = {
   onOpenPOS: () => void;
   onNewExpense: () => void;
   onOpenPlans?: () => void;
+  inventoryLowOnly?: boolean;
 };
 
 export default function BusinessScreen({
@@ -73,6 +74,7 @@ export default function BusinessScreen({
   onOpenPOS,
   onNewExpense,
   onOpenPlans,
+  inventoryLowOnly = false,
 }: BusinessScreenProps) {
   const [view, setView] = useState<View>(initialView);
   const back = () => setView("hub");
@@ -111,7 +113,7 @@ export default function BusinessScreen({
           </motion.div>
         )}
 
-        {view === "inventory" && <InventoryView key="inventory" onBack={back} />}
+        {view === "inventory" && <InventoryView key="inventory" onBack={back} initialLowOnly={inventoryLowOnly} />}
         {view === "payments" && <PaymentsView key="payments" onBack={back} />}
         {view === "info" && <InfoView key="info" onBack={back} onOpenPlans={onOpenPlans} />}
         {view === "clients" && <ClientsView key="clients" onBack={back} />}
