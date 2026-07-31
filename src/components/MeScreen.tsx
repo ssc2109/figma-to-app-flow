@@ -5435,7 +5435,13 @@ function FlightCard({ project, onTap }: { project: Project; onTap: () => void })
   );
 }
 
-export default function MeScreen({ onClose }: { onClose?: () => void }) {
+export default function MeScreen({
+  onClose,
+  onAlertNavigate,
+}: {
+  onClose?: () => void;
+  onAlertNavigate?: (target: "inventory" | "debts") => void;
+}) {
   const [learnOpen, setLearnOpen] = useState(false);
   const [view, setView] = useState<View>("hub");
 
