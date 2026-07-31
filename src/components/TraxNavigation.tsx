@@ -16,9 +16,9 @@ import OnboardingFlow from "@/components/OnboardingFlow";
 import SettingsScreen from "@/components/SettingsScreen";
 import PlansScreen from "@/components/PlansScreen";
 import PreferencesEffects from "@/components/PreferencesEffects";
-import { InventoryProvider } from "@/data/inventory";
+import { InventoryProvider, useInventory } from "@/data/inventory";
 
-import { FinanceProvider } from "@/data/finance";
+import { FinanceProvider, useFinance } from "@/data/finance";
 import { MeProvider } from "@/data/me";
 import { QuickActionsProvider, useQuickActions, type ActionId } from "@/data/quickActions";
 import { ScreenTransition } from "@/components/motion/ScreenTransition";
@@ -40,11 +40,15 @@ function NavShell() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [plansOpen, setPlansOpen] = useState(false);
   const [negocioInitialView, setNegocioInitialView] = useState<
-    "hub" | "receivables" | "suppliers" | "catalog" | "cashHistory"
+    "hub" | "receivables" | "suppliers" | "catalog" | "cashHistory" | "inventory"
   >("hub");
+  const [inventoryLowOnly, setInventoryLowOnly] = useState(false);
   const [sociaPrompt, setSociaPrompt] = useState<string | undefined>(undefined);
   const [sociaShowHistory, setSociaShowHistory] = useState(false);
   const { setHandler } = useQuickActions();
+  const inventory = useInventory();
+  const finance = useFinance();
+  const alertsCount = (inventory.lowStock?.length ?? 0) + (finance.fiadosOverdue ?? 0);
 
 
   const goToInventory = () => {
@@ -138,6 +142,7 @@ function NavShell() {
               <BusinessScreen
                 key={negocioInitialView}
                 initialView={negocioInitialView}
+                inventoryLowOnly={inventoryLowOnly}
                 onNewSale={() => setSalesOpen(true)}
                 onOpenPOS={() => setPosOpen(true)}
                 onNewExpense={() => setExpenseOpen(true)}
@@ -148,7 +153,20 @@ function NavShell() {
               <SociaScreen initialPrompt={sociaPrompt} initialShowHistory={sociaShowHistory} />
             )}
 
-            {currentScreen === "yo" && <MeScreen />}
+            {currentScreen === "yo" && (
+              <MeScreen
+                onAlertNavigate={(target) => {
+                  if (target === "inventory") {
+                    setInventoryLowOnly(true);
+                    setNegocioInitialView("inventory");
+                  } else {
+                    setNegocioInitialView("receivables");
+                  }
+                  window.scrollTo({ top: 0, behavior: "auto" });
+                  setCurrentScreen("negocio");
+                }}
+              />
+            )}
             {currentScreen === "crecer" && <GrowScreen />}
           </ScreenTransition>
         )}
@@ -158,6 +176,7 @@ function NavShell() {
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50">
         <BottomNavBar
           currentScreen={currentScreen}
+          alerts={alertsCount}
           onNavigate={(s) => {
             setSalesOpen(false);
             setPosOpen(false);
@@ -165,7 +184,10 @@ function NavShell() {
             setScanOpen(false);
             setQuickActionsOpen(false);
             window.scrollTo({ top: 0, behavior: "auto" });
-            if (s === "negocio") setNegocioInitialView("hub");
+            if (s === "negocio") {
+              setNegocioInitialView("hub");
+              setInventoryLowOnly(false);
+            }
             if (s !== "socia") {
               setSociaPrompt(undefined);
               setSociaShowHistory(false);
