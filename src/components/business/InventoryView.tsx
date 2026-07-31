@@ -266,9 +266,11 @@ export default function InventoryView({
                     </button>
                   );
                 })}
-              </div>
+                </>
+              )}
             </div>
-          )}
+          </div>
+
 
           <ListGroup>
             {filtered.length === 0 ? (
