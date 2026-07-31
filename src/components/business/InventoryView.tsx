@@ -120,10 +120,17 @@ function EmptyState() {
   );
 }
 
-export default function InventoryView({ onBack }: { onBack: () => void }) {
+export default function InventoryView({
+  onBack,
+  initialLowOnly = false,
+}: {
+  onBack: () => void;
+  initialLowOnly?: boolean;
+}) {
   const { items, loading, updateProduct } = useInventory();
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<string>("Todos");
+  const [lowOnly, setLowOnly] = useState(initialLowOnly);
   const [editing, setEditing] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -136,6 +143,7 @@ export default function InventoryView({ onBack }: { onBack: () => void }) {
   const filtered = items.filter(
     (i) =>
       (cat === "Todos" || i.category === cat) &&
+      (!lowOnly || i.stock <= i.lowStockThreshold) &&
       i.name.toLowerCase().includes(query.toLowerCase()),
   );
 
