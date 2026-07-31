@@ -5832,7 +5832,7 @@ export default function MeScreen({
             alerts={alertsCount}
             lowStock={lowStockCount}
             fiadosOverdue={fiadosOverdueCount}
-
+            onAlertClick={(t) => onAlertNavigate?.(t)}
           />
         </div>
 
