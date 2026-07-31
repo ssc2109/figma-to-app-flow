@@ -65,7 +65,7 @@ function Tab({ active, onClick, Icon, label, badge }: TabProps) {
 }
 
 
-export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: BottomNavBarProps) {
+export default function BottomNavBar({ currentScreen = "inicio", onNavigate, alerts = 0 }: BottomNavBarProps) {
   const go = (s: Screen) => onNavigate?.(s);
 
   return (
@@ -80,7 +80,8 @@ export default function BottomNavBar({ currentScreen = "inicio", onNavigate }: B
       <Tab label="Inicio" Icon={HomeIcon} active={currentScreen === "inicio"} onClick={() => go("inicio")} />
       <Tab label="Mi Negocio" Icon={BusinessIcon} active={currentScreen === "negocio"} onClick={() => go("negocio")} />
       <Tab label="socIA" Icon={SociaIcon} active={currentScreen === "socia"} onClick={() => go("socia")} />
-      <Tab label="Yo" Icon={ProductivityIcon} active={currentScreen === "yo"} onClick={() => go("yo")} />
+      <Tab label="Yo" Icon={ProductivityIcon} active={currentScreen === "yo"} badge={alerts > 0} onClick={() => go("yo")} />
+
       <Tab label="Crecer" Icon={GrowIcon} active={currentScreen === "crecer"} onClick={() => go("crecer")} />
     </div>
   );
