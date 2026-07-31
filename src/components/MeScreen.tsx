@@ -276,6 +276,7 @@ function TodayStatus({
   alerts,
   lowStock,
   fiadosOverdue,
+  onAlertClick,
 }: {
   name: string;
   tasksDone: number;
@@ -284,13 +285,19 @@ function TodayStatus({
   alerts: number;
   lowStock: number;
   fiadosOverdue: number;
+  onAlertClick?: (target: "inventory" | "debts") => void;
 }) {
+  const AMBER = "#F59E0B";
+  const alertActive = alerts > 0;
+  const alertTarget: "inventory" | "debts" = lowStock > 0 ? "inventory" : "debts";
+
   const items: Array<{
     Icon: typeof Activity;
     accent: string;
     label: string;
     value: string;
     hint: string;
+    alert?: boolean;
   }> = [
     {
       Icon: ShoppingBag,
@@ -313,9 +320,10 @@ function TodayStatus({
     },
     {
       Icon: AlertOctagon,
-      accent: alerts > 0 ? "#F87171" : "#93C5FD",
+      accent: alertActive ? AMBER : "#93C5FD",
       label: "Alertas",
       value: `${alerts}`,
+      alert: alertActive,
       hint:
         alerts === 0
           ? "Sin urgencias"
@@ -346,42 +354,100 @@ function TodayStatus({
       </div>
 
       <div className="grid grid-cols-3 gap-[8px]">
-        {items.map((it) => (
-          <div
-            key={it.label}
-            className="rounded-[16px] p-[12px] flex flex-col gap-[8px] min-h-[92px]"
-            style={{
-              background: "rgba(15,23,42,0.55)",
-              border: `1px solid ${it.accent}22`,
-              backdropFilter: "blur(20px)",
-            }}
-          >
-            <div
-              className="h-[26px] w-[26px] rounded-full grid place-items-center"
+        {items.map((it) => {
+          const isAlert = !!it.alert;
+          const Wrapper: any = isAlert ? "button" : "div";
+          return (
+            <Wrapper
+              key={it.label}
+              {...(isAlert
+                ? {
+                    type: "button",
+                    onClick: () => onAlertClick?.(alertTarget),
+                    "aria-label": `${alerts} alerta${alerts === 1 ? "" : "s"} pendiente${
+                      alerts === 1 ? "" : "s"
+                    }, ir a ${alertTarget === "inventory" ? "Inventario" : "Deudas"}`,
+                  }
+                : {})}
+              className={`relative overflow-hidden text-left rounded-[16px] p-[12px] flex flex-col gap-[8px] min-h-[92px] ${
+                isAlert ? "active:scale-[0.98] transition-transform" : ""
+              }`}
               style={{
-                background: `linear-gradient(135deg, ${it.accent}44, ${it.accent}18)`,
-                boxShadow: `0 0 12px ${it.accent}33`,
+                background: isAlert
+                  ? "linear-gradient(160deg, rgba(245,158,11,0.16), rgba(15,23,42,0.6))"
+                  : "rgba(15,23,42,0.55)",
+                border: `1px solid ${isAlert ? "rgba(245,158,11,0.45)" : `${it.accent}22`}`,
+                boxShadow: isAlert ? "0 0 22px rgba(245,158,11,0.18)" : undefined,
+                backdropFilter: "blur(20px)",
               }}
             >
-              <it.Icon className="h-[13px] w-[13px] text-white" strokeWidth={1.9} />
-            </div>
-            <div>
-              <div className="font-['Bai_Jamjuree'] text-[18px] font-semibold text-white tabular-nums leading-none">
-                {it.value}
+              {isAlert && (
+                <motion.div
+                  aria-hidden
+                  className="absolute inset-0 rounded-[16px] pointer-events-none"
+                  style={{ border: "1px solid rgba(245,158,11,0.55)" }}
+                  animate={{ opacity: [0.15, 0.65, 0.15] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              )}
+              <div className="relative flex items-center gap-[6px]">
+                <div
+                  className="h-[26px] w-[26px] rounded-full grid place-items-center"
+                  style={{
+                    background: `linear-gradient(135deg, ${it.accent}44, ${it.accent}18)`,
+                    boxShadow: `0 0 12px ${it.accent}33`,
+                  }}
+                >
+                  <it.Icon className="h-[13px] w-[13px] text-white" strokeWidth={1.9} />
+                </div>
+                {isAlert && (
+                  <span className="relative h-[8px] w-[8px]">
+                    <motion.span
+                      aria-hidden
+                      className="absolute inset-0 rounded-full"
+                      style={{ background: AMBER }}
+                      animate={{ opacity: [0.3, 0.85, 0.3], scale: [1, 2.1, 1] }}
+                      transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <span
+                      className="absolute inset-0 rounded-full"
+                      style={{ background: AMBER, boxShadow: `0 0 8px ${AMBER}` }}
+                    />
+                  </span>
+                )}
               </div>
-              <div className="mt-[4px] font-['Geist'] text-[10.5px] text-white/55 leading-[1.3]">
-                {it.label}
+              <div className="relative">
+                <div
+                  className="font-['Bai_Jamjuree'] font-semibold tabular-nums leading-none"
+                  style={{
+                    fontSize: isAlert ? "24px" : "18px",
+                    color: isAlert ? AMBER : "#fff",
+                    textShadow: isAlert ? "0 0 16px rgba(245,158,11,0.45)" : undefined,
+                  }}
+                >
+                  {it.value}
+                </div>
+                <div
+                  className="mt-[4px] font-['Geist'] text-[10.5px] leading-[1.3]"
+                  style={{ color: isAlert ? "rgba(245,158,11,0.9)" : "rgba(255,255,255,0.55)" }}
+                >
+                  {it.label}
+                </div>
+                <div
+                  className="mt-[2px] font-['Geist'] text-[10px] leading-[1.3]"
+                  style={{ color: isAlert ? "rgba(245,158,11,0.65)" : "rgba(255,255,255,0.4)" }}
+                >
+                  {it.hint}
+                </div>
               </div>
-              <div className="mt-[2px] font-['Geist'] text-[10px] text-white/40 leading-[1.3]">
-                {it.hint}
-              </div>
-            </div>
-          </div>
-        ))}
+            </Wrapper>
+          );
+        })}
       </div>
     </div>
   );
 }
+
 
 
 /* StreakAurora eliminado — hub sin racha */
@@ -5369,7 +5435,13 @@ function FlightCard({ project, onTap }: { project: Project; onTap: () => void })
   );
 }
 
-export default function MeScreen({ onClose }: { onClose?: () => void }) {
+export default function MeScreen({
+  onClose,
+  onAlertNavigate,
+}: {
+  onClose?: () => void;
+  onAlertNavigate?: (target: "inventory" | "debts") => void;
+}) {
   const [learnOpen, setLearnOpen] = useState(false);
   const [view, setView] = useState<View>("hub");
 
@@ -5760,7 +5832,7 @@ export default function MeScreen({ onClose }: { onClose?: () => void }) {
             alerts={alertsCount}
             lowStock={lowStockCount}
             fiadosOverdue={fiadosOverdueCount}
-
+            onAlertClick={(t) => onAlertNavigate?.(t)}
           />
         </div>
 
