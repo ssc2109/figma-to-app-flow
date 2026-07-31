@@ -231,9 +231,23 @@ export default function InventoryView({
             />
           </div>
 
-          {categories.length > 1 && (
-            <div className="-mx-[20px] overflow-x-auto no-scrollbar">
-              <div className="flex gap-[8px] px-[20px]">
+          <div className="-mx-[20px] overflow-x-auto no-scrollbar">
+            <div className="flex gap-[8px] px-[20px]">
+              <button
+                type="button"
+                onClick={() => setLowOnly((v) => !v)}
+                className="shrink-0 h-[32px] px-[14px] rounded-full font-['Geist'] text-[12.5px] font-medium transition-colors"
+                style={{
+                  background: lowOnly ? "rgba(245,158,11,0.18)" : "transparent",
+                  color: lowOnly ? "#F59E0B" : "rgba(255,255,255,0.65)",
+                  border: `1px solid ${lowOnly ? "rgba(245,158,11,0.5)" : "rgba(255,255,255,0.08)"}`,
+                }}
+              >
+                Stock bajo
+              </button>
+              {categories.length > 1 && (
+                <>
+
                 {categories.map((c) => {
                   const active = c === cat;
                   return (
